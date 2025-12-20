@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useProfile } from "@/hooks/useProfile";
 import { useSparkCount } from "@/hooks/useSparks";
+import { useQuedadas } from "@/hooks/useQuedadas";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -12,6 +13,8 @@ const Presence = () => {
   const { data: myPresence } = useMyPresence();
   const setPresence = useSetPresence();
   const sparkCount = useSparkCount();
+  const { data: quedadas } = useQuedadas();
+  const quedadaCount = quedadas?.length || 0;
 
   // Enable heartbeat
   usePresenceHeartbeat();
@@ -46,6 +49,19 @@ const Presence = () => {
         </button>
         <span className="font-display text-xl font-bold text-foreground">KIKI</span>
         <div className="flex items-center gap-3">
+          {/* Quedadas button */}
+          <button
+            onClick={() => navigate("/quedadas")}
+            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            title="Quedadas"
+          >
+            <Calendar className={`w-5 h-5 ${quedadaCount > 0 ? "text-accent" : ""}`} />
+            {quedadaCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center">
+                {quedadaCount}
+              </span>
+            )}
+          </button>
           {/* Sparks button with badge */}
           <button
             onClick={() => navigate("/sparks")}

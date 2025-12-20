@@ -1,0 +1,346 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock } from "lucide-react";
+import { useProfile } from "@/hooks/useProfile";
+import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada } from "@/hooks/useQuedadas";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+
+const Quedadas = () => {
+  const navigate = useNavigate();
+  const { data: profile } = useProfile();
+  const { data: quedadas, isLoading } = useQuedadas();
+  const createQuedada = useCreateQuedada();
+  const joinQuedada = useJoinQuedada();
+  const leaveQuedada = useLeaveQuedada();
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [locationHint, setLocationHint] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("");
+  const [maxAttendees, setMaxAttendees] = useState("");
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || !eventDate || !eventTime) {
+      toast.error("Título, fecha y hora son obligatorios");
+      return;
+    }
+
+    try {
+      const dateTime = new Date(`${eventDate}T${eventTime}`);
+      
+      await createQuedada.mutateAsync({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        location_hint: locationHint.trim() || undefined,
+        event_date: dateTime.toISOString(),
+        max_attendees: maxAttendees ? parseInt(maxAttendees) : undefined,
+      });
+
+      toast.success("¡Quedada creada!");
+      setShowCreate(false);
+      setTitle("");
+      setDescription("");
+      setLocationHint("");
+      setEventDate("");
+      setEventTime("");
+      setMaxAttendees("");
+    } catch (error: any) {
+      toast.error("Error al crear: " + error.message);
+    }
+  };
+
+  const handleJoin = async (quedadaId: string) => {
+    try {
+      await joinQuedada.mutateAsync(quedadaId);
+      toast.success("¡Te has unido!");
+    } catch (error: any) {
+      toast.error("Error: " + error.message);
+    }
+  };
+
+  const handleLeave = async (quedadaId: string) => {
+    try {
+      await leaveQuedada.mutateAsync(quedadaId);
+      toast.success("Has salido de la quedada");
+    } catch (error: any) {
+      toast.error("Error: " + error.message);
+    }
+  };
+
+  const formatEventDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return format(date, "EEEE d 'de' MMMM", { locale: es });
+  };
+
+  const formatEventTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return format(date, "HH:mm");
+  };
+
+  return (
+    <main className="min-h-screen bg-background flex flex-col px-6 py-8 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
+      
+      {/* Header */}
+      <div className="relative z-10 flex items-center justify-between mb-8">
+        <button 
+          onClick={() => navigate("/presence")}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Presencia</span>
+        </button>
+        <span className="font-display text-xl font-bold text-foreground">KIKI</span>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground hover:scale-110 transition-transform shadow-lg shadow-primary/30"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
+        {/* Hero */}
+        <div className="text-center mb-10 animate-fade-up">
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full animate-pulse-soft" />
+            <div className="relative w-full h-full rounded-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center ring-2 ring-accent/20 ring-offset-4 ring-offset-background">
+              <Calendar className="w-9 h-9 text-accent" />
+            </div>
+            <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-accent/60 animate-pulse-soft" />
+          </div>
+          
+          <h1 className="font-display text-3xl font-bold text-foreground mb-3">
+            Quedadas
+          </h1>
+          <p className="font-body text-muted-foreground">
+            Eventos efímeros en {profile?.city || "tu ciudad"}.
+          </p>
+        </div>
+
+        {/* List */}
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Calendar className="w-10 h-10 text-accent animate-pulse-soft" />
+          </div>
+        ) : quedadas?.length === 0 ? (
+          <div className="text-center py-16 animate-fade-up">
+            <div className="w-20 h-20 rounded-full bg-card/50 flex items-center justify-center mx-auto mb-6">
+              <Calendar className="w-8 h-8 text-muted-foreground/30" />
+            </div>
+            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
+              No hay quedadas
+            </h3>
+            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto mb-6">
+              Sé la primera persona en crear una.
+            </p>
+            <Button variant="kiki" onClick={() => setShowCreate(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Crear quedada
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {quedadas?.map((quedada, index) => {
+              const isFull = quedada.max_attendees && quedada.attendee_count >= quedada.max_attendees;
+              const isCreator = quedada.creator_profile_id === profile?.id;
+              
+              return (
+                <div
+                  key={quedada.id}
+                  className="bg-card rounded-2xl p-5 animate-fade-up border border-transparent hover:border-accent/20 transition-all duration-300"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Header */}
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-accent/20">
+                      {quedada.creator?.avatar_url ? (
+                        <img src={quedada.creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
+                          <span className="font-display text-sm text-card-foreground">
+                            {(quedada.creator?.name?.[0] || "?").toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-display font-semibold text-card-foreground text-lg leading-tight">
+                        {quedada.title}
+                      </h3>
+                      <p className="font-body text-xs text-card-foreground/50">
+                        por {quedada.creator?.name || "Anónima"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  {quedada.description && (
+                    <p className="font-body text-sm text-card-foreground/70 mb-4 leading-relaxed">
+                      {quedada.description}
+                    </p>
+                  )}
+
+                  {/* Details */}
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    <div className="flex items-center gap-1.5 text-card-foreground/60">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span className="font-body text-xs capitalize">{formatEventDate(quedada.event_date)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-card-foreground/60">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span className="font-body text-xs">{formatEventTime(quedada.event_date)}h</span>
+                    </div>
+                    {quedada.location_hint && (
+                      <div className="flex items-center gap-1.5 text-card-foreground/60">
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span className="font-body text-xs">{quedada.location_hint}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 text-card-foreground/60">
+                      <Users className="w-3.5 h-3.5" />
+                      <span className="font-body text-xs">
+                        {quedada.attendee_count}{quedada.max_attendees ? `/${quedada.max_attendees}` : ""} asistentes
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Action */}
+                  {!isCreator && (
+                    quedada.is_attending ? (
+                      <Button
+                        variant="kiki-soft"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleLeave(quedada.id)}
+                      >
+                        Salir de la quedada
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="kiki"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleJoin(quedada.id)}
+                        disabled={isFull}
+                      >
+                        {isFull ? "Completa" : "Unirse"}
+                      </Button>
+                    )
+                  )}
+                  
+                  {isCreator && (
+                    <div className="flex items-center justify-center gap-2 py-2">
+                      <Sparkles className="w-3.5 h-3.5 text-accent" />
+                      <span className="font-body text-xs text-card-foreground/50">Tu quedada</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Create modal */}
+      {showCreate && (
+        <div className="fixed inset-0 bg-background/90 backdrop-blur-md flex items-center justify-center p-6 z-50">
+          <div className="bg-card rounded-3xl p-6 max-w-md w-full animate-fade-up shadow-2xl border border-border/20 max-h-[90vh] overflow-y-auto">
+            <h3 className="font-display text-xl font-semibold text-card-foreground mb-6 text-center">
+              Nueva quedada
+            </h3>
+            
+            <form onSubmit={handleCreate} className="space-y-4">
+              <Input
+                placeholder="Título de la quedada"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="h-12 bg-background/50"
+              />
+              
+              <Textarea
+                placeholder="Descripción (opcional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="bg-background/50 min-h-[80px]"
+              />
+              
+              <Input
+                placeholder="Pista del lugar (ej: cerca de Sol)"
+                value={locationHint}
+                onChange={(e) => setLocationHint(e.target.value)}
+                className="h-12 bg-background/50"
+              />
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-body text-xs text-card-foreground/60 mb-1 block">Fecha</label>
+                  <Input
+                    type="date"
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    className="h-12 bg-background/50"
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+                <div>
+                  <label className="font-body text-xs text-card-foreground/60 mb-1 block">Hora</label>
+                  <Input
+                    type="time"
+                    value={eventTime}
+                    onChange={(e) => setEventTime(e.target.value)}
+                    className="h-12 bg-background/50"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="font-body text-xs text-card-foreground/60 mb-1 block">
+                  Máximo asistentes (opcional)
+                </label>
+                <Input
+                  type="number"
+                  placeholder="Sin límite"
+                  value={maxAttendees}
+                  onChange={(e) => setMaxAttendees(e.target.value)}
+                  className="h-12 bg-background/50"
+                  min="2"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="kiki-soft"
+                  className="flex-1 h-12"
+                  onClick={() => setShowCreate(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  variant="kiki"
+                  className="flex-1 h-12"
+                  disabled={createQuedada.isPending}
+                >
+                  {createQuedada.isPending ? "Creando..." : "Crear"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+};
+
+export default Quedadas;
