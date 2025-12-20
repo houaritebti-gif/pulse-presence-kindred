@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useUpdateProfile, useUpdateTribes } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
 import { requestNotificationPermission, getNotificationPermission } from "@/utils/browserNotifications";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { sendPushNotification } from "@/utils/pushNotifications";
 
 const VIBES = ["Tranqui", "Intensa", "Curiosa", "Misteriosa", "Libre"];
 const TRIBES = ["Queer", "Artista", "Nómada", "Foodie", "Noctámbula", "Indie"];
@@ -43,6 +44,28 @@ const Profile = () => {
     subscribe: subscribePush,
     unsubscribe: unsubscribePush 
   } = usePushNotifications();
+  const [isSendingTest, setIsSendingTest] = useState(false);
+
+  const handleTestPush = async () => {
+    if (!profile?.id) {
+      toast.error("No se encontró tu perfil");
+      return;
+    }
+    setIsSendingTest(true);
+    try {
+      await sendPushNotification({
+        profileId: profile.id,
+        title: "🎉 Push de prueba",
+        body: "¡Las notificaciones push funcionan correctamente!",
+        url: "/profile",
+      });
+      toast.success("Push enviado - revisa tus notificaciones");
+    } catch (error) {
+      toast.error("Error al enviar push de prueba");
+    } finally {
+      setIsSendingTest(false);
+    }
+  };
 
   const handleSoundToggle = (muted: boolean) => {
     setSoundMutedState(muted);
@@ -363,6 +386,24 @@ const Profile = () => {
                   disabled={pushLoading}
                 />
               </div>
+            )}
+            
+            {/* Test Push Button */}
+            {pushSubscribed && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleTestPush}
+                disabled={isSendingTest}
+                className="w-full flex items-center gap-2"
+              >
+                {isSendingTest ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                Probar push notification
+              </Button>
             )}
           </div>
         </div>
