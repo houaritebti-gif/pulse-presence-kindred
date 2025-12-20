@@ -1,20 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, Camera, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile, useProfileTribes, useUpdateProfile, useUpdateTribes } from "@/hooks/useProfile";
+import { toast } from "sonner";
 
 const VIBES = ["Tranqui", "Intensa", "Curiosa", "Misteriosa", "Libre"];
 const TRIBES = ["Queer", "Artista", "Nómada", "Foodie", "Noctámbula", "Indie"];
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
+  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: tribes } = useProfileTribes(profile?.id);
+  const updateProfile = useUpdateProfile();
+  const updateTribes = useUpdateTribes();
+
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Load existing data
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name || "");
+      setCity(profile.city || "Madrid");
+      setSelectedVibe(profile.vibe);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (tribes) {
+      setSelectedTribes(tribes.map(t => t.tribe));
+    }
+  }, [tribes]);
 
   const toggleTribe = (tribe: string) => {
+    setHasChanges(true);
     setSelectedTribes(prev => 
       prev.includes(tribe) 
         ? prev.filter(t => t !== tribe)
@@ -22,20 +48,60 @@ const Profile = () => {
     );
   };
 
-  const handleContinue = () => {
-    navigate("/presence");
+  const handleContinue = async () => {
+    if (!profile) return;
+
+    try {
+      await updateProfile.mutateAsync({
+        name: name || null,
+        city: city || "Madrid",
+        vibe: selectedVibe,
+      });
+
+      await updateTribes.mutateAsync({
+        profileId: profile.id,
+        tribes: selectedTribes,
+      });
+
+      toast.success("Perfil guardado");
+      navigate("/presence");
+    } catch (error: any) {
+      toast.error("Error al guardar: " + error.message);
+    }
   };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  if (profileLoading) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8">
-      {/* Back button */}
-      <button 
-        onClick={() => navigate("/auth")}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body mb-8"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Volver</span>
-      </button>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <button 
+          onClick={() => navigate("/presence")}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Presencia</span>
+        </button>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Salir</span>
+        </button>
+      </div>
 
       <div className="flex-1 max-w-md mx-auto w-full">
         {/* Header */}
@@ -62,14 +128,14 @@ const Profile = () => {
             type="text"
             placeholder="Tu nombre (o como quieras que te llamen)"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => { setName(e.target.value); setHasChanges(true); }}
             className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
           />
           <Input
             type="text"
             placeholder="Ciudad"
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onChange={(e) => { setCity(e.target.value); setHasChanges(true); }}
             className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
           />
         </div>
@@ -83,7 +149,7 @@ const Profile = () => {
             {VIBES.map(vibe => (
               <button
                 key={vibe}
-                onClick={() => setSelectedVibe(vibe)}
+                onClick={() => { setSelectedVibe(vibe); setHasChanges(true); }}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
                   selectedVibe === vibe
                     ? "bg-card text-card-foreground"
@@ -125,8 +191,9 @@ const Profile = () => {
             size="lg" 
             className="w-full"
             onClick={handleContinue}
+            disabled={updateProfile.isPending || updateTribes.isPending}
           >
-            Continuar
+            {updateProfile.isPending ? "Guardando..." : "Guardar y continuar"}
           </Button>
         </div>
       </div>

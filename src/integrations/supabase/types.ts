@@ -14,7 +14,178 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ghost_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          from_profile_id: string
+          id: string
+          read_at: string | null
+          to_profile_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          from_profile_id: string
+          id?: string
+          read_at?: string | null
+          to_profile_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          from_profile_id?: string
+          id?: string
+          read_at?: string | null
+          to_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ghost_messages_from_profile_id_fkey"
+            columns: ["from_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ghost_messages_to_profile_id_fkey"
+            columns: ["to_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presence: {
+        Row: {
+          id: string
+          is_present: boolean | null
+          last_pulse: string | null
+          profile_id: string
+          visible_to_others: boolean | null
+        }
+        Insert: {
+          id?: string
+          is_present?: boolean | null
+          last_pulse?: string | null
+          profile_id: string
+          visible_to_others?: boolean | null
+        }
+        Update: {
+          id?: string
+          is_present?: boolean | null
+          last_pulse?: string | null
+          profile_id?: string
+          visible_to_others?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presence_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_tribes: {
+        Row: {
+          created_at: string | null
+          id: string
+          profile_id: string
+          tribe: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          profile_id: string
+          tribe: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          profile_id?: string
+          tribe?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_tribes_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          city: string | null
+          created_at: string | null
+          id: string
+          name: string | null
+          updated_at: string | null
+          user_id: string
+          vibe: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          updated_at?: string | null
+          user_id: string
+          vibe?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          updated_at?: string | null
+          user_id?: string
+          vibe?: string | null
+        }
+        Relationships: []
+      }
+      sparks: {
+        Row: {
+          created_at: string | null
+          from_profile_id: string
+          id: string
+          to_profile_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          from_profile_id: string
+          id?: string
+          to_profile_id: string
+        }
+        Update: {
+          created_at?: string | null
+          from_profile_id?: string
+          id?: string
+          to_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sparks_from_profile_id_fkey"
+            columns: ["from_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sparks_to_profile_id_fkey"
+            columns: ["to_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
