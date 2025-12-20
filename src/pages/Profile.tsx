@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Camera, LogOut } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useUpdateProfile, useUpdateTribes } from "@/hooks/useProfile";
+import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
 
 const VIBES = ["Tranqui", "Intensa", "Curiosa", "Misteriosa", "Libre"];
@@ -17,12 +18,15 @@ const Profile = () => {
   const { data: tribes } = useProfileTribes(profile?.id);
   const updateProfile = useUpdateProfile();
   const updateTribes = useUpdateTribes();
+  const { uploadAvatar, isUploading } = useAvatarUpload();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   // Load existing data
   useEffect(() => {
@@ -30,8 +34,29 @@ const Profile = () => {
       setName(profile.name || "");
       setCity(profile.city || "Madrid");
       setSelectedVibe(profile.vibe);
+      setAvatarUrl(profile.avatar_url);
     }
   }, [profile]);
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const newUrl = await uploadAvatar(file);
+      setAvatarUrl(newUrl);
+      toast.success("Foto actualizada");
+    } catch (error: any) {
+      toast.error(error.message || "Error al subir la foto");
+    }
+
+    // Reset input so same file can be selected again
+    e.target.value = "";
+  };
 
   useEffect(() => {
     if (tribes) {
@@ -116,9 +141,42 @@ const Profile = () => {
 
         {/* Photo */}
         <div className="flex justify-center mb-10 animate-fade-up animate-delay-100">
-          <button className="relative w-32 h-32 rounded-full bg-card flex items-center justify-center group transition-transform hover:scale-105">
-            <Camera className="w-8 h-8 text-card-foreground/60 group-hover:text-card-foreground transition-colors" />
-            <div className="absolute inset-0 rounded-full border-2 border-dashed border-card-foreground/20 group-hover:border-card-foreground/40 transition-colors" />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <button 
+            onClick={handleAvatarClick}
+            disabled={isUploading}
+            className="relative w-32 h-32 rounded-full bg-card flex items-center justify-center group transition-transform hover:scale-105 overflow-hidden"
+          >
+            {avatarUrl ? (
+              <img 
+                src={avatarUrl} 
+                alt="Avatar" 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Camera className="w-8 h-8 text-card-foreground/60 group-hover:text-card-foreground transition-colors" />
+            )}
+            {isUploading && (
+              <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            )}
+            <div className={`absolute inset-0 rounded-full border-2 transition-colors ${
+              avatarUrl 
+                ? "border-transparent group-hover:border-primary/50" 
+                : "border-dashed border-card-foreground/20 group-hover:border-card-foreground/40"
+            }`} />
+            {avatarUrl && (
+              <div className="absolute inset-0 bg-background/0 group-hover:bg-background/60 flex items-center justify-center transition-all">
+                <Camera className="w-6 h-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            )}
           </button>
         </div>
 
