@@ -144,8 +144,20 @@ const Presence = () => {
                 style={{ animationDelay: `${(index + 1) * 100}ms` }}
               >
                 <div className="flex items-start gap-4">
-                  {/* Avatar placeholder */}
-                  <div className="w-14 h-14 rounded-full bg-card-foreground/10 flex-shrink-0" />
+                  {/* Avatar */}
+                  <div className="w-14 h-14 rounded-full bg-card-foreground/10 flex-shrink-0 overflow-hidden">
+                    {presence.profile?.avatar_url ? (
+                      <img 
+                        src={presence.profile.avatar_url} 
+                        alt={presence.profile.name || "Avatar"}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-card-foreground/40 font-display text-lg">
+                        {(presence.profile?.name?.[0] || "?").toUpperCase()}
+                      </div>
+                    )}
+                  </div>
                   
                   {/* Info */}
                   <div className="flex-1 min-w-0">
