@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users } from "lucide-react";
@@ -5,13 +6,31 @@ import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead 
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
+type FilterType = "all" | "spark" | "message" | "quedada";
+
+const FILTERS: { key: FilterType; label: string; icon: React.ReactNode }[] = [
+  { key: "all", label: "Todas", icon: <Bell className="w-4 h-4" /> },
+  { key: "spark", label: "Sparks", icon: <Sparkles className="w-4 h-4" /> },
+  { key: "message", label: "Mensajes", icon: <MessageCircle className="w-4 h-4" /> },
+  { key: "quedada", label: "Quedadas", icon: <Calendar className="w-4 h-4" /> },
+];
+
 const Notifications = () => {
   const navigate = useNavigate();
   const { data: notifications, isLoading } = useNotifications();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
+  const [filter, setFilter] = useState<FilterType>("all");
 
   const unreadCount = notifications?.filter(n => !n.read_at).length || 0;
+
+  const filteredNotifications = notifications?.filter(n => {
+    if (filter === "all") return true;
+    if (filter === "spark") return n.type === "spark";
+    if (filter === "message") return n.type === "message" || n.type === "quedada_message";
+    if (filter === "quedada") return n.type === "quedada" || n.type === "attendee";
+    return true;
+  });
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -91,12 +110,30 @@ const Notifications = () => {
           </p>
         </div>
 
+        {/* Filters */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2 animate-fade-up animate-delay-100">
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full font-body text-sm whitespace-nowrap transition-all ${
+                filter === f.key
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-card-foreground/70 hover:bg-card/80"
+              }`}
+            >
+              {f.icon}
+              {f.label}
+            </button>
+          ))}
+        </div>
+
         {/* List */}
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Bell className="w-10 h-10 text-primary animate-pulse-soft" />
           </div>
-        ) : notifications?.length === 0 ? (
+        ) : filteredNotifications?.length === 0 ? (
           <div className="text-center py-16 animate-fade-up">
             <div className="w-20 h-20 rounded-full bg-card/50 flex items-center justify-center mx-auto mb-6">
               <Bell className="w-8 h-8 text-muted-foreground/30" />
@@ -110,7 +147,7 @@ const Notifications = () => {
           </div>
         ) : (
           <div className="space-y-2">
-            {notifications?.map((notification, index) => (
+            {filteredNotifications?.map((notification, index) => (
               <button
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification)}
