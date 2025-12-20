@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useUpdateProfile, useUpdateTribes } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { requestNotificationPermission, getNotificationPermission } from "@/utils/browserNotifications";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { sendPushNotification } from "@/utils/pushNotifications";
+import { isVibrationEnabled, setVibrationEnabled } from "@/utils/notificationSound";
 
 const VIBES = ["Tranqui", "Intensa", "Curiosa", "Misteriosa", "Libre"];
 const TRIBES = ["Queer", "Artista", "Nómada", "Foodie", "Noctámbula", "Indie"];
@@ -33,6 +34,9 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [soundMuted, setSoundMutedState] = useState(() => {
     return localStorage.getItem("kiki_sound_muted") === "true";
+  });
+  const [vibrationEnabled, setVibrationEnabledState] = useState(() => {
+    return isVibrationEnabled();
   });
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(() => {
     return getNotificationPermission();
@@ -70,6 +74,14 @@ const Profile = () => {
   const handleSoundToggle = (muted: boolean) => {
     setSoundMutedState(muted);
     localStorage.setItem("kiki_sound_muted", muted ? "true" : "false");
+  };
+
+  const handleVibrationToggle = (enabled: boolean) => {
+    setVibrationEnabledState(enabled);
+    setVibrationEnabled(enabled);
+    if (enabled && "vibrate" in navigator) {
+      navigator.vibrate([50, 30, 50]); // Quick feedback
+    }
   };
 
   const handleRequestNotificationPermission = async () => {
@@ -336,6 +348,21 @@ const Profile = () => {
                 onCheckedChange={(checked) => handleSoundToggle(!checked)}
               />
             </div>
+            
+            {"vibrate" in navigator && (
+              <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Vibrate className={`w-5 h-5 ${vibrationEnabled ? "text-foreground" : "text-muted-foreground"}`} />
+                  <span className="font-body text-sm text-foreground">
+                    {vibrationEnabled ? "Vibración activada" : "Vibración desactivada"}
+                  </span>
+                </div>
+                <Switch
+                  checked={vibrationEnabled}
+                  onCheckedChange={handleVibrationToggle}
+                />
+              </div>
+            )}
             
             {notificationPermission !== null && (
               <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
