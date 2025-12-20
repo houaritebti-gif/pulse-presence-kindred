@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useUpdateProfile, useUpdateTribes } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { requestNotificationPermission, getNotificationPermission } from "@/utils/browserNotifications";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { sendPushNotification } from "@/utils/pushNotifications";
-import { isVibrationEnabled, setVibrationEnabled } from "@/utils/notificationSound";
+import { isVibrationEnabled, setVibrationEnabled, isDndEnabled, setDndEnabled, getDndHours, setDndHours } from "@/utils/notificationSound";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const VIBES = ["Tranqui", "Intensa", "Curiosa", "Misteriosa", "Libre"];
 const TRIBES = ["Queer", "Artista", "Nómada", "Foodie", "Noctámbula", "Indie"];
@@ -38,6 +39,9 @@ const Profile = () => {
   const [vibrationEnabled, setVibrationEnabledState] = useState(() => {
     return isVibrationEnabled();
   });
+  const [dndEnabled, setDndEnabledState] = useState(() => isDndEnabled());
+  const [dndStart, setDndStart] = useState(() => getDndHours().start);
+  const [dndEnd, setDndEnd] = useState(() => getDndHours().end);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(() => {
     return getNotificationPermission();
   });
@@ -432,6 +436,74 @@ const Profile = () => {
                 Probar push notification
               </Button>
             )}
+            
+            {/* Do Not Disturb */}
+            <div className="p-4 bg-secondary/50 rounded-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Moon className={`w-5 h-5 ${dndEnabled ? "text-foreground" : "text-muted-foreground"}`} />
+                  <div>
+                    <span className="font-body text-sm text-foreground block">
+                      No molestar
+                    </span>
+                    <span className="font-body text-xs text-muted-foreground">
+                      Silencia notificaciones en horario
+                    </span>
+                  </div>
+                </div>
+                <Switch
+                  checked={dndEnabled}
+                  onCheckedChange={(enabled) => {
+                    setDndEnabledState(enabled);
+                    setDndEnabled(enabled);
+                  }}
+                />
+              </div>
+              
+              {dndEnabled && (
+                <div className="flex items-center gap-2 pt-2 border-t border-border/30">
+                  <Select
+                    value={dndStart.toString()}
+                    onValueChange={(val) => {
+                      const start = parseInt(val, 10);
+                      setDndStart(start);
+                      setDndHours(start, dndEnd);
+                    }}
+                  >
+                    <SelectTrigger className="w-24 h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {i.toString().padStart(2, "0")}:00
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <span className="text-muted-foreground text-xs">a</span>
+                  <Select
+                    value={dndEnd.toString()}
+                    onValueChange={(val) => {
+                      const end = parseInt(val, 10);
+                      setDndEnd(end);
+                      setDndHours(dndStart, end);
+                    }}
+                  >
+                    <SelectTrigger className="w-24 h-9 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {i.toString().padStart(2, "0")}:00
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

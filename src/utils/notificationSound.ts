@@ -5,6 +5,9 @@ let audioContext: AudioContext | null = null;
 
 const SOUND_MUTED_KEY = "kiki_sound_muted";
 const VIBRATION_ENABLED_KEY = "kiki_vibration_enabled";
+const DND_ENABLED_KEY = "kiki_dnd_enabled";
+const DND_START_KEY = "kiki_dnd_start";
+const DND_END_KEY = "kiki_dnd_end";
 
 export const isSoundMuted = (): boolean => {
   return localStorage.getItem(SOUND_MUTED_KEY) === "true";
@@ -16,12 +19,46 @@ export const setSoundMuted = (muted: boolean): void => {
 
 export const isVibrationEnabled = (): boolean => {
   const stored = localStorage.getItem(VIBRATION_ENABLED_KEY);
-  // Default to true if not set
   return stored === null ? true : stored === "true";
 };
 
 export const setVibrationEnabled = (enabled: boolean): void => {
   localStorage.setItem(VIBRATION_ENABLED_KEY, enabled ? "true" : "false");
+};
+
+// Do Not Disturb functions
+export const isDndEnabled = (): boolean => {
+  return localStorage.getItem(DND_ENABLED_KEY) === "true";
+};
+
+export const setDndEnabled = (enabled: boolean): void => {
+  localStorage.setItem(DND_ENABLED_KEY, enabled ? "true" : "false");
+};
+
+export const getDndHours = (): { start: number; end: number } => {
+  const start = parseInt(localStorage.getItem(DND_START_KEY) || "23", 10);
+  const end = parseInt(localStorage.getItem(DND_END_KEY) || "7", 10);
+  return { start, end };
+};
+
+export const setDndHours = (start: number, end: number): void => {
+  localStorage.setItem(DND_START_KEY, start.toString());
+  localStorage.setItem(DND_END_KEY, end.toString());
+};
+
+export const isInDndPeriod = (): boolean => {
+  if (!isDndEnabled()) return false;
+  
+  const { start, end } = getDndHours();
+  const now = new Date();
+  const currentHour = now.getHours();
+  
+  // Handle overnight periods (e.g., 23:00 - 07:00)
+  if (start > end) {
+    return currentHour >= start || currentHour < end;
+  }
+  // Handle same-day periods (e.g., 14:00 - 18:00)
+  return currentHour >= start && currentHour < end;
 };
 
 const getAudioContext = () => {
@@ -42,6 +79,7 @@ const VIBRATION_PATTERNS = {
 // Vibrate device if supported
 export const vibrateDevice = (type: "spark" | "message" | "quedada" | "default" = "default") => {
   if (!isVibrationEnabled()) return;
+  if (isInDndPeriod()) return;
   
   if ("vibrate" in navigator) {
     try {
@@ -54,8 +92,9 @@ export const vibrateDevice = (type: "spark" | "message" | "quedada" | "default" 
 
 // Play a simple "ding" notification sound
 export const playNotificationSound = (type: "spark" | "message" | "quedada" | "default" = "default") => {
-  // Check if sound is muted
+  // Check if sound is muted or in DND period
   if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
   try {
     const ctx = getAudioContext();
     
