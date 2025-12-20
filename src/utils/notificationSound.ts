@@ -3,6 +3,16 @@
 
 let audioContext: AudioContext | null = null;
 
+const SOUND_MUTED_KEY = "kiki_sound_muted";
+
+export const isSoundMuted = (): boolean => {
+  return localStorage.getItem(SOUND_MUTED_KEY) === "true";
+};
+
+export const setSoundMuted = (muted: boolean): void => {
+  localStorage.setItem(SOUND_MUTED_KEY, muted ? "true" : "false");
+};
+
 const getAudioContext = () => {
   if (!audioContext) {
     audioContext = new AudioContext();
@@ -12,6 +22,8 @@ const getAudioContext = () => {
 
 // Play a simple "ding" notification sound
 export const playNotificationSound = (type: "spark" | "message" | "quedada" | "default" = "default") => {
+  // Check if sound is muted
+  if (isSoundMuted()) return;
   try {
     const ctx = getAudioContext();
     
