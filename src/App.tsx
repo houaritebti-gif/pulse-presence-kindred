@@ -15,6 +15,7 @@ import Sparks from "./pages/Sparks";
 import SparkChat from "./pages/SparkChat";
 import Quedadas from "./pages/Quedadas";
 import QuedadaChat from "./pages/QuedadaChat";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -83,6 +84,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <QuedadaChat />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <Notifications />
                   </ProtectedRoute>
                 }
               />
