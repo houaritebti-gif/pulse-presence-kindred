@@ -270,6 +270,38 @@ export const useDeleteQuedada = () => {
   });
 };
 
+// Update a quedada
+export const useUpdateQuedada = () => {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
+  return useMutation({
+    mutationFn: async ({
+      quedadaId,
+      updates,
+    }: {
+      quedadaId: string;
+      updates: {
+        title?: string;
+        description?: string | null;
+        location_hint?: string | null;
+        event_date?: string;
+        max_attendees?: number | null;
+      };
+    }) => {
+      const { error } = await supabase
+        .from("quedadas")
+        .update(updates)
+        .eq("id", quedadaId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["quedadas", profile?.city] });
+    },
+  });
+};
+
 // Quedada messages types and hooks
 export interface QuedadaMessage {
   id: string;
