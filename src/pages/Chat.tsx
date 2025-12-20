@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
+import { useGhostMessageLimit, useHasSparkWith } from "@/hooks/useSparks";
 import { toast } from "sonner";
 
 // Ghost message options
@@ -24,6 +25,9 @@ const Chat = () => {
   const navigate = useNavigate();
   const { profileId } = useParams<{ profileId: string }>();
   const { data: myProfile } = useProfile();
+  const { data: limitData } = useGhostMessageLimit();
+  const hasSpark = useHasSparkWith(profileId);
+  
   const [targetProfile, setTargetProfile] = useState<TargetProfile | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -65,8 +69,21 @@ const Chat = () => {
     loadData();
   }, [profileId, myProfile]);
 
+  // If there's already a spark, redirect to the spark chat
+  useEffect(() => {
+    if (hasSpark && profileId) {
+      navigate("/sparks");
+    }
+  }, [hasSpark, profileId, navigate]);
+
   const handleSend = async () => {
     if (!selectedMessage || !myProfile || !profileId) return;
+
+    // Check daily limit
+    if (!limitData?.canSend) {
+      toast.error("Has alcanzado el límite de 5 mensajes hoy");
+      return;
+    }
 
     setSending(true);
     try {
@@ -172,17 +189,25 @@ const Chat = () => {
               </p>
             </div>
 
+            {/* Daily limit indicator */}
+            <div className="mb-6 animate-fade-up animate-delay-100">
+              <span className="font-body text-xs text-muted-foreground/60">
+                {limitData?.remaining || 0} mensajes restantes hoy
+              </span>
+            </div>
+
             {/* Message options */}
             <div className="w-full space-y-3 mb-10 animate-fade-up animate-delay-200">
               {GHOST_MESSAGES.map((msg) => (
                 <button
                   key={msg}
                   onClick={() => setSelectedMessage(msg)}
+                  disabled={!limitData?.canSend}
                   className={`w-full p-4 rounded-xl font-body text-left transition-all ${
                     selectedMessage === msg
                       ? "bg-card text-card-foreground scale-[1.02]"
                       : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
-                  }`}
+                  } ${!limitData?.canSend ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   "{msg}"
                 </button>
@@ -194,7 +219,7 @@ const Chat = () => {
               variant="kiki" 
               size="lg"
               onClick={handleSend}
-              disabled={!selectedMessage || sending}
+              disabled={!selectedMessage || sending || !limitData?.canSend}
               className="w-full animate-fade-up animate-delay-300"
             >
               <Send className="w-4 h-4 mr-2" />
@@ -203,7 +228,7 @@ const Chat = () => {
 
             {/* Note */}
             <p className="font-body text-xs text-muted-foreground/60 text-center mt-6 animate-fade-up animate-delay-400">
-              Un mensaje al día. Sin notificación. Sin presión.
+              Un mensaje por persona. Máx 5 al día. Sin notificación.
             </p>
           </>
         ) : (
@@ -218,7 +243,7 @@ const Chat = () => {
             <p className="font-body text-muted-foreground mb-8 max-w-xs">
               Tu mensaje fantasma ha volado.
               <br />
-              Si hay chispa, lo sabrás.
+              Si hay chispa, la verás en <Flame className="w-4 h-4 inline text-primary" />
             </p>
             <Button 
               variant="kiki-soft" 

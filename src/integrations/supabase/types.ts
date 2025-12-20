@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          chat_id: string
+          content: string
+          created_at: string | null
+          id: string
+          sender_profile_id: string
+        }
+        Insert: {
+          chat_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          sender_profile_id: string
+        }
+        Update: {
+          chat_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          sender_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "spark_chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_sender_profile_id_fkey"
+            columns: ["sender_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ghost_messages: {
         Row: {
           content: string
@@ -149,6 +188,48 @@ export type Database = {
           vibe?: string | null
         }
         Relationships: []
+      }
+      spark_chats: {
+        Row: {
+          created_at: string | null
+          extinguished_by_a: boolean | null
+          extinguished_by_b: boolean | null
+          id: string
+          profile_a_id: string
+          profile_b_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          extinguished_by_a?: boolean | null
+          extinguished_by_b?: boolean | null
+          id?: string
+          profile_a_id: string
+          profile_b_id: string
+        }
+        Update: {
+          created_at?: string | null
+          extinguished_by_a?: boolean | null
+          extinguished_by_b?: boolean | null
+          id?: string
+          profile_a_id?: string
+          profile_b_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_chats_profile_a_id_fkey"
+            columns: ["profile_a_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spark_chats_profile_b_id_fkey"
+            columns: ["profile_b_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sparks: {
         Row: {

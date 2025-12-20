@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useProfile } from "@/hooks/useProfile";
-import { Button } from "@/components/ui/button";
+import { useSparkCount } from "@/hooks/useSparks";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const Presence = () => {
   const { data: presenceList, isLoading } = usePresenceList();
   const { data: myPresence } = useMyPresence();
   const setPresence = useSetPresence();
+  const sparkCount = useSparkCount();
 
   // Enable heartbeat
   usePresenceHeartbeat();
@@ -44,18 +45,53 @@ const Presence = () => {
           <span>Perfil</span>
         </button>
         <span className="font-display text-xl font-bold text-foreground">KIKI</span>
-        <button
-          onClick={toggleVisibility}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          title={myPresence?.visible_to_others ? "Modo visible" : "Modo invisible"}
-        >
-          {myPresence?.visible_to_others ? (
-            <Eye className="w-4 h-4" />
-          ) : (
-            <EyeOff className="w-4 h-4" />
-          )}
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Sparks button with badge */}
+          <button
+            onClick={() => navigate("/sparks")}
+            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            title="Tus chispas"
+          >
+            <Flame className={`w-5 h-5 ${sparkCount > 0 ? "text-primary" : ""}`} />
+            {sparkCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
+                {sparkCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={toggleVisibility}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            title={myPresence?.visible_to_others ? "Modo visible" : "Modo invisible"}
+          >
+            {myPresence?.visible_to_others ? (
+              <Eye className="w-4 h-4" />
+            ) : (
+              <EyeOff className="w-4 h-4" />
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* Spark notification banner */}
+      {sparkCount > 0 && (
+        <button
+          onClick={() => navigate("/sparks")}
+          className="mb-6 bg-card rounded-2xl p-4 flex items-center gap-3 animate-fade-up hover:scale-[1.02] transition-all"
+        >
+          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+            <Flame className="w-5 h-5 text-primary animate-pulse-soft" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="font-display font-semibold text-card-foreground text-sm">
+              {sparkCount === 1 ? "Tienes una chispa" : `Tienes ${sparkCount} chispas`}
+            </p>
+            <p className="font-body text-xs text-card-foreground/60">
+              Algo pasó. Toca para descubrir.
+            </p>
+          </div>
+        </button>
+      )}
 
       {/* Main content */}
       <div className="flex-1 max-w-lg mx-auto w-full">

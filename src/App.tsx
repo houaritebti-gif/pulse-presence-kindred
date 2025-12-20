@@ -10,6 +10,8 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Presence from "./pages/Presence";
 import Chat from "./pages/Chat";
+import Sparks from "./pages/Sparks";
+import SparkChat from "./pages/SparkChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +47,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Chat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sparks"
+              element={
+                <ProtectedRoute>
+                  <Sparks />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/spark/:chatId"
+              element={
+                <ProtectedRoute>
+                  <SparkChat />
                 </ProtectedRoute>
               }
             />
