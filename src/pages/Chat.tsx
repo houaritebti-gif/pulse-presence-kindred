@@ -1,7 +1,10 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Send } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/useProfile";
+import { toast } from "sonner";
 
 // Ghost message options
 const GHOST_MESSAGES = [
@@ -11,16 +14,102 @@ const GHOST_MESSAGES = [
   "Ojalá coincidamos.",
 ];
 
+interface TargetProfile {
+  id: string;
+  name: string | null;
+  vibe: string | null;
+}
+
 const Chat = () => {
   const navigate = useNavigate();
+  const { profileId } = useParams<{ profileId: string }>();
+  const { data: myProfile } = useProfile();
+  const [targetProfile, setTargetProfile] = useState<TargetProfile | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [alreadySent, setAlreadySent] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
 
-  const handleSend = () => {
-    if (selectedMessage) {
-      setSent(true);
+  // Load target profile and check if already sent
+  useEffect(() => {
+    const loadData = async () => {
+      if (!profileId || !myProfile) return;
+
+      try {
+        // Get target profile
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id, name, vibe")
+          .eq("id", profileId)
+          .maybeSingle();
+
+        setTargetProfile(profile);
+
+        // Check if already sent message
+        const { data: existingMessage } = await supabase
+          .from("ghost_messages")
+          .select("id")
+          .eq("from_profile_id", myProfile.id)
+          .eq("to_profile_id", profileId)
+          .maybeSingle();
+
+        setAlreadySent(!!existingMessage);
+      } catch (error) {
+        console.error("Error loading chat:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [profileId, myProfile]);
+
+  const handleSend = async () => {
+    if (!selectedMessage || !myProfile || !profileId) return;
+
+    setSending(true);
+    try {
+      const { error } = await supabase.from("ghost_messages").insert({
+        from_profile_id: myProfile.id,
+        to_profile_id: profileId,
+        content: selectedMessage,
+      });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("Ya enviaste un mensaje a esta persona");
+        } else {
+          throw error;
+        }
+      } else {
+        setSent(true);
+      }
+    } catch (error: any) {
+      toast.error("Error al enviar: " + error.message);
+    } finally {
+      setSending(false);
     }
   };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
+  }
+
+  if (!targetProfile) {
+    return (
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+        <p className="font-body text-muted-foreground mb-4">Perfil no encontrado</p>
+        <Button variant="kiki-soft" onClick={() => navigate("/presence")}>
+          Volver a presencia
+        </Button>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8">
@@ -38,16 +127,36 @@ const Chat = () => {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
-        {!sent ? (
+        {alreadySent ? (
+          /* Already sent message */
+          <div className="text-center animate-fade-up">
+            <div className="w-20 h-20 rounded-full bg-card mx-auto mb-4" />
+            <h2 className="font-display text-2xl font-bold text-foreground mb-3">
+              {targetProfile.name || "Anónima"}
+            </h2>
+            <p className="font-body text-muted-foreground mb-8 max-w-xs">
+              Ya le enviaste un mensaje fantasma.
+              <br />
+              Si hay chispa, lo sabrás.
+            </p>
+            <Button 
+              variant="kiki-soft" 
+              size="lg"
+              onClick={() => navigate("/presence")}
+            >
+              Volver a presencia
+            </Button>
+          </div>
+        ) : !sent ? (
           <>
             {/* Profile preview */}
             <div className="text-center mb-10 animate-fade-up">
               <div className="w-20 h-20 rounded-full bg-card mx-auto mb-4" />
               <h2 className="font-display text-2xl font-bold text-foreground mb-1">
-                Luna
+                {targetProfile.name || "Anónima"}
               </h2>
               <p className="font-body text-muted-foreground text-sm">
-                Vibra misteriosa
+                Vibra {targetProfile.vibe?.toLowerCase() || "misteriosa"}
               </p>
             </div>
 
@@ -85,11 +194,11 @@ const Chat = () => {
               variant="kiki" 
               size="lg"
               onClick={handleSend}
-              disabled={!selectedMessage}
+              disabled={!selectedMessage || sending}
               className="w-full animate-fade-up animate-delay-300"
             >
               <Send className="w-4 h-4 mr-2" />
-              Enviar mensaje fantasma
+              {sending ? "Enviando..." : "Enviar mensaje fantasma"}
             </Button>
 
             {/* Note */}

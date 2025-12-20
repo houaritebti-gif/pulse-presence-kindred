@@ -1,24 +1,75 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/profile");
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Demo: just navigate to profile
-    navigate("/profile");
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast.success("¡Bienvenida de vuelta!");
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+          },
+        });
+        if (error) throw error;
+        toast.success("¡Cuenta creada! Ya puedes entrar.");
+      }
+      navigate("/profile");
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      if (error.message.includes("Invalid login credentials")) {
+        toast.error("Email o contraseña incorrectos");
+      } else if (error.message.includes("already registered")) {
+        toast.error("Este email ya está registrado");
+      } else {
+        toast.error(error.message || "Error de autenticación");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleGoogleAuth = () => {
-    // Demo: just navigate to profile
-    navigate("/profile");
+  const handleGoogleAuth = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/profile`,
+      },
+    });
+    if (error) {
+      toast.error("Error con Google: " + error.message);
+    }
   };
 
   return (
@@ -51,6 +102,7 @@ const Auth = () => {
               placeholder="tu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
               className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
             />
             <Input
@@ -58,6 +110,8 @@ const Auth = () => {
               placeholder="contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
               className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
             />
           </div>
@@ -67,8 +121,9 @@ const Auth = () => {
             variant="kiki" 
             size="lg" 
             className="w-full mt-6"
+            disabled={loading}
           >
-            {isLogin ? "Entrar" : "Crear cuenta"}
+            {loading ? "..." : isLogin ? "Entrar" : "Crear cuenta"}
           </Button>
         </form>
 
