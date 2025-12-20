@@ -4,6 +4,7 @@ import { useProfile } from "./useProfile";
 import { toast } from "sonner";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createNotification } from "./useNotificationCenter";
+import { playNotificationSound } from "@/utils/notificationSound";
 
 // Combined hook that handles all notifications with a single useProfile call
 export const useAppNotifications = () => {
@@ -52,6 +53,7 @@ export const useAppNotifications = () => {
             });
             
             if (location.pathname !== "/sparks") {
+              playNotificationSound("spark");
               toast("✨ ¡Nueva chispa!", {
                 description: "Alguien conectó contigo",
                 action: {
@@ -108,6 +110,7 @@ export const useAppNotifications = () => {
             link: currentChatPath,
           });
           
+          playNotificationSound("message");
           toast("💬 Nuevo mensaje", {
             description,
             action: {
@@ -174,6 +177,7 @@ export const useAppNotifications = () => {
           });
           
           if (location.pathname !== "/quedadas") {
+            playNotificationSound("quedada");
             toast("📅 Nueva persona en tu quedada", {
               description,
               action: {
@@ -258,6 +262,7 @@ export const useAppNotifications = () => {
             link: currentChatPath,
           });
           
+          playNotificationSound("quedada");
           toast(`💬 ${quedada.title}`, {
             description,
             action: {
