@@ -4,13 +4,18 @@ import { useProfile } from "./useProfile";
 import { toast } from "sonner";
 import { useLocation, useNavigate } from "react-router-dom";
 
-export const useSparkNotifications = () => {
+// Combined hook that handles all notifications with a single useProfile call
+export const useAppNotifications = () => {
   const { data: profile } = useProfile();
   const location = useLocation();
   const navigate = useNavigate();
+  
   const previousChatsRef = useRef<Set<string>>(new Set());
+  const previousMessagesRef = useRef<Set<string>>(new Set());
+  const previousAttendeesRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
 
+  // Spark notifications
   useEffect(() => {
     if (!profile?.id) return;
 
@@ -20,7 +25,6 @@ export const useSparkNotifications = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "spark_chats" },
         (payload) => {
-          // Skip initial load
           if (isInitialLoadRef.current) return;
 
           const newChat = payload.new as { 
@@ -29,7 +33,6 @@ export const useSparkNotifications = () => {
             profile_b_id: string;
           };
           
-          // Check if this chat involves the current user
           const isInvolved = 
             newChat.profile_a_id === profile.id || 
             newChat.profile_b_id === profile.id;
@@ -37,7 +40,6 @@ export const useSparkNotifications = () => {
           if (isInvolved && !previousChatsRef.current.has(newChat.id)) {
             previousChatsRef.current.add(newChat.id);
             
-            // Don't show notification if already on sparks page
             if (location.pathname !== "/sparks") {
               toast("✨ ¡Nueva chispa!", {
                 description: "Alguien conectó contigo",
@@ -52,25 +54,12 @@ export const useSparkNotifications = () => {
       )
       .subscribe();
 
-    // Mark initial load as complete after a short delay
-    const timeout = setTimeout(() => {
-      isInitialLoadRef.current = false;
-    }, 2000);
-
     return () => {
-      clearTimeout(timeout);
       supabase.removeChannel(channel);
     };
   }, [profile?.id, location.pathname, navigate]);
-};
 
-export const useMessageNotifications = () => {
-  const { data: profile } = useProfile();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const previousMessagesRef = useRef<Set<string>>(new Set());
-  const isInitialLoadRef = useRef(true);
-
+  // Message notifications
   useEffect(() => {
     if (!profile?.id) return;
 
@@ -80,7 +69,6 @@ export const useMessageNotifications = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_messages" },
         (payload) => {
-          // Skip initial load
           if (isInitialLoadRef.current) return;
 
           const newMessage = payload.new as { 
@@ -90,15 +78,11 @@ export const useMessageNotifications = () => {
             content: string;
           };
           
-          // Don't notify for own messages
           if (newMessage.sender_profile_id === profile.id) return;
-          
-          // Don't notify if we've already seen this message
           if (previousMessagesRef.current.has(newMessage.id)) return;
           
           previousMessagesRef.current.add(newMessage.id);
           
-          // Don't show if already in that specific chat
           const currentChatPath = `/spark/${newMessage.chat_id}`;
           if (location.pathname === currentChatPath) return;
           
@@ -113,25 +97,12 @@ export const useMessageNotifications = () => {
       )
       .subscribe();
 
-    // Mark initial load as complete after a short delay
-    const timeout = setTimeout(() => {
-      isInitialLoadRef.current = false;
-    }, 2000);
-
     return () => {
-      clearTimeout(timeout);
       supabase.removeChannel(channel);
     };
   }, [profile?.id, location.pathname, navigate]);
-};
 
-export const useQuedadaNotifications = () => {
-  const { data: profile } = useProfile();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const previousAttendeesRef = useRef<Set<string>>(new Set());
-  const isInitialLoadRef = useRef(true);
-
+  // Quedada attendee notifications
   useEffect(() => {
     if (!profile?.id) return;
 
@@ -141,7 +112,6 @@ export const useQuedadaNotifications = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "quedada_attendees" },
         async (payload) => {
-          // Skip initial load
           if (isInitialLoadRef.current) return;
 
           const newAttendee = payload.new as { 
@@ -150,15 +120,11 @@ export const useQuedadaNotifications = () => {
             profile_id: string;
           };
           
-          // Don't notify for own joins
           if (newAttendee.profile_id === profile.id) return;
-          
-          // Don't notify if we've already seen this
           if (previousAttendeesRef.current.has(newAttendee.id)) return;
           
           previousAttendeesRef.current.add(newAttendee.id);
           
-          // Check if this quedada belongs to the current user
           const { data: quedada } = await supabase
             .from("quedadas")
             .select("id, title, creator_profile_id")
@@ -167,7 +133,6 @@ export const useQuedadaNotifications = () => {
           
           if (!quedada || quedada.creator_profile_id !== profile.id) return;
           
-          // Get the attendee's name
           const { data: attendeeProfile } = await supabase
             .from("profiles")
             .select("name")
@@ -176,7 +141,6 @@ export const useQuedadaNotifications = () => {
           
           const attendeeName = attendeeProfile?.name || "Alguien";
           
-          // Don't show if already on quedadas page
           if (location.pathname !== "/quedadas") {
             toast("📅 Nueva persona en tu quedada", {
               description: `${attendeeName} se unió a "${quedada.title}"`,
@@ -190,21 +154,17 @@ export const useQuedadaNotifications = () => {
       )
       .subscribe();
 
-    // Mark initial load as complete after a short delay
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, location.pathname, navigate]);
+
+  // Mark initial load as complete
+  useEffect(() => {
     const timeout = setTimeout(() => {
       isInitialLoadRef.current = false;
     }, 2000);
 
-    return () => {
-      clearTimeout(timeout);
-      supabase.removeChannel(channel);
-    };
-  }, [profile?.id, location.pathname, navigate]);
-};
-
-// Combined hook for easy use in App component
-export const useAppNotifications = () => {
-  useSparkNotifications();
-  useMessageNotifications();
-  useQuedadaNotifications();
+    return () => clearTimeout(timeout);
+  }, []);
 };
