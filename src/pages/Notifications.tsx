@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users } from "lucide-react";
-import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotificationCenter";
+import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification } from "@/hooks/useNotificationCenter";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -20,6 +20,7 @@ const Notifications = () => {
   const { data: notifications, isLoading } = useNotifications();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
+  const deleteNotification = useDeleteNotification();
   const [filter, setFilter] = useState<FilterType>("all");
 
   const unreadCount = notifications?.filter(n => !n.read_at).length || 0;
@@ -56,6 +57,11 @@ const Notifications = () => {
     if (notification.link) {
       navigate(notification.link);
     }
+  };
+
+  const handleDeleteNotification = (e: React.MouseEvent, notificationId: string) => {
+    e.stopPropagation();
+    deleteNotification.mutate(notificationId);
   };
 
   return (
@@ -185,9 +191,13 @@ const Notifications = () => {
                       })}
                     </p>
                   </div>
-                  {notification.read_at && (
-                    <Check className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
-                  )}
+                  <button
+                    onClick={(e) => handleDeleteNotification(e, notification.id)}
+                    className="p-2 rounded-full hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive transition-colors flex-shrink-0"
+                    title="Eliminar"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </button>
             ))}
