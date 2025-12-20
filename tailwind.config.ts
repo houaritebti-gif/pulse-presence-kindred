@@ -87,6 +87,17 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.6" },
         },
+        "badge-ping": {
+          "0%": { transform: "scale(1)", opacity: "1" },
+          "50%": { transform: "scale(1.4)", opacity: "0.7" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "badge-bounce": {
+          "0%, 100%": { transform: "scale(1)" },
+          "25%": { transform: "scale(1.3)" },
+          "50%": { transform: "scale(0.9)" },
+          "75%": { transform: "scale(1.15)" },
+        },
         "float": {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-10px)" },
@@ -104,6 +115,8 @@ export default {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-soft": "pulse-soft 3s ease-in-out infinite",
+        "badge-ping": "badge-ping 0.6s ease-out",
+        "badge-bounce": "badge-bounce 0.5s ease-out",
         "float": "float 6s ease-in-out infinite",
         "fade-up": "fade-up 0.6s ease-out forwards",
         "glow": "glow 2s ease-in-out infinite",
