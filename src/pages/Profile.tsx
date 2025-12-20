@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useUpdateProfile, useUpdateTribes } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
 import { requestNotificationPermission, getNotificationPermission } from "@/utils/browserNotifications";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 const VIBES = ["Tranqui", "Intensa", "Curiosa", "Misteriosa", "Libre"];
 const TRIBES = ["Queer", "Artista", "Nómada", "Foodie", "Noctámbula", "Indie"];
@@ -35,6 +36,13 @@ const Profile = () => {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(() => {
     return getNotificationPermission();
   });
+  const { 
+    isSupported: pushSupported, 
+    isSubscribed: pushSubscribed, 
+    isLoading: pushLoading,
+    subscribe: subscribePush,
+    unsubscribe: unsubscribePush 
+  } = usePushNotifications();
 
   const handleSoundToggle = (muted: boolean) => {
     setSoundMutedState(muted);
@@ -48,6 +56,24 @@ const Profile = () => {
       toast.success("Notificaciones activadas");
     } else {
       toast.error("Permisos de notificación denegados");
+    }
+  };
+
+  const handlePushToggle = async () => {
+    if (pushSubscribed) {
+      const success = await unsubscribePush();
+      if (success) {
+        toast.success("Push notifications desactivadas");
+      } else {
+        toast.error("Error al desactivar push notifications");
+      }
+    } else {
+      const success = await subscribePush();
+      if (success) {
+        toast.success("Push notifications activadas - recibirás notificaciones aunque cierres la app");
+      } else {
+        toast.error("Error al activar push notifications");
+      }
     }
   };
 
@@ -314,6 +340,28 @@ const Profile = () => {
                 {notificationPermission === "granted" && (
                   <span className="text-xs text-primary font-body">Activas</span>
                 )}
+              </div>
+            )}
+            
+            {/* Push Notifications - PWA */}
+            {pushSupported && (
+              <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Smartphone className={`w-5 h-5 ${pushSubscribed ? "text-foreground" : "text-muted-foreground"}`} />
+                  <div>
+                    <span className="font-body text-sm text-foreground block">
+                      {pushSubscribed ? "Push activado" : "Push notifications"}
+                    </span>
+                    <span className="font-body text-xs text-muted-foreground">
+                      Recibe alertas con la app cerrada
+                    </span>
+                  </div>
+                </div>
+                <Switch
+                  checked={pushSubscribed}
+                  onCheckedChange={handlePushToggle}
+                  disabled={pushLoading}
+                />
               </div>
             )}
           </div>
