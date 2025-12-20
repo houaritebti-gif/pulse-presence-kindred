@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { createNotification } from "./useNotificationCenter";
 import { playNotificationSound } from "@/utils/notificationSound";
 import { showBrowserNotification, requestNotificationPermission } from "@/utils/browserNotifications";
+import { sendPushNotification } from "@/utils/pushNotifications";
 
 // Combined hook that handles all notifications with a single useProfile call
 export const useAppNotifications = () => {
@@ -43,6 +44,20 @@ export const useAppNotifications = () => {
           
           if (isInvolved && !previousChatsRef.current.has(newChat.id)) {
             previousChatsRef.current.add(newChat.id);
+            
+            // Determine the other profile ID for push notification
+            const otherProfileId = newChat.profile_a_id === profile.id 
+              ? newChat.profile_b_id 
+              : newChat.profile_a_id;
+            
+            // Send push to the other user (they might have the app closed)
+            sendPushNotification({
+              profileId: otherProfileId,
+              title: "✨ ¡Nueva chispa!",
+              body: "Alguien conectó contigo",
+              url: "/sparks",
+              tag: `spark-${newChat.id}`,
+            });
             
             // Save to notification center
             createNotification({

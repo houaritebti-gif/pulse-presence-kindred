@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
+import { sendPushNotification } from "@/utils/pushNotifications";
 
 export interface SparkChat {
   id: string;
@@ -161,7 +162,7 @@ export const useSendMessage = () => {
   const { data: profile } = useProfile();
 
   return useMutation({
-    mutationFn: async ({ chatId, content }: { chatId: string; content: string }) => {
+    mutationFn: async ({ chatId, content, recipientProfileId }: { chatId: string; content: string; recipientProfileId?: string }) => {
       if (!profile) throw new Error("No profile");
 
       const { data, error } = await supabase
@@ -175,6 +176,18 @@ export const useSendMessage = () => {
         .single();
 
       if (error) throw error;
+      
+      // Send push notification to recipient
+      if (recipientProfileId && recipientProfileId !== profile.id) {
+        sendPushNotification({
+          profileId: recipientProfileId,
+          title: `💬 ${profile.name || "Alguien"} te ha enviado un mensaje`,
+          body: content.length > 50 ? content.substring(0, 50) + "..." : content,
+          url: `/spark/${chatId}`,
+          tag: `message-${chatId}`,
+        });
+      }
+      
       return data;
     },
     onSuccess: (_, { chatId }) => {
