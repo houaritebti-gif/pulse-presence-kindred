@@ -134,6 +134,29 @@ export const useDeleteNotification = () => {
   });
 };
 
+// Delete all read notifications
+export const useDeleteReadNotifications = () => {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!profile) throw new Error("No profile");
+
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("profile_id", profile.id)
+        .not("read_at", "is", null);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications", profile?.id] });
+    },
+  });
+};
+
 // Create a notification (used internally)
 export const createNotification = async (notification: {
   profile_id: string;
