@@ -88,7 +88,7 @@ const Notifications = () => {
 
   return (
     <>
-      <main className="min-h-screen bg-background flex flex-col px-6 py-8 relative overflow-hidden">
+      <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24 relative overflow-hidden">
         {/* Ambient glow */}
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
         
