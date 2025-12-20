@@ -13,6 +13,7 @@ export const useAppNotifications = () => {
   const previousChatsRef = useRef<Set<string>>(new Set());
   const previousMessagesRef = useRef<Set<string>>(new Set());
   const previousAttendeesRef = useRef<Set<string>>(new Set());
+  const previousQuedadaMessagesRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
 
   // Spark notifications
@@ -150,6 +151,79 @@ export const useAppNotifications = () => {
               },
             });
           }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, location.pathname, navigate]);
+
+  // Quedada message notifications
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const channel = supabase
+      .channel("quedada-message-notifications")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "quedada_messages" },
+        async (payload) => {
+          if (isInitialLoadRef.current) return;
+
+          const newMessage = payload.new as { 
+            id: string; 
+            quedada_id: string;
+            sender_profile_id: string;
+            content: string;
+          };
+          
+          if (newMessage.sender_profile_id === profile.id) return;
+          if (previousQuedadaMessagesRef.current.has(newMessage.id)) return;
+          
+          previousQuedadaMessagesRef.current.add(newMessage.id);
+          
+          // Check if user is creator or attendee of this quedada
+          const { data: quedada } = await supabase
+            .from("quedadas")
+            .select("id, title, creator_profile_id")
+            .eq("id", newMessage.quedada_id)
+            .maybeSingle();
+          
+          if (!quedada) return;
+          
+          const isCreator = quedada.creator_profile_id === profile.id;
+          
+          const { data: attendance } = await supabase
+            .from("quedada_attendees")
+            .select("id")
+            .eq("quedada_id", newMessage.quedada_id)
+            .eq("profile_id", profile.id)
+            .maybeSingle();
+          
+          const isAttendee = !!attendance;
+          
+          if (!isCreator && !isAttendee) return;
+          
+          const currentChatPath = `/quedada/${newMessage.quedada_id}`;
+          if (location.pathname === currentChatPath) return;
+          
+          const { data: senderProfile } = await supabase
+            .from("profiles")
+            .select("name")
+            .eq("id", newMessage.sender_profile_id)
+            .maybeSingle();
+          
+          const senderName = senderProfile?.name || "Alguien";
+          
+          toast(`💬 ${quedada.title}`, {
+            description: `${senderName}: ${newMessage.content.slice(0, 40)}${newMessage.content.length > 40 ? "..." : ""}`,
+            action: {
+              label: "Abrir",
+              onClick: () => navigate(currentChatPath),
+            },
+          });
         }
       )
       .subscribe();
