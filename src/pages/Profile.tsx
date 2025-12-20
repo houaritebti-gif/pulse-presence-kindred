@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProfile, useProfileTribes, useUpdateProfile, useUpdateTribes } from "@/hooks/useProfile";
+import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
 import { requestNotificationPermission, getNotificationPermission } from "@/utils/browserNotifications";
@@ -13,17 +13,17 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { sendPushNotification } from "@/utils/pushNotifications";
 import { isVibrationEnabled, setVibrationEnabled, isDndEnabled, setDndEnabled, getDndHours, setDndHours } from "@/utils/notificationSound";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const VIBES = ["Tranqui", "Intensa", "Curiosa", "Misteriosa", "Libre"];
-const TRIBES = ["Queer", "Artista", "Nómada", "Foodie", "Noctámbula", "Indie"];
+import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: tribes } = useProfileTribes(profile?.id);
+  const { data: musicStyles } = useProfileMusicStyles(profile?.id);
   const updateProfile = useUpdateProfile();
   const updateTribes = useUpdateTribes();
+  const updateMusicStyles = useUpdateMusicStyles();
   const { uploadAvatar, isUploading } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -31,8 +31,18 @@ const Profile = () => {
   const [city, setCity] = useState("");
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
+  const [selectedMusicStyles, setSelectedMusicStyles] = useState<string[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  
+  // Optional details
+  const [hasTattoos, setHasTattoos] = useState<boolean | null>(null);
+  const [hasPiercings, setHasPiercings] = useState<boolean | null>(null);
+  const [alternativeAesthetic, setAlternativeAesthetic] = useState<boolean | null>(null);
+  
+  // Music section collapsed state
+  const [musicExpanded, setMusicExpanded] = useState(false);
+  
   const [soundMuted, setSoundMutedState] = useState(() => {
     return localStorage.getItem("kiki_sound_muted") === "true";
   });
@@ -123,6 +133,9 @@ const Profile = () => {
       setCity(profile.city || "Madrid");
       setSelectedVibe(profile.vibe);
       setAvatarUrl(profile.avatar_url);
+      setHasTattoos(profile.has_tattoos);
+      setHasPiercings(profile.has_piercings);
+      setAlternativeAesthetic(profile.alternative_aesthetic);
     }
   }, [profile]);
 
@@ -152,6 +165,12 @@ const Profile = () => {
     }
   }, [tribes]);
 
+  useEffect(() => {
+    if (musicStyles) {
+      setSelectedMusicStyles(musicStyles.map(m => m.style));
+    }
+  }, [musicStyles]);
+
   const toggleTribe = (tribe: string) => {
     setHasChanges(true);
     setSelectedTribes(prev => 
@@ -159,6 +178,45 @@ const Profile = () => {
         ? prev.filter(t => t !== tribe)
         : [...prev, tribe]
     );
+  };
+
+  const toggleMusicStyle = (style: string) => {
+    setHasChanges(true);
+    setSelectedMusicStyles(prev => {
+      if (prev.includes(style)) {
+        return prev.filter(s => s !== style);
+      }
+      // Max 5 styles
+      if (prev.length >= 5) {
+        toast.error("Máximo 5 estilos de música");
+        return prev;
+      }
+      return [...prev, style];
+    });
+  };
+
+  const toggleOptionalDetail = (key: string) => {
+    setHasChanges(true);
+    switch (key) {
+      case "has_tattoos":
+        setHasTattoos(prev => prev === true ? null : true);
+        break;
+      case "has_piercings":
+        setHasPiercings(prev => prev === true ? null : true);
+        break;
+      case "alternative_aesthetic":
+        setAlternativeAesthetic(prev => prev === true ? null : true);
+        break;
+    }
+  };
+
+  const getOptionalDetailValue = (key: string): boolean | null => {
+    switch (key) {
+      case "has_tattoos": return hasTattoos;
+      case "has_piercings": return hasPiercings;
+      case "alternative_aesthetic": return alternativeAesthetic;
+      default: return null;
+    }
   };
 
   const handleContinue = async () => {
@@ -169,11 +227,19 @@ const Profile = () => {
         name: name || null,
         city: city || "Madrid",
         vibe: selectedVibe,
+        has_tattoos: hasTattoos,
+        has_piercings: hasPiercings,
+        alternative_aesthetic: alternativeAesthetic,
       });
 
       await updateTribes.mutateAsync({
         profileId: profile.id,
         tribes: selectedTribes,
+      });
+
+      await updateMusicStyles.mutateAsync({
+        profileId: profile.id,
+        styles: selectedMusicStyles,
       });
 
       toast.success("Perfil guardado");
@@ -330,8 +396,96 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Music Styles */}
+        <div className="mb-10 animate-fade-up animate-delay-500">
+          <button
+            onClick={() => setMusicExpanded(!musicExpanded)}
+            className="w-full flex items-center justify-between mb-4"
+          >
+            <div className="flex items-center gap-2">
+              <Music className="w-5 h-5 text-primary" />
+              <h2 className="font-display text-lg font-semibold text-foreground">
+                Tu música
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                ({selectedMusicStyles.length}/5)
+              </span>
+            </div>
+            {musicExpanded ? (
+              <ChevronUp className="w-5 h-5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+          
+          {selectedMusicStyles.length > 0 && !musicExpanded && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {selectedMusicStyles.map(style => (
+                <span
+                  key={style}
+                  className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-body"
+                >
+                  {style}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {musicExpanded && (
+            <div className="space-y-4">
+              {MUSIC_CATEGORIES.map(category => (
+                <div key={category.name}>
+                  <h3 className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-2">
+                    {category.name}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {category.styles.map(style => (
+                      <button
+                        key={style}
+                        onClick={() => toggleMusicStyle(style)}
+                        className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                          selectedMusicStyles.includes(style)
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                        }`}
+                      >
+                        {style}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Optional Details */}
+        <div className="mb-10 animate-fade-up animate-delay-500">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <h2 className="font-display text-lg font-semibold text-foreground">
+              Detalles (opcional)
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {OPTIONAL_DETAILS.map(detail => (
+              <button
+                key={detail.key}
+                onClick={() => toggleOptionalDetail(detail.key)}
+                className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
+                  getOptionalDetailValue(detail.key) === true
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                }`}
+              >
+                {detail.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Sound Settings */}
-        <div className="mb-6 animate-fade-up animate-delay-500">
+        <div className="mb-6 animate-fade-up animate-delay-600">
           <h2 className="font-display text-lg font-semibold text-foreground mb-4">
             Sonidos y notificaciones
           </h2>
@@ -508,15 +662,15 @@ const Profile = () => {
         </div>
 
         {/* Continue */}
-        <div className="mt-6 animate-fade-up animate-delay-600">
+        <div className="mt-6 animate-fade-up animate-delay-700">
           <Button 
             variant="kiki" 
             size="lg" 
             className="w-full"
             onClick={handleContinue}
-            disabled={updateProfile.isPending || updateTribes.isPending}
+            disabled={updateProfile.isPending || updateTribes.isPending || updateMusicStyles.isPending}
           >
-            {updateProfile.isPending ? "Guardando..." : "Guardar y continuar"}
+            {updateProfile.isPending || updateMusicStyles.isPending ? "Guardando..." : "Guardar y continuar"}
           </Button>
         </div>
       </div>

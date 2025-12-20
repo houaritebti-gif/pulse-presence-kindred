@@ -168,6 +168,35 @@ export type Database = {
           },
         ]
       }
+      profile_music_styles: {
+        Row: {
+          created_at: string | null
+          id: string
+          profile_id: string
+          style: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          profile_id: string
+          style: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          profile_id?: string
+          style?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_music_styles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_tribes: {
         Row: {
           created_at: string | null
@@ -199,9 +228,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          alternative_aesthetic: boolean | null
           avatar_url: string | null
           city: string | null
           created_at: string | null
+          has_piercings: boolean | null
+          has_tattoos: boolean | null
           id: string
           name: string | null
           updated_at: string | null
@@ -209,9 +241,12 @@ export type Database = {
           vibe: string | null
         }
         Insert: {
+          alternative_aesthetic?: boolean | null
           avatar_url?: string | null
           city?: string | null
           created_at?: string | null
+          has_piercings?: boolean | null
+          has_tattoos?: boolean | null
           id?: string
           name?: string | null
           updated_at?: string | null
@@ -219,9 +254,12 @@ export type Database = {
           vibe?: string | null
         }
         Update: {
+          alternative_aesthetic?: boolean | null
           avatar_url?: string | null
           city?: string | null
           created_at?: string | null
+          has_piercings?: boolean | null
+          has_tattoos?: boolean | null
           id?: string
           name?: string | null
           updated_at?: string | null
