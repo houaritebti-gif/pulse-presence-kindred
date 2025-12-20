@@ -189,6 +189,86 @@ export type Database = {
         }
         Relationships: []
       }
+      quedada_attendees: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          quedada_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          quedada_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          quedada_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quedada_attendees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quedada_attendees_quedada_id_fkey"
+            columns: ["quedada_id"]
+            isOneToOne: false
+            referencedRelation: "quedadas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quedadas: {
+        Row: {
+          city: string
+          created_at: string
+          creator_profile_id: string
+          description: string | null
+          event_date: string
+          id: string
+          location_hint: string | null
+          max_attendees: number | null
+          title: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          creator_profile_id: string
+          description?: string | null
+          event_date: string
+          id?: string
+          location_hint?: string | null
+          max_attendees?: number | null
+          title: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          creator_profile_id?: string
+          description?: string | null
+          event_date?: string
+          id?: string
+          location_hint?: string | null
+          max_attendees?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quedadas_creator_profile_id_fkey"
+            columns: ["creator_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spark_chats: {
         Row: {
           created_at: string | null
