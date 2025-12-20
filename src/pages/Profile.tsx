@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useUpdateProfile, useUpdateTribes } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
+import { requestNotificationPermission, getNotificationPermission } from "@/utils/browserNotifications";
 
 const VIBES = ["Tranqui", "Intensa", "Curiosa", "Misteriosa", "Libre"];
 const TRIBES = ["Queer", "Artista", "Nómada", "Foodie", "Noctámbula", "Indie"];
@@ -31,10 +32,23 @@ const Profile = () => {
   const [soundMuted, setSoundMutedState] = useState(() => {
     return localStorage.getItem("kiki_sound_muted") === "true";
   });
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(() => {
+    return getNotificationPermission();
+  });
 
   const handleSoundToggle = (muted: boolean) => {
     setSoundMutedState(muted);
     localStorage.setItem("kiki_sound_muted", muted ? "true" : "false");
+  };
+
+  const handleRequestNotificationPermission = async () => {
+    const granted = await requestNotificationPermission();
+    setNotificationPermission(getNotificationPermission());
+    if (granted) {
+      toast.success("Notificaciones activadas");
+    } else {
+      toast.error("Permisos de notificación denegados");
+    }
   };
 
   // Load existing data
@@ -252,30 +266,61 @@ const Profile = () => {
         </div>
 
         {/* Sound Settings */}
-        <div className="mb-12 animate-fade-up animate-delay-500">
+        <div className="mb-6 animate-fade-up animate-delay-500">
           <h2 className="font-display text-lg font-semibold text-foreground mb-4">
-            Sonidos
+            Sonidos y notificaciones
           </h2>
-          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
-            <div className="flex items-center gap-3">
-              {soundMuted ? (
-                <VolumeX className="w-5 h-5 text-muted-foreground" />
-              ) : (
-                <Volume2 className="w-5 h-5 text-foreground" />
-              )}
-              <span className="font-body text-sm text-foreground">
-                {soundMuted ? "Sonidos silenciados" : "Sonidos activados"}
-              </span>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+              <div className="flex items-center gap-3">
+                {soundMuted ? (
+                  <VolumeX className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <Volume2 className="w-5 h-5 text-foreground" />
+                )}
+                <span className="font-body text-sm text-foreground">
+                  {soundMuted ? "Sonidos silenciados" : "Sonidos activados"}
+                </span>
+              </div>
+              <Switch
+                checked={!soundMuted}
+                onCheckedChange={(checked) => handleSoundToggle(!checked)}
+              />
             </div>
-            <Switch
-              checked={!soundMuted}
-              onCheckedChange={(checked) => handleSoundToggle(!checked)}
-            />
+            
+            {notificationPermission !== null && (
+              <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  {notificationPermission === "granted" ? (
+                    <Bell className="w-5 h-5 text-foreground" />
+                  ) : (
+                    <BellOff className="w-5 h-5 text-muted-foreground" />
+                  )}
+                  <span className="font-body text-sm text-foreground">
+                    {notificationPermission === "granted" 
+                      ? "Notificaciones del navegador activas" 
+                      : "Notificaciones del navegador"}
+                  </span>
+                </div>
+                {notificationPermission !== "granted" && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleRequestNotificationPermission}
+                  >
+                    Activar
+                  </Button>
+                )}
+                {notificationPermission === "granted" && (
+                  <span className="text-xs text-primary font-body">Activas</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Continue */}
-        <div className="animate-fade-up animate-delay-600">
+        <div className="mt-6 animate-fade-up animate-delay-600">
           <Button 
             variant="kiki" 
             size="lg" 
