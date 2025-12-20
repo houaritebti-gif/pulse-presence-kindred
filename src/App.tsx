@@ -14,6 +14,7 @@ import Chat from "./pages/Chat";
 import Sparks from "./pages/Sparks";
 import SparkChat from "./pages/SparkChat";
 import Quedadas from "./pages/Quedadas";
+import QuedadaChat from "./pages/QuedadaChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,6 +75,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Quedadas />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quedada/:quedadaId"
+                element={
+                  <ProtectedRoute>
+                    <QuedadaChat />
                   </ProtectedRoute>
                 }
               />
