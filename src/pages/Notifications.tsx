@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
-import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification } from "@/hooks/useNotificationCenter";
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification, useDeleteReadNotifications } from "@/hooks/useNotificationCenter";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -31,8 +31,12 @@ const Notifications = () => {
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const deleteNotification = useDeleteNotification();
+  const deleteReadNotifications = useDeleteReadNotifications();
   const [filter, setFilter] = useState<FilterType>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showDeleteReadDialog, setShowDeleteReadDialog] = useState(false);
+
+  const readCount = notifications?.filter(n => n.read_at).length || 0;
 
   const unreadCount = notifications?.filter(n => !n.read_at).length || 0;
 
@@ -98,18 +102,30 @@ const Notifications = () => {
             <span>Volver</span>
           </button>
           <span className="font-display text-xl font-bold text-foreground">KIKI</span>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => markAllRead.mutate()}
-              className="text-xs"
-            >
-              <CheckCheck className="w-4 h-4 mr-1" />
-              Leer todo
-            </Button>
-          )}
-          {unreadCount === 0 && <div className="w-20" />}
+          <div className="flex items-center gap-2">
+            {readCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDeleteReadDialog(true)}
+                className="text-xs text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                Limpiar
+              </Button>
+            )}
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => markAllRead.mutate()}
+                className="text-xs"
+              >
+                <CheckCheck className="w-4 h-4 mr-1" />
+                Leer todo
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
@@ -237,6 +253,29 @@ const Notifications = () => {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteReadDialog} onOpenChange={setShowDeleteReadDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar notificaciones leídas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminarán {readCount} notificaciones leídas. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                deleteReadNotifications.mutate();
+                setShowDeleteReadDialog(false);
+              }} 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar todas
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
