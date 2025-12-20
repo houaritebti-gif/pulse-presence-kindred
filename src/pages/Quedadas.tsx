@@ -234,11 +234,14 @@ const Quedadas = () => {
                       <Button
                         variant="kiki-soft"
                         size="sm"
-                        className="flex-1"
+                        className="flex-1 relative"
                         onClick={() => navigate(`/quedada/${quedada.id}`)}
                       >
                         <MessageCircle className="w-4 h-4 mr-2" />
                         Chat
+                        {quedada.has_unread && (
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full ring-2 ring-card animate-pulse" />
+                        )}
                       </Button>
                     )}
                     

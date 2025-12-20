@@ -20,6 +20,7 @@ export interface Quedada {
   };
   attendee_count?: number;
   is_attending?: boolean;
+  has_unread?: boolean;
 }
 
 export interface QuedadaAttendee {
@@ -44,6 +45,7 @@ export const useQuedadas = () => {
     queryFn: async () => {
       if (!profile) return [];
 
+      // Get quedadas with attendees
       const { data, error } = await supabase
         .from("quedadas")
         .select(`
@@ -55,11 +57,58 @@ export const useQuedadas = () => {
 
       if (error) throw error;
 
-      return (data || []).map(q => ({
-        ...q,
-        attendee_count: q.quedada_attendees?.length || 0,
-        is_attending: q.quedada_attendees?.some((a: { profile_id: string }) => a.profile_id === profile.id) || false,
-      })) as Quedada[];
+      // Get read status for all quedadas the user is part of
+      const quedadaIds = (data || [])
+        .filter(q => 
+          q.creator_profile_id === profile.id || 
+          q.quedada_attendees?.some((a: { profile_id: string }) => a.profile_id === profile.id)
+        )
+        .map(q => q.id);
+
+      const { data: readStatus } = await supabase
+        .from("quedada_read_status")
+        .select("quedada_id, last_read_at")
+        .eq("profile_id", profile.id)
+        .in("quedada_id", quedadaIds.length > 0 ? quedadaIds : ["00000000-0000-0000-0000-000000000000"]);
+
+      const readStatusMap = new Map(
+        (readStatus || []).map(r => [r.quedada_id, new Date(r.last_read_at)])
+      );
+
+      // Get latest message for each quedada
+      const { data: latestMessages } = await supabase
+        .from("quedada_messages")
+        .select("quedada_id, created_at")
+        .in("quedada_id", quedadaIds.length > 0 ? quedadaIds : ["00000000-0000-0000-0000-000000000000"])
+        .order("created_at", { ascending: false });
+
+      // Group by quedada_id and get the latest
+      const latestMessageMap = new Map<string, Date>();
+      (latestMessages || []).forEach(m => {
+        if (!latestMessageMap.has(m.quedada_id)) {
+          latestMessageMap.set(m.quedada_id, new Date(m.created_at));
+        }
+      });
+
+      return (data || []).map(q => {
+        const isCreator = q.creator_profile_id === profile.id;
+        const isAttending = q.quedada_attendees?.some((a: { profile_id: string }) => a.profile_id === profile.id) || false;
+        const canAccessChat = isCreator || isAttending;
+        
+        let hasUnread = false;
+        if (canAccessChat) {
+          const lastRead = readStatusMap.get(q.id);
+          const latestMessage = latestMessageMap.get(q.id);
+          hasUnread = latestMessage ? (!lastRead || latestMessage > lastRead) : false;
+        }
+
+        return {
+          ...q,
+          attendee_count: q.quedada_attendees?.length || 0,
+          is_attending: isAttending,
+          has_unread: hasUnread,
+        };
+      }) as Quedada[];
     },
     enabled: !!profile?.id,
   });
@@ -347,5 +396,33 @@ export const useQuedada = (quedadaId: string | undefined) => {
       };
     },
     enabled: !!quedadaId && !!profile?.id,
+  });
+};
+
+// Mark quedada chat as read
+export const useMarkQuedadaRead = () => {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
+  return useMutation({
+    mutationFn: async (quedadaId: string) => {
+      if (!profile) throw new Error("No profile");
+
+      const { error } = await supabase
+        .from("quedada_read_status")
+        .upsert(
+          {
+            profile_id: profile.id,
+            quedada_id: quedadaId,
+            last_read_at: new Date().toISOString(),
+          },
+          { onConflict: "profile_id,quedada_id" }
+        );
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["quedadas", profile?.city] });
+    },
   });
 };

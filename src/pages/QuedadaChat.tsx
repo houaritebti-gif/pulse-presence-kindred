@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useQuedada, useQuedadaMessages, useSendQuedadaMessage } from "@/hooks/useQuedadas";
+import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead } from "@/hooks/useQuedadas";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -16,9 +16,17 @@ const QuedadaChat = () => {
   const { data: quedada, isLoading: quedadaLoading } = useQuedada(quedadaId);
   const { data: messages, isLoading: messagesLoading } = useQuedadaMessages(quedadaId);
   const sendMessage = useSendQuedadaMessage();
+  const markRead = useMarkQuedadaRead();
   
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Mark as read when entering chat
+  useEffect(() => {
+    if (quedadaId && quedada) {
+      markRead.mutate(quedadaId);
+    }
+  }, [quedadaId, quedada]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

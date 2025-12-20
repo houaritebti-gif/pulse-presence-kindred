@@ -264,6 +264,42 @@ export type Database = {
           },
         ]
       }
+      quedada_read_status: {
+        Row: {
+          id: string
+          last_read_at: string
+          profile_id: string
+          quedada_id: string
+        }
+        Insert: {
+          id?: string
+          last_read_at?: string
+          profile_id: string
+          quedada_id: string
+        }
+        Update: {
+          id?: string
+          last_read_at?: string
+          profile_id?: string
+          quedada_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quedada_read_status_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quedada_read_status_quedada_id_fkey"
+            columns: ["quedada_id"]
+            isOneToOne: false
+            referencedRelation: "quedadas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quedadas: {
         Row: {
           city: string
