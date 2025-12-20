@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createNotification } from "./useNotificationCenter";
 import { playNotificationSound } from "@/utils/notificationSound";
+import { showBrowserNotification, requestNotificationPermission } from "@/utils/browserNotifications";
 
 // Combined hook that handles all notifications with a single useProfile call
 export const useAppNotifications = () => {
@@ -60,6 +61,11 @@ export const useAppNotifications = () => {
                   label: "Ver",
                   onClick: () => navigate("/sparks"),
                 },
+              });
+              showBrowserNotification("✨ ¡Nueva chispa!", {
+                body: "Alguien conectó contigo",
+                tag: "spark-" + newChat.id,
+                onClick: () => navigate("/sparks"),
               });
             }
           }
@@ -117,6 +123,11 @@ export const useAppNotifications = () => {
               label: "Abrir",
               onClick: () => navigate(currentChatPath),
             },
+          });
+          showBrowserNotification("💬 Nuevo mensaje", {
+            body: description,
+            tag: "message-" + newMessage.id,
+            onClick: () => navigate(currentChatPath),
           });
         }
       )
@@ -184,6 +195,11 @@ export const useAppNotifications = () => {
                 label: "Ver",
                 onClick: () => navigate("/quedadas"),
               },
+            });
+            showBrowserNotification("📅 Nueva persona en tu quedada", {
+              body: description,
+              tag: "attendee-" + newAttendee.id,
+              onClick: () => navigate("/quedadas"),
             });
           }
         }
@@ -269,6 +285,11 @@ export const useAppNotifications = () => {
               label: "Abrir",
               onClick: () => navigate(currentChatPath),
             },
+          });
+          showBrowserNotification(`💬 ${quedada.title}`, {
+            body: description,
+            tag: "quedada-msg-" + newMessage.id,
+            onClick: () => navigate(currentChatPath),
           });
         }
       )
