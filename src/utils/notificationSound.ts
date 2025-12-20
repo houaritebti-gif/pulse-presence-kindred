@@ -4,6 +4,7 @@
 let audioContext: AudioContext | null = null;
 
 const SOUND_MUTED_KEY = "kiki_sound_muted";
+const VIBRATION_ENABLED_KEY = "kiki_vibration_enabled";
 
 export const isSoundMuted = (): boolean => {
   return localStorage.getItem(SOUND_MUTED_KEY) === "true";
@@ -13,11 +14,42 @@ export const setSoundMuted = (muted: boolean): void => {
   localStorage.setItem(SOUND_MUTED_KEY, muted ? "true" : "false");
 };
 
+export const isVibrationEnabled = (): boolean => {
+  const stored = localStorage.getItem(VIBRATION_ENABLED_KEY);
+  // Default to true if not set
+  return stored === null ? true : stored === "true";
+};
+
+export const setVibrationEnabled = (enabled: boolean): void => {
+  localStorage.setItem(VIBRATION_ENABLED_KEY, enabled ? "true" : "false");
+};
+
 const getAudioContext = () => {
   if (!audioContext) {
     audioContext = new AudioContext();
   }
   return audioContext;
+};
+
+// Vibration patterns for different notification types (in milliseconds)
+const VIBRATION_PATTERNS = {
+  spark: [100, 50, 100, 50, 150], // Quick double tap + longer
+  message: [80, 80, 80], // Two quick taps
+  quedada: [150, 100, 150], // Friendly pattern
+  default: [100], // Single short buzz
+};
+
+// Vibrate device if supported
+export const vibrateDevice = (type: "spark" | "message" | "quedada" | "default" = "default") => {
+  if (!isVibrationEnabled()) return;
+  
+  if ("vibrate" in navigator) {
+    try {
+      navigator.vibrate(VIBRATION_PATTERNS[type] || VIBRATION_PATTERNS.default);
+    } catch (error) {
+      console.log("Vibration not available:", error);
+    }
+  }
 };
 
 // Play a simple "ding" notification sound
@@ -100,4 +132,10 @@ export const playNotificationSound = (type: "spark" | "message" | "quedada" | "d
     // Silently fail - audio is not critical
     console.log("Could not play notification sound:", error);
   }
+};
+
+// Combined function to play sound and vibrate
+export const notifyUser = (type: "spark" | "message" | "quedada" | "default" = "default") => {
+  playNotificationSound(type);
+  vibrateDevice(type);
 };

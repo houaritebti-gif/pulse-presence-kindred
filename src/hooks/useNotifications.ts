@@ -4,7 +4,7 @@ import { useProfile } from "./useProfile";
 import { toast } from "sonner";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createNotification } from "./useNotificationCenter";
-import { playNotificationSound } from "@/utils/notificationSound";
+import { notifyUser } from "@/utils/notificationSound";
 import { showBrowserNotification, requestNotificationPermission } from "@/utils/browserNotifications";
 import { sendPushNotification } from "@/utils/pushNotifications";
 
@@ -69,7 +69,7 @@ export const useAppNotifications = () => {
             });
             
             if (location.pathname !== "/sparks") {
-              playNotificationSound("spark");
+              notifyUser("spark");
               toast("✨ ¡Nueva chispa!", {
                 description: "Alguien conectó contigo",
                 action: {
@@ -131,7 +131,7 @@ export const useAppNotifications = () => {
             link: currentChatPath,
           });
           
-          playNotificationSound("message");
+          notifyUser("message");
           toast("💬 Nuevo mensaje", {
             description,
             action: {
@@ -203,7 +203,7 @@ export const useAppNotifications = () => {
           });
           
           if (location.pathname !== "/quedadas") {
-            playNotificationSound("quedada");
+            notifyUser("quedada");
             toast("📅 Nueva persona en tu quedada", {
               description,
               action: {
@@ -293,7 +293,7 @@ export const useAppNotifications = () => {
             link: currentChatPath,
           });
           
-          playNotificationSound("quedada");
+          notifyUser("quedada");
           toast(`💬 ${quedada.title}`, {
             description,
             action: {
