@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada } from "@/hooks/useQuedadas";
 import { toast } from "sonner";
@@ -214,32 +214,48 @@ const Quedadas = () => {
                     </div>
                   </div>
 
-                  {/* Action */}
-                  {!isCreator && (
-                    quedada.is_attending ? (
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    {/* Chat button - visible if attending or creator */}
+                    {(isCreator || quedada.is_attending) && (
                       <Button
                         variant="kiki-soft"
                         size="sm"
-                        className="w-full"
-                        onClick={() => handleLeave(quedada.id)}
+                        className="flex-1"
+                        onClick={() => navigate(`/quedada/${quedada.id}`)}
                       >
-                        Salir de la quedada
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Chat
                       </Button>
-                    ) : (
-                      <Button
-                        variant="kiki"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => handleJoin(quedada.id)}
-                        disabled={isFull}
-                      >
-                        {isFull ? "Completa" : "Unirse"}
-                      </Button>
-                    )
-                  )}
+                    )}
+                    
+                    {/* Join/Leave button */}
+                    {!isCreator && (
+                      quedada.is_attending ? (
+                        <Button
+                          variant="kiki-soft"
+                          size="sm"
+                          className={isCreator || quedada.is_attending ? "flex-1" : "w-full"}
+                          onClick={() => handleLeave(quedada.id)}
+                        >
+                          Salir
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="kiki"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleJoin(quedada.id)}
+                          disabled={isFull}
+                        >
+                          {isFull ? "Completa" : "Unirse"}
+                        </Button>
+                      )
+                    )}
+                  </div>
                   
-                  {isCreator && (
-                    <div className="flex items-center justify-center gap-2 py-2">
+                  {isCreator && !quedada.is_attending && (
+                    <div className="flex items-center justify-center gap-2 pt-2">
                       <Sparkles className="w-3.5 h-3.5 text-accent" />
                       <span className="font-body text-xs text-card-foreground/50">Tu quedada</span>
                     </div>

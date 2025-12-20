@@ -225,6 +225,45 @@ export type Database = {
           },
         ]
       }
+      quedada_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          quedada_id: string
+          sender_profile_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          quedada_id: string
+          sender_profile_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          quedada_id?: string
+          sender_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quedada_messages_quedada_id_fkey"
+            columns: ["quedada_id"]
+            isOneToOne: false
+            referencedRelation: "quedadas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quedada_messages_sender_profile_id_fkey"
+            columns: ["sender_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quedadas: {
         Row: {
           city: string

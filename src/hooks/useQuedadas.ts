@@ -220,3 +220,132 @@ export const useDeleteQuedada = () => {
     },
   });
 };
+
+// Quedada messages types and hooks
+export interface QuedadaMessage {
+  id: string;
+  quedada_id: string;
+  sender_profile_id: string;
+  content: string;
+  created_at: string;
+  sender?: {
+    id: string;
+    name: string | null;
+    avatar_url: string | null;
+  };
+}
+
+// Get messages for a quedada
+export const useQuedadaMessages = (quedadaId: string | undefined) => {
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: ["quedada_messages", quedadaId],
+    queryFn: async () => {
+      if (!quedadaId) return [];
+
+      const { data, error } = await supabase
+        .from("quedada_messages")
+        .select(`
+          *,
+          sender:profiles!quedada_messages_sender_profile_id_fkey(id, name, avatar_url)
+        `)
+        .eq("quedada_id", quedadaId)
+        .order("created_at", { ascending: true })
+        .limit(100);
+
+      if (error) throw error;
+      return data as QuedadaMessage[];
+    },
+    enabled: !!quedadaId,
+  });
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    if (!quedadaId) return;
+
+    const channel = supabase
+      .channel(`quedada-messages-${quedadaId}`)
+      .on(
+        "postgres_changes",
+        { 
+          event: "INSERT", 
+          schema: "public", 
+          table: "quedada_messages",
+          filter: `quedada_id=eq.${quedadaId}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["quedada_messages", quedadaId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [quedadaId, queryClient]);
+
+  return query;
+};
+
+// Send a message in a quedada
+export const useSendQuedadaMessage = () => {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
+  return useMutation({
+    mutationFn: async ({ quedadaId, content }: { quedadaId: string; content: string }) => {
+      if (!profile) throw new Error("No profile");
+
+      const { data, error } = await supabase
+        .from("quedada_messages")
+        .insert({
+          quedada_id: quedadaId,
+          sender_profile_id: profile.id,
+          content,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, { quedadaId }) => {
+      queryClient.invalidateQueries({ queryKey: ["quedada_messages", quedadaId] });
+    },
+  });
+};
+
+// Get a single quedada by ID
+export const useQuedada = (quedadaId: string | undefined) => {
+  const { data: profile } = useProfile();
+
+  return useQuery({
+    queryKey: ["quedada", quedadaId],
+    queryFn: async () => {
+      if (!quedadaId) return null;
+
+      const { data, error } = await supabase
+        .from("quedadas")
+        .select(`
+          *,
+          creator:profiles!quedadas_creator_profile_id_fkey(id, name, avatar_url),
+          quedada_attendees(id, profile_id, profile:profiles(id, name, avatar_url))
+        `)
+        .eq("id", quedadaId)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (!data) return null;
+
+      return {
+        ...data,
+        attendee_count: data.quedada_attendees?.length || 0,
+        is_attending: data.quedada_attendees?.some((a: { profile_id: string }) => a.profile_id === profile?.id) || false,
+        is_creator: data.creator_profile_id === profile?.id,
+      };
+    },
+    enabled: !!quedadaId && !!profile?.id,
+  });
+};
