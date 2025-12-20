@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada } from "@/hooks/useQuedadas";
+import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada, useUpdateQuedada, Quedada } from "@/hooks/useQuedadas";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -18,8 +18,10 @@ const Quedadas = () => {
   const joinQuedada = useJoinQuedada();
   const leaveQuedada = useLeaveQuedada();
   const deleteQuedada = useDeleteQuedada();
+  const updateQuedada = useUpdateQuedada();
 
   const [showCreate, setShowCreate] = useState(false);
+  const [editingQuedada, setEditingQuedada] = useState<Quedada | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [locationHint, setLocationHint] = useState("");
@@ -85,6 +87,55 @@ const Quedadas = () => {
       toast.success("Quedada cancelada");
     } catch (error: any) {
       toast.error("Error: " + error.message);
+    }
+  };
+
+  const openEditModal = (quedada: Quedada) => {
+    const eventDateObj = new Date(quedada.event_date);
+    setEditingQuedada(quedada);
+    setTitle(quedada.title);
+    setDescription(quedada.description || "");
+    setLocationHint(quedada.location_hint || "");
+    setEventDate(eventDateObj.toISOString().split("T")[0]);
+    setEventTime(format(eventDateObj, "HH:mm"));
+    setMaxAttendees(quedada.max_attendees?.toString() || "");
+  };
+
+  const closeEditModal = () => {
+    setEditingQuedada(null);
+    setTitle("");
+    setDescription("");
+    setLocationHint("");
+    setEventDate("");
+    setEventTime("");
+    setMaxAttendees("");
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQuedada || !title.trim() || !eventDate || !eventTime) {
+      toast.error("Título, fecha y hora son obligatorios");
+      return;
+    }
+
+    try {
+      const dateTime = new Date(`${eventDate}T${eventTime}`);
+      
+      await updateQuedada.mutateAsync({
+        quedadaId: editingQuedada.id,
+        updates: {
+          title: title.trim(),
+          description: description.trim() || null,
+          location_hint: locationHint.trim() || null,
+          event_date: dateTime.toISOString(),
+          max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
+        },
+      });
+
+      toast.success("¡Quedada actualizada!");
+      closeEditModal();
+    } catch (error: any) {
+      toast.error("Error al actualizar: " + error.message);
     }
   };
 
@@ -276,13 +327,22 @@ const Quedadas = () => {
                         <Sparkles className="w-3.5 h-3.5 text-accent" />
                         <span className="font-body text-xs text-card-foreground/50">Tu quedada</span>
                       </div>
-                      <button
-                        onClick={() => handleDelete(quedada.id)}
-                        className="flex items-center gap-1.5 text-destructive/70 hover:text-destructive transition-colors font-body text-xs"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        Cancelar
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => openEditModal(quedada)}
+                          className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors font-body text-xs"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleDelete(quedada.id)}
+                          className="flex items-center gap-1.5 text-destructive/70 hover:text-destructive transition-colors font-body text-xs"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -374,6 +434,95 @@ const Quedadas = () => {
                   disabled={createQuedada.isPending}
                 >
                   {createQuedada.isPending ? "Creando..." : "Crear"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit modal */}
+      {editingQuedada && (
+        <div className="fixed inset-0 bg-background/90 backdrop-blur-md flex items-center justify-center p-6 z-50">
+          <div className="bg-card rounded-3xl p-6 max-w-md w-full animate-fade-up shadow-2xl border border-border/20 max-h-[90vh] overflow-y-auto">
+            <h3 className="font-display text-xl font-semibold text-card-foreground mb-6 text-center">
+              Editar quedada
+            </h3>
+            
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <Input
+                placeholder="Título de la quedada"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="h-12 bg-background/50"
+              />
+              
+              <Textarea
+                placeholder="Descripción (opcional)"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="bg-background/50 min-h-[80px]"
+              />
+              
+              <Input
+                placeholder="Pista del lugar (ej: cerca de Sol)"
+                value={locationHint}
+                onChange={(e) => setLocationHint(e.target.value)}
+                className="h-12 bg-background/50"
+              />
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-body text-xs text-card-foreground/60 mb-1 block">Fecha</label>
+                  <Input
+                    type="date"
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    className="h-12 bg-background/50"
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+                <div>
+                  <label className="font-body text-xs text-card-foreground/60 mb-1 block">Hora</label>
+                  <Input
+                    type="time"
+                    value={eventTime}
+                    onChange={(e) => setEventTime(e.target.value)}
+                    className="h-12 bg-background/50"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="font-body text-xs text-card-foreground/60 mb-1 block">
+                  Máximo asistentes (opcional)
+                </label>
+                <Input
+                  type="number"
+                  placeholder="Sin límite"
+                  value={maxAttendees}
+                  onChange={(e) => setMaxAttendees(e.target.value)}
+                  className="h-12 bg-background/50"
+                  min="2"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="kiki-soft"
+                  className="flex-1 h-12"
+                  onClick={closeEditModal}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  variant="kiki"
+                  className="flex-1 h-12"
+                  disabled={updateQuedada.isPending}
+                >
+                  {updateQuedada.isPending ? "Guardando..." : "Guardar"}
                 </Button>
               </div>
             </form>
