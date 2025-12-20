@@ -72,6 +72,19 @@ const SparkChat = () => {
         </button>
         
         <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-card-foreground/10 overflow-hidden flex-shrink-0">
+            {chat.other_profile?.avatar_url ? (
+              <img 
+                src={chat.other_profile.avatar_url} 
+                alt={chat.other_profile.name || "Avatar"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-card-foreground/40 font-display text-sm">
+                {(chat.other_profile?.name?.[0] || "?").toUpperCase()}
+              </div>
+            )}
+          </div>
           <Flame className="w-4 h-4 text-primary" />
           <span className="font-display font-semibold text-foreground">
             {chat.other_profile?.name || "Anónima"}
