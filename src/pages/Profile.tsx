@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Camera, LogOut, Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useUpdateProfile, useUpdateTribes } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
@@ -27,6 +28,14 @@ const Profile = () => {
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [soundMuted, setSoundMutedState] = useState(() => {
+    return localStorage.getItem("kiki_sound_muted") === "true";
+  });
+
+  const handleSoundToggle = (muted: boolean) => {
+    setSoundMutedState(muted);
+    localStorage.setItem("kiki_sound_muted", muted ? "true" : "false");
+  };
 
   // Load existing data
   useEffect(() => {
@@ -221,7 +230,7 @@ const Profile = () => {
         </div>
 
         {/* Tribes */}
-        <div className="mb-12 animate-fade-up animate-delay-400">
+        <div className="mb-10 animate-fade-up animate-delay-400">
           <h2 className="font-display text-lg font-semibold text-foreground mb-4">
             Tus tribus
           </h2>
@@ -242,8 +251,31 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Sound Settings */}
+        <div className="mb-12 animate-fade-up animate-delay-500">
+          <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+            Sonidos
+          </h2>
+          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+            <div className="flex items-center gap-3">
+              {soundMuted ? (
+                <VolumeX className="w-5 h-5 text-muted-foreground" />
+              ) : (
+                <Volume2 className="w-5 h-5 text-foreground" />
+              )}
+              <span className="font-body text-sm text-foreground">
+                {soundMuted ? "Sonidos silenciados" : "Sonidos activados"}
+              </span>
+            </div>
+            <Switch
+              checked={!soundMuted}
+              onCheckedChange={(checked) => handleSoundToggle(!checked)}
+            />
+          </div>
+        </div>
+
         {/* Continue */}
-        <div className="animate-fade-up animate-delay-500">
+        <div className="animate-fade-up animate-delay-600">
           <Button 
             variant="kiki" 
             size="lg" 
