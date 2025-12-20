@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
+import { sendPushNotification } from "@/utils/pushNotifications";
 
 export interface Quedada {
   id: string;
@@ -209,7 +210,7 @@ export const useJoinQuedada = () => {
   const { data: profile } = useProfile();
 
   return useMutation({
-    mutationFn: async (quedadaId: string) => {
+    mutationFn: async ({ quedadaId, creatorProfileId, quedadaTitle }: { quedadaId: string; creatorProfileId?: string; quedadaTitle?: string }) => {
       if (!profile) throw new Error("No profile");
 
       const { error } = await supabase
@@ -220,6 +221,17 @@ export const useJoinQuedada = () => {
         });
 
       if (error) throw error;
+      
+      // Send push notification to creator
+      if (creatorProfileId && creatorProfileId !== profile.id) {
+        sendPushNotification({
+          profileId: creatorProfileId,
+          title: `🎉 ${profile.name || "Alguien"} se ha unido a tu quedada`,
+          body: quedadaTitle || "Tu quedada tiene un nuevo asistente",
+          url: `/quedada/${quedadaId}`,
+          tag: `attendee-${quedadaId}`,
+        });
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quedadas", profile?.city] });
@@ -375,7 +387,17 @@ export const useSendQuedadaMessage = () => {
   const { data: profile } = useProfile();
 
   return useMutation({
-    mutationFn: async ({ quedadaId, content }: { quedadaId: string; content: string }) => {
+    mutationFn: async ({ 
+      quedadaId, 
+      content, 
+      recipientProfileIds,
+      quedadaTitle 
+    }: { 
+      quedadaId: string; 
+      content: string;
+      recipientProfileIds?: string[];
+      quedadaTitle?: string;
+    }) => {
       if (!profile) throw new Error("No profile");
 
       const { data, error } = await supabase
@@ -389,6 +411,21 @@ export const useSendQuedadaMessage = () => {
         .single();
 
       if (error) throw error;
+      
+      // Send push notifications to all recipients (except sender)
+      if (recipientProfileIds && recipientProfileIds.length > 0) {
+        const recipients = recipientProfileIds.filter(id => id !== profile.id);
+        for (const recipientId of recipients) {
+          sendPushNotification({
+            profileId: recipientId,
+            title: `💬 ${profile.name || "Alguien"} en ${quedadaTitle || "una quedada"}`,
+            body: content.length > 50 ? content.substring(0, 50) + "..." : content,
+            url: `/quedada/${quedadaId}`,
+            tag: `quedada-message-${quedadaId}`,
+          });
+        }
+      }
+      
       return data;
     },
     onSuccess: (_, { quedadaId }) => {

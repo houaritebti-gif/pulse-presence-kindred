@@ -30,10 +30,14 @@ const SparkChat = () => {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !chatId) return;
+    if (!newMessage.trim() || !chatId || !chat) return;
 
     try {
-      await sendMessage.mutateAsync({ chatId, content: newMessage.trim() });
+      await sendMessage.mutateAsync({ 
+        chatId, 
+        content: newMessage.trim(),
+        recipientProfileId: chat.other_profile?.id,
+      });
       setNewMessage("");
     } catch (error: any) {
       toast.error("Error al enviar: " + error.message);

@@ -34,10 +34,28 @@ const QuedadaChat = () => {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !quedadaId) return;
+    if (!newMessage.trim() || !quedadaId || !quedada) return;
+
+    // Get all profile IDs who should receive the notification (creator + attendees)
+    const recipientIds: string[] = [];
+    if (quedada.creator?.id) {
+      recipientIds.push(quedada.creator.id);
+    }
+    if (quedada.quedada_attendees) {
+      quedada.quedada_attendees.forEach((a: { profile_id: string }) => {
+        if (!recipientIds.includes(a.profile_id)) {
+          recipientIds.push(a.profile_id);
+        }
+      });
+    }
 
     try {
-      await sendMessage.mutateAsync({ quedadaId, content: newMessage.trim() });
+      await sendMessage.mutateAsync({ 
+        quedadaId, 
+        content: newMessage.trim(),
+        recipientProfileIds: recipientIds,
+        quedadaTitle: quedada.title,
+      });
       setNewMessage("");
     } catch (error: any) {
       toast.error("Error al enviar: " + error.message);

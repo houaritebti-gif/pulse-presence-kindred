@@ -60,9 +60,13 @@ const Quedadas = () => {
     }
   };
 
-  const handleJoin = async (quedadaId: string) => {
+  const handleJoin = async (quedada: Quedada) => {
     try {
-      await joinQuedada.mutateAsync(quedadaId);
+      await joinQuedada.mutateAsync({
+        quedadaId: quedada.id,
+        creatorProfileId: quedada.creator_profile_id,
+        quedadaTitle: quedada.title,
+      });
       toast.success("¡Te has unido!");
     } catch (error: any) {
       toast.error("Error: " + error.message);
@@ -312,7 +316,7 @@ const Quedadas = () => {
                           variant="kiki"
                           size="sm"
                           className="w-full"
-                          onClick={() => handleJoin(quedada.id)}
+                          onClick={() => handleJoin(quedada)}
                           disabled={isFull}
                         >
                           {isFull ? "Completa" : "Unirse"}
