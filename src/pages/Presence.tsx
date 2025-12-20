@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useProfile } from "@/hooks/useProfile";
 import { useSparkCount } from "@/hooks/useSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
+import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Presence = () => {
   const sparkCount = useSparkCount();
   const { data: quedadas } = useQuedadas();
   const quedadaCount = quedadas?.length || 0;
+  const unreadCount = useUnreadNotificationCount();
 
   // Enable heartbeat
   usePresenceHeartbeat();
@@ -49,6 +51,19 @@ const Presence = () => {
         </button>
         <span className="font-display text-xl font-bold text-foreground">KIKI</span>
         <div className="flex items-center gap-3">
+          {/* Notifications button */}
+          <button
+            onClick={() => navigate("/notifications")}
+            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            title="Notificaciones"
+          >
+            <Bell className={`w-5 h-5 ${unreadCount > 0 ? "text-primary" : ""}`} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
           {/* Quedadas button */}
           <button
             onClick={() => navigate("/quedadas")}

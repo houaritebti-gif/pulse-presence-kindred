@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { toast } from "sonner";
 import { useLocation, useNavigate } from "react-router-dom";
+import { createNotification } from "./useNotificationCenter";
 
 // Combined hook that handles all notifications with a single useProfile call
 export const useAppNotifications = () => {
@@ -40,6 +41,15 @@ export const useAppNotifications = () => {
           
           if (isInvolved && !previousChatsRef.current.has(newChat.id)) {
             previousChatsRef.current.add(newChat.id);
+            
+            // Save to notification center
+            createNotification({
+              profile_id: profile.id,
+              type: "spark",
+              title: "✨ ¡Nueva chispa!",
+              description: "Alguien conectó contigo",
+              link: "/sparks",
+            });
             
             if (location.pathname !== "/sparks") {
               toast("✨ ¡Nueva chispa!", {
@@ -87,8 +97,19 @@ export const useAppNotifications = () => {
           const currentChatPath = `/spark/${newMessage.chat_id}`;
           if (location.pathname === currentChatPath) return;
           
+          const description = newMessage.content.slice(0, 50) + (newMessage.content.length > 50 ? "..." : "");
+          
+          // Save to notification center
+          createNotification({
+            profile_id: profile.id,
+            type: "message",
+            title: "💬 Nuevo mensaje",
+            description,
+            link: currentChatPath,
+          });
+          
           toast("💬 Nuevo mensaje", {
-            description: newMessage.content.slice(0, 50) + (newMessage.content.length > 50 ? "..." : ""),
+            description,
             action: {
               label: "Abrir",
               onClick: () => navigate(currentChatPath),
@@ -141,10 +162,20 @@ export const useAppNotifications = () => {
             .maybeSingle();
           
           const attendeeName = attendeeProfile?.name || "Alguien";
+          const description = `${attendeeName} se unió a "${quedada.title}"`;
+          
+          // Save to notification center
+          createNotification({
+            profile_id: profile.id,
+            type: "attendee",
+            title: "📅 Nueva persona en tu quedada",
+            description,
+            link: "/quedadas",
+          });
           
           if (location.pathname !== "/quedadas") {
             toast("📅 Nueva persona en tu quedada", {
-              description: `${attendeeName} se unió a "${quedada.title}"`,
+              description,
               action: {
                 label: "Ver",
                 onClick: () => navigate("/quedadas"),
@@ -216,9 +247,19 @@ export const useAppNotifications = () => {
             .maybeSingle();
           
           const senderName = senderProfile?.name || "Alguien";
+          const description = `${senderName}: ${newMessage.content.slice(0, 40)}${newMessage.content.length > 40 ? "..." : ""}`;
+          
+          // Save to notification center
+          createNotification({
+            profile_id: profile.id,
+            type: "quedada_message",
+            title: `💬 ${quedada.title}`,
+            description,
+            link: currentChatPath,
+          });
           
           toast(`💬 ${quedada.title}`, {
-            description: `${senderName}: ${newMessage.content.slice(0, 40)}${newMessage.content.length > 40 ? "..." : ""}`,
+            description,
             action: {
               label: "Abrir",
               onClick: () => navigate(currentChatPath),
