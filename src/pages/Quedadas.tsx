@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada } from "@/hooks/useQuedadas";
+import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada } from "@/hooks/useQuedadas";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -17,6 +17,7 @@ const Quedadas = () => {
   const createQuedada = useCreateQuedada();
   const joinQuedada = useJoinQuedada();
   const leaveQuedada = useLeaveQuedada();
+  const deleteQuedada = useDeleteQuedada();
 
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState("");
@@ -70,6 +71,18 @@ const Quedadas = () => {
     try {
       await leaveQuedada.mutateAsync(quedadaId);
       toast.success("Has salido de la quedada");
+    } catch (error: any) {
+      toast.error("Error: " + error.message);
+    }
+  };
+
+  const handleDelete = async (quedadaId: string) => {
+    if (!confirm("¿Seguro que quieres cancelar esta quedada? Esta acción no se puede deshacer.")) {
+      return;
+    }
+    try {
+      await deleteQuedada.mutateAsync(quedadaId);
+      toast.success("Quedada cancelada");
     } catch (error: any) {
       toast.error("Error: " + error.message);
     }
@@ -254,10 +267,19 @@ const Quedadas = () => {
                     )}
                   </div>
                   
-                  {isCreator && !quedada.is_attending && (
-                    <div className="flex items-center justify-center gap-2 pt-2">
-                      <Sparkles className="w-3.5 h-3.5 text-accent" />
-                      <span className="font-body text-xs text-card-foreground/50">Tu quedada</span>
+                  {isCreator && (
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-3.5 h-3.5 text-accent" />
+                        <span className="font-body text-xs text-card-foreground/50">Tu quedada</span>
+                      </div>
+                      <button
+                        onClick={() => handleDelete(quedada.id)}
+                        className="flex items-center gap-1.5 text-destructive/70 hover:text-destructive transition-colors font-body text-xs"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Cancelar
+                      </button>
                     </div>
                   )}
                 </div>
