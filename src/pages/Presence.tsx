@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Music, Sparkles } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useProfile } from "@/hooks/useProfile";
 import { useSparkCount } from "@/hooks/useSparks";
@@ -201,16 +201,54 @@ const Presence = () => {
                     <p className="font-body text-sm text-card-foreground/70 mb-3">
                       Vibra {presence.profile?.vibe?.toLowerCase() || "misteriosa"}
                     </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {presence.tribes.map(tribe => (
-                        <span 
-                          key={tribe}
-                          className="px-2.5 py-1 rounded-full bg-card-foreground/10 font-body text-xs text-card-foreground/80"
-                        >
-                          {tribe}
-                        </span>
-                      ))}
-                    </div>
+                    {/* Tribes */}
+                    {presence.tribes.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {presence.tribes.map(tribe => (
+                          <span 
+                            key={tribe}
+                            className="px-2.5 py-1 rounded-full bg-card-foreground/10 font-body text-xs text-card-foreground/80"
+                          >
+                            {tribe}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Music styles */}
+                    {presence.musicStyles.length > 0 && (
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Music className="w-3 h-3 text-primary/70 flex-shrink-0" />
+                        <p className="font-body text-xs text-card-foreground/60 truncate">
+                          {presence.musicStyles.slice(0, 3).join(" · ")}
+                          {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Optional details */}
+                    {(presence.profile?.has_tattoos || presence.profile?.has_piercings || presence.profile?.alternative_aesthetic) && (
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-3 h-3 text-accent/70 flex-shrink-0" />
+                        <div className="flex flex-wrap gap-1">
+                          {presence.profile?.has_tattoos && (
+                            <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
+                              Tatuajes
+                            </span>
+                          )}
+                          {presence.profile?.has_piercings && (
+                            <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
+                              Piercings
+                            </span>
+                          )}
+                          {presence.profile?.alternative_aesthetic && (
+                            <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
+                              Estética alt
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </button>
