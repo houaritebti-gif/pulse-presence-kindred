@@ -16,8 +16,12 @@ export interface PresenceWithProfile {
     avatar_url: string | null;
     vibe: string | null;
     city: string | null;
+    has_tattoos: boolean | null;
+    has_piercings: boolean | null;
+    alternative_aesthetic: boolean | null;
   };
   tribes: string[];
+  musicStyles: string[];
 }
 
 export const usePresenceList = () => {
@@ -33,7 +37,7 @@ export const usePresenceList = () => {
         .from("presence")
         .select(`
           *,
-          profile:profiles(id, name, avatar_url, vibe, city)
+          profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic)
         `)
         .eq("is_present", true)
         .eq("visible_to_others", true)
@@ -45,15 +49,29 @@ export const usePresenceList = () => {
       const profileIds = presenceData?.map(p => p.profile?.id).filter(Boolean) || [];
       
       let tribesMap: Record<string, string[]> = {};
+      let musicMap: Record<string, string[]> = {};
+      
       if (profileIds.length > 0) {
-        const { data: tribesData } = await supabase
-          .from("profile_tribes")
-          .select("profile_id, tribe")
-          .in("profile_id", profileIds);
+        const [tribesResult, musicResult] = await Promise.all([
+          supabase
+            .from("profile_tribes")
+            .select("profile_id, tribe")
+            .in("profile_id", profileIds),
+          supabase
+            .from("profile_music_styles")
+            .select("profile_id, style")
+            .in("profile_id", profileIds)
+        ]);
 
-        tribesMap = (tribesData || []).reduce((acc, t) => {
+        tribesMap = (tribesResult.data || []).reduce((acc, t) => {
           if (!acc[t.profile_id]) acc[t.profile_id] = [];
           acc[t.profile_id].push(t.tribe);
+          return acc;
+        }, {} as Record<string, string[]>);
+
+        musicMap = (musicResult.data || []).reduce((acc, m) => {
+          if (!acc[m.profile_id]) acc[m.profile_id] = [];
+          acc[m.profile_id].push(m.style);
           return acc;
         }, {} as Record<string, string[]>);
       }
@@ -61,6 +79,7 @@ export const usePresenceList = () => {
       return (presenceData || []).map(p => ({
         ...p,
         tribes: tribesMap[p.profile?.id] || [],
+        musicStyles: musicMap[p.profile?.id] || [],
       })) as PresenceWithProfile[];
     },
   });
