@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
@@ -41,6 +41,9 @@ const Profile = () => {
   const [hasTattoos, setHasTattoos] = useState<boolean | null>(null);
   const [hasPiercings, setHasPiercings] = useState<boolean | null>(null);
   const [alternativeAesthetic, setAlternativeAesthetic] = useState<boolean | null>(null);
+  
+  // Privacy settings
+  const [shareTypingStatus, setShareTypingStatus] = useState<boolean>(true);
   
   // Music section collapsed state
   const [musicExpanded, setMusicExpanded] = useState(false);
@@ -138,6 +141,7 @@ const Profile = () => {
       setHasTattoos(profile.has_tattoos);
       setHasPiercings(profile.has_piercings);
       setAlternativeAesthetic(profile.alternative_aesthetic);
+      setShareTypingStatus(profile.share_typing_status !== false);
     }
   }, [profile]);
 
@@ -232,6 +236,7 @@ const Profile = () => {
         has_tattoos: hasTattoos,
         has_piercings: hasPiercings,
         alternative_aesthetic: alternativeAesthetic,
+        share_typing_status: shareTypingStatus,
       });
 
       await updateTribes.mutateAsync({
@@ -488,6 +493,35 @@ const Profile = () => {
 
         {/* Blocked Users Section */}
         <BlockedUsersSection />
+
+        {/* Privacy Settings */}
+        <div className="mb-6 animate-fade-up animate-delay-600">
+          <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+            Privacidad del chat
+          </h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+              <div className="flex items-center gap-3">
+                <MessageCircle className={`w-5 h-5 ${shareTypingStatus ? "text-foreground" : "text-muted-foreground"}`} />
+                <div>
+                  <span className="font-body text-sm text-foreground block">
+                    Mostrar "escribiendo..."
+                  </span>
+                  <span className="font-body text-xs text-muted-foreground">
+                    Otros verán cuando escribes
+                  </span>
+                </div>
+              </div>
+              <Switch
+                checked={shareTypingStatus}
+                onCheckedChange={(checked) => {
+                  setShareTypingStatus(checked);
+                  setHasChanges(true);
+                }}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* Sound Settings */}
         <div className="mb-6 animate-fade-up animate-delay-600">
