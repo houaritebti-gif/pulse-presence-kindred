@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Flame, MessageCircle, Sparkles } from "lucide-react";
 import { useSparkChats } from "@/hooks/useSparks";
+import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
 
 const Sparks = () => {
   const navigate = useNavigate();
@@ -106,6 +108,11 @@ const Sparks = () => {
                     <h3 className="font-display font-semibold text-card-foreground text-lg">
                       {chat.other_profile?.name || "Anónima"}
                     </h3>
+                    {chat.last_message_at && (
+                      <span className="font-body text-xs text-muted-foreground/50">
+                        · {formatDistanceToNow(new Date(chat.last_message_at), { addSuffix: false, locale: es })}
+                      </span>
+                    )}
                   </div>
                   <p className="font-body text-sm text-card-foreground/50">
                     Vibra {chat.other_profile?.vibe?.toLowerCase() || "misteriosa"}
