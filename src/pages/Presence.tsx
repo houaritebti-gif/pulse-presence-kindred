@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Music, Sparkles, Heart } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
-import { useSparkCount } from "@/hooks/useSparks";
+import { useNewSparks } from "@/hooks/useNewSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
@@ -16,7 +16,7 @@ const Presence = () => {
   const { data: presenceList, isLoading } = usePresenceList();
   const { data: myPresence } = useMyPresence();
   const setPresence = useSetPresence();
-  const sparkCount = useSparkCount();
+  const { newSparkCount, hasNewSparks, totalSparkCount, markAllAsSeen, newSparks } = useNewSparks();
   const { data: quedadas } = useQuedadas();
   const quedadaCount = quedadas?.length || 0;
   const unreadCount = useUnreadNotificationCount();
@@ -131,14 +131,17 @@ const Presence = () => {
           </button>
           {/* Sparks button with badge */}
           <button
-            onClick={() => navigate("/sparks")}
+            onClick={() => {
+              markAllAsSeen();
+              navigate("/sparks");
+            }}
             className="relative text-muted-foreground hover:text-foreground transition-colors"
             title="Tus chispas"
           >
-            <Flame className={`w-5 h-5 ${sparkCount > 0 ? "text-primary" : ""}`} />
-            {sparkCount > 0 && (
+            <Flame className={`w-5 h-5 ${totalSparkCount > 0 ? "text-primary" : ""}`} />
+            {hasNewSparks && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
-                {sparkCount}
+                {newSparkCount}
               </span>
             )}
           </button>
@@ -156,22 +159,32 @@ const Presence = () => {
         </div>
       </div>
 
-      {/* Spark notification banner */}
-      {sparkCount > 0 && (
+      {/* NEW Spark notification banner - only show when there are new unseen sparks */}
+      {hasNewSparks && (
         <button
-          onClick={() => navigate("/sparks")}
-          className="mb-6 bg-card rounded-2xl p-4 flex items-center gap-3 animate-fade-up hover:scale-[1.02] transition-all"
+          onClick={() => {
+            markAllAsSeen();
+            navigate("/sparks");
+          }}
+          className="mb-6 bg-gradient-to-r from-primary/20 to-accent/10 rounded-2xl p-4 flex items-center gap-3 animate-fade-up hover:scale-[1.02] transition-all border border-primary/30 shadow-lg shadow-primary/10"
         >
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-            <Flame className="w-5 h-5 text-primary animate-pulse-soft" />
+          <div className="relative w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse-soft" />
+            <Flame className="w-6 h-6 text-primary animate-spark-flame relative z-10" />
+            <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-primary animate-bounce" />
           </div>
           <div className="flex-1 text-left">
-            <p className="font-display font-semibold text-card-foreground text-sm">
-              {sparkCount === 1 ? "Tienes una chispa" : `Tienes ${sparkCount} chispas`}
+            <p className="font-display font-semibold text-card-foreground">
+              {newSparkCount === 1 ? "🔥 ¡Nueva chispa!" : `🔥 ${newSparkCount} nuevas chispas`}
             </p>
             <p className="font-body text-xs text-card-foreground/60">
-              Algo pasó. Toca para descubrir.
+              {newSparks[0]?.other_profile?.name 
+                ? `${newSparks[0].other_profile.name}${newSparkCount > 1 ? " y más" : ""} quiere conectar`
+                : "Alguien quiere conectar contigo"}
             </p>
+          </div>
+          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+            <span className="text-primary font-bold text-sm">{newSparkCount}</span>
           </div>
         </button>
       )}
