@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead } from "@/hooks/useQuedadas";
+import { useChatImageUpload } from "@/hooks/useChatImageUpload";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -12,13 +14,20 @@ import { es } from "date-fns/locale";
 const QuedadaChat = () => {
   const navigate = useNavigate();
   const { quedadaId } = useParams<{ quedadaId: string }>();
+  const { user } = useAuth();
   const { data: profile } = useProfile();
   const { data: quedada, isLoading: quedadaLoading } = useQuedada(quedadaId);
   const { data: messages, isLoading: messagesLoading } = useQuedadaMessages(quedadaId);
   const sendMessage = useSendQuedadaMessage();
   const markRead = useMarkQuedadaRead();
   
+  // Image upload
+  const { uploadImage, isUploading } = useChatImageUpload();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [newMessage, setNewMessage] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Mark as read when entering chat
@@ -34,7 +43,7 @@ const QuedadaChat = () => {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !quedadaId || !quedada) return;
+    if ((!newMessage.trim() && !selectedFile) || !quedadaId || !quedada) return;
 
     // Get all profile IDs who should receive the notification (creator + attendees)
     const recipientIds: string[] = [];
@@ -50,16 +59,74 @@ const QuedadaChat = () => {
     }
 
     try {
+      let messageContent = newMessage.trim();
+      
+      // If there's an image to upload
+      if (selectedFile && user?.id) {
+        const imageUrl = await uploadImage(selectedFile, user.id);
+        if (imageUrl) {
+          messageContent = imageUrl;
+        } else {
+          return; // Upload failed, don't send message
+        }
+      }
+      
+      if (!messageContent) return;
+      
       await sendMessage.mutateAsync({ 
         quedadaId, 
-        content: newMessage.trim(),
+        content: messageContent,
         recipientProfileIds: recipientIds,
         quedadaTitle: quedada.title,
       });
       setNewMessage("");
+      setSelectedFile(null);
+      setImagePreview(null);
     } catch (error: any) {
       toast.error("Error al enviar: " + error.message);
     }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith("image/")) {
+      toast.error("Solo se permiten imágenes");
+      return;
+    }
+    
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error("La imagen es demasiado grande (máx. 5MB)");
+      return;
+    }
+    
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearImagePreview = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Helper function to check if content is an image URL
+  const isImageMessage = (content: string) => {
+    return content.includes("chat-images") && (
+      content.includes(".jpg") || 
+      content.includes(".jpeg") || 
+      content.includes(".png") || 
+      content.includes(".gif") || 
+      content.includes(".webp")
+    );
   };
 
   const formatEventDate = (dateStr: string) => {
@@ -208,13 +275,28 @@ const QuedadaChat = () => {
                     </p>
                   )}
                   <div
-                    className={`px-4 py-3 font-body text-sm leading-relaxed ${
+                    className={`font-body text-sm leading-relaxed ${
                       isOwn
-                        ? "bg-accent text-accent-foreground rounded-2xl rounded-br-md shadow-lg shadow-accent/20"
-                        : "bg-card text-card-foreground rounded-2xl rounded-bl-md"
+                        ? "rounded-2xl rounded-br-md shadow-lg shadow-accent/20"
+                        : "rounded-2xl rounded-bl-md"
+                    } ${isImageMessage(msg.content) ? "p-1" : "px-4 py-3"} ${
+                      isOwn && !isImageMessage(msg.content)
+                        ? "bg-accent text-accent-foreground"
+                        : !isOwn && !isImageMessage(msg.content)
+                        ? "bg-card text-card-foreground"
+                        : ""
                     }`}
                   >
-                    {msg.content}
+                    {isImageMessage(msg.content) ? (
+                      <img 
+                        src={msg.content} 
+                        alt="Imagen compartida"
+                        className="max-w-full max-h-64 rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => window.open(msg.content, "_blank")}
+                      />
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                 </div>
               </div>
@@ -224,14 +306,57 @@ const QuedadaChat = () => {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Image preview */}
+      {imagePreview && (
+        <div className="relative z-10 px-6 py-2 border-t border-border/20 backdrop-blur-sm bg-background/80">
+          <div className="relative inline-block">
+            <img 
+              src={imagePreview} 
+              alt="Vista previa"
+              className="h-20 rounded-lg object-cover"
+            />
+            <button
+              type="button"
+              onClick={clearImagePreview}
+              className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageSelect}
+          className="hidden"
+        />
+        
         <div className="flex gap-3 items-center">
+          {/* Image button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent/50 transition-all duration-300 disabled:opacity-50"
+          >
+            {isUploading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <ImagePlus className="w-5 h-5" />
+            )}
+          </button>
+          
           <div className="flex-1 relative">
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Escribe algo..."
+              placeholder={selectedFile ? "Añade un mensaje..." : "Escribe algo..."}
               className="h-12 font-body bg-card/50 border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300"
             />
           </div>
@@ -239,9 +364,13 @@ const QuedadaChat = () => {
             type="submit"
             size="icon"
             className="h-12 w-12 rounded-xl bg-accent hover:bg-accent/90 shadow-lg shadow-accent/30 hover:shadow-accent/50 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-            disabled={!newMessage.trim() || sendMessage.isPending}
+            disabled={(!newMessage.trim() && !selectedFile) || sendMessage.isPending || isUploading}
           >
-            <Send className="w-4 h-4" />
+            {isUploading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
           </Button>
         </div>
       </form>
