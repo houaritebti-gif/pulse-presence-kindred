@@ -276,6 +276,27 @@ export const useSendMessage = () => {
   });
 };
 
+// Delete a message
+export const useDeleteMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ messageId, chatId }: { messageId: string; chatId: string }) => {
+      const { error } = await supabase
+        .from("chat_messages")
+        .delete()
+        .eq("id", messageId);
+
+      if (error) throw error;
+      return chatId;
+    },
+    onSuccess: (chatId) => {
+      queryClient.invalidateQueries({ queryKey: ["chat_messages", chatId] });
+      queryClient.invalidateQueries({ queryKey: ["spark_chats"] });
+    },
+  });
+};
+
 // Extinguish a spark (close chat)
 export const useExtinguishSpark = () => {
   const queryClient = useQueryClient();

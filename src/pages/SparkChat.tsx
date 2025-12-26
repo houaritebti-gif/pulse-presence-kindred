@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban } from "lucide-react";
+import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead } from "@/hooks/useSparks";
+import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage } from "@/hooks/useSparks";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
@@ -18,11 +18,13 @@ const SparkChat = () => {
   const sendMessage = useSendMessage();
   const extinguishSpark = useExtinguishSpark();
   const markRead = useMarkSparkRead();
+  const deleteMessage = useDeleteMessage();
   
   const [newMessage, setNewMessage] = useState("");
   const [showExtinguishConfirm, setShowExtinguishConfirm] = useState(false);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"block" | "report">("block");
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Find current chat
@@ -65,6 +67,18 @@ const SparkChat = () => {
       navigate("/sparks");
     } catch (error: any) {
       toast.error("Error: " + error.message);
+    }
+  };
+
+  const handleDeleteMessage = async () => {
+    if (!messageToDelete || !chatId) return;
+
+    try {
+      await deleteMessage.mutateAsync({ messageId: messageToDelete, chatId });
+      toast.success("Mensaje eliminado");
+      setMessageToDelete(null);
+    } catch (error: any) {
+      toast.error("Error al eliminar: " + error.message);
     }
   };
 
@@ -196,11 +210,21 @@ const SparkChat = () => {
             return (
               <div
                 key={msg.id}
-                className={`flex items-end gap-2 ${isOwn ? "justify-end" : "justify-start"} ${
+                className={`flex items-end gap-2 group ${isOwn ? "justify-end" : "justify-start"} ${
                   isOwn ? "animate-message-right" : "animate-message-left"
                 }`}
                 style={{ animationDelay: `${Math.min(index * 50, 300)}ms` }}
               >
+                {/* Delete button for own messages */}
+                {isOwn && (
+                  <button
+                    onClick={() => setMessageToDelete(msg.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground/50 hover:text-destructive"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                
                 {/* Other user avatar */}
                 {!isOwn && (
                   <div className={`w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ${showAvatar ? "opacity-100" : "opacity-0"}`}>
@@ -296,6 +320,44 @@ const SparkChat = () => {
                 onClick={handleExtinguish}
               >
                 Apagar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete message confirmation modal */}
+      {messageToDelete && (
+        <div className="fixed inset-0 bg-background/90 backdrop-blur-md flex items-center justify-center p-6 z-50">
+          <div className="bg-card rounded-3xl p-8 max-w-sm w-full animate-fade-up shadow-2xl border border-border/20">
+            {/* Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="w-8 h-8 text-destructive/60" />
+              </div>
+            </div>
+            
+            <h3 className="font-display text-xl font-semibold text-card-foreground mb-3 text-center">
+              ¿Eliminar mensaje?
+            </h3>
+            <p className="font-body text-sm text-card-foreground/60 mb-8 text-center leading-relaxed">
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="kiki-soft"
+                className="flex-1 h-12 rounded-xl"
+                onClick={() => setMessageToDelete(null)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="kiki"
+                className="flex-1 h-12 rounded-xl bg-destructive hover:bg-destructive/90"
+                onClick={handleDeleteMessage}
+                disabled={deleteMessage.isPending}
+              >
+                Eliminar
               </Button>
             </div>
           </div>
