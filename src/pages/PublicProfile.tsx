@@ -1,9 +1,17 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart } from "lucide-react";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield } from "lucide-react";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
+import { useIsBlocked } from "@/hooks/useUserModeration";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import UserModerationModal from "@/components/UserModerationModal";
 
 const PublicProfile = () => {
   const navigate = useNavigate();
@@ -12,6 +20,9 @@ const PublicProfile = () => {
   const { data: myProfile } = useProfile();
   const { data: myTribes } = useProfileTribes(myProfile?.id);
   const { data: myMusicStyles } = useProfileMusicStyles(myProfile?.id);
+  const isBlocked = useIsBlocked(profileId);
+  const [showModerationModal, setShowModerationModal] = useState(false);
+  const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
 
   // Find shared tribes and music styles
   const compatibility = useMemo(() => {
@@ -60,7 +71,37 @@ const PublicProfile = () => {
           <span>Volver</span>
         </button>
         <span className="font-display text-xl font-bold text-foreground">KIKI</span>
-        <div className="w-16" /> {/* Spacer */}
+        
+        {/* Actions menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="text-muted-foreground hover:text-foreground transition-colors p-2">
+              <MoreVertical className="w-5 h-5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem 
+              onClick={() => {
+                setModerationMode("report");
+                setShowModerationModal(true);
+              }}
+              className="gap-2"
+            >
+              <Flag className="w-4 h-4" />
+              Reportar
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => {
+                setModerationMode("block");
+                setShowModerationModal(true);
+              }}
+              className="gap-2 text-destructive focus:text-destructive"
+            >
+              <Shield className="w-4 h-4" />
+              Bloquear
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Profile content */}
@@ -211,19 +252,43 @@ const PublicProfile = () => {
         )}
 
         {/* Ghost message CTA */}
-        <div className="mt-auto pt-8 animate-fade-up animate-delay-500">
-          <Button
-            onClick={() => navigate(`/chat/${profileId}`)}
-            className="w-full h-14 rounded-2xl font-display text-base font-semibold"
-          >
-            <MessageCircle className="w-5 h-5 mr-2" />
-            Enviar mensaje ghost
-          </Button>
-          <p className="text-center font-body text-xs text-muted-foreground mt-3">
-            Un mensaje valiente. Sin obligación de respuesta.
-          </p>
-        </div>
+        {!isBlocked && (
+          <div className="mt-auto pt-8 animate-fade-up animate-delay-500">
+            <Button
+              onClick={() => navigate(`/chat/${profileId}`)}
+              className="w-full h-14 rounded-2xl font-display text-base font-semibold"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              Enviar mensaje ghost
+            </Button>
+            <p className="text-center font-body text-xs text-muted-foreground mt-3">
+              Un mensaje valiente. Sin obligación de respuesta.
+            </p>
+          </div>
+        )}
+
+        {/* Blocked indicator */}
+        {isBlocked && (
+          <div className="mt-auto pt-8 animate-fade-up animate-delay-500">
+            <div className="bg-destructive/10 rounded-2xl p-4 text-center">
+              <Shield className="w-6 h-6 text-destructive mx-auto mb-2" />
+              <p className="font-body text-sm text-card-foreground">
+                Has bloqueado a esta persona
+              </p>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Moderation Modal */}
+      {showModerationModal && profileId && (
+        <UserModerationModal
+          profileId={profileId}
+          profileName={profile.name || "Usuario"}
+          onClose={() => setShowModerationModal(false)}
+          initialMode={moderationMode}
+        />
+      )}
     </main>
   );
 };
