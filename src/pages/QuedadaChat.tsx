@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import ImageLightbox from "@/components/ImageLightbox";
 
 const QuedadaChat = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const QuedadaChat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Mark as read when entering chat
@@ -292,7 +294,7 @@ const QuedadaChat = () => {
                         src={msg.content} 
                         alt="Imagen compartida"
                         className="max-w-full max-h-64 rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => window.open(msg.content, "_blank")}
+                        onClick={() => setLightboxImage(msg.content)}
                       />
                     ) : (
                       msg.content
@@ -374,6 +376,12 @@ const QuedadaChat = () => {
           </Button>
         </div>
       </form>
+
+      {/* Lightbox */}
+      <ImageLightbox 
+        imageUrl={lightboxImage} 
+        onClose={() => setLightboxImage(null)} 
+      />
     </main>
   );
 };
