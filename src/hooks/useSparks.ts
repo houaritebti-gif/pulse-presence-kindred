@@ -28,6 +28,7 @@ export interface ChatMessage {
   sender_profile_id: string;
   content: string;
   created_at: string;
+  updated_at: string | null;
 }
 
 // Get all active spark chats for current user

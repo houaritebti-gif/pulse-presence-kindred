@@ -308,7 +308,12 @@ const SparkChat = () => {
                         : "bg-card text-card-foreground rounded-2xl rounded-bl-md"
                     }`}
                   >
-                    {msg.content}
+                    <span>{msg.content}</span>
+                    {msg.updated_at && (
+                      <span className={`text-[10px] ml-2 ${isOwn ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+                        (editado)
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
