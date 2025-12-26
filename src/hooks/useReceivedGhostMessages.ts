@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { useQueryClient } from "@tanstack/react-query";
+import { notifyUser } from "@/utils/notificationSound";
 
 export interface ReceivedGhostMessage {
   id: string;
@@ -67,7 +68,10 @@ export const useReceivedGhostMessages = () => {
     enabled: !!profile?.id,
   });
 
-  // Subscribe to realtime updates
+  // Track if this is initial load to avoid playing sound on mount
+  const isInitialLoad = useRef(true);
+
+  // Subscribe to realtime updates and play sound on new messages
   useEffect(() => {
     if (!profile?.id) return;
 
@@ -82,11 +86,24 @@ export const useReceivedGhostMessages = () => {
           filter: `to_profile_id=eq.${profile.id}`
         },
         () => {
+          // Play ghost notification sound for new messages
+          if (!isInitialLoad.current) {
+            notifyUser("ghost");
+          }
           queryClient.invalidateQueries({ queryKey: ["received_ghost_messages", profile.id] });
         }
       )
       .subscribe();
 
+    // Mark initial load as complete after a short delay
+    const timeout = setTimeout(() => {
+      isInitialLoad.current = false;
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeout);
+      supabase.removeChannel(channel);
+    };
     return () => {
       supabase.removeChannel(channel);
     };

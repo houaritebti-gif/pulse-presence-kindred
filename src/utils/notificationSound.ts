@@ -73,11 +73,12 @@ const VIBRATION_PATTERNS = {
   spark: [100, 50, 100, 50, 150], // Quick double tap + longer
   message: [80, 80, 80], // Two quick taps
   quedada: [150, 100, 150], // Friendly pattern
+  ghost: [50, 30, 50, 30, 50], // Mysterious light pattern
   default: [100], // Single short buzz
 };
 
 // Vibrate device if supported
-export const vibrateDevice = (type: "spark" | "message" | "quedada" | "default" = "default") => {
+export const vibrateDevice = (type: "spark" | "message" | "quedada" | "ghost" | "default" = "default") => {
   if (!isVibrationEnabled()) return;
   if (isInDndPeriod()) return;
   
@@ -91,7 +92,7 @@ export const vibrateDevice = (type: "spark" | "message" | "quedada" | "default" 
 };
 
 // Play a simple "ding" notification sound
-export const playNotificationSound = (type: "spark" | "message" | "quedada" | "default" = "default") => {
+export const playNotificationSound = (type: "spark" | "message" | "quedada" | "ghost" | "default" = "default") => {
   // Check if sound is muted or in DND period
   if (isSoundMuted()) return;
   if (isInDndPeriod()) return;
@@ -157,6 +158,28 @@ export const playNotificationSound = (type: "spark" | "message" | "quedada" | "d
         oscillator.stop(ctx.currentTime + 0.5);
         osc2.stop(ctx.currentTime + 0.5);
         break;
+      
+      case "ghost":
+        // Mysterious ethereal sound - descending with vibrato
+        oscillator.type = "sine";
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        lfo.connect(lfoGain);
+        lfoGain.connect(oscillator.frequency);
+        lfo.frequency.value = 6; // Vibrato speed
+        lfoGain.gain.value = 15; // Vibrato depth
+        
+        oscillator.frequency.setValueAtTime(880, ctx.currentTime); // A5
+        oscillator.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.5); // A4
+        gainNode.gain.setValueAtTime(0.08, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.12, ctx.currentTime + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+        
+        lfo.start(ctx.currentTime);
+        oscillator.start(ctx.currentTime);
+        lfo.stop(ctx.currentTime + 0.6);
+        oscillator.stop(ctx.currentTime + 0.6);
+        break;
         
       default:
         // Simple notification ping
@@ -174,7 +197,7 @@ export const playNotificationSound = (type: "spark" | "message" | "quedada" | "d
 };
 
 // Combined function to play sound and vibrate
-export const notifyUser = (type: "spark" | "message" | "quedada" | "default" = "default") => {
+export const notifyUser = (type: "spark" | "message" | "quedada" | "ghost" | "default" = "default") => {
   playNotificationSound(type);
   vibrateDevice(type);
 };
