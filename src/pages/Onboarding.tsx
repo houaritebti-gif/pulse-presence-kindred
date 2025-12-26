@@ -160,13 +160,13 @@ const Onboarding = () => {
         return (
           <div key="step-1" className={`space-y-6 ${baseClass}`}>
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none transition-colors duration-200 peer-focus:text-primary" />
               <Input
                 type="text"
                 placeholder="Tu nombre o alias"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-14 text-lg pl-12 text-center rounded-2xl bg-card border-card-foreground/20 text-foreground placeholder:text-muted-foreground"
+                className="peer h-14 text-lg pl-12 text-center rounded-2xl bg-card border-card-foreground/20 text-foreground placeholder:text-muted-foreground"
                 autoFocus
               />
             </div>
@@ -177,15 +177,15 @@ const Onboarding = () => {
         return (
           <div key="step-2" className={`space-y-6 ${baseClass}`}>
             <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
               <Input
                 type="text"
                 placeholder="Tu ciudad"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="h-14 text-lg pl-12 text-center rounded-2xl bg-card border-card-foreground/20 text-foreground placeholder:text-muted-foreground"
+                className="peer h-14 text-lg pl-12 text-center rounded-2xl bg-card border-card-foreground/20 text-foreground placeholder:text-muted-foreground"
                 autoFocus
               />
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none transition-colors duration-200 peer-focus:text-primary" />
             </div>
           </div>
         );
