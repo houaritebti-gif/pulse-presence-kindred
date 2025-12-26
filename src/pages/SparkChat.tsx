@@ -7,10 +7,13 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage, useOtherUserReadStatus } from "@/hooks/useSparks";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { useChatImageUpload } from "@/hooks/useChatImageUpload";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
 import ImageLightbox from "@/components/ImageLightbox";
+import VoiceMessagePlayer from "@/components/VoiceMessagePlayer";
+import VoiceRecordButton from "@/components/VoiceRecordButton";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SparkChat = () => {
@@ -36,8 +39,21 @@ const SparkChat = () => {
   const { isOtherTyping, handleTyping, stopTyping } = useTypingIndicator(chatId, chat?.other_profile?.id);
   
   // Image upload
-  const { uploadImage, isUploading } = useChatImageUpload();
+  const { uploadImage, isUploading: isUploadingImage } = useChatImageUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Voice recording
+  const { 
+    isRecording, 
+    isUploading: isUploadingVoice, 
+    formattedDuration,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    uploadAudio,
+  } = useVoiceRecorder();
+  
+  const isUploading = isUploadingImage || isUploadingVoice;
   
   const [newMessage, setNewMessage] = useState("");
   const [showExtinguishConfirm, setShowExtinguishConfirm] = useState(false);
@@ -136,6 +152,34 @@ const SparkChat = () => {
       content.includes(".gif") || 
       content.includes(".webp")
     );
+  };
+
+  // Helper function to check if content is a voice message URL
+  const isVoiceMessage = (content: string) => {
+    return content.includes("chat-audio") && (
+      content.includes(".webm") || 
+      content.includes(".mp4") || 
+      content.includes(".m4a") ||
+      content.includes(".ogg")
+    );
+  };
+
+  const handleStopRecording = async () => {
+    const blob = await stopRecording();
+    if (!blob || !user?.id || !chatId || !chat) return;
+    
+    const audioUrl = await uploadAudio(blob, user.id);
+    if (audioUrl) {
+      try {
+        await sendMessage.mutateAsync({ 
+          chatId, 
+          content: audioUrl,
+          recipientProfileId: chat.other_profile?.id,
+        });
+      } catch (error: any) {
+        toast.error("Error al enviar: " + error.message);
+      }
+    }
   };
 
   const handleExtinguish = async () => {
@@ -380,37 +424,41 @@ const SparkChat = () => {
                   </div>
                 ) : (
                   <div className={`flex items-end gap-1.5 ${isOwn ? "flex-row" : "flex-row-reverse"}`}>
-                    <div
-                      className={`max-w-[75%] font-body text-sm leading-relaxed transition-all duration-200 ${
-                        isOwn
-                          ? "rounded-2xl rounded-br-md shadow-lg shadow-primary/20"
-                          : "rounded-2xl rounded-bl-md"
-                      } ${isImageMessage(msg.content) ? "p-1" : "px-4 py-3"} ${
-                        isOwn && !isImageMessage(msg.content)
-                          ? "bg-primary text-primary-foreground"
-                          : !isOwn && !isImageMessage(msg.content)
-                          ? "bg-card text-card-foreground"
-                          : ""
-                      }`}
-                    >
-                      {isImageMessage(msg.content) ? (
-                        <img 
-                          src={msg.content} 
-                          alt="Imagen compartida"
-                          className="max-w-full max-h-64 rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => setLightboxImage(msg.content)}
-                        />
-                      ) : (
-                        <>
-                          <span>{msg.content}</span>
-                          {msg.updated_at && (
-                            <span className={`text-[10px] ml-2 ${isOwn ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-                              (editado)
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </div>
+                    {isVoiceMessage(msg.content) ? (
+                      <VoiceMessagePlayer audioUrl={msg.content} isOwn={isOwn} />
+                    ) : (
+                      <div
+                        className={`max-w-[75%] font-body text-sm leading-relaxed transition-all duration-200 ${
+                          isOwn
+                            ? "rounded-2xl rounded-br-md shadow-lg shadow-primary/20"
+                            : "rounded-2xl rounded-bl-md"
+                        } ${isImageMessage(msg.content) ? "p-1" : "px-4 py-3"} ${
+                          isOwn && !isImageMessage(msg.content)
+                            ? "bg-primary text-primary-foreground"
+                            : !isOwn && !isImageMessage(msg.content)
+                            ? "bg-card text-card-foreground"
+                            : ""
+                        }`}
+                      >
+                        {isImageMessage(msg.content) ? (
+                          <img 
+                            src={msg.content} 
+                            alt="Imagen compartida"
+                            className="max-w-full max-h-64 rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                            onClick={() => setLightboxImage(msg.content)}
+                          />
+                        ) : (
+                          <>
+                            <span>{msg.content}</span>
+                            {msg.updated_at && (
+                              <span className={`text-[10px] ml-2 ${isOwn ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+                                (editado)
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
                     {/* Read indicator for own messages */}
                     {isOwn && (
                       <div className="flex-shrink-0 mb-0.5">
@@ -489,49 +537,66 @@ const SparkChat = () => {
         />
         
         <div className="flex gap-3 items-center">
-          {/* Image button */}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 disabled:opacity-50"
-          >
-            {isUploading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <ImagePlus className="w-5 h-5" />
-            )}
-          </button>
+          {/* Image button - hide when recording */}
+          {!isRecording && (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 disabled:opacity-50"
+            >
+              {isUploadingImage ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <ImagePlus className="w-5 h-5" />
+              )}
+            </button>
+          )}
+
+          {/* Voice record button */}
+          <VoiceRecordButton
+            isRecording={isRecording}
+            isUploading={isUploadingVoice}
+            formattedDuration={formattedDuration}
+            onStartRecording={startRecording}
+            onStopRecording={handleStopRecording}
+            onCancelRecording={cancelRecording}
+          />
           
-          <div className="flex-1 relative">
-            <Input
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value);
-                handleTyping();
-              }}
-              placeholder={selectedFile ? "Añade un mensaje..." : "Escribe algo..."}
-              className="h-12 font-body bg-card/50 border-border/30 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-4 pl-4 rounded-xl transition-all duration-300"
-            />
-            {newMessage.length > 0 && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Sparkles className="w-4 h-4 text-primary/40 animate-pulse-soft" />
+          {/* Text input - hide when recording */}
+          {!isRecording && (
+            <>
+              <div className="flex-1 relative">
+                <Input
+                  value={newMessage}
+                  onChange={(e) => {
+                    setNewMessage(e.target.value);
+                    handleTyping();
+                  }}
+                  placeholder={selectedFile ? "Añade un mensaje..." : "Escribe algo..."}
+                  className="h-12 font-body bg-card/50 border-border/30 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-4 pl-4 rounded-xl transition-all duration-300"
+                />
+                {newMessage.length > 0 && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Sparkles className="w-4 h-4 text-primary/40 animate-pulse-soft" />
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <Button
-            type="submit"
-            variant="kiki"
-            size="icon"
-            className="h-12 w-12 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-            disabled={(!newMessage.trim() && !selectedFile) || sendMessage.isPending || isUploading}
-          >
-            {isUploading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Send className={`w-4 h-4 transition-transform duration-200 ${(newMessage.trim() || selectedFile) ? "translate-x-0.5" : ""}`} />
-            )}
-          </Button>
+              <Button
+                type="submit"
+                variant="kiki"
+                size="icon"
+                className="h-12 w-12 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                disabled={(!newMessage.trim() && !selectedFile) || sendMessage.isPending || isUploading}
+              >
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className={`w-4 h-4 transition-transform duration-200 ${(newMessage.trim() || selectedFile) ? "translate-x-0.5" : ""}`} />
+                )}
+              </Button>
+            </>
+          )}
         </div>
       </form>
 
