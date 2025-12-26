@@ -11,6 +11,7 @@ export interface SparkChat {
   created_at: string;
   extinguished_by_a: boolean;
   extinguished_by_b: boolean;
+  unread_count?: number;
   other_profile?: {
     id: string;
     name: string | null;
@@ -45,6 +46,16 @@ export const useSparkChats = () => {
 
       const blockedSet = new Set(blockedData?.map(b => b.blocked_profile_id) || []);
 
+      // Fetch read status for all chats
+      const { data: readStatusData } = await supabase
+        .from("spark_read_status")
+        .select("chat_id, last_read_at")
+        .eq("profile_id", profile.id);
+
+      const readStatusMap = new Map(
+        readStatusData?.map(rs => [rs.chat_id, new Date(rs.last_read_at)]) || []
+      );
+
       const { data, error } = await supabase
         .from("spark_chats")
         .select(`
@@ -55,6 +66,38 @@ export const useSparkChats = () => {
         .or(`profile_a_id.eq.${profile.id},profile_b_id.eq.${profile.id}`);
 
       if (error) throw error;
+
+      // Get chat IDs for fetching message counts
+      const chatIds = (data || [])
+        .filter(chat => {
+          const isA = chat.profile_a_id === profile.id;
+          const extinguished = isA ? chat.extinguished_by_a : chat.extinguished_by_b;
+          const otherProfileId = isA ? chat.profile_b_id : chat.profile_a_id;
+          return !extinguished && !blockedSet.has(otherProfileId);
+        })
+        .map(chat => chat.id);
+
+      // Fetch unread counts for each chat
+      const unreadCounts = new Map<string, number>();
+      
+      await Promise.all(
+        chatIds.map(async (chatId) => {
+          const lastRead = readStatusMap.get(chatId);
+          
+          let query = supabase
+            .from("chat_messages")
+            .select("*", { count: "exact", head: true })
+            .eq("chat_id", chatId)
+            .neq("sender_profile_id", profile.id);
+          
+          if (lastRead) {
+            query = query.gt("created_at", lastRead.toISOString());
+          }
+          
+          const { count } = await query;
+          unreadCounts.set(chatId, count || 0);
+        })
+      );
 
       // Filter out extinguished chats, blocked users, and map to include other_profile
       return (data || [])
@@ -69,6 +112,7 @@ export const useSparkChats = () => {
           return {
             ...chat,
             other_profile: isA ? chat.profile_b : chat.profile_a,
+            unread_count: unreadCounts.get(chat.id) || 0,
           } as SparkChat;
         });
     },
@@ -268,4 +312,37 @@ export const useGhostMessageLimit = () => {
     },
     enabled: !!profile?.id,
   });
+};
+
+// Mark spark chat as read
+export const useMarkSparkRead = () => {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
+  return useMutation({
+    mutationFn: async (chatId: string) => {
+      if (!profile) throw new Error("No profile");
+
+      const { error } = await supabase
+        .from("spark_read_status")
+        .upsert({
+          chat_id: chatId,
+          profile_id: profile.id,
+          last_read_at: new Date().toISOString(),
+        }, {
+          onConflict: "chat_id,profile_id",
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["spark_chats", profile?.id] });
+    },
+  });
+};
+
+// Get total unread spark messages count
+export const useUnreadSparkCount = () => {
+  const { data: chats } = useSparkChats();
+  return chats?.reduce((sum, chat) => sum + (chat.unread_count || 0), 0) || 0;
 };

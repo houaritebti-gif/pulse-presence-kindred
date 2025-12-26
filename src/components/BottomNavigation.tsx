@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Bell, Calendar, Flame, Users, User } from "lucide-react";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
-import { useSparkChats } from "@/hooks/useSparks";
+import { useSparkChats, useUnreadSparkCount } from "@/hooks/useSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -67,6 +67,7 @@ export const BottomNavigation = () => {
   const location = useLocation();
   const unreadCount = useUnreadNotificationCount();
   const { data: sparks } = useSparkChats();
+  const unreadSparkCount = useUnreadSparkCount();
   const { data: quedadas } = useQuedadas();
 
   const sparkCount = sparks?.length || 0;
@@ -82,7 +83,7 @@ export const BottomNavigation = () => {
       icon: <Flame className="w-5 h-5" />,
       label: "Sparks",
       path: "/sparks",
-      badge: sparkCount,
+      badge: unreadSparkCount > 0 ? unreadSparkCount : (sparkCount > 0 ? sparkCount : undefined),
     },
     {
       icon: <Calendar className="w-5 h-5" />,

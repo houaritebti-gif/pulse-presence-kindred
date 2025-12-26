@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark } from "@/hooks/useSparks";
+import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead } from "@/hooks/useSparks";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
@@ -17,6 +17,7 @@ const SparkChat = () => {
   const { data: messages, isLoading } = useChatMessages(chatId);
   const sendMessage = useSendMessage();
   const extinguishSpark = useExtinguishSpark();
+  const markRead = useMarkSparkRead();
   
   const [newMessage, setNewMessage] = useState("");
   const [showExtinguishConfirm, setShowExtinguishConfirm] = useState(false);
@@ -31,6 +32,13 @@ const SparkChat = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Mark chat as read when entering and when new messages arrive
+  useEffect(() => {
+    if (chatId && chat) {
+      markRead.mutate(chatId);
+    }
+  }, [chatId, chat, messages?.length]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
