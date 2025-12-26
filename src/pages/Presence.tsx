@@ -216,7 +216,7 @@ const Presence = () => {
             {filteredProfiles.map((presence, index) => (
               <button
                 key={presence.id}
-                onClick={() => navigate(`/chat/${presence.profile?.id}`)}
+                onClick={() => navigate(`/user/${presence.profile?.id}`)}
                 className={`w-full bg-card rounded-2xl p-6 text-left transition-all hover:scale-[1.02] animate-fade-up`}
                 style={{ animationDelay: `${(index + 1) * 100}ms` }}
               >
