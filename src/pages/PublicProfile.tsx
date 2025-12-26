@@ -1,7 +1,8 @@
+import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin } from "lucide-react";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart } from "lucide-react";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 
 const PublicProfile = () => {
@@ -9,10 +10,21 @@ const PublicProfile = () => {
   const { profileId } = useParams<{ profileId: string }>();
   const { data: publicProfile, isLoading } = usePublicProfile(profileId);
   const { data: myProfile } = useProfile();
+  const { data: myTribes } = useProfileTribes(myProfile?.id);
+  const { data: myMusicStyles } = useProfileMusicStyles(myProfile?.id);
 
   // Find shared tribes and music styles
-  const myTribes = myProfile?.id ? [] : []; // Will be fetched if needed
-  const sharedTribes = publicProfile?.tribes.filter(t => myTribes.includes(t)) || [];
+  const compatibility = useMemo(() => {
+    const myTribeNames = myTribes?.map(t => t.tribe) || [];
+    const myStyleNames = myMusicStyles?.map(m => m.style) || [];
+    
+    const sharedTribes = publicProfile?.tribes.filter(t => myTribeNames.includes(t)) || [];
+    const sharedMusic = publicProfile?.musicStyles.filter(m => myStyleNames.includes(m)) || [];
+    
+    const totalShared = sharedTribes.length + sharedMusic.length;
+    
+    return { sharedTribes, sharedMusic, totalShared };
+  }, [publicProfile, myTribes, myMusicStyles]);
 
   if (isLoading) {
     return (
@@ -88,6 +100,36 @@ const PublicProfile = () => {
           )}
         </div>
 
+        {/* Compatibility indicator */}
+        {compatibility.totalShared > 0 && (
+          <div className="mb-8 p-4 rounded-2xl bg-primary/10 border border-primary/20 animate-fade-up animate-delay-150">
+            <div className="flex items-center gap-2 mb-3">
+              <Heart className="w-4 h-4 text-primary" />
+              <span className="font-display text-sm font-semibold text-primary">
+                {compatibility.totalShared} {compatibility.totalShared === 1 ? "cosa en común" : "cosas en común"}
+              </span>
+            </div>
+            
+            {compatibility.sharedTribes.length > 0 && (
+              <div className="mb-2">
+                <span className="font-body text-xs text-muted-foreground">Tribus compartidas: </span>
+                <span className="font-body text-sm text-foreground">
+                  {compatibility.sharedTribes.join(", ")}
+                </span>
+              </div>
+            )}
+            
+            {compatibility.sharedMusic.length > 0 && (
+              <div>
+                <span className="font-body text-xs text-muted-foreground">Música en común: </span>
+                <span className="font-body text-sm text-foreground">
+                  {compatibility.sharedMusic.join(", ")}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Tribes */}
         {publicProfile.tribes.length > 0 && (
           <div className="mb-6 animate-fade-up animate-delay-200">
@@ -95,14 +137,21 @@ const PublicProfile = () => {
               Tribus
             </h2>
             <div className="flex flex-wrap gap-2">
-              {publicProfile.tribes.map(tribe => (
-                <span 
-                  key={tribe}
-                  className="px-3 py-1.5 rounded-full bg-card font-body text-sm text-card-foreground"
-                >
-                  {tribe}
-                </span>
-              ))}
+              {publicProfile.tribes.map(tribe => {
+                const isShared = compatibility.sharedTribes.includes(tribe);
+                return (
+                  <span 
+                    key={tribe}
+                    className={`px-3 py-1.5 rounded-full font-body text-sm ${
+                      isShared 
+                        ? "bg-primary/20 text-primary ring-1 ring-primary/30" 
+                        : "bg-card text-card-foreground"
+                    }`}
+                  >
+                    {tribe}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}
@@ -115,14 +164,21 @@ const PublicProfile = () => {
               Estilos de música
             </h2>
             <div className="flex flex-wrap gap-2">
-              {publicProfile.musicStyles.map(style => (
-                <span 
-                  key={style}
-                  className="px-3 py-1.5 rounded-full bg-primary/10 font-body text-sm text-primary"
-                >
-                  {style}
-                </span>
-              ))}
+              {publicProfile.musicStyles.map(style => {
+                const isShared = compatibility.sharedMusic.includes(style);
+                return (
+                  <span 
+                    key={style}
+                    className={`px-3 py-1.5 rounded-full font-body text-sm ${
+                      isShared 
+                        ? "bg-primary/30 text-primary ring-1 ring-primary/40" 
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {style}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}
