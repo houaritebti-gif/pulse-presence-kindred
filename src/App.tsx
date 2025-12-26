@@ -9,6 +9,7 @@ import NotificationProvider from "@/components/NotificationProvider";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import Profile from "./pages/Profile";
 import Presence from "./pages/Presence";
 import PublicProfile from "./pages/PublicProfile";
@@ -34,6 +35,14 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route
+                path="/onboarding"
+                element={
+                  <ProtectedRoute>
+                    <Onboarding />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/profile"
                 element={
