@@ -1,0 +1,175 @@
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin } from "lucide-react";
+import { usePublicProfile } from "@/hooks/usePublicProfile";
+import { useProfile } from "@/hooks/useProfile";
+import { Button } from "@/components/ui/button";
+
+const PublicProfile = () => {
+  const navigate = useNavigate();
+  const { profileId } = useParams<{ profileId: string }>();
+  const { data: publicProfile, isLoading } = usePublicProfile(profileId);
+  const { data: myProfile } = useProfile();
+
+  // Find shared tribes and music styles
+  const myTribes = myProfile?.id ? [] : []; // Will be fetched if needed
+  const sharedTribes = publicProfile?.tribes.filter(t => myTribes.includes(t)) || [];
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
+  }
+
+  if (!publicProfile?.profile) {
+    return (
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+        <p className="font-body text-muted-foreground mb-4">Perfil no encontrado</p>
+        <Button variant="ghost" onClick={() => navigate(-1)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver
+        </Button>
+      </main>
+    );
+  }
+
+  const profile = publicProfile.profile;
+
+  return (
+    <main className="min-h-screen bg-background flex flex-col pb-24">
+      {/* Header */}
+      <div className="px-6 py-4 flex items-center justify-between">
+        <button 
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Volver</span>
+        </button>
+        <span className="font-display text-xl font-bold text-foreground">KIKI</span>
+        <div className="w-16" /> {/* Spacer */}
+      </div>
+
+      {/* Profile content */}
+      <div className="flex-1 px-6 max-w-lg mx-auto w-full">
+        {/* Avatar */}
+        <div className="flex justify-center mb-6 animate-fade-up">
+          <div className="w-32 h-32 rounded-full bg-card overflow-hidden ring-4 ring-primary/20">
+            {profile.avatar_url ? (
+              <img 
+                src={profile.avatar_url} 
+                alt={profile.name || "Avatar"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground font-display text-4xl bg-card">
+                {(profile.name?.[0] || "?").toUpperCase()}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Name and vibe */}
+        <div className="text-center mb-8 animate-fade-up animate-delay-100">
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+            {profile.name || "Anónima"}
+          </h1>
+          {profile.vibe && (
+            <p className="font-body text-primary text-lg">
+              Vibra {profile.vibe.toLowerCase()}
+            </p>
+          )}
+          {profile.city && (
+            <div className="flex items-center justify-center gap-1.5 mt-2 text-muted-foreground">
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="font-body text-sm">{profile.city}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Tribes */}
+        {publicProfile.tribes.length > 0 && (
+          <div className="mb-6 animate-fade-up animate-delay-200">
+            <h2 className="font-display text-sm font-semibold text-muted-foreground mb-3">
+              Tribus
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {publicProfile.tribes.map(tribe => (
+                <span 
+                  key={tribe}
+                  className="px-3 py-1.5 rounded-full bg-card font-body text-sm text-card-foreground"
+                >
+                  {tribe}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Music styles */}
+        {publicProfile.musicStyles.length > 0 && (
+          <div className="mb-6 animate-fade-up animate-delay-300">
+            <h2 className="font-display text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+              <Music className="w-4 h-4" />
+              Estilos de música
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {publicProfile.musicStyles.map(style => (
+                <span 
+                  key={style}
+                  className="px-3 py-1.5 rounded-full bg-primary/10 font-body text-sm text-primary"
+                >
+                  {style}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Optional details */}
+        {(profile.has_tattoos || profile.has_piercings || profile.alternative_aesthetic) && (
+          <div className="mb-8 animate-fade-up animate-delay-400">
+            <h2 className="font-display text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Detalles
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {profile.has_tattoos && (
+                <span className="px-3 py-1.5 rounded-full bg-accent/10 font-body text-sm text-accent">
+                  Tatuajes
+                </span>
+              )}
+              {profile.has_piercings && (
+                <span className="px-3 py-1.5 rounded-full bg-accent/10 font-body text-sm text-accent">
+                  Piercings
+                </span>
+              )}
+              {profile.alternative_aesthetic && (
+                <span className="px-3 py-1.5 rounded-full bg-accent/10 font-body text-sm text-accent">
+                  Estética alternativa
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Ghost message CTA */}
+        <div className="mt-auto pt-8 animate-fade-up animate-delay-500">
+          <Button
+            onClick={() => navigate(`/chat/${profileId}`)}
+            className="w-full h-14 rounded-2xl font-display text-base font-semibold"
+          >
+            <MessageCircle className="w-5 h-5 mr-2" />
+            Enviar mensaje ghost
+          </Button>
+          <p className="text-center font-body text-xs text-muted-foreground mt-3">
+            Un mensaje valiente. Sin obligación de respuesta.
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+};
+
+export default PublicProfile;

@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Presence from "./pages/Presence";
+import PublicProfile from "./pages/PublicProfile";
 import Chat from "./pages/Chat";
 import Sparks from "./pages/Sparks";
 import SparkChat from "./pages/SparkChat";
@@ -46,6 +47,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Presence />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/user/:profileId"
+                element={
+                  <ProtectedRoute>
+                    <PublicProfile />
                   </ProtectedRoute>
                 }
               />
