@@ -13,6 +13,7 @@ export interface SparkChat {
   extinguished_by_b: boolean;
   unread_count?: number;
   last_message_at?: string;
+  last_message_content?: string;
   other_profile?: {
     id: string;
     name: string | null;
@@ -78,9 +79,9 @@ export const useSparkChats = () => {
         })
         .map(chat => chat.id);
 
-      // Fetch unread counts and last message timestamp for each chat
+      // Fetch unread counts and last message for each chat
       const unreadCounts = new Map<string, number>();
-      const lastMessageTimes = new Map<string, string>();
+      const lastMessages = new Map<string, { created_at: string; content: string }>();
       
       await Promise.all(
         chatIds.map(async (chatId) => {
@@ -100,17 +101,17 @@ export const useSparkChats = () => {
           const { count } = await countQuery;
           unreadCounts.set(chatId, count || 0);
 
-          // Get last message timestamp
+          // Get last message
           const { data: lastMsg } = await supabase
             .from("chat_messages")
-            .select("created_at")
+            .select("created_at, content")
             .eq("chat_id", chatId)
             .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
           
           if (lastMsg) {
-            lastMessageTimes.set(chatId, lastMsg.created_at);
+            lastMessages.set(chatId, { created_at: lastMsg.created_at, content: lastMsg.content });
           }
         })
       );
@@ -125,11 +126,13 @@ export const useSparkChats = () => {
         })
         .map(chat => {
           const isA = chat.profile_a_id === profile.id;
+          const lastMsg = lastMessages.get(chat.id);
           return {
             ...chat,
             other_profile: isA ? chat.profile_b : chat.profile_a,
             unread_count: unreadCounts.get(chat.id) || 0,
-            last_message_at: lastMessageTimes.get(chat.id) || chat.created_at,
+            last_message_at: lastMsg?.created_at || chat.created_at,
+            last_message_content: lastMsg?.content,
           } as SparkChat;
         });
 
