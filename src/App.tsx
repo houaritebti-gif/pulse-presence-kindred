@@ -16,6 +16,7 @@ import PublicProfile from "./pages/PublicProfile";
 import Chat from "./pages/Chat";
 import Sparks from "./pages/Sparks";
 import SparkChat from "./pages/SparkChat";
+import GhostMessages from "./pages/GhostMessages";
 import Quedadas from "./pages/Quedadas";
 import QuedadaChat from "./pages/QuedadaChat";
 import Notifications from "./pages/Notifications";
@@ -112,6 +113,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Notifications />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/ghost-messages"
+                element={
+                  <ProtectedRoute>
+                    <GhostMessages />
                   </ProtectedRoute>
                 }
               />
