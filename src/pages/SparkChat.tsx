@@ -10,6 +10,7 @@ import { useChatImageUpload } from "@/hooks/useChatImageUpload";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
+import ImageLightbox from "@/components/ImageLightbox";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SparkChat = () => {
@@ -46,6 +47,7 @@ const SparkChat = () => {
   const [editingMessage, setEditingMessage] = useState<{ id: string; content: string } | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -396,7 +398,7 @@ const SparkChat = () => {
                           src={msg.content} 
                           alt="Imagen compartida"
                           className="max-w-full max-h-64 rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => window.open(msg.content, "_blank")}
+                          onClick={() => setLightboxImage(msg.content)}
                         />
                       ) : (
                         <>
@@ -620,6 +622,12 @@ const SparkChat = () => {
           initialMode={moderationMode}
         />
       )}
+
+      {/* Lightbox */}
+      <ImageLightbox 
+        imageUrl={lightboxImage} 
+        onClose={() => setLightboxImage(null)} 
+      />
     </main>
   );
 };
