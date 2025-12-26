@@ -1,11 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Music, Sparkles, Heart } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Music, Sparkles, Heart, Ghost } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useNewSparks } from "@/hooks/useNewSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
+import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 
 const Presence = () => {
@@ -20,6 +21,7 @@ const Presence = () => {
   const { data: quedadas } = useQuedadas();
   const quedadaCount = quedadas?.length || 0;
   const unreadCount = useUnreadNotificationCount();
+  const unreadGhostCount = useUnreadGhostMessageCount();
 
   // My tribes and music for compatibility calculation
   const myTribeNames = useMemo(() => myTribes?.map(t => t.tribe) || [], [myTribes]);
@@ -103,6 +105,19 @@ const Presence = () => {
         </button>
         <span className="font-display text-xl font-bold text-foreground">KIKI</span>
         <div className="flex items-center gap-3">
+          {/* Ghost messages button */}
+          <button
+            onClick={() => navigate("/ghost-messages")}
+            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            title="Mensajes fantasma"
+          >
+            <Ghost className={`w-5 h-5 ${unreadGhostCount > 0 ? "text-primary" : ""}`} />
+            {unreadGhostCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
+                {unreadGhostCount > 9 ? "9+" : unreadGhostCount}
+              </span>
+            )}
+          </button>
           {/* Notifications button */}
           <button
             onClick={() => navigate("/notifications")}
