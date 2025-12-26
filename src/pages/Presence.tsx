@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Music, Sparkles } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
@@ -6,6 +6,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSparkCount } from "@/hooks/useSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
+import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -17,6 +18,13 @@ const Presence = () => {
   const { data: quedadas } = useQuedadas();
   const quedadaCount = quedadas?.length || 0;
   const unreadCount = useUnreadNotificationCount();
+
+  // Filters state
+  const [filters, setFilters] = useState<PresenceFilters>({
+    tribes: [],
+    musicStyles: [],
+    details: [],
+  });
 
   // Enable heartbeat
   usePresenceHeartbeat();
@@ -37,6 +45,34 @@ const Presence = () => {
 
   // Filter out own profile from list
   const otherProfiles = presenceList?.filter(p => p.profile?.id !== profile?.id) || [];
+
+  // Apply filters
+  const filteredProfiles = useMemo(() => {
+    return otherProfiles.filter(presence => {
+      // Tribe filter - must have at least one matching tribe
+      if (filters.tribes.length > 0) {
+        const hasMatchingTribe = presence.tribes.some(t => filters.tribes.includes(t));
+        if (!hasMatchingTribe) return false;
+      }
+
+      // Music filter - must have at least one matching style
+      if (filters.musicStyles.length > 0) {
+        const hasMatchingMusic = presence.musicStyles.some(m => filters.musicStyles.includes(m));
+        if (!hasMatchingMusic) return false;
+      }
+
+      // Details filter - must have all selected details
+      if (filters.details.length > 0) {
+        for (const detail of filters.details) {
+          if (detail === "has_tattoos" && !presence.profile?.has_tattoos) return false;
+          if (detail === "has_piercings" && !presence.profile?.has_piercings) return false;
+          if (detail === "alternative_aesthetic" && !presence.profile?.alternative_aesthetic) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [otherProfiles, filters]);
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24">
@@ -138,11 +174,17 @@ const Presence = () => {
           </p>
         </div>
 
+        {/* Filters */}
+        <PresenceFiltersComponent filters={filters} onChange={setFilters} />
+
         {/* Presence indicator */}
         <div className="flex items-center justify-center gap-2 mb-10 animate-fade-up animate-delay-100">
           <div className="w-2 h-2 rounded-full bg-primary animate-pulse-soft" />
           <span className="font-body text-sm text-muted-foreground">
-            {otherProfiles.length} {otherProfiles.length === 1 ? "persona presente" : "personas presentes"}
+            {filteredProfiles.length} {filteredProfiles.length === 1 ? "persona" : "personas"}
+            {filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 
+              ? " (filtrado)" 
+              : " presentes"}
           </span>
           {!myPresence?.visible_to_others && (
             <span className="font-body text-xs text-muted-foreground/60 ml-2">
@@ -156,18 +198,22 @@ const Presence = () => {
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : otherProfiles.length === 0 ? (
+        ) : filteredProfiles.length === 0 ? (
           <div className="text-center py-12 animate-fade-up">
             <p className="font-body text-muted-foreground mb-4">
-              Nadie más está presente ahora.
+              {otherProfiles.length === 0 
+                ? "Nadie más está presente ahora."
+                : "No hay personas que coincidan con tus filtros."}
             </p>
             <p className="font-body text-sm text-muted-foreground/60">
-              Quédate un rato. Alguien aparecerá.
+              {otherProfiles.length === 0 
+                ? "Quédate un rato. Alguien aparecerá."
+                : "Prueba con otros criterios."}
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {otherProfiles.map((presence, index) => (
+            {filteredProfiles.map((presence, index) => (
               <button
                 key={presence.id}
                 onClick={() => navigate(`/chat/${presence.profile?.id}`)}
