@@ -416,3 +416,53 @@ export const useUnreadSparkCount = () => {
   const { data: chats } = useSparkChats();
   return chats?.reduce((sum, chat) => sum + (chat.unread_count || 0), 0) || 0;
 };
+
+// Get the other user's last read timestamp for a chat
+export const useOtherUserReadStatus = (chatId: string | undefined, otherProfileId: string | undefined) => {
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: ["other_user_read_status", chatId, otherProfileId],
+    queryFn: async () => {
+      if (!chatId || !otherProfileId) return null;
+
+      const { data, error } = await supabase
+        .from("spark_read_status")
+        .select("last_read_at")
+        .eq("chat_id", chatId)
+        .eq("profile_id", otherProfileId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data?.last_read_at ? new Date(data.last_read_at) : null;
+    },
+    enabled: !!chatId && !!otherProfileId,
+  });
+
+  // Subscribe to realtime updates for read status changes
+  useEffect(() => {
+    if (!chatId || !otherProfileId) return;
+
+    const channel = supabase
+      .channel(`read-status-${chatId}-${otherProfileId}`)
+      .on(
+        "postgres_changes",
+        { 
+          event: "*", 
+          schema: "public", 
+          table: "spark_read_status",
+          filter: `chat_id=eq.${chatId}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["other_user_read_status", chatId, otherProfileId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [chatId, otherProfileId, queryClient]);
+
+  return query;
+};

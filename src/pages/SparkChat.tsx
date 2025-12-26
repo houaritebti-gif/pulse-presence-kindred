@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check } from "lucide-react";
+import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check, CheckCheck } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage } from "@/hooks/useSparks";
+import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage, useOtherUserReadStatus } from "@/hooks/useSparks";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
@@ -21,6 +21,12 @@ const SparkChat = () => {
   const deleteMessage = useDeleteMessage();
   const editMessage = useEditMessage();
   
+  // Find current chat
+  const chat = chats?.find(c => c.id === chatId);
+  
+  // Get the other user's read status
+  const { data: otherUserLastRead } = useOtherUserReadStatus(chatId, chat?.other_profile?.id);
+  
   const [newMessage, setNewMessage] = useState("");
   const [showExtinguishConfirm, setShowExtinguishConfirm] = useState(false);
   const [showModerationModal, setShowModerationModal] = useState(false);
@@ -28,9 +34,6 @@ const SparkChat = () => {
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
   const [editingMessage, setEditingMessage] = useState<{ id: string; content: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Find current chat
-  const chat = chats?.find(c => c.id === chatId);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -301,18 +304,30 @@ const SparkChat = () => {
                     </button>
                   </div>
                 ) : (
-                  <div
-                    className={`max-w-[75%] px-4 py-3 font-body text-sm leading-relaxed transition-all duration-200 ${
-                      isOwn
-                        ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md shadow-lg shadow-primary/20"
-                        : "bg-card text-card-foreground rounded-2xl rounded-bl-md"
-                    }`}
-                  >
-                    <span>{msg.content}</span>
-                    {msg.updated_at && (
-                      <span className={`text-[10px] ml-2 ${isOwn ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-                        (editado)
-                      </span>
+                  <div className={`flex items-end gap-1.5 ${isOwn ? "flex-row" : "flex-row-reverse"}`}>
+                    <div
+                      className={`max-w-[75%] px-4 py-3 font-body text-sm leading-relaxed transition-all duration-200 ${
+                        isOwn
+                          ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md shadow-lg shadow-primary/20"
+                          : "bg-card text-card-foreground rounded-2xl rounded-bl-md"
+                      }`}
+                    >
+                      <span>{msg.content}</span>
+                      {msg.updated_at && (
+                        <span className={`text-[10px] ml-2 ${isOwn ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+                          (editado)
+                        </span>
+                      )}
+                    </div>
+                    {/* Read indicator for own messages */}
+                    {isOwn && (
+                      <div className="flex-shrink-0 mb-0.5">
+                        {otherUserLastRead && new Date(msg.created_at) <= otherUserLastRead ? (
+                          <CheckCheck className="w-4 h-4 text-primary/70" />
+                        ) : (
+                          <Check className="w-4 h-4 text-muted-foreground/50" />
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
