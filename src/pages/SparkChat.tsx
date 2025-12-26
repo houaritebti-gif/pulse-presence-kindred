@@ -2,17 +2,20 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check, CheckCheck } from "lucide-react";
+import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check, CheckCheck, ImagePlus, Loader2 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage, useOtherUserReadStatus } from "@/hooks/useSparks";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { useChatImageUpload } from "@/hooks/useChatImageUpload";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SparkChat = () => {
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
+  const { user } = useAuth();
   const { data: profile } = useProfile();
   const { data: chats } = useSparkChats();
   const { data: messages, isLoading } = useChatMessages(chatId);
@@ -31,12 +34,18 @@ const SparkChat = () => {
   // Typing indicator
   const { isOtherTyping, handleTyping, stopTyping } = useTypingIndicator(chatId, chat?.other_profile?.id);
   
+  // Image upload
+  const { uploadImage, isUploading } = useChatImageUpload();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [newMessage, setNewMessage] = useState("");
   const [showExtinguishConfirm, setShowExtinguishConfirm] = useState(false);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"block" | "report">("block");
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
   const [editingMessage, setEditingMessage] = useState<{ id: string; content: string } | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -53,20 +62,78 @@ const SparkChat = () => {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !chatId || !chat) return;
+    if ((!newMessage.trim() && !selectedFile) || !chatId || !chat) return;
 
     stopTyping(); // Stop typing indicator on send
     
     try {
+      let messageContent = newMessage.trim();
+      
+      // If there's an image to upload
+      if (selectedFile && user?.id) {
+        const imageUrl = await uploadImage(selectedFile, user.id);
+        if (imageUrl) {
+          messageContent = imageUrl;
+        } else {
+          return; // Upload failed, don't send message
+        }
+      }
+      
+      if (!messageContent) return;
+      
       await sendMessage.mutateAsync({ 
         chatId, 
-        content: newMessage.trim(),
+        content: messageContent,
         recipientProfileId: chat.other_profile?.id,
       });
       setNewMessage("");
+      setSelectedFile(null);
+      setImagePreview(null);
     } catch (error: any) {
       toast.error("Error al enviar: " + error.message);
     }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith("image/")) {
+      toast.error("Solo se permiten imágenes");
+      return;
+    }
+    
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error("La imagen es demasiado grande (máx. 5MB)");
+      return;
+    }
+    
+    setSelectedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearImagePreview = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Helper function to check if content is an image URL
+  const isImageMessage = (content: string) => {
+    return content.includes("chat-images") && (
+      content.includes(".jpg") || 
+      content.includes(".jpeg") || 
+      content.includes(".png") || 
+      content.includes(".gif") || 
+      content.includes(".webp")
+    );
   };
 
   const handleExtinguish = async () => {
@@ -312,17 +379,34 @@ const SparkChat = () => {
                 ) : (
                   <div className={`flex items-end gap-1.5 ${isOwn ? "flex-row" : "flex-row-reverse"}`}>
                     <div
-                      className={`max-w-[75%] px-4 py-3 font-body text-sm leading-relaxed transition-all duration-200 ${
+                      className={`max-w-[75%] font-body text-sm leading-relaxed transition-all duration-200 ${
                         isOwn
-                          ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md shadow-lg shadow-primary/20"
-                          : "bg-card text-card-foreground rounded-2xl rounded-bl-md"
+                          ? "rounded-2xl rounded-br-md shadow-lg shadow-primary/20"
+                          : "rounded-2xl rounded-bl-md"
+                      } ${isImageMessage(msg.content) ? "p-1" : "px-4 py-3"} ${
+                        isOwn && !isImageMessage(msg.content)
+                          ? "bg-primary text-primary-foreground"
+                          : !isOwn && !isImageMessage(msg.content)
+                          ? "bg-card text-card-foreground"
+                          : ""
                       }`}
                     >
-                      <span>{msg.content}</span>
-                      {msg.updated_at && (
-                        <span className={`text-[10px] ml-2 ${isOwn ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
-                          (editado)
-                        </span>
+                      {isImageMessage(msg.content) ? (
+                        <img 
+                          src={msg.content} 
+                          alt="Imagen compartida"
+                          className="max-w-full max-h-64 rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(msg.content, "_blank")}
+                        />
+                      ) : (
+                        <>
+                          <span>{msg.content}</span>
+                          {msg.updated_at && (
+                            <span className={`text-[10px] ml-2 ${isOwn ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
+                              (editado)
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                     {/* Read indicator for own messages */}
@@ -371,9 +455,52 @@ const SparkChat = () => {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Image preview */}
+      {imagePreview && (
+        <div className="relative z-10 px-6 py-2 border-t border-border/20 backdrop-blur-sm bg-background/80">
+          <div className="relative inline-block">
+            <img 
+              src={imagePreview} 
+              alt="Vista previa"
+              className="h-20 rounded-lg object-cover"
+            />
+            <button
+              type="button"
+              onClick={clearImagePreview}
+              className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageSelect}
+          className="hidden"
+        />
+        
         <div className="flex gap-3 items-center">
+          {/* Image button */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 disabled:opacity-50"
+          >
+            {isUploading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <ImagePlus className="w-5 h-5" />
+            )}
+          </button>
+          
           <div className="flex-1 relative">
             <Input
               value={newMessage}
@@ -381,7 +508,7 @@ const SparkChat = () => {
                 setNewMessage(e.target.value);
                 handleTyping();
               }}
-              placeholder="Escribe algo..."
+              placeholder={selectedFile ? "Añade un mensaje..." : "Escribe algo..."}
               className="h-12 font-body bg-card/50 border-border/30 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-4 pl-4 rounded-xl transition-all duration-300"
             />
             {newMessage.length > 0 && (
@@ -395,9 +522,13 @@ const SparkChat = () => {
             variant="kiki"
             size="icon"
             className="h-12 w-12 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-            disabled={!newMessage.trim() || sendMessage.isPending}
+            disabled={(!newMessage.trim() && !selectedFile) || sendMessage.isPending || isUploading}
           >
-            <Send className={`w-4 h-4 transition-transform duration-200 ${newMessage.trim() ? "translate-x-0.5" : ""}`} />
+            {isUploading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className={`w-4 h-4 transition-transform duration-200 ${(newMessage.trim() || selectedFile) ? "translate-x-0.5" : ""}`} />
+            )}
           </Button>
         </div>
       </form>
