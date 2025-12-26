@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Flame, X, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Flame, X, Sparkles, User } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark } from "@/hooks/useSparks";
 import { toast } from "sonner";
@@ -81,7 +81,10 @@ const SparkChat = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         </button>
         
-        <div className="flex items-center gap-3 animate-fade-up">
+        <button 
+          onClick={() => chat.other_profile?.id && navigate(`/user/${chat.other_profile.id}`)}
+          className="flex items-center gap-3 animate-fade-up hover:opacity-80 transition-opacity"
+        >
           {/* Avatar with glow ring */}
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-card overflow-hidden flex-shrink-0 ring-2 ring-primary/30 ring-offset-2 ring-offset-background">
@@ -103,15 +106,16 @@ const SparkChat = () => {
             </div>
           </div>
           
-          <div className="text-center">
+          <div className="text-left">
             <span className="font-display font-semibold text-foreground block">
               {chat.other_profile?.name || "Anónima"}
             </span>
-            <span className="font-body text-xs text-primary/80">
-              Chispa activa
+            <span className="font-body text-xs text-primary/80 flex items-center gap-1">
+              <User className="w-3 h-3" />
+              Ver perfil
             </span>
           </div>
-        </div>
+        </button>
 
         <button
           onClick={() => setShowExtinguishConfirm(true)}
