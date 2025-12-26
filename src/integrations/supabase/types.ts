@@ -500,6 +500,27 @@ export type Database = {
           },
         ]
       }
+      spark_read_status: {
+        Row: {
+          chat_id: string
+          id: string
+          last_read_at: string
+          profile_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          last_read_at?: string
+          profile_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          last_read_at?: string
+          profile_id?: string
+        }
+        Relationships: []
+      }
       sparks: {
         Row: {
           created_at: string | null

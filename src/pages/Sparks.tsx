@@ -112,9 +112,17 @@ const Sparks = () => {
                   </p>
                 </div>
 
-                {/* Active indicator */}
+                {/* Unread indicator or active dot */}
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse-soft shadow-lg shadow-primary/50" />
+                  {chat.unread_count && chat.unread_count > 0 ? (
+                    <div className="min-w-6 h-6 px-2 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/50 animate-pulse-soft">
+                      <span className="text-xs font-bold text-primary-foreground">
+                        {chat.unread_count > 9 ? "9+" : chat.unread_count}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary/30" />
+                  )}
                 </div>
               </button>
             ))}
