@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
@@ -14,6 +14,8 @@ import { sendPushNotification } from "@/utils/pushNotifications";
 import { isVibrationEnabled, setVibrationEnabled, isDndEnabled, setDndEnabled, getDndHours, setDndHours } from "@/utils/notificationSound";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
+import { useBlockedUsersList, useUnblockUser } from "@/hooks/useUserModeration";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -484,6 +486,9 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Blocked Users Section */}
+        <BlockedUsersSection />
+
         {/* Sound Settings */}
         <div className="mb-6 animate-fade-up animate-delay-600">
           <h2 className="font-display text-lg font-semibold text-foreground mb-4">
@@ -675,6 +680,93 @@ const Profile = () => {
         </div>
       </div>
     </main>
+  );
+};
+
+// Blocked Users Section Component
+const BlockedUsersSection = () => {
+  const { data: blockedUsers, isLoading } = useBlockedUsersList();
+  const unblockUser = useUnblockUser();
+  const [expanded, setExpanded] = useState(false);
+
+  if (isLoading) return null;
+  
+  const hasBlocked = blockedUsers && blockedUsers.length > 0;
+
+  return (
+    <div className="mb-10 animate-fade-up animate-delay-550">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between mb-4"
+      >
+        <div className="flex items-center gap-2">
+          <Ban className="w-5 h-5 text-destructive" />
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Usuarios bloqueados
+          </h2>
+          {hasBlocked && (
+            <span className="text-xs text-muted-foreground">
+              ({blockedUsers.length})
+            </span>
+          )}
+        </div>
+        {expanded ? (
+          <ChevronUp className="w-5 h-5 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="space-y-2">
+          {!hasBlocked ? (
+            <p className="text-sm text-muted-foreground font-body p-4 bg-secondary/50 rounded-xl">
+              No has bloqueado a nadie.
+            </p>
+          ) : (
+            blockedUsers.map((block) => {
+              const profile = block.blocked_profile as { id: string; name: string | null; avatar_url: string | null; vibe: string | null } | null;
+              if (!profile) return null;
+              
+              return (
+                <div 
+                  key={block.id} 
+                  className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={profile.avatar_url || undefined} />
+                      <AvatarFallback className="bg-muted text-muted-foreground text-sm">
+                        {profile.name?.charAt(0)?.toUpperCase() || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-body text-sm text-foreground">
+                        {profile.name || "Sin nombre"}
+                      </p>
+                      {profile.vibe && (
+                        <p className="font-body text-xs text-muted-foreground">
+                          {profile.vibe}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => unblockUser.mutate(profile.id)}
+                    disabled={unblockUser.isPending}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
