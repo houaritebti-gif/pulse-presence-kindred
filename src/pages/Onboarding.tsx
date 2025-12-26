@@ -28,6 +28,8 @@ const Onboarding = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [isAnimating, setIsAnimating] = useState(false);
   const [name, setName] = useState("");
   const [city, setCity] = useState("Madrid");
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
@@ -40,6 +42,11 @@ const Onboarding = () => {
 
   const currentStep = STEPS.find(s => s.id === step)!;
   const progress = (step / STEPS.length) * 100;
+
+  // Animation helper for step transitions
+  const animationClass = direction === "forward" 
+    ? "animate-slide-in-right" 
+    : "animate-slide-in-left";
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -86,14 +93,24 @@ const Onboarding = () => {
   };
 
   const handleNext = () => {
-    if (step < STEPS.length) {
-      setStep(step + 1);
+    if (step < STEPS.length && !isAnimating) {
+      setIsAnimating(true);
+      setDirection("forward");
+      setTimeout(() => {
+        setStep(step + 1);
+        setIsAnimating(false);
+      }, 50);
     }
   };
 
   const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
+    if (step > 1 && !isAnimating) {
+      setIsAnimating(true);
+      setDirection("back");
+      setTimeout(() => {
+        setStep(step - 1);
+        setIsAnimating(false);
+      }, 50);
     }
   };
 
@@ -136,10 +153,12 @@ const Onboarding = () => {
   };
 
   const renderStepContent = () => {
+    const baseClass = `${animationClass}`;
+    
     switch (step) {
       case 1:
         return (
-          <div className="space-y-6 animate-fade-up">
+          <div key="step-1" className={`space-y-6 ${baseClass}`}>
             <Input
               type="text"
               placeholder="Tu nombre o alias"
@@ -153,7 +172,7 @@ const Onboarding = () => {
 
       case 2:
         return (
-          <div className="space-y-6 animate-fade-up">
+          <div key="step-2" className={`space-y-6 ${baseClass}`}>
             <Input
               type="text"
               placeholder="Tu ciudad"
@@ -167,13 +186,14 @@ const Onboarding = () => {
 
       case 3:
         return (
-          <div className="space-y-4 animate-fade-up">
+          <div key="step-3" className={`space-y-4 ${baseClass}`}>
             <div className="grid grid-cols-2 gap-3">
-              {VIBES.map((vibe) => (
+              {VIBES.map((vibe, index) => (
                 <button
                   key={vibe}
                   onClick={() => setSelectedVibe(vibe)}
-                  className={`p-4 rounded-2xl font-body text-base transition-all ${
+                  style={{ animationDelay: `${index * 50}ms` }}
+                  className={`p-4 rounded-2xl font-body text-base transition-all animate-bounce-in ${
                     selectedVibe === vibe
                       ? "bg-primary text-primary-foreground scale-105"
                       : "bg-card text-card-foreground hover:bg-card/80"
@@ -188,13 +208,14 @@ const Onboarding = () => {
 
       case 4:
         return (
-          <div className="space-y-4 animate-fade-up">
+          <div key="step-4" className={`space-y-4 ${baseClass}`}>
             <div className="flex flex-wrap gap-2 justify-center">
-              {TRIBES.map((tribe) => (
+              {TRIBES.map((tribe, index) => (
                 <button
                   key={tribe}
                   onClick={() => toggleTribe(tribe)}
-                  className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
+                  style={{ animationDelay: `${index * 30}ms` }}
+                  className={`px-4 py-2 rounded-full font-body text-sm transition-all animate-bounce-in ${
                     selectedTribes.includes(tribe)
                       ? "bg-primary text-primary-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
@@ -205,7 +226,7 @@ const Onboarding = () => {
               ))}
             </div>
             {selectedTribes.length > 0 && (
-              <p className="text-center text-sm text-muted-foreground">
+              <p className="text-center text-sm text-muted-foreground animate-fade-up">
                 {selectedTribes.length} seleccionadas
               </p>
             )}
@@ -214,9 +235,13 @@ const Onboarding = () => {
 
       case 5:
         return (
-          <div className="space-y-6 animate-fade-up max-h-[50vh] overflow-y-auto">
-            {MUSIC_CATEGORIES.map((category) => (
-              <div key={category.name}>
+          <div key="step-5" className={`space-y-6 max-h-[50vh] overflow-y-auto ${baseClass}`}>
+            {MUSIC_CATEGORIES.map((category, catIndex) => (
+              <div 
+                key={category.name}
+                style={{ animationDelay: `${catIndex * 50}ms` }}
+                className="animate-fade-up"
+              >
                 <h3 className="font-display text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
                   <Music className="w-3 h-3" />
                   {category.name}
@@ -228,7 +253,7 @@ const Onboarding = () => {
                       onClick={() => toggleMusicStyle(style)}
                       className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
                         selectedMusicStyles.includes(style)
-                          ? "bg-primary text-primary-foreground"
+                          ? "bg-primary text-primary-foreground scale-105"
                           : "bg-card text-card-foreground hover:bg-card/80"
                       }`}
                     >
@@ -239,7 +264,7 @@ const Onboarding = () => {
               </div>
             ))}
             {selectedMusicStyles.length > 0 && (
-              <p className="text-center text-sm text-primary sticky bottom-0 bg-background py-2">
+              <p className="text-center text-sm text-primary sticky bottom-0 bg-background py-2 animate-fade-up">
                 {selectedMusicStyles.length}/5 estilos
               </p>
             )}
@@ -248,12 +273,12 @@ const Onboarding = () => {
 
       case 6:
         return (
-          <div className="space-y-4 animate-fade-up">
-            <div className="flex items-center gap-2 text-muted-foreground mb-4">
+          <div key="step-6" className={`space-y-4 ${baseClass}`}>
+            <div className="flex items-center gap-2 text-muted-foreground mb-4 animate-fade-up">
               <Sparkles className="w-4 h-4" />
               <span className="font-body text-sm">Comparte lo que quieras</span>
             </div>
-            {OPTIONAL_DETAILS.map((detail) => {
+            {OPTIONAL_DETAILS.map((detail, index) => {
               const isSelected = 
                 detail.key === "has_tattoos" ? hasTattoos :
                 detail.key === "has_piercings" ? hasPiercings :
@@ -269,7 +294,8 @@ const Onboarding = () => {
                 <button
                   key={detail.key}
                   onClick={toggle}
-                  className={`w-full p-4 rounded-2xl font-body text-base transition-all flex items-center justify-between ${
+                  style={{ animationDelay: `${index * 100}ms` }}
+                  className={`w-full p-4 rounded-2xl font-body text-base transition-all flex items-center justify-between animate-bounce-in ${
                     isSelected
                       ? "bg-accent text-accent-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
@@ -285,7 +311,7 @@ const Onboarding = () => {
 
       case 7:
         return (
-          <div className="space-y-6 animate-fade-up flex flex-col items-center">
+          <div key="step-7" className={`space-y-6 flex flex-col items-center ${baseClass}`}>
             <input
               type="file"
               ref={fileInputRef}
@@ -296,7 +322,7 @@ const Onboarding = () => {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="w-32 h-32 rounded-full bg-card flex items-center justify-center overflow-hidden ring-4 ring-primary/20 hover:ring-primary/40 transition-all"
+              className="w-32 h-32 rounded-full bg-card flex items-center justify-center overflow-hidden ring-4 ring-primary/20 hover:ring-primary/40 transition-all animate-bounce-in"
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
@@ -306,7 +332,7 @@ const Onboarding = () => {
                 <Camera className="w-10 h-10 text-muted-foreground" />
               )}
             </button>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-muted-foreground animate-fade-up animate-delay-200">
               Toca para subir una foto
             </p>
           </div>
@@ -318,24 +344,43 @@ const Onboarding = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-6 py-8">
+    <main className="min-h-screen bg-background flex flex-col px-6 py-8 overflow-hidden">
       {/* Progress bar */}
       <div className="w-full h-1 bg-card rounded-full mb-8 overflow-hidden">
         <div 
-          className="h-full bg-primary transition-all duration-300 ease-out"
+          className="h-full bg-primary transition-all duration-500 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      {/* Header */}
-      <div className="text-center mb-12 animate-fade-up">
+      {/* Header with step indicator */}
+      <div className="text-center mb-12">
         <span className="font-display text-xl font-bold text-primary mb-4 block">KIKI</span>
-        <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-          {currentStep.title}
-        </h1>
-        <p className="font-body text-muted-foreground">
-          {currentStep.subtitle}
-        </p>
+        <div 
+          key={`header-${step}`}
+          className={animationClass}
+        >
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+            {currentStep.title}
+          </h1>
+          <p className="font-body text-muted-foreground">
+            {currentStep.subtitle}
+          </p>
+        </div>
+        <div className="flex justify-center gap-1.5 mt-6">
+          {STEPS.map((s) => (
+            <div 
+              key={s.id}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                s.id === step 
+                  ? "w-6 bg-primary" 
+                  : s.id < step 
+                    ? "w-1.5 bg-primary/50" 
+                    : "w-1.5 bg-card"
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Step content */}
