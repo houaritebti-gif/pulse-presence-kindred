@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Music, Sparkles } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Music, Sparkles, Heart } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useSparkCount } from "@/hooks/useSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
@@ -11,6 +11,8 @@ import PresenceFiltersComponent, { PresenceFilters } from "@/components/Presence
 const Presence = () => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
+  const { data: myTribes } = useProfileTribes(profile?.id);
+  const { data: myMusicStyles } = useProfileMusicStyles(profile?.id);
   const { data: presenceList, isLoading } = usePresenceList();
   const { data: myPresence } = useMyPresence();
   const setPresence = useSetPresence();
@@ -18,6 +20,10 @@ const Presence = () => {
   const { data: quedadas } = useQuedadas();
   const quedadaCount = quedadas?.length || 0;
   const unreadCount = useUnreadNotificationCount();
+
+  // My tribes and music for compatibility calculation
+  const myTribeNames = useMemo(() => myTribes?.map(t => t.tribe) || [], [myTribes]);
+  const myStyleNames = useMemo(() => myMusicStyles?.map(m => m.style) || [], [myMusicStyles]);
 
   // Filters state
   const [filters, setFilters] = useState<PresenceFilters>({
@@ -45,6 +51,13 @@ const Presence = () => {
 
   // Filter out own profile from list
   const otherProfiles = presenceList?.filter(p => p.profile?.id !== profile?.id) || [];
+
+  // Calculate compatibility for each presence
+  const getCompatibility = (presence: typeof otherProfiles[0]) => {
+    const sharedTribes = presence.tribes.filter(t => myTribeNames.includes(t));
+    const sharedMusic = presence.musicStyles.filter(m => myStyleNames.includes(m));
+    return sharedTribes.length + sharedMusic.length;
+  };
 
   // Apply filters
   const filteredProfiles = useMemo(() => {
@@ -213,7 +226,9 @@ const Presence = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredProfiles.map((presence, index) => (
+            {filteredProfiles.map((presence, index) => {
+              const compatibility = getCompatibility(presence);
+              return (
               <button
                 key={presence.id}
                 onClick={() => navigate(`/user/${presence.profile?.id}`)}
@@ -221,17 +236,24 @@ const Presence = () => {
                 style={{ animationDelay: `${(index + 1) * 100}ms` }}
               >
                 <div className="flex items-start gap-4">
-                  {/* Avatar */}
-                  <div className="w-14 h-14 rounded-full bg-card-foreground/10 flex-shrink-0 overflow-hidden">
-                    {presence.profile?.avatar_url ? (
-                      <img 
-                        src={presence.profile.avatar_url} 
-                        alt={presence.profile.name || "Avatar"}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-card-foreground/40 font-display text-lg">
-                        {(presence.profile?.name?.[0] || "?").toUpperCase()}
+                  {/* Avatar with compatibility badge */}
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-full bg-card-foreground/10 flex-shrink-0 overflow-hidden">
+                      {presence.profile?.avatar_url ? (
+                        <img 
+                          src={presence.profile.avatar_url} 
+                          alt={presence.profile.name || "Avatar"}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-card-foreground/40 font-display text-lg">
+                          {(presence.profile?.name?.[0] || "?").toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    {compatibility > 0 && (
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                        <Heart className="w-3 h-3 text-primary-foreground fill-primary-foreground" />
                       </div>
                     )}
                   </div>
@@ -243,6 +265,11 @@ const Presence = () => {
                         {presence.profile?.name || "Anónima"}
                       </h3>
                       <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
+                      {compatibility > 0 && (
+                        <span className="text-xs font-body text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                          {compatibility} en común
+                        </span>
+                      )}
                     </div>
                     <p className="font-body text-sm text-card-foreground/70 mb-3">
                       Vibra {presence.profile?.vibe?.toLowerCase() || "misteriosa"}
@@ -298,7 +325,8 @@ const Presence = () => {
                   </div>
                 </div>
               </button>
-            ))}
+              );
+            })}
           </div>
         )}
 
