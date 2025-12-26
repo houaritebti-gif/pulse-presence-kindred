@@ -59,9 +59,9 @@ const Presence = () => {
     return sharedTribes.length + sharedMusic.length;
   };
 
-  // Apply filters
+  // Apply filters and sort by compatibility
   const filteredProfiles = useMemo(() => {
-    return otherProfiles.filter(presence => {
+    const filtered = otherProfiles.filter(presence => {
       // Tribe filter - must have at least one matching tribe
       if (filters.tribes.length > 0) {
         const hasMatchingTribe = presence.tribes.some(t => filters.tribes.includes(t));
@@ -85,7 +85,10 @@ const Presence = () => {
 
       return true;
     });
-  }, [otherProfiles, filters]);
+
+    // Sort by compatibility (highest first)
+    return filtered.sort((a, b) => getCompatibility(b) - getCompatibility(a));
+  }, [otherProfiles, filters, myTribeNames, myStyleNames]);
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24">
