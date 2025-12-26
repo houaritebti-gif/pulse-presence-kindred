@@ -12,6 +12,7 @@ export interface Profile {
   has_tattoos: boolean | null;
   has_piercings: boolean | null;
   alternative_aesthetic: boolean | null;
+  share_typing_status: boolean | null;
   created_at: string;
   updated_at: string;
 }
@@ -90,7 +91,7 @@ export const useUpdateProfile = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic">>) => {
+    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic" | "share_typing_status">>) => {
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase

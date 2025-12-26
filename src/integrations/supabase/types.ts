@@ -239,6 +239,7 @@ export type Database = {
           has_tattoos: boolean | null
           id: string
           name: string | null
+          share_typing_status: boolean | null
           updated_at: string | null
           user_id: string
           vibe: string | null
@@ -252,6 +253,7 @@ export type Database = {
           has_tattoos?: boolean | null
           id?: string
           name?: string | null
+          share_typing_status?: boolean | null
           updated_at?: string | null
           user_id: string
           vibe?: string | null
@@ -265,6 +267,7 @@ export type Database = {
           has_tattoos?: boolean | null
           id?: string
           name?: string | null
+          share_typing_status?: boolean | null
           updated_at?: string | null
           user_id?: string
           vibe?: string | null

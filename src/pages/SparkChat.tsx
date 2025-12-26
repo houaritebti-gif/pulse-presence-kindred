@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check, CheckCheck } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage, useOtherUserReadStatus } from "@/hooks/useSparks";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
@@ -26,6 +27,9 @@ const SparkChat = () => {
   
   // Get the other user's read status
   const { data: otherUserLastRead } = useOtherUserReadStatus(chatId, chat?.other_profile?.id);
+  
+  // Typing indicator
+  const { isOtherTyping, handleTyping, stopTyping } = useTypingIndicator(chatId, chat?.other_profile?.id);
   
   const [newMessage, setNewMessage] = useState("");
   const [showExtinguishConfirm, setShowExtinguishConfirm] = useState(false);
@@ -51,6 +55,8 @@ const SparkChat = () => {
     e.preventDefault();
     if (!newMessage.trim() || !chatId || !chat) return;
 
+    stopTyping(); // Stop typing indicator on send
+    
     try {
       await sendMessage.mutateAsync({ 
         chatId, 
@@ -335,6 +341,33 @@ const SparkChat = () => {
             );
           })
         )}
+        
+        {/* Typing indicator */}
+        {isOtherTyping && (
+          <div className="flex items-center gap-2 animate-fade-up">
+            <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+              {chat?.other_profile?.avatar_url ? (
+                <img 
+                  src={chat.other_profile.avatar_url} 
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-card flex items-center justify-center text-card-foreground font-display text-[10px]">
+                  {(chat?.other_profile?.name?.[0] || "?").toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="px-4 py-3 bg-card rounded-2xl rounded-bl-md">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
@@ -344,7 +377,10 @@ const SparkChat = () => {
           <div className="flex-1 relative">
             <Input
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                handleTyping();
+              }}
               placeholder="Escribe algo..."
               className="h-12 font-body bg-card/50 border-border/30 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-4 pl-4 rounded-xl transition-all duration-300"
             />
