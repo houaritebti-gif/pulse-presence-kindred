@@ -12,6 +12,7 @@ export interface SparkChat {
   extinguished_by_a: boolean;
   extinguished_by_b: boolean;
   unread_count?: number;
+  last_message_at?: string;
   other_profile?: {
     id: string;
     name: string | null;
@@ -77,30 +78,45 @@ export const useSparkChats = () => {
         })
         .map(chat => chat.id);
 
-      // Fetch unread counts for each chat
+      // Fetch unread counts and last message timestamp for each chat
       const unreadCounts = new Map<string, number>();
+      const lastMessageTimes = new Map<string, string>();
       
       await Promise.all(
         chatIds.map(async (chatId) => {
           const lastRead = readStatusMap.get(chatId);
           
-          let query = supabase
+          // Get unread count
+          let countQuery = supabase
             .from("chat_messages")
             .select("*", { count: "exact", head: true })
             .eq("chat_id", chatId)
             .neq("sender_profile_id", profile.id);
           
           if (lastRead) {
-            query = query.gt("created_at", lastRead.toISOString());
+            countQuery = countQuery.gt("created_at", lastRead.toISOString());
           }
           
-          const { count } = await query;
+          const { count } = await countQuery;
           unreadCounts.set(chatId, count || 0);
+
+          // Get last message timestamp
+          const { data: lastMsg } = await supabase
+            .from("chat_messages")
+            .select("created_at")
+            .eq("chat_id", chatId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          if (lastMsg) {
+            lastMessageTimes.set(chatId, lastMsg.created_at);
+          }
         })
       );
 
       // Filter out extinguished chats, blocked users, and map to include other_profile
-      return (data || [])
+      const chats = (data || [])
         .filter(chat => {
           const isA = chat.profile_a_id === profile.id;
           const extinguished = isA ? chat.extinguished_by_a : chat.extinguished_by_b;
@@ -113,8 +129,16 @@ export const useSparkChats = () => {
             ...chat,
             other_profile: isA ? chat.profile_b : chat.profile_a,
             unread_count: unreadCounts.get(chat.id) || 0,
+            last_message_at: lastMessageTimes.get(chat.id) || chat.created_at,
           } as SparkChat;
         });
+
+      // Sort by last message (most recent first)
+      return chats.sort((a, b) => {
+        const timeA = new Date(a.last_message_at || a.created_at).getTime();
+        const timeB = new Date(b.last_message_at || b.created_at).getTime();
+        return timeB - timeA;
+      });
     },
     enabled: !!profile?.id,
   });
