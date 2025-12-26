@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music } from "lucide-react";
+import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User } from "lucide-react";
 import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
@@ -159,14 +159,17 @@ const Onboarding = () => {
       case 1:
         return (
           <div key="step-1" className={`space-y-6 ${baseClass}`}>
-            <Input
-              type="text"
-              placeholder="Tu nombre o alias"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-14 text-lg text-center rounded-2xl bg-card border-card-foreground/20 text-foreground placeholder:text-muted-foreground"
-              autoFocus
-            />
+            <div className="relative">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Tu nombre o alias"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-14 text-lg pl-12 text-center rounded-2xl bg-card border-card-foreground/20 text-foreground placeholder:text-muted-foreground"
+                autoFocus
+              />
+            </div>
           </div>
         );
 
