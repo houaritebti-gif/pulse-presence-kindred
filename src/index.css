@@ -119,6 +119,10 @@
   .font-body {
     font-family: var(--font-body);
   }
+  
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
 }
 
 /* KIKI Animations */
