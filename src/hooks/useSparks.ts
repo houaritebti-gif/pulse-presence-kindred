@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
+import { useBlockedUsers } from "./useUserModeration";
 import { sendPushNotification } from "@/utils/pushNotifications";
 
 export interface SparkChat {
@@ -30,10 +31,11 @@ export interface ChatMessage {
 // Get all active spark chats for current user
 export const useSparkChats = () => {
   const { data: profile } = useProfile();
+  const { data: blockedUsers } = useBlockedUsers();
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["spark_chats", profile?.id],
+    queryKey: ["spark_chats", profile?.id, blockedUsers],
     queryFn: async () => {
       if (!profile) return [];
 
@@ -48,12 +50,15 @@ export const useSparkChats = () => {
 
       if (error) throw error;
 
-      // Filter out extinguished chats and map to include other_profile
+      const blockedSet = new Set(blockedUsers || []);
+
+      // Filter out extinguished chats, blocked users, and map to include other_profile
       return (data || [])
         .filter(chat => {
           const isA = chat.profile_a_id === profile.id;
           const extinguished = isA ? chat.extinguished_by_a : chat.extinguished_by_b;
-          return !extinguished;
+          const otherProfileId = isA ? chat.profile_b_id : chat.profile_a_id;
+          return !extinguished && !blockedSet.has(otherProfileId);
         })
         .map(chat => {
           const isA = chat.profile_a_id === profile.id;
