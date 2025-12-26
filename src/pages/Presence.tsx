@@ -7,6 +7,7 @@ import { useNewSparks } from "@/hooks/useNewSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
 import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
+import { useBlockedUsers } from "@/hooks/useUserModeration";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 
 const Presence = () => {
@@ -22,6 +23,7 @@ const Presence = () => {
   const quedadaCount = quedadas?.length || 0;
   const unreadCount = useUnreadNotificationCount();
   const unreadGhostCount = useUnreadGhostMessageCount();
+  const { data: blockedIds } = useBlockedUsers();
 
   // My tribes and music for compatibility calculation
   const myTribeNames = useMemo(() => myTribes?.map(t => t.tribe) || [], [myTribes]);
@@ -51,8 +53,14 @@ const Presence = () => {
     });
   };
 
-  // Filter out own profile from list
-  const otherProfiles = presenceList?.filter(p => p.profile?.id !== profile?.id) || [];
+  // Filter out own profile and blocked users from list
+  const otherProfiles = useMemo(() => {
+    const blockedSet = new Set(blockedIds || []);
+    return presenceList?.filter(p => 
+      p.profile?.id !== profile?.id && 
+      !blockedSet.has(p.profile?.id || "")
+    ) || [];
+  }, [presenceList, profile?.id, blockedIds]);
 
   // Calculate compatibility for each presence
   const getCompatibility = (presence: typeof otherProfiles[0]) => {
