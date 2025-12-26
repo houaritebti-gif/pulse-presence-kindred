@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { useQueryClient } from "@tanstack/react-query";
 import { notifyUser } from "@/utils/notificationSound";
+import { useBlockedUsers } from "./useUserModeration";
 
 export interface ReceivedGhostMessage {
   id: string;
@@ -23,10 +24,11 @@ export interface ReceivedGhostMessage {
 
 export const useReceivedGhostMessages = () => {
   const { data: profile } = useProfile();
+  const { data: blockedUsers } = useBlockedUsers();
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["received_ghost_messages", profile?.id],
+    queryKey: ["received_ghost_messages", profile?.id, blockedUsers],
     queryFn: async () => {
       if (!profile?.id) return [];
 
@@ -55,15 +57,19 @@ export const useReceivedGhostMessages = () => {
         .eq("from_profile_id", profile.id);
 
       const sentToIds = new Set(sentMessages?.map(m => m.to_profile_id) || []);
+      const blockedSet = new Set(blockedUsers || []);
 
-      return (messages || []).map(msg => ({
-        id: msg.id,
-        content: msg.content,
-        created_at: msg.created_at || "",
-        read_at: msg.read_at,
-        from_profile: msg.from_profile as ReceivedGhostMessage["from_profile"],
-        hasSentBack: sentToIds.has(msg.from_profile_id),
-      })) as ReceivedGhostMessage[];
+      // Filter out messages from blocked users
+      return (messages || [])
+        .filter(msg => !blockedSet.has(msg.from_profile_id))
+        .map(msg => ({
+          id: msg.id,
+          content: msg.content,
+          created_at: msg.created_at || "",
+          read_at: msg.read_at,
+          from_profile: msg.from_profile as ReceivedGhostMessage["from_profile"],
+          hasSentBack: sentToIds.has(msg.from_profile_id),
+        })) as ReceivedGhostMessage[];
     },
     enabled: !!profile?.id,
   });
