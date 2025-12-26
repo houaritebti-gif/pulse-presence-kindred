@@ -297,6 +297,27 @@ export const useDeleteMessage = () => {
   });
 };
 
+// Edit a message
+export const useEditMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ messageId, chatId, content }: { messageId: string; chatId: string; content: string }) => {
+      const { error } = await supabase
+        .from("chat_messages")
+        .update({ content })
+        .eq("id", messageId);
+
+      if (error) throw error;
+      return chatId;
+    },
+    onSuccess: (chatId) => {
+      queryClient.invalidateQueries({ queryKey: ["chat_messages", chatId] });
+      queryClient.invalidateQueries({ queryKey: ["spark_chats"] });
+    },
+  });
+};
+
 // Extinguish a spark (close chat)
 export const useExtinguishSpark = () => {
   const queryClient = useQueryClient();
