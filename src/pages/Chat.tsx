@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Send, Flame } from "lucide-react";
+import { ArrowLeft, Send, Flame, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit, useHasSparkWith } from "@/hooks/useSparks";
+import { useSparkDetection } from "@/hooks/useSparkDetection";
+import { sendPushNotification } from "@/utils/pushNotifications";
 import { toast } from "sonner";
 
 // Ghost message options
@@ -27,10 +29,13 @@ const Chat = () => {
   const { data: myProfile } = useProfile();
   const { data: limitData } = useGhostMessageLimit();
   const hasSpark = useHasSparkWith(profileId);
+  const { sparkDetected, sparkChatId, checkForNewSpark } = useSparkDetection();
   
   const [targetProfile, setTargetProfile] = useState<TargetProfile | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [newSparkCreated, setNewSparkCreated] = useState(false);
+  const [newSparkChatId, setNewSparkChatId] = useState<string | null>(null);
   const [alreadySent, setAlreadySent] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -76,6 +81,14 @@ const Chat = () => {
     }
   }, [hasSpark, profileId, navigate]);
 
+  // Listen for realtime spark detection
+  useEffect(() => {
+    if (sparkDetected && sparkChatId && sent) {
+      setNewSparkCreated(true);
+      setNewSparkChatId(sparkChatId);
+    }
+  }, [sparkDetected, sparkChatId, sent]);
+
   const handleSend = async () => {
     if (!selectedMessage || !myProfile || !profileId) return;
 
@@ -101,6 +114,23 @@ const Chat = () => {
         }
       } else {
         setSent(true);
+        
+        // Wait a moment for the database trigger to execute, then check for spark
+        setTimeout(async () => {
+          const sparkCreated = await checkForNewSpark(profileId);
+          
+          if (sparkCreated) {
+            setNewSparkCreated(true);
+            // Send push notification to the other person about the match
+            sendPushNotification({
+              profileId: profileId,
+              title: "🔥 ¡Nueva chispa!",
+              body: `${myProfile.name || "Alguien"} y tú habéis conectado`,
+              url: "/sparks",
+              tag: "new-spark",
+            });
+          }
+        }, 500);
       }
     } catch (error: any) {
       toast.error("Error al enviar: " + error.message);
@@ -231,8 +261,53 @@ const Chat = () => {
               Un mensaje por persona. Máx 5 al día. Sin notificación.
             </p>
           </>
+        ) : newSparkCreated ? (
+          /* SPARK CREATED - Mutual match celebration! */
+          <div className="text-center animate-fade-up">
+            {/* Celebration animation */}
+            <div className="relative w-24 h-24 mx-auto mb-6">
+              <div className="absolute inset-0 bg-primary/30 blur-3xl rounded-full animate-pulse-soft" />
+              <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full animate-pulse-soft animate-delay-200" />
+              <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center ring-4 ring-primary/30 ring-offset-4 ring-offset-background">
+                <Flame className="w-12 h-12 text-primary animate-spark-flame" />
+              </div>
+              <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-primary animate-bounce" />
+              <Sparkles className="absolute -bottom-1 -left-3 w-5 h-5 text-accent animate-bounce animate-delay-200" />
+              <Sparkles className="absolute top-0 left-0 w-4 h-4 text-primary/60 animate-bounce animate-delay-300" />
+            </div>
+            
+            <h2 className="font-display text-3xl font-bold text-foreground mb-3">
+              ¡Chispa mutua!
+            </h2>
+            <p className="font-body text-muted-foreground mb-2">
+              {targetProfile?.name || "Esta persona"} también te envió un mensaje.
+            </p>
+            <p className="font-body text-sm text-primary mb-8">
+              Ahora podéis chatear.
+            </p>
+            
+            <div className="space-y-3">
+              <Button 
+                variant="kiki" 
+                size="lg"
+                onClick={() => navigate(newSparkChatId ? `/spark/${newSparkChatId}` : "/sparks")}
+                className="w-full"
+              >
+                <Flame className="w-4 h-4 mr-2" />
+                Ir al chat
+              </Button>
+              <Button 
+                variant="kiki-soft" 
+                size="lg"
+                onClick={() => navigate("/presence")}
+                className="w-full"
+              >
+                Volver a presencia
+              </Button>
+            </div>
+          </div>
         ) : (
-          /* Sent confirmation */
+          /* Sent confirmation - waiting for potential match */
           <div className="text-center animate-fade-up">
             <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
               <Send className="w-6 h-6 text-primary" />
