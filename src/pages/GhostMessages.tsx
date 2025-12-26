@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock } from "lucide-react";
+import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useReceivedGhostMessages, useMarkGhostMessageRead } from "@/hooks/useReceivedGhostMessages";
 import { useHasSparkWith } from "@/hooks/useSparks";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import UserModerationModal from "@/components/UserModerationModal";
 
 // Component to show a single ghost message card
 const GhostMessageCard = ({ 
@@ -21,6 +23,8 @@ const GhostMessageCard = ({
 }) => {
   const hasSpark = useHasSparkWith(message.from_profile?.id);
   const markAsRead = useMarkGhostMessageRead();
+  const [showModerationModal, setShowModerationModal] = useState(false);
+  const [moderationMode, setModerationMode] = useState<"block" | "report">("block");
   
   // Mark as read when viewed
   useEffect(() => {
@@ -37,9 +41,41 @@ const GhostMessageCard = ({
 
   return (
     <div
-      className="bg-card rounded-2xl p-5 animate-fade-up border border-border/30 transition-all hover:border-primary/20"
+      className="bg-card rounded-2xl p-5 animate-fade-up border border-border/30 transition-all hover:border-primary/20 relative"
       style={{ animationDelay: `${index * 100}ms` }}
     >
+      {/* More options menu */}
+      <div className="absolute top-4 right-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="text-muted-foreground/50 hover:text-foreground transition-colors p-1">
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem
+              onClick={() => {
+                setModerationMode("report");
+                setShowModerationModal(true);
+              }}
+              className="gap-2 text-muted-foreground"
+            >
+              <Flag className="w-4 h-4" />
+              Reportar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setModerationMode("block");
+                setShowModerationModal(true);
+              }}
+              className="gap-2 text-destructive"
+            >
+              <Ban className="w-4 h-4" />
+              Bloquear
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <div className="flex items-start gap-4">
         {/* Avatar - blurred if not revealed */}
         <div className="relative flex-shrink-0">
@@ -141,6 +177,16 @@ const GhostMessageCard = ({
             Responde para revelar su identidad
           </p>
         </div>
+      )}
+
+      {/* Moderation Modal */}
+      {showModerationModal && message.from_profile?.id && (
+        <UserModerationModal
+          onClose={() => setShowModerationModal(false)}
+          profileId={message.from_profile.id}
+          profileName={message.from_profile.name || "Usuario"}
+          initialMode={moderationMode}
+        />
       )}
     </div>
   );

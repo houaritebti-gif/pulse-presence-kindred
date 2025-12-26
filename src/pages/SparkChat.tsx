@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Flame, X, Sparkles, User } from "lucide-react";
+import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark } from "@/hooks/useSparks";
 import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import UserModerationModal from "@/components/UserModerationModal";
 
 const SparkChat = () => {
   const navigate = useNavigate();
@@ -18,6 +20,8 @@ const SparkChat = () => {
   
   const [newMessage, setNewMessage] = useState("");
   const [showExtinguishConfirm, setShowExtinguishConfirm] = useState(false);
+  const [showModerationModal, setShowModerationModal] = useState(false);
+  const [moderationMode, setModerationMode] = useState<"block" | "report">("block");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Find current chat
@@ -117,13 +121,42 @@ const SparkChat = () => {
           </div>
         </button>
 
-        <button
-          onClick={() => setShowExtinguishConfirm(true)}
-          className="text-muted-foreground/50 hover:text-destructive transition-all duration-300 hover:rotate-90"
-          title="Apagar chispa"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="text-muted-foreground/50 hover:text-foreground transition-colors">
+              <MoreVertical className="w-5 h-5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem
+              onClick={() => {
+                setModerationMode("report");
+                setShowModerationModal(true);
+              }}
+              className="gap-2 text-muted-foreground"
+            >
+              <Flag className="w-4 h-4" />
+              Reportar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setModerationMode("block");
+                setShowModerationModal(true);
+              }}
+              className="gap-2 text-destructive"
+            >
+              <Ban className="w-4 h-4" />
+              Bloquear
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setShowExtinguishConfirm(true)}
+              className="gap-2 text-muted-foreground"
+            >
+              <X className="w-4 h-4" />
+              Apagar chispa
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Messages */}
@@ -259,6 +292,16 @@ const SparkChat = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Moderation Modal */}
+      {showModerationModal && chat.other_profile?.id && (
+        <UserModerationModal
+          onClose={() => setShowModerationModal(false)}
+          profileId={chat.other_profile.id}
+          profileName={chat.other_profile.name || "Usuario"}
+          initialMode={moderationMode}
+        />
       )}
     </main>
   );
