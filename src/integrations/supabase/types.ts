@@ -21,6 +21,7 @@ export type Database = {
           created_at: string | null
           id: string
           sender_profile_id: string
+          updated_at: string | null
         }
         Insert: {
           chat_id: string
@@ -28,6 +29,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           sender_profile_id: string
+          updated_at?: string | null
         }
         Update: {
           chat_id?: string
@@ -35,6 +37,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           sender_profile_id?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
