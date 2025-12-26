@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2 } from "lucide-react";
+import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage } from "@/hooks/useSparks";
+import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage } from "@/hooks/useSparks";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
@@ -19,12 +19,14 @@ const SparkChat = () => {
   const extinguishSpark = useExtinguishSpark();
   const markRead = useMarkSparkRead();
   const deleteMessage = useDeleteMessage();
+  const editMessage = useEditMessage();
   
   const [newMessage, setNewMessage] = useState("");
   const [showExtinguishConfirm, setShowExtinguishConfirm] = useState(false);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"block" | "report">("block");
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
+  const [editingMessage, setEditingMessage] = useState<{ id: string; content: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Find current chat
@@ -79,6 +81,22 @@ const SparkChat = () => {
       setMessageToDelete(null);
     } catch (error: any) {
       toast.error("Error al eliminar: " + error.message);
+    }
+  };
+
+  const handleEditMessage = async () => {
+    if (!editingMessage || !chatId || !editingMessage.content.trim()) return;
+
+    try {
+      await editMessage.mutateAsync({ 
+        messageId: editingMessage.id, 
+        chatId, 
+        content: editingMessage.content.trim() 
+      });
+      toast.success("Mensaje editado");
+      setEditingMessage(null);
+    } catch (error: any) {
+      toast.error("Error al editar: " + error.message);
     }
   };
 
@@ -206,6 +224,7 @@ const SparkChat = () => {
           messages?.map((msg, index) => {
             const isOwn = msg.sender_profile_id === profile?.id;
             const showAvatar = !isOwn && (index === 0 || messages[index - 1]?.sender_profile_id === profile?.id);
+            const isEditing = editingMessage?.id === msg.id;
             
             return (
               <div
@@ -215,14 +234,22 @@ const SparkChat = () => {
                 }`}
                 style={{ animationDelay: `${Math.min(index * 50, 300)}ms` }}
               >
-                {/* Delete button for own messages */}
-                {isOwn && (
-                  <button
-                    onClick={() => setMessageToDelete(msg.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground/50 hover:text-destructive"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                {/* Action buttons for own messages */}
+                {isOwn && !isEditing && (
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => setEditingMessage({ id: msg.id, content: msg.content })}
+                      className="p-1.5 rounded-full hover:bg-primary/10 text-muted-foreground/50 hover:text-primary"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setMessageToDelete(msg.id)}
+                      className="p-1.5 rounded-full hover:bg-destructive/10 text-muted-foreground/50 hover:text-destructive"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 )}
                 
                 {/* Other user avatar */}
@@ -242,15 +269,48 @@ const SparkChat = () => {
                   </div>
                 )}
                 
-                <div
-                  className={`max-w-[75%] px-4 py-3 font-body text-sm leading-relaxed transition-all duration-200 ${
-                    isOwn
-                      ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md shadow-lg shadow-primary/20"
-                      : "bg-card text-card-foreground rounded-2xl rounded-bl-md"
-                  }`}
-                >
-                  {msg.content}
-                </div>
+                {isEditing ? (
+                  <div className="flex items-center gap-2 max-w-[75%]">
+                    <Input
+                      value={editingMessage.content}
+                      onChange={(e) => setEditingMessage({ ...editingMessage, content: e.target.value })}
+                      className="h-10 font-body bg-card border-primary/30 focus:border-primary rounded-xl"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleEditMessage();
+                        }
+                        if (e.key === "Escape") {
+                          setEditingMessage(null);
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={handleEditMessage}
+                      disabled={editMessage.isPending}
+                      className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                    >
+                      <Check className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setEditingMessage(null)}
+                      className="p-2 rounded-full bg-card text-card-foreground hover:bg-card/80 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    className={`max-w-[75%] px-4 py-3 font-body text-sm leading-relaxed transition-all duration-200 ${
+                      isOwn
+                        ? "bg-primary text-primary-foreground rounded-2xl rounded-br-md shadow-lg shadow-primary/20"
+                        : "bg-card text-card-foreground rounded-2xl rounded-bl-md"
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+                )}
               </div>
             );
           })
