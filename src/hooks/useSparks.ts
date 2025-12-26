@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
-import { useBlockedUsers } from "./useUserModeration";
 import { sendPushNotification } from "@/utils/pushNotifications";
 
 export interface SparkChat {
@@ -31,13 +30,20 @@ export interface ChatMessage {
 // Get all active spark chats for current user
 export const useSparkChats = () => {
   const { data: profile } = useProfile();
-  const { data: blockedUsers } = useBlockedUsers();
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["spark_chats", profile?.id, blockedUsers],
+    queryKey: ["spark_chats", profile?.id],
     queryFn: async () => {
       if (!profile) return [];
+
+      // Fetch blocked users directly in queryFn to avoid nested hooks
+      const { data: blockedData } = await supabase
+        .from("user_blocks")
+        .select("blocked_profile_id")
+        .eq("blocker_profile_id", profile.id);
+
+      const blockedSet = new Set(blockedData?.map(b => b.blocked_profile_id) || []);
 
       const { data, error } = await supabase
         .from("spark_chats")
@@ -49,8 +55,6 @@ export const useSparkChats = () => {
         .or(`profile_a_id.eq.${profile.id},profile_b_id.eq.${profile.id}`);
 
       if (error) throw error;
-
-      const blockedSet = new Set(blockedUsers || []);
 
       // Filter out extinguished chats, blocked users, and map to include other_profile
       return (data || [])
