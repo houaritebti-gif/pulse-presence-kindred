@@ -114,9 +114,15 @@ const Sparks = () => {
                       </span>
                     )}
                   </div>
-                  <p className="font-body text-sm text-card-foreground/50">
-                    Vibra {chat.other_profile?.vibe?.toLowerCase() || "misteriosa"}
-                  </p>
+                  {chat.last_message_content ? (
+                    <p className="font-body text-sm text-card-foreground/60 truncate">
+                      {chat.last_message_content}
+                    </p>
+                  ) : (
+                    <p className="font-body text-sm text-card-foreground/50">
+                      Vibra {chat.other_profile?.vibe?.toLowerCase() || "misteriosa"}
+                    </p>
+                  )}
                 </div>
 
                 {/* Unread indicator or active dot */}
