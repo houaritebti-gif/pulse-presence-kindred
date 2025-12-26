@@ -104,9 +104,6 @@ export const useReceivedGhostMessages = () => {
       clearTimeout(timeout);
       supabase.removeChannel(channel);
     };
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [profile?.id, queryClient]);
 
   return query;
