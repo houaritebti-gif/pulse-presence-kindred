@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Music, Sparkles, Heart, Ghost } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useNewSparks } from "@/hooks/useNewSparks";
@@ -9,7 +9,7 @@ import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
 import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
 import { useBlockedUsers } from "@/hooks/useUserModeration";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
-
+import PresenceCard from "@/components/PresenceCard";
 const Presence = () => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
@@ -265,107 +265,14 @@ const Presence = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredProfiles.map((presence, index) => {
-              const compatibility = getCompatibility(presence);
-              return (
-              <button
+            {filteredProfiles.map((presence, index) => (
+              <PresenceCard
                 key={presence.id}
-                onClick={() => navigate(`/user/${presence.profile?.id}`)}
-                className={`w-full bg-card rounded-2xl p-6 text-left transition-all hover:scale-[1.02] animate-fade-up`}
-                style={{ animationDelay: `${(index + 1) * 100}ms` }}
-              >
-                <div className="flex items-start gap-4">
-                  {/* Avatar with compatibility badge */}
-                  <div className="relative">
-                    <div className="w-14 h-14 rounded-full bg-card-foreground/10 flex-shrink-0 overflow-hidden">
-                      {presence.profile?.avatar_url ? (
-                        <img 
-                          src={presence.profile.avatar_url} 
-                          alt={presence.profile.name || "Avatar"}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-card-foreground/40 font-display text-lg">
-                          {(presence.profile?.name?.[0] || "?").toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    {compatibility > 0 && (
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg">
-                        <Heart className="w-3 h-3 text-primary-foreground fill-primary-foreground" />
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-display text-lg font-semibold text-card-foreground">
-                        {presence.profile?.name || "Anónima"}
-                      </h3>
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
-                      {compatibility > 0 && (
-                        <span className="text-xs font-body text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                          {compatibility} en común
-                        </span>
-                      )}
-                    </div>
-                    <p className="font-body text-sm text-card-foreground/70 mb-3">
-                      Vibra {presence.profile?.vibe?.toLowerCase() || "misteriosa"}
-                    </p>
-                    {/* Tribes */}
-                    {presence.tribes.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        {presence.tribes.map(tribe => (
-                          <span 
-                            key={tribe}
-                            className="px-2.5 py-1 rounded-full bg-card-foreground/10 font-body text-xs text-card-foreground/80"
-                          >
-                            {tribe}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Music styles */}
-                    {presence.musicStyles.length > 0 && (
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <Music className="w-3 h-3 text-primary/70 flex-shrink-0" />
-                        <p className="font-body text-xs text-card-foreground/60 truncate">
-                          {presence.musicStyles.slice(0, 3).join(" · ")}
-                          {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Optional details */}
-                    {(presence.profile?.has_tattoos || presence.profile?.has_piercings || presence.profile?.alternative_aesthetic) && (
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-3 h-3 text-accent/70 flex-shrink-0" />
-                        <div className="flex flex-wrap gap-1">
-                          {presence.profile?.has_tattoos && (
-                            <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
-                              Tatuajes
-                            </span>
-                          )}
-                          {presence.profile?.has_piercings && (
-                            <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
-                              Piercings
-                            </span>
-                          )}
-                          {presence.profile?.alternative_aesthetic && (
-                            <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
-                              Estética alt
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </button>
-              );
-            })}
+                presence={presence}
+                compatibility={getCompatibility(presence)}
+                animationDelay={(index + 1) * 100}
+              />
+            ))}
           </div>
         )}
 
