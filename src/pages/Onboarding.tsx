@@ -160,7 +160,7 @@ const Onboarding = () => {
         return (
           <div key="step-1" className={`space-y-6 ${baseClass}`}>
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-card-foreground/60 pointer-events-none transition-colors duration-200 peer-focus:text-primary" />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-card-foreground/60 pointer-events-none transition-all duration-200 peer-focus:text-primary peer-focus:scale-110" />
               <Input
                 type="text"
                 placeholder="Tu nombre o alias"
@@ -185,7 +185,7 @@ const Onboarding = () => {
                 className="peer h-14 text-lg pl-12 text-center rounded-2xl bg-card border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/60"
                 autoFocus
               />
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-card-foreground/60 pointer-events-none transition-colors duration-200 peer-focus:text-primary" />
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-card-foreground/60 pointer-events-none transition-all duration-200 peer-focus:text-primary peer-focus:scale-110" />
             </div>
           </div>
         );
