@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Flame, MessageCircle, Sparkles, RefreshCw } from "lucide-react";
+import { ArrowLeft, Flame, MessageCircle, Sparkles } from "lucide-react";
 import { useSparkChats } from "@/hooks/useSparks";
-import { Button } from "@/components/ui/button";
+import ErrorState from "@/components/ErrorState";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -58,23 +58,11 @@ const Sparks = () => {
             </div>
           </div>
         ) : isError ? (
-          <div className="text-center py-16 animate-fade-up">
-            <div className="relative w-20 h-20 mx-auto mb-6">
-              <div className="w-full h-full rounded-full bg-destructive/10 flex items-center justify-center">
-                <Flame className="w-8 h-8 text-destructive/50" />
-              </div>
-            </div>
-            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-              Error de conexión
-            </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed mb-6">
-              No pudimos cargar tus chispas. Revisa tu conexión e inténtalo de nuevo.
-            </p>
-            <Button variant="kiki-soft" onClick={() => refetch()}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Reintentar
-            </Button>
-          </div>
+          <ErrorState
+            icon={Flame}
+            description="No pudimos cargar tus chispas. Revisa tu conexión e inténtalo de nuevo."
+            onRetry={() => refetch()}
+          />
         ) : chats?.length === 0 ? (
           <div className="text-center py-16 animate-fade-up">
             <div className="relative w-20 h-20 mx-auto mb-6">

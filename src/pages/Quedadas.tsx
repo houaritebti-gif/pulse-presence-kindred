@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff, RefreshCw } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff } from "lucide-react";
+import ErrorState from "@/components/ErrorState";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada, useUpdateQuedada, Quedada } from "@/hooks/useQuedadas";
 import { toast } from "sonner";
@@ -251,21 +252,11 @@ const Quedadas = () => {
             <Calendar className="w-10 h-10 text-accent animate-pulse-soft" />
           </div>
         ) : isError ? (
-          <div className="text-center py-16 animate-fade-up">
-            <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
-              <Calendar className="w-8 h-8 text-destructive/50" />
-            </div>
-            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-              Error de conexión
-            </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto mb-6">
-              No pudimos cargar las quedadas. Revisa tu conexión e inténtalo de nuevo.
-            </p>
-            <Button variant="kiki-soft" onClick={() => refetch()}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Reintentar
-            </Button>
-          </div>
+          <ErrorState
+            icon={Calendar}
+            description="No pudimos cargar las quedadas. Revisa tu conexión e inténtalo de nuevo."
+            onRetry={() => refetch()}
+          />
         ) : quedadas?.length === 0 ? (
           <div className="text-center py-16 animate-fade-up">
             <div className="w-20 h-20 rounded-full bg-card/50 flex items-center justify-center mx-auto mb-6">
