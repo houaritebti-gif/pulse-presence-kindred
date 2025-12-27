@@ -61,8 +61,14 @@ export const MUSIC_CATEGORIES = [
 // Flatten all music styles for validation
 export const ALL_MUSIC_STYLES = MUSIC_CATEGORIES.flatMap(cat => cat.styles);
 
-// Vibes
-export const VIBES = ["Tranqui", "Intensa", "Curiosa", "Misteriosa", "Libre"] as const;
+// Vibes with emojis
+export const VIBES = [
+  { value: "Tranqui", emoji: "🌙" },
+  { value: "Intensa", emoji: "🔥" },
+  { value: "Curiosa", emoji: "✨" },
+  { value: "Misteriosa", emoji: "🖤" },
+  { value: "Libre", emoji: "🦋" },
+] as const;
 
 // Optional details
 export const OPTIONAL_DETAILS = [
@@ -73,4 +79,4 @@ export const OPTIONAL_DETAILS = [
 
 export type TribeType = typeof TRIBES[number];
 export type MusicStyleType = typeof ALL_MUSIC_STYLES[number];
-export type VibeType = typeof VIBES[number];
+export type VibeType = typeof VIBES[number]["value"];

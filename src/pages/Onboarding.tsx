@@ -196,16 +196,17 @@ const Onboarding = () => {
             <div className="grid grid-cols-2 gap-3">
               {VIBES.map((vibe, index) => (
                 <button
-                  key={vibe}
-                  onClick={() => setSelectedVibe(vibe)}
+                  key={vibe.value}
+                  onClick={() => setSelectedVibe(vibe.value)}
                   style={{ animationDelay: `${index * 50}ms` }}
-                  className={`p-4 rounded-2xl font-body text-base transition-all animate-bounce-in ${
-                    selectedVibe === vibe
+                  className={`p-4 rounded-2xl font-body text-base transition-all animate-bounce-in flex items-center justify-center gap-2 ${
+                    selectedVibe === vibe.value
                       ? "bg-primary text-primary-foreground scale-105"
                       : "bg-card text-card-foreground hover:bg-card/80"
                   }`}
                 >
-                  {vibe}
+                  <span className="text-xl">{vibe.emoji}</span>
+                  <span>{vibe.value}</span>
                 </button>
               ))}
             </div>
