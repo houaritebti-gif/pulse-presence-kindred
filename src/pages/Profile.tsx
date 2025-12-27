@@ -22,6 +22,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AdvancedSettingsSection from "@/components/AdvancedSettingsSection";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfilePhotoManager from "@/components/ProfilePhotoManager";
+import UploadProgress from "@/components/UploadProgress";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const Profile = () => {
   const updateProfile = useUpdateProfile();
   const updateTribes = useUpdateTribes();
   const updateMusicStyles = useUpdateMusicStyles();
-  const { uploadAvatar, isUploading } = useAvatarUpload();
+  const { uploadAvatar, isUploading, uploadPhase, uploadProgress } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
@@ -386,8 +387,13 @@ const Profile = () => {
               <Camera className="w-6 h-6 text-card-foreground/60 group-hover:text-card-foreground transition-colors" />
             )}
             {isUploading && (
-              <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
+                <UploadProgress 
+                  isVisible={true}
+                  phase={uploadPhase}
+                  progress={uploadProgress}
+                  className="scale-50"
+                />
               </div>
             )}
             <div className={`absolute inset-0 rounded-full border-2 transition-colors ${
