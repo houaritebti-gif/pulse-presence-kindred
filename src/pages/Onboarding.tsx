@@ -10,6 +10,7 @@ import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/p
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { playCelebrationSound } from "@/utils/notificationSound";
+import UploadProgress from "@/components/UploadProgress";
 
 const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
@@ -27,7 +28,7 @@ const Onboarding = () => {
   const updateProfile = useUpdateProfile();
   const updateTribes = useUpdateTribes();
   const updateMusicStyles = useUpdateMusicStyles();
-  const { uploadAvatar, isUploading } = useAvatarUpload();
+  const { uploadAvatar, isUploading, uploadPhase, uploadProgress } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState(1);
@@ -504,7 +505,14 @@ const Onboarding = () => {
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
               ) : isUploading ? (
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="absolute inset-0 bg-background/90 flex items-center justify-center rounded-full">
+                  <UploadProgress 
+                    isVisible={true}
+                    phase={uploadPhase}
+                    progress={uploadProgress}
+                    className="scale-75"
+                  />
+                </div>
               ) : (
                 <Camera className="w-10 h-10 text-muted-foreground" />
               )}
