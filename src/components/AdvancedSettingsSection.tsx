@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAdvancedSettings, Theme, TextSize } from "@/hooks/useAdvancedSettings";
 import { isThemeSoundEnabled, setThemeSoundEnabled } from "@/utils/notificationSound";
@@ -13,10 +13,12 @@ const AdvancedSettingsSection = () => {
     reduceMotion,
     textSize,
     compactMode,
+    highContrast,
     setTheme,
     setReduceMotion,
     setTextSize,
     setCompactMode,
+    setHighContrast,
   } = useAdvancedSettings();
 
   useEffect(() => {
@@ -154,6 +156,25 @@ const AdvancedSettingsSection = () => {
             <Switch
               checked={compactMode}
               onCheckedChange={setCompactMode}
+            />
+          </div>
+
+          {/* High Contrast Mode */}
+          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Contrast className={`w-5 h-5 ${highContrast ? "text-foreground" : "text-muted-foreground"}`} />
+              <div>
+                <span className="font-body text-sm text-foreground block">
+                  {highContrast ? "Alto contraste activado" : "Alto contraste"}
+                </span>
+                <span className="font-body text-xs text-muted-foreground">
+                  Mayor legibilidad visual
+                </span>
+              </div>
+            </div>
+            <Switch
+              checked={highContrast}
+              onCheckedChange={setHighContrast}
             />
           </div>
 
