@@ -20,6 +20,7 @@ import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/p
 import { useBlockedUsersList, useUnblockUser } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AdvancedSettingsSection from "@/components/AdvancedSettingsSection";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -320,13 +321,16 @@ const Profile = () => {
           <ArrowLeft className="w-4 h-4" />
           <span>Presencia</span>
         </button>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Salir</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Salir</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 max-w-md mx-auto w-full">

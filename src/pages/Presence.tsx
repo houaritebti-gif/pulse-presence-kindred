@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
@@ -118,7 +119,8 @@ const Presence = () => {
           <span>Perfil</span>
         </button>
         <span className="font-display text-xl font-bold text-foreground">KIKI</span>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           {/* Ghost messages button */}
           <button
             onClick={() => navigate("/ghost-messages")}
