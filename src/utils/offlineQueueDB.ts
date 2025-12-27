@@ -172,3 +172,66 @@ export const migrateFromLocalStorage = async (): Promise<void> => {
     console.error('Error migrating from localStorage:', error);
   }
 };
+
+// Queue Statistics
+const STATS_STORAGE_KEY = 'offline_queue_stats';
+
+export interface QueueStats {
+  totalQueued: number;
+  totalSent: number;
+  totalFailed: number;
+  lastSyncAt: string | null;
+  firstQueuedAt: string | null;
+}
+
+const getDefaultStats = (): QueueStats => ({
+  totalQueued: 0,
+  totalSent: 0,
+  totalFailed: 0,
+  lastSyncAt: null,
+  firstQueuedAt: null,
+});
+
+export const getQueueStats = (): QueueStats => {
+  try {
+    const stored = localStorage.getItem(STATS_STORAGE_KEY);
+    if (stored) {
+      return { ...getDefaultStats(), ...JSON.parse(stored) };
+    }
+  } catch (error) {
+    console.error('Error reading queue stats:', error);
+  }
+  return getDefaultStats();
+};
+
+export const updateQueueStats = (updates: Partial<QueueStats>): QueueStats => {
+  const current = getQueueStats();
+  const updated = { ...current, ...updates };
+  try {
+    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(updated));
+  } catch (error) {
+    console.error('Error saving queue stats:', error);
+  }
+  return updated;
+};
+
+export const incrementQueueStat = (key: 'totalQueued' | 'totalSent' | 'totalFailed', amount: number = 1): void => {
+  const current = getQueueStats();
+  const updates: Partial<QueueStats> = {
+    [key]: current[key] + amount,
+  };
+  
+  if (key === 'totalQueued' && !current.firstQueuedAt) {
+    updates.firstQueuedAt = new Date().toISOString();
+  }
+  
+  if (key === 'totalSent') {
+    updates.lastSyncAt = new Date().toISOString();
+  }
+  
+  updateQueueStats(updates);
+};
+
+export const resetQueueStats = (): void => {
+  localStorage.removeItem(STATS_STORAGE_KEY);
+};

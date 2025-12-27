@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye, Filter, ArrowUpDown, ArrowDown, ArrowUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye, Filter, ArrowUpDown, ArrowDown, ArrowUp, BarChart3, TrendingUp } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
@@ -58,8 +58,14 @@ const OfflineQueueManager = () => {
     clearQueue,
     triggerBackgroundSync,
     canRetry,
+    getQueueStats,
     MAX_RETRIES,
   } = useOfflineQueue();
+  
+  const stats = getQueueStats();
+  const successRate = stats.totalQueued > 0 
+    ? Math.round((stats.totalSent / stats.totalQueued) * 100) 
+    : 0;
 
   const getStatusIcon = (status: QueuedMessage['status']) => {
     switch (status) {
@@ -308,6 +314,44 @@ const OfflineQueueManager = () => {
               </div>
             </div>
           </div>
+
+          {/* Historical Stats */}
+          {stats.totalQueued > 0 && (
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+              <div className="flex items-center gap-2 mb-3">
+                <BarChart3 className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Estadísticas históricas</span>
+              </div>
+              <div className="grid grid-cols-4 gap-3 text-center">
+                <div>
+                  <div className="text-lg font-bold text-foreground">{stats.totalQueued}</div>
+                  <div className="text-[10px] text-muted-foreground">Total encolados</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-green-500">{stats.totalSent}</div>
+                  <div className="text-[10px] text-muted-foreground">Enviados</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-destructive">{stats.totalFailed}</div>
+                  <div className="text-[10px] text-muted-foreground">Fallidos</div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-center gap-1">
+                    <TrendingUp className={`w-4 h-4 ${successRate >= 80 ? 'text-green-500' : successRate >= 50 ? 'text-yellow-500' : 'text-destructive'}`} />
+                    <span className={`text-lg font-bold ${successRate >= 80 ? 'text-green-500' : successRate >= 50 ? 'text-yellow-500' : 'text-destructive'}`}>
+                      {successRate}%
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">Tasa éxito</div>
+                </div>
+              </div>
+              {stats.lastSyncAt && (
+                <p className="text-[10px] text-muted-foreground text-center mt-2">
+                  Última sync: {format(new Date(stats.lastSyncAt), "d MMM, HH:mm", { locale: es })}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           {queue.length > 0 && (
