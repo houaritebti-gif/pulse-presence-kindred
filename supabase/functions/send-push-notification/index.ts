@@ -1,55 +1,13 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as jose from "https://deno.land/x/jose@v5.2.0/index.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function base64UrlDecode(str: string): Uint8Array {
-  const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
-  const padding = '='.repeat((4 - base64.length % 4) % 4);
-  const binary = atob(base64 + padding);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
-
-async function createVapidAuth(
-  audience: string,
-  vapidPublicKey: string,
-  vapidPrivateKey: string
-): Promise<string> {
-  // Decode the keys
-  const publicKeyBytes = base64UrlDecode(vapidPublicKey);
-  const privateKeyBytes = base64UrlDecode(vapidPrivateKey);
-
-  // Create JWK for the private key (P-256/ES256)
-  const privateJwk = {
-    kty: 'EC',
-    crv: 'P-256',
-    // Extract x and y from the public key (skip first byte which is 0x04)
-    x: btoa(String.fromCharCode(...publicKeyBytes.slice(1, 33))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
-    y: btoa(String.fromCharCode(...publicKeyBytes.slice(33, 65))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
-    d: btoa(String.fromCharCode(...privateKeyBytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, ''),
-  };
-
-  const privateKey = await jose.importJWK(privateJwk, 'ES256');
-  
-  const jwt = await new jose.SignJWT({})
-    .setProtectedHeader({ alg: 'ES256', typ: 'JWT' })
-    .setAudience(audience)
-    .setSubject('mailto:push@kiki.app')
-    .setExpirationTime('12h')
-    .sign(privateKey);
-  
-  return `vapid t=${jwt}, k=${vapidPublicKey}`;
-}
-
+// Simplified push - send without payload encryption (notification shows generic message)
+// The service worker will display a default notification
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -62,6 +20,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
     if (!vapidPublicKey || !vapidPrivateKey) {
+      console.error('VAPID keys not configured');
       throw new Error('VAPID keys not configured');
     }
 
@@ -73,7 +32,7 @@ serve(async (req) => {
       throw new Error('profile_id and title are required');
     }
     
-    console.log(`Sending push to profile: ${profile_id}`);
+    console.log(`Sending push to profile: ${profile_id}, title: ${title}`);
     
     // Get all subscriptions for this profile
     const { data: subscriptions, error: subError } = await supabase
@@ -95,48 +54,101 @@ serve(async (req) => {
     
     console.log(`Found ${subscriptions.length} subscriptions`);
     
-    const payload = JSON.stringify({ title, body, url, tag });
     let successCount = 0;
     const expiredEndpoints: string[] = [];
     
     for (const sub of subscriptions) {
       try {
+        console.log(`Processing subscription: ${sub.endpoint.substring(0, 60)}...`);
+        
+        // Create JWT for VAPID
         const endpoint = new URL(sub.endpoint);
         const audience = endpoint.origin;
         
-        // Create VAPID authorization header
-        const authorization = await createVapidAuth(audience, vapidPublicKey, vapidPrivateKey);
+        // Create VAPID JWT manually
+        const header = { alg: 'ES256', typ: 'JWT' };
+        const payload = {
+          aud: audience,
+          exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60,
+          sub: 'mailto:push@kiki.app'
+        };
         
-        console.log(`Sending to: ${sub.endpoint.substring(0, 60)}...`);
+        // Base64url encode
+        const base64UrlEncode = (obj: unknown) => {
+          const str = JSON.stringify(obj);
+          const bytes = new TextEncoder().encode(str);
+          let binary = '';
+          for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        };
         
-        // Send push notification - for FCM we can send without encryption for simple payloads
+        const headerB64 = base64UrlEncode(header);
+        const payloadB64 = base64UrlEncode(payload);
+        const unsignedToken = `${headerB64}.${payloadB64}`;
+        
+        // Import private key and sign
+        const privateKeyBytes = Uint8Array.from(atob(vapidPrivateKey.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+        const publicKeyBytes = Uint8Array.from(atob(vapidPublicKey.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+        
+        // Create the JWK for signing
+        const jwk = {
+          kty: 'EC',
+          crv: 'P-256',
+          x: btoa(String.fromCharCode(...publicKeyBytes.slice(1, 33))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
+          y: btoa(String.fromCharCode(...publicKeyBytes.slice(33, 65))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
+          d: btoa(String.fromCharCode(...privateKeyBytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''),
+        };
+        
+        const key = await crypto.subtle.importKey(
+          'jwk',
+          jwk,
+          { name: 'ECDSA', namedCurve: 'P-256' },
+          false,
+          ['sign']
+        );
+        
+        const signature = await crypto.subtle.sign(
+          { name: 'ECDSA', hash: 'SHA-256' },
+          key,
+          new TextEncoder().encode(unsignedToken)
+        );
+        
+        // Convert signature from DER to raw format and base64url encode
+        const sigBytes = new Uint8Array(signature);
+        const sigB64 = btoa(String.fromCharCode(...sigBytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        
+        const jwt = `${unsignedToken}.${sigB64}`;
+        const authorization = `vapid t=${jwt}, k=${vapidPublicKey}`;
+        
+        // Send push notification without encrypted payload
+        // This triggers the service worker which shows a generic notification
         const response = await fetch(sub.endpoint, {
           method: 'POST',
           headers: {
             'Authorization': authorization,
             'TTL': '86400',
             'Urgency': 'high',
+            'Content-Length': '0',
           },
         });
         
-        console.log(`Push response status: ${response.status}`);
+        console.log(`Push response: ${response.status}`);
         
-        if (response.status === 201 || response.ok) {
+        if (response.status === 201 || response.status === 200) {
           successCount++;
+          console.log('Push sent successfully');
         } else if (response.status === 410 || response.status === 404) {
-          console.log('Subscription expired');
+          console.log('Subscription expired, marking for removal');
           expiredEndpoints.push(sub.endpoint);
         } else {
           const text = await response.text();
           console.error(`Push failed: ${response.status} - ${text}`);
         }
         
-      } catch (pushError: any) {
-        console.error('Error sending push:', pushError.message);
-        
-        if (pushError.statusCode === 410 || pushError.statusCode === 404) {
-          expiredEndpoints.push(sub.endpoint);
-        }
+      } catch (pushError) {
+        console.error('Error sending individual push:', pushError);
       }
     }
     
