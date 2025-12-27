@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead, useQuedadaAttendees, useExpelAttendee } from "@/hooks/useQuedadas";
 import { useChatImageUpload } from "@/hooks/useChatImageUpload";
+import { compressChatImage } from "@/utils/imageCompression";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -50,6 +51,7 @@ const QuedadaChat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isCompressingPreview, setIsCompressingPreview] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showAttendees, setShowAttendees] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -116,7 +118,7 @@ const QuedadaChat = () => {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -125,23 +127,37 @@ const QuedadaChat = () => {
       return;
     }
     
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 10 * 1024 * 1024; // 10MB before compression
     if (file.size > maxSize) {
-      toast.error("La imagen es demasiado grande (máx. 5MB)");
+      toast.error("La imagen es demasiado grande (máx. 10MB)");
       return;
     }
     
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    setIsCompressingPreview(true);
+    
+    try {
+      // Compress image before preview
+      const compressedFile = await compressChatImage(file);
+      setSelectedFile(compressedFile);
+      
+      // Create preview from compressed file
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setIsCompressingPreview(false);
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error("Error compressing image:", error);
+      toast.error("Error al procesar la imagen");
+      setIsCompressingPreview(false);
+    }
   };
 
   const clearImagePreview = () => {
     setSelectedFile(null);
     setImagePreview(null);
+    setIsCompressingPreview(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -462,10 +478,10 @@ const QuedadaChat = () => {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
+              disabled={isUploading || isCompressingPreview}
               className="h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent/50 transition-all duration-300 disabled:opacity-50"
             >
-              {isUploadingImage ? (
+              {isUploadingImage || isCompressingPreview ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <ImagePlus className="w-5 h-5" />
