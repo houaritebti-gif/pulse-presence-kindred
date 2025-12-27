@@ -124,9 +124,23 @@ export const useOfflineQueue = () => {
       // Play success sound
       playSyncSuccessSound();
       
+      const isBackground = document.visibilityState !== 'visible';
+      
       // Show toast if app is visible
-      if (document.visibilityState === 'visible') {
+      if (!isBackground) {
         toast.success(`${count} mensaje${count > 1 ? 's' : ''} enviado${count > 1 ? 's' : ''}`);
+      }
+      
+      // Show browser notification if app is in background (push-like notification)
+      if (isBackground && getNotificationPermission() === 'granted') {
+        showBrowserNotification(
+          '✓ Sincronización completada',
+          {
+            body: `${count} mensaje${count > 1 ? 's' : ''} pendiente${count > 1 ? 's' : ''} enviado${count > 1 ? 's' : ''} correctamente`,
+            icon: '/pwa-192x192.png',
+            tag: 'offline-sync-complete',
+          }
+        );
       }
     };
 
