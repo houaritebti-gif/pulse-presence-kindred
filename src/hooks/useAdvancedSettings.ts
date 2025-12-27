@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   REDUCE_MOTION: "kiki_reduce_motion",
   TEXT_SIZE: "kiki_text_size",
   COMPACT_MODE: "kiki_compact_mode",
+  HIGH_CONTRAST: "kiki_high_contrast",
 } as const;
 
 export type Theme = "light" | "dark" | "system";
@@ -93,12 +94,26 @@ export const applyCompactMode = (compact: boolean) => {
   document.documentElement.classList.toggle("compact-mode", compact);
 };
 
+export const getHighContrast = (): boolean => {
+  return localStorage.getItem(STORAGE_KEYS.HIGH_CONTRAST) === "true";
+};
+
+export const setHighContrast = (enabled: boolean) => {
+  localStorage.setItem(STORAGE_KEYS.HIGH_CONTRAST, String(enabled));
+  applyHighContrast(enabled);
+};
+
+export const applyHighContrast = (enabled: boolean) => {
+  document.documentElement.classList.toggle("high-contrast", enabled);
+};
+
 // Initialize settings on app load
 export const initializeAdvancedSettings = () => {
   applyTheme(getTheme());
   applyReduceMotion(getReduceMotion());
   applyTextSize(getTextSize());
   applyCompactMode(getCompactMode());
+  applyHighContrast(getHighContrast());
 
   // Listen for system theme changes
   const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -115,6 +130,7 @@ export const useAdvancedSettings = () => {
   const [reduceMotion, setReduceMotionState] = useState<boolean>(getReduceMotion);
   const [textSize, setTextSizeState] = useState<TextSize>(getTextSize);
   const [compactMode, setCompactModeState] = useState<boolean>(getCompactMode);
+  const [highContrast, setHighContrastState] = useState<boolean>(getHighContrast);
 
   useEffect(() => {
     initializeAdvancedSettings();
@@ -140,14 +156,21 @@ export const useAdvancedSettings = () => {
     setCompactMode(compact);
   };
 
+  const handleHighContrastChange = (enabled: boolean) => {
+    setHighContrastState(enabled);
+    setHighContrast(enabled);
+  };
+
   return {
     theme,
     reduceMotion,
     textSize,
     compactMode,
+    highContrast,
     setTheme: handleThemeChange,
     setReduceMotion: handleReduceMotionChange,
     setTextSize: handleTextSizeChange,
     setCompactMode: handleCompactModeChange,
+    setHighContrast: handleHighContrastChange,
   };
 };
