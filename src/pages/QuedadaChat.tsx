@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ImageLightbox from "@/components/ImageLightbox";
+import UploadProgress from "@/components/UploadProgress";
 import VoiceMessagePlayer from "@/components/VoiceMessagePlayer";
 import VoiceRecordButton from "@/components/VoiceRecordButton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -30,7 +31,7 @@ const QuedadaChat = () => {
   const expelAttendee = useExpelAttendee();
   
   // Image upload
-  const { uploadImage, isUploading: isUploadingImage } = useChatImageUpload();
+  const { uploadImage, isUploading: isUploadingImage, uploadPhase, uploadProgress } = useChatImageUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Voice recording
@@ -406,22 +407,40 @@ const QuedadaChat = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Image preview */}
-      {imagePreview && (
+      {/* Image preview with upload progress */}
+      {(imagePreview || isUploadingImage) && (
         <div className="relative z-10 px-6 py-2 border-t border-border/20 backdrop-blur-sm bg-background/80">
           <div className="relative inline-block">
-            <img 
-              src={imagePreview} 
-              alt="Vista previa"
-              className="h-20 rounded-lg object-cover"
-            />
-            <button
-              type="button"
-              onClick={clearImagePreview}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            {imagePreview && (
+              <img 
+                src={imagePreview} 
+                alt="Vista previa"
+                className={`h-20 rounded-lg object-cover transition-opacity ${isUploadingImage ? "opacity-50" : "opacity-100"}`}
+              />
+            )}
+            
+            {/* Upload progress overlay */}
+            {isUploadingImage && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm rounded-lg">
+                <UploadProgress
+                  isVisible={true}
+                  phase={uploadPhase}
+                  progress={uploadProgress}
+                  className="scale-75"
+                />
+              </div>
+            )}
+            
+            {/* Close button - only show when not uploading */}
+            {!isUploadingImage && (
+              <button
+                type="button"
+                onClick={clearImagePreview}
+                className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       )}
