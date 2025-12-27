@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAdvancedSettings, Theme, TextSize } from "@/hooks/useAdvancedSettings";
+import { isThemeSoundEnabled, setThemeSoundEnabled } from "@/utils/notificationSound";
 
 const AdvancedSettingsSection = () => {
   const [expanded, setExpanded] = useState(false);
+  const [themeSoundOn, setThemeSoundOn] = useState(true);
+  
   const {
     theme,
     reduceMotion,
@@ -15,6 +18,15 @@ const AdvancedSettingsSection = () => {
     setTextSize,
     setCompactMode,
   } = useAdvancedSettings();
+
+  useEffect(() => {
+    setThemeSoundOn(isThemeSoundEnabled());
+  }, []);
+
+  const handleThemeSoundChange = (enabled: boolean) => {
+    setThemeSoundOn(enabled);
+    setThemeSoundEnabled(enabled);
+  };
 
   const themeOptions: { value: Theme; label: string; icon: typeof Sun }[] = [
     { value: "light", label: "Claro", icon: Sun },
@@ -142,6 +154,25 @@ const AdvancedSettingsSection = () => {
             <Switch
               checked={compactMode}
               onCheckedChange={setCompactMode}
+            />
+          </div>
+
+          {/* Theme Sound */}
+          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Volume2 className={`w-5 h-5 ${themeSoundOn ? "text-foreground" : "text-muted-foreground"}`} />
+              <div>
+                <span className="font-body text-sm text-foreground block">
+                  Sonido al cambiar tema
+                </span>
+                <span className="font-body text-xs text-muted-foreground">
+                  Reproduce un clic sutil al alternar
+                </span>
+              </div>
+            </div>
+            <Switch
+              checked={themeSoundOn}
+              onCheckedChange={handleThemeSoundChange}
             />
           </div>
         </div>
