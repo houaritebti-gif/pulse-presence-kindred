@@ -8,6 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
 
 interface PresenceProfile {
@@ -91,10 +97,19 @@ const PresenceCard = ({ presence, compatibility, animationDelay }: PresenceCardP
               </h3>
               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
               {organizedCount && organizedCount > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-body text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-                  <Calendar className="w-2.5 h-2.5" />
-                  {organizedCount}
-                </span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 text-[10px] font-body text-accent bg-accent/10 px-2 py-0.5 rounded-full cursor-help">
+                        <Calendar className="w-2.5 h-2.5" />
+                        {organizedCount}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Ha organizado {organizedCount} {organizedCount === 1 ? "quedada" : "quedadas"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
               {compatibility > 0 && (
                 <span className="text-xs font-body text-primary bg-primary/10 px-2 py-0.5 rounded-full">

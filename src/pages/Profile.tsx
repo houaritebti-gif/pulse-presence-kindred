@@ -14,6 +14,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { sendPushNotification } from "@/utils/pushNotifications";
 import { isVibrationEnabled, setVibrationEnabled, isDndEnabled, setDndEnabled, getDndHours, setDndHours } from "@/utils/notificationSound";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
 import { useBlockedUsersList, useUnblockUser } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -321,12 +322,21 @@ const Profile = () => {
             Tu perfil
           </h1>
           {organizedCount && organizedCount > 0 && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-2">
-              <Calendar className="w-3.5 h-3.5" />
-              <span className="font-body text-xs font-medium">
-                {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
-              </span>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-2 cursor-help">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span className="font-body text-xs font-medium">
+                      {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Has organizado eventos para la comunidad</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           <p className="font-body text-muted-foreground text-sm">
             Solo lo esencial. Nada más.
