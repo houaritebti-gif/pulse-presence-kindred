@@ -48,6 +48,7 @@ const OfflineQueueManager = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [showResetStatsConfirm, setShowResetStatsConfirm] = useState(false);
   const {
     isOnline,
     queue,
@@ -327,10 +328,7 @@ const OfflineQueueManager = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => {
-                    resetQueueStats();
-                    toast.success("Estadísticas reseteadas");
-                  }}
+                  onClick={() => setShowResetStatsConfirm(true)}
                   className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
                   title="Resetear estadísticas"
                 >
@@ -681,6 +679,31 @@ const OfflineQueueManager = () => {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={cancelImport}>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={confirmImport}>Importar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reset Stats Confirmation Dialog */}
+      <AlertDialog open={showResetStatsConfirm} onOpenChange={setShowResetStatsConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Resetear estadísticas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente todas las estadísticas históricas de la cola offline.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                resetQueueStats();
+                toast.success("Estadísticas reseteadas");
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Resetear
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
