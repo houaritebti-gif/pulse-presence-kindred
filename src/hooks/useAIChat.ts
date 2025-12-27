@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useQuedadas } from "./useQuedadas";
 import { useProfile } from "./useProfile";
 import { useSparkChats } from "./useSparks";
@@ -36,15 +36,53 @@ interface ChatContext {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
+const STORAGE_KEY = "ai-chat-history";
+const MAX_STORED_MESSAGES = 50; // Limit stored messages to avoid localStorage bloat
+
+// Load messages from localStorage
+const loadStoredMessages = (): Message[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed.slice(-MAX_STORED_MESSAGES);
+      }
+    }
+  } catch (e) {
+    console.error("Error loading chat history:", e);
+  }
+  return [];
+};
+
+// Save messages to localStorage
+const saveMessages = (messages: Message[]) => {
+  try {
+    // Only save completed messages (non-empty content)
+    const toSave = messages
+      .filter(m => m.content.trim() !== "")
+      .slice(-MAX_STORED_MESSAGES);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch (e) {
+    console.error("Error saving chat history:", e);
+  }
+};
 
 export const useAIChat = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => loadStoredMessages());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const { data: quedadas } = useQuedadas();
   const { data: profile } = useProfile();
   const { data: sparkChats } = useSparkChats();
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (!isLoading) {
+      saveMessages(messages);
+    }
+  }, [messages, isLoading]);
 
   const buildContext = useCallback((): ChatContext => {
     const quedadasContext: QuedadaContext[] = (quedadas || []).map((q) => {
@@ -180,6 +218,7 @@ export const useAIChat = () => {
   const clearChat = useCallback(() => {
     setMessages([]);
     setError(null);
+    localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   return {
