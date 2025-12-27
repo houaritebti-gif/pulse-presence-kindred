@@ -71,7 +71,7 @@ const AdvancedSettingsSection = () => {
                     className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-body transition-colors ${
                       theme === option.value
                         ? "bg-primary text-primary-foreground"
-                        : "bg-background/50 text-foreground hover:bg-background"
+                        : "bg-muted text-foreground hover:bg-muted/80"
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -96,7 +96,7 @@ const AdvancedSettingsSection = () => {
                   className={`flex-1 py-2 px-3 rounded-lg font-body transition-colors ${
                     textSize === option.value
                       ? "bg-primary text-primary-foreground"
-                      : "bg-background/50 text-foreground hover:bg-background"
+                      : "bg-muted text-foreground hover:bg-muted/80"
                   } ${
                     option.value === "small" ? "text-xs" : option.value === "large" ? "text-base" : "text-sm"
                   }`}
