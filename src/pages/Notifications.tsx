@@ -12,6 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification, useDeleteReadNotifications } from "@/hooks/useNotificationCenter";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
@@ -108,6 +109,7 @@ const Notifications = () => {
           </button>
           <span className="font-display text-xl font-bold text-foreground">KIKI</span>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             {readCount > 0 && (
               <Button
                 variant="ghost"
