@@ -390,15 +390,15 @@ const Profile = () => {
           <div className="flex flex-wrap gap-2">
             {TRIBES.map(tribe => (
               <button
-                key={tribe}
-                onClick={() => toggleTribe(tribe)}
+                key={tribe.value}
+                onClick={() => toggleTribe(tribe.value)}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
-                  selectedTribes.includes(tribe)
+                  selectedTribes.includes(tribe.value)
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
                 }`}
               >
-                {tribe}
+                {tribe.emoji} {tribe.value}
               </button>
             ))}
           </div>

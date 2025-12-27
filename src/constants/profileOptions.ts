@@ -1,18 +1,20 @@
-// Tribes MVP - closed list
+// Tribes MVP - closed list with emojis
 export const TRIBES = [
-  "Punk / Garage",
-  "Gótica / Dark",
-  "Electrónica",
-  "Alternativa",
-  "Artística",
-  "Queer Scene",
-  "Urbana",
-  "Indie",
-  "Intelectual",
-  "Esotérica",
-  "Glam",
-  "Natural",
+  { value: "Punk / Garage", emoji: "🎸" },
+  { value: "Gótica / Dark", emoji: "🦇" },
+  { value: "Electrónica", emoji: "🎧" },
+  { value: "Alternativa", emoji: "🌀" },
+  { value: "Artística", emoji: "🎨" },
+  { value: "Queer Scene", emoji: "🌈" },
+  { value: "Urbana", emoji: "🏙️" },
+  { value: "Indie", emoji: "🎹" },
+  { value: "Intelectual", emoji: "📚" },
+  { value: "Esotérica", emoji: "🔮" },
+  { value: "Glam", emoji: "💎" },
+  { value: "Natural", emoji: "🌿" },
 ] as const;
+
+export type TribeType = typeof TRIBES[number]["value"];
 
 // Music styles MVP - grouped by categories
 export const MUSIC_CATEGORIES = [
@@ -77,6 +79,5 @@ export const OPTIONAL_DETAILS = [
   { key: "alternative_aesthetic", label: "Estética alternativa" },
 ] as const;
 
-export type TribeType = typeof TRIBES[number];
 export type MusicStyleType = typeof ALL_MUSIC_STYLES[number];
 export type VibeType = typeof VIBES[number]["value"];
