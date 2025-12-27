@@ -3,12 +3,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import NotificationProvider from "@/components/NotificationProvider";
 import { initializeAdvancedSettings } from "@/hooks/useAdvancedSettings";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { SkipLink } from "@/components/SkipLink";
+import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -66,6 +69,22 @@ const queryClient = new QueryClient({
   },
 });
 
+// Keyboard navigation wrapper component
+const KeyboardNavigationWrapper = ({ children }: { children: React.ReactNode }) => {
+  useKeyboardShortcuts();
+  const location = useLocation();
+  
+  // Show shortcuts help only on main pages (not landing/auth)
+  const showShortcutsHelp = !["/", "/auth"].includes(location.pathname);
+  
+  return (
+    <>
+      {children}
+      {showShortcutsHelp && <KeyboardShortcutsHelp />}
+    </>
+  );
+};
+
 const App = () => {
   useEffect(() => {
     initializeAdvancedSettings();
@@ -78,9 +97,12 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <SkipLink />
           <NotificationProvider>
-            <BottomNavigation />
-            <Routes>
+            <KeyboardNavigationWrapper>
+              <BottomNavigation />
+              <div id="main-content" tabIndex={-1} className="outline-none">
+                <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route
@@ -173,6 +195,8 @@ const App = () => {
               />
               <Route path="*" element={<NotFound />} />
             </Routes>
+              </div>
+            </KeyboardNavigationWrapper>
           </NotificationProvider>
         </BrowserRouter>
       </TooltipProvider>
