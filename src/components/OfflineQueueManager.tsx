@@ -5,6 +5,16 @@ import { useOfflineQueue, QueuedMessage } from "@/hooks/useOfflineQueue";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface BackupData {
   exportedAt: string;
@@ -23,6 +33,8 @@ interface BackupData {
 const OfflineQueueManager = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [expanded, setExpanded] = useState(false);
+  const [pendingImport, setPendingImport] = useState<BackupData | null>(null);
+  const [showImportConfirm, setShowImportConfirm] = useState(false);
   const {
     isOnline,
     queue,
@@ -109,12 +121,12 @@ const OfflineQueueManager = () => {
     toast.success("Cola exportada correctamente");
   };
 
-  const handleImportQueue = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
         const data: BackupData = JSON.parse(content);
@@ -125,33 +137,11 @@ const OfflineQueueManager = () => {
           return;
         }
 
-        let importedCount = 0;
-        const existingIds = new Set(queue.map(m => m.id));
-
-        for (const msg of data.messages) {
-          // Skip if already exists
-          if (existingIds.has(msg.id)) continue;
-
-          // Validate message structure
-          if (!msg.id || !msg.type || !msg.chatId || !msg.content || !msg.timestamp) {
-            continue;
-          }
-
-          await addToQueue({
-            type: msg.type,
-            chatId: msg.chatId,
-            content: msg.content,
-          });
-          importedCount++;
-        }
-
-        if (importedCount > 0) {
-          toast.success(`${importedCount} mensaje(s) importado(s)`);
-        } else {
-          toast.info("No se importaron mensajes nuevos");
-        }
+        // Store data and show confirmation
+        setPendingImport(data);
+        setShowImportConfirm(true);
       } catch (error) {
-        console.error("Error importing queue:", error);
+        console.error("Error reading backup file:", error);
         toast.error("Error al leer el archivo de backup");
       }
     };
@@ -161,6 +151,49 @@ const OfflineQueueManager = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+  };
+
+  const confirmImport = async () => {
+    if (!pendingImport) return;
+
+    try {
+      let importedCount = 0;
+      const existingIds = new Set(queue.map(m => m.id));
+
+      for (const msg of pendingImport.messages) {
+        // Skip if already exists
+        if (existingIds.has(msg.id)) continue;
+
+        // Validate message structure
+        if (!msg.id || !msg.type || !msg.chatId || !msg.content || !msg.timestamp) {
+          continue;
+        }
+
+        await addToQueue({
+          type: msg.type,
+          chatId: msg.chatId,
+          content: msg.content,
+        });
+        importedCount++;
+      }
+
+      if (importedCount > 0) {
+        toast.success(`${importedCount} mensaje(s) importado(s)`);
+      } else {
+        toast.info("No se importaron mensajes nuevos");
+      }
+    } catch (error) {
+      console.error("Error importing queue:", error);
+      toast.error("Error al importar mensajes");
+    } finally {
+      setPendingImport(null);
+      setShowImportConfirm(false);
+    }
+  };
+
+  const cancelImport = () => {
+    setPendingImport(null);
+    setShowImportConfirm(false);
   };
 
   const handleClearAll = async () => {
@@ -276,7 +309,7 @@ const OfflineQueueManager = () => {
                 ref={fileInputRef}
                 type="file"
                 accept=".json"
-                onChange={handleImportQueue}
+                onChange={handleFileSelect}
                 className="hidden"
               />
               <Button
@@ -375,6 +408,32 @@ const OfflineQueueManager = () => {
           </p>
         </div>
       )}
+
+      {/* Import Confirmation Dialog */}
+      <AlertDialog open={showImportConfirm} onOpenChange={setShowImportConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar importación</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingImport && (
+                <>
+                  Vas a importar un backup del{" "}
+                  <strong>
+                    {format(new Date(pendingImport.exportedAt), "d 'de' MMMM 'a las' HH:mm", { locale: es })}
+                  </strong>{" "}
+                  con <strong>{pendingImport.totalMessages} mensaje(s)</strong>.
+                  <br /><br />
+                  Los mensajes que ya existan en la cola serán ignorados para evitar duplicados.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelImport}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmImport}>Importar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
