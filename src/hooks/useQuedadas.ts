@@ -265,6 +265,31 @@ export const useLeaveQuedada = () => {
   });
 };
 
+// Expel attendee from a quedada (creator only)
+export const useExpelAttendee = () => {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
+  return useMutation({
+    mutationFn: async ({ quedadaId, attendeeProfileId }: { quedadaId: string; attendeeProfileId: string }) => {
+      if (!profile) throw new Error("No profile");
+
+      const { error } = await supabase
+        .from("quedada_attendees")
+        .delete()
+        .eq("quedada_id", quedadaId)
+        .eq("profile_id", attendeeProfileId);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, { quedadaId }) => {
+      queryClient.invalidateQueries({ queryKey: ["quedadas", profile?.city] });
+      queryClient.invalidateQueries({ queryKey: ["quedada", quedadaId] });
+      queryClient.invalidateQueries({ queryKey: ["quedada_attendees", quedadaId] });
+    },
+  });
+};
+
 // Delete a quedada
 export const useDeleteQuedada = () => {
   const queryClient = useQueryClient();
