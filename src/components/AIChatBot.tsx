@@ -7,10 +7,10 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
 
 const SUGGESTED_QUESTIONS = [
+  "¿Cuáles son mis quedadas?",
   "¿Cómo creo una quedada?",
   "¿Qué son los sparks?",
   "¿Cómo conecto con otros usuarios?",
-  "¿Cómo edito mi perfil?",
   "¿Qué es el modo presencia?",
 ];
 

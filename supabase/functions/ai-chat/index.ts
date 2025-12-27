@@ -11,14 +11,56 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, context } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Sending request to Lovable AI with messages:", messages.length);
+    console.log("Sending request to Lovable AI with messages:", messages.length, "context:", !!context);
+
+    // Build context about user's quedadas
+    let quedadasContext = "";
+    if (context?.quedadas && context.quedadas.length > 0) {
+      quedadasContext = `\n\nInformación sobre las quedadas del usuario:
+${context.quedadas.map((q: any, i: number) => `
+${i + 1}. "${q.title}" 
+   - Fecha: ${q.event_date}
+   - Ciudad: ${q.city}
+   - Descripción: ${q.description || "Sin descripción"}
+   - Lugar: ${q.location_hint || "No especificado"}
+   - Asistentes: ${q.attendee_count || 0}${q.max_attendees ? `/${q.max_attendees}` : ""}
+   - Creador: ${q.is_creator ? "Tú" : q.creator_name || "Otro usuario"}
+   - Estado: ${q.is_attending ? "Apuntado" : "No apuntado"}`).join("\n")}
+
+Usa esta información para responder preguntas específicas sobre las quedadas del usuario.`;
+    }
+
+    let userContext = "";
+    if (context?.profile) {
+      userContext = `\n\nInformación del usuario:
+- Nombre: ${context.profile.name || "No especificado"}
+- Ciudad: ${context.profile.city || "No especificada"}`;
+    }
+
+    const systemPrompt = `Eres un asistente amigable y útil para una app de eventos y conexiones sociales llamada la app de quedadas.
+Ayudas a los usuarios con:
+- Información sobre cómo usar la app
+- Consejos para crear quedadas interesantes
+- Sugerencias para conectar con otros usuarios
+- Respuestas sobre sus quedadas específicas
+- Información general de la app
+
+Funcionalidades principales de la app:
+- Quedadas: eventos que los usuarios pueden crear y a los que pueden apuntarse
+- Sparks: conexiones entre usuarios que se dan cuando ambos se envían un mensaje fantasma mutuamente
+- Mensajes fantasma: mensajes anónimos que puedes enviar a otros usuarios desde su perfil
+- Modo presencia: permite ver quién está online y disponible para conectar
+- Perfil: cada usuario tiene un perfil con foto, nombre, ciudad, y preferencias
+${userContext}${quedadasContext}
+
+Responde siempre en español de forma concisa y amable. Usa emojis ocasionalmente para ser más cercano. Si te preguntan sobre quedadas específicas, usa la información proporcionada.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -29,17 +71,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { 
-            role: "system", 
-            content: `Eres un asistente amigable y útil para una app de eventos y conexiones sociales. 
-            Ayudas a los usuarios con:
-            - Información sobre cómo usar la app
-            - Consejos para crear quedadas interesantes
-            - Sugerencias para conectar con otros usuarios
-            - Respuestas a preguntas generales
-            
-            Responde siempre en español de forma concisa y amable. Usa emojis ocasionalmente para ser más cercano.`
-          },
+          { role: "system", content: systemPrompt },
           ...messages,
         ],
         stream: true,
