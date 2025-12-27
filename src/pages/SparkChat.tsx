@@ -222,13 +222,35 @@ const SparkChat = () => {
     }
   };
 
-  if (isLoading || !chat) {
+  if (isLoading) {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="relative">
           <Flame className="w-12 h-12 text-primary animate-spark-flame" />
           <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
         </div>
+      </main>
+    );
+  }
+
+  if (!chat) {
+    return (
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+        <div className="relative w-20 h-20 mb-6">
+          <div className="w-full h-full rounded-full bg-card/50 flex items-center justify-center">
+            <Flame className="w-8 h-8 text-muted-foreground/30" />
+          </div>
+        </div>
+        <h2 className="font-display text-xl font-semibold text-foreground mb-2">
+          Chat no encontrado
+        </h2>
+        <p className="font-body text-muted-foreground text-center mb-6 max-w-[240px]">
+          Este chat ya no existe o no tienes acceso a él.
+        </p>
+        <Button variant="kiki-soft" onClick={() => navigate("/sparks")}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver a chispas
+        </Button>
       </main>
     );
   }
