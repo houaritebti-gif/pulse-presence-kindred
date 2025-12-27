@@ -201,3 +201,70 @@ export const notifyUser = (type: "spark" | "message" | "quedada" | "ghost" | "de
   playNotificationSound(type);
   vibrateDevice(type);
 };
+
+// Celebration sound for completing onboarding or achievements
+export const playCelebrationSound = () => {
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Play a triumphant ascending arpeggio
+    const notes = [
+      { freq: 523, time: 0 },      // C5
+      { freq: 659, time: 0.1 },    // E5
+      { freq: 784, time: 0.2 },    // G5
+      { freq: 1047, time: 0.3 },   // C6
+      { freq: 1319, time: 0.45 },  // E6
+      { freq: 1568, time: 0.6 },   // G6
+    ];
+    
+    notes.forEach(({ freq, time }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
+      
+      gain.gain.setValueAtTime(0, ctx.currentTime + time);
+      gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + time + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + time + 0.3);
+      
+      osc.start(ctx.currentTime + time);
+      osc.stop(ctx.currentTime + time + 0.35);
+    });
+    
+    // Add a final chord
+    setTimeout(() => {
+      const chordFreqs = [523, 659, 784, 1047]; // C major chord
+      chordFreqs.forEach(freq => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+        
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.9);
+      });
+    }, 700);
+    
+    // Vibrate celebration pattern
+    if ("vibrate" in navigator && isVibrationEnabled()) {
+      navigator.vibrate([100, 50, 100, 50, 200, 100, 300]);
+    }
+  } catch (error) {
+    console.log("Could not play celebration sound:", error);
+  }
+};

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
+import { playCelebrationSound } from "@/utils/notificationSound";
 
 const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
@@ -221,8 +222,9 @@ const Onboarding = () => {
         });
       }
 
-      // Fire confetti celebration!
+      // Fire confetti and sound celebration!
       fireConfetti();
+      playCelebrationSound();
 
       toast.success("¡Perfil completado!");
       
