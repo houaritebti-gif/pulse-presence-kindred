@@ -69,7 +69,11 @@ const SparkChat = () => {
     setIsSyncing,
     addToQueue, 
     removeFromQueue,
-    getMessagesForChat 
+    updateMessageStatus,
+    markAsFailed,
+    resetForRetry,
+    getMessagesForChat,
+    MAX_RETRIES,
   } = useOfflineQueue();
   
   const isUploading = isUploadingImage || isUploadingVoice;
@@ -103,11 +107,16 @@ const SparkChat = () => {
 
   // Sync pending messages when coming back online
   const syncPendingMessages = useCallback(async () => {
-    if (!chatId || !chat || pendingMessages.length === 0) return;
+    if (!chatId || !chat) return;
+    
+    const pendingOnly = pendingMessages.filter(m => m.status === 'pending');
+    if (pendingOnly.length === 0) return;
     
     setIsSyncing(true);
+    let successCount = 0;
     
-    for (const queuedMsg of pendingMessages) {
+    for (const queuedMsg of pendingOnly) {
+      updateMessageStatus(queuedMsg.id, 'sending');
       try {
         await sendMessage.mutateAsync({ 
           chatId: queuedMsg.chatId, 
@@ -115,24 +124,48 @@ const SparkChat = () => {
           recipientProfileId: queuedMsg.metadata?.recipientProfileId,
         });
         removeFromQueue(queuedMsg.id);
+        successCount++;
       } catch (error) {
         console.error('Failed to sync message:', error);
+        markAsFailed(queuedMsg.id);
       }
     }
     
     setIsSyncing(false);
     
-    if (pendingMessages.length > 0) {
-      toast.success(`${pendingMessages.length} mensaje${pendingMessages.length > 1 ? 's' : ''} enviado${pendingMessages.length > 1 ? 's' : ''}`);
+    if (successCount > 0) {
+      toast.success(`${successCount} mensaje${successCount > 1 ? 's' : ''} enviado${successCount > 1 ? 's' : ''}`);
     }
-  }, [chatId, chat, pendingMessages, sendMessage, removeFromQueue, setIsSyncing]);
+  }, [chatId, chat, pendingMessages, sendMessage, removeFromQueue, updateMessageStatus, markAsFailed, setIsSyncing]);
+
+  // Retry a single message
+  const handleRetryMessage = useCallback(async (queuedMsg: typeof pendingMessages[0]) => {
+    if (!chatId || !chat) return;
+    
+    updateMessageStatus(queuedMsg.id, 'sending');
+    
+    try {
+      await sendMessage.mutateAsync({ 
+        chatId: queuedMsg.chatId, 
+        content: queuedMsg.content,
+        recipientProfileId: queuedMsg.metadata?.recipientProfileId,
+      });
+      removeFromQueue(queuedMsg.id);
+      toast.success("Mensaje enviado");
+    } catch (error) {
+      console.error('Failed to retry message:', error);
+      markAsFailed(queuedMsg.id);
+      toast.error("Error al enviar el mensaje");
+    }
+  }, [chatId, chat, sendMessage, removeFromQueue, updateMessageStatus, markAsFailed]);
 
   // Sync when coming back online
   useEffect(() => {
-    if (isOnline && pendingMessages.length > 0 && !isSyncing) {
+    const pendingOnly = pendingMessages.filter(m => m.status === 'pending');
+    if (isOnline && pendingOnly.length > 0 && !isSyncing) {
       syncPendingMessages();
     }
-  }, [isOnline, pendingMessages.length, isSyncing, syncPendingMessages]);
+  }, [isOnline, pendingMessages, isSyncing, syncPendingMessages]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -634,7 +667,11 @@ const SparkChat = () => {
           <PendingMessage
             key={queuedMsg.id}
             content={queuedMsg.content}
-            isPending={true}
+            status={queuedMsg.status}
+            retryCount={queuedMsg.retryCount}
+            maxRetries={MAX_RETRIES}
+            onRetry={() => handleRetryMessage(queuedMsg)}
+            onDelete={() => removeFromQueue(queuedMsg.id)}
           />
         ))}
         
