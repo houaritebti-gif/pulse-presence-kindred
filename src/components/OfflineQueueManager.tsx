@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useOfflineQueue, QueuedMessage } from "@/hooks/useOfflineQueue";
 import { toast } from "sonner";
@@ -35,6 +36,7 @@ const OfflineQueueManager = () => {
   const [expanded, setExpanded] = useState(false);
   const [pendingImport, setPendingImport] = useState<BackupData | null>(null);
   const [showImportConfirm, setShowImportConfirm] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const {
     isOnline,
     queue,
@@ -411,21 +413,80 @@ const OfflineQueueManager = () => {
 
       {/* Import Confirmation Dialog */}
       <AlertDialog open={showImportConfirm} onOpenChange={setShowImportConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar importación</AlertDialogTitle>
-            <AlertDialogDescription>
-              {pendingImport && (
-                <>
-                  Vas a importar un backup del{" "}
-                  <strong>
-                    {format(new Date(pendingImport.exportedAt), "d 'de' MMMM 'a las' HH:mm", { locale: es })}
-                  </strong>{" "}
-                  con <strong>{pendingImport.totalMessages} mensaje(s)</strong>.
-                  <br /><br />
-                  Los mensajes que ya existan en la cola serán ignorados para evitar duplicados.
-                </>
-              )}
+            <AlertDialogDescription asChild>
+              <div>
+                {pendingImport && (
+                  <>
+                    <p className="mb-3">
+                      Backup del{" "}
+                      <strong>
+                        {format(new Date(pendingImport.exportedAt), "d 'de' MMMM 'a las' HH:mm", { locale: es })}
+                      </strong>{" "}
+                      con <strong>{pendingImport.totalMessages} mensaje(s)</strong>.
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Los mensajes que ya existan en la cola serán ignorados.
+                    </p>
+
+                    {/* Preview Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => setShowPreview(!showPreview)}
+                      className="flex items-center gap-2 text-sm text-primary hover:underline mb-2"
+                    >
+                      <Eye className="w-4 h-4" />
+                      {showPreview ? "Ocultar vista previa" : "Ver mensajes"}
+                    </button>
+
+                    {/* Message Preview List */}
+                    {showPreview && (
+                      <ScrollArea className="h-48 rounded-lg border border-border bg-secondary/30 p-2">
+                        <div className="space-y-2">
+                          {pendingImport.messages.map((msg, index) => {
+                            const isDuplicate = queue.some(q => q.id === msg.id);
+                            return (
+                              <div
+                                key={msg.id || index}
+                                className={`p-2 rounded-lg text-xs ${
+                                  isDuplicate 
+                                    ? "bg-muted/50 opacity-60" 
+                                    : "bg-background"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  {msg.type === 'spark' ? (
+                                    <MessageSquare className="w-3 h-3 text-primary" />
+                                  ) : (
+                                    <Calendar className="w-3 h-3 text-accent" />
+                                  )}
+                                  <span className="text-muted-foreground">
+                                    {format(new Date(msg.timestamp), "d MMM, HH:mm", { locale: es })}
+                                  </span>
+                                  {isDuplicate && (
+                                    <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-600 rounded text-[10px]">
+                                      Duplicado
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-foreground line-clamp-2">{msg.content}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
+                    )}
+
+                    {showPreview && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {pendingImport.messages.filter(m => !queue.some(q => q.id === m.id)).length} mensaje(s) nuevos se importarán
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
