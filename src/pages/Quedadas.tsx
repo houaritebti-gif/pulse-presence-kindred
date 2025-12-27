@@ -10,6 +10,7 @@ import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDele
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import confetti from "canvas-confetti";
 
 const Quedadas = () => {
   const navigate = useNavigate();
@@ -31,12 +32,45 @@ const Quedadas = () => {
   const [maxAttendees, setMaxAttendees] = useState("");
   const [privateAttendees, setPrivateAttendees] = useState(false);
 
+  // Check if user has created any quedadas (for first-time confetti)
+  const userCreatedQuedadas = quedadas?.filter(q => q.creator_profile_id === profile?.id) || [];
+  const isFirstQuedada = userCreatedQuedadas.length === 0;
+
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#FF6B9D', '#C084FC', '#818CF8', '#F472B6'],
+    });
+    // Second burst for more celebration
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#FF6B9D', '#C084FC', '#818CF8'],
+      });
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#FF6B9D', '#C084FC', '#818CF8'],
+      });
+    }, 150);
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !eventDate || !eventTime) {
       toast.error("Título, fecha y hora son obligatorios");
       return;
     }
+
+    // Store if this is first quedada before creation
+    const wasFirstQuedada = isFirstQuedada;
 
     try {
       const dateTime = new Date(`${eventDate}T${eventTime}`);
@@ -50,7 +84,14 @@ const Quedadas = () => {
         private_attendees: privateAttendees,
       });
 
-      toast.success("¡Quedada creada!");
+      // Trigger confetti if it was the first quedada
+      if (wasFirstQuedada) {
+        triggerConfetti();
+        toast.success("🎉 ¡Tu primera quedada!");
+      } else {
+        toast.success("¡Quedada creada!");
+      }
+      
       setShowCreate(false);
       setTitle("");
       setDescription("");
