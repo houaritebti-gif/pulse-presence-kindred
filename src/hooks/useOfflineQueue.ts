@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useOnlineStatus } from './useOnlineStatus';
 import { toast } from 'sonner';
 import { showBrowserNotification, getNotificationPermission } from '@/utils/browserNotifications';
+import { playSyncSuccessSound } from '@/utils/notificationSound';
 
 interface QueuedMessage {
   id: string;
@@ -110,8 +111,11 @@ export const useOfflineQueue = () => {
     return msg && msg.retryCount < MAX_RETRIES;
   }, [queue]);
 
-  // Send browser notification for synced messages
+  // Send browser notification and play sound for synced messages
   const notifySyncSuccess = useCallback((count: number, isBackground: boolean = false) => {
+    // Play sync success sound
+    playSyncSuccessSound();
+    
     // Only show browser notification if app is in background
     if (isBackground && getNotificationPermission() === 'granted') {
       showBrowserNotification(
