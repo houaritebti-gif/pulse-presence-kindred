@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { compressProfilePhoto } from "@/utils/imageCompression";
+import { compressProfilePhoto, CompressionProgressCallback } from "@/utils/imageCompression";
 
 const MAX_PHOTOS = 6;
+
+export type UploadProgressCallback = (phase: "compressing" | "uploading", progress: number) => void;
 
 export interface ProfilePhoto {
   id: string;
@@ -63,7 +65,7 @@ export const useMultipleProfilePhotos = (profileIds: string[]) => {
   });
 };
 
-// Upload a new photo
+// Upload a new photo with progress callback
 export const useUploadProfilePhoto = () => {
   const queryClient = useQueryClient();
 
@@ -71,11 +73,13 @@ export const useUploadProfilePhoto = () => {
     mutationFn: async ({ 
       profileId, 
       file, 
-      displayOrder 
+      displayOrder,
+      onProgress,
     }: { 
       profileId: string; 
       file: File; 
       displayOrder: number;
+      onProgress?: UploadProgressCallback;
     }) => {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
@@ -91,8 +95,13 @@ export const useUploadProfilePhoto = () => {
         throw new Error(`Máximo ${MAX_PHOTOS} fotos permitidas`);
       }
 
-      // Compress image before upload
-      const compressedFile = await compressProfilePhoto(file);
+      // Compress image before upload with progress reporting
+      const compressedFile = await compressProfilePhoto(file, (compressionProgress) => {
+        onProgress?.("compressing", compressionProgress);
+      });
+
+      // Start upload phase
+      onProgress?.("uploading", 0);
 
       // Upload to storage
       const fileName = `${user.id}/${Date.now()}.jpg`;
@@ -105,6 +114,9 @@ export const useUploadProfilePhoto = () => {
         });
 
       if (uploadError) throw uploadError;
+
+      // Report upload progress (storage API doesn't support progress, so we simulate it)
+      onProgress?.("uploading", 50);
 
       // Get public URL
       const { data: urlData } = supabase.storage
@@ -123,6 +135,10 @@ export const useUploadProfilePhoto = () => {
         .single();
 
       if (error) throw error;
+      
+      // Complete
+      onProgress?.("uploading", 100);
+      
       return data;
     },
     onSuccess: (_, variables) => {

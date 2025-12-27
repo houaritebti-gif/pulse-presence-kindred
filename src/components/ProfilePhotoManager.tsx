@@ -3,6 +3,7 @@ import { Plus, X, GripVertical, Image as ImageIcon } from "lucide-react";
 import { useProfilePhotos, useUploadProfilePhoto, useDeleteProfilePhoto, useReorderProfilePhotos, ProfilePhoto } from "@/hooks/useProfilePhotos";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import UploadProgress, { UploadPhase } from "./UploadProgress";
 
 interface ProfilePhotoManagerProps {
   profileId: string;
@@ -17,6 +18,8 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   const reorderPhotos = useReorderProfilePhotos();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadPhase, setUploadPhase] = useState<UploadPhase>("compressing");
+  const [uploadProgress, setUploadProgress] = useState(0);
   
   // Drag state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -42,15 +45,27 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
     }
 
     setUploadingIndex(photoCount);
+    setUploadPhase("compressing");
+    setUploadProgress(0);
     
     try {
       await uploadPhoto.mutateAsync({
         profileId,
         file,
         displayOrder: photoCount,
+        onProgress: (phase, progress) => {
+          setUploadPhase(phase);
+          setUploadProgress(progress);
+        },
       });
+      
+      // Show complete state briefly
+      setUploadPhase("complete");
+      setUploadProgress(100);
+      await new Promise(resolve => setTimeout(resolve, 500));
     } finally {
       setUploadingIndex(null);
+      setUploadProgress(0);
       // Reset input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -208,10 +223,14 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
           </div>
         ))}
 
-        {/* Uploading placeholder */}
+        {/* Uploading placeholder with progress */}
         {uploadingIndex !== null && (
-          <div className="aspect-[3/4] rounded-xl bg-card-foreground/10 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="aspect-[3/4] rounded-xl bg-card-foreground/10 flex items-center justify-center overflow-hidden">
+            <UploadProgress
+              isVisible={true}
+              phase={uploadPhase}
+              progress={uploadProgress}
+            />
           </div>
         )}
 
