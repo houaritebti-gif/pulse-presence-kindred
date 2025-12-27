@@ -21,6 +21,7 @@ import { useBlockedUsersList, useUnblockUser } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AdvancedSettingsSection from "@/components/AdvancedSettingsSection";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import ProfilePhotoManager from "@/components/ProfilePhotoManager";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -361,8 +362,8 @@ const Profile = () => {
           </p>
         </div>
 
-        {/* Photo */}
-        <div className="flex justify-center mb-10 animate-fade-up animate-delay-100">
+        {/* Photo - Avatar circular (se mantiene para foto principal) */}
+        <div className="flex justify-center mb-6 animate-fade-up animate-delay-100">
           <input
             ref={fileInputRef}
             type="file"
@@ -373,7 +374,7 @@ const Profile = () => {
           <button 
             onClick={handleAvatarClick}
             disabled={isUploading}
-            className="relative w-32 h-32 rounded-full bg-card flex items-center justify-center group transition-transform hover:scale-105 overflow-hidden"
+            className="relative w-24 h-24 rounded-full bg-card flex items-center justify-center group transition-transform hover:scale-105 overflow-hidden"
           >
             {avatarUrl ? (
               <img 
@@ -382,11 +383,11 @@ const Profile = () => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <Camera className="w-8 h-8 text-card-foreground/60 group-hover:text-card-foreground transition-colors" />
+              <Camera className="w-6 h-6 text-card-foreground/60 group-hover:text-card-foreground transition-colors" />
             )}
             {isUploading && (
               <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
               </div>
             )}
             <div className={`absolute inset-0 rounded-full border-2 transition-colors ${
@@ -396,11 +397,22 @@ const Profile = () => {
             }`} />
             {avatarUrl && (
               <div className="absolute inset-0 bg-background/0 group-hover:bg-background/60 flex items-center justify-center transition-all">
-                <Camera className="w-6 h-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Camera className="w-5 h-5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             )}
           </button>
         </div>
+
+        <p className="text-center text-xs text-muted-foreground mb-6 font-body">
+          Esta foto se mostrará como tu avatar en chats
+        </p>
+
+        {/* Photo Gallery Manager */}
+        {profile && (
+          <div className="mb-10 animate-fade-up animate-delay-150">
+            <ProfilePhotoManager profileId={profile.id} />
+          </div>
+        )}
 
         {/* Name & City */}
         <div className="space-y-4 mb-10 animate-fade-up animate-delay-200">
