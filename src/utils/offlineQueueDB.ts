@@ -175,6 +175,7 @@ export const migrateFromLocalStorage = async (): Promise<void> => {
 
 // Queue Statistics
 const STATS_STORAGE_KEY = 'offline_queue_stats';
+const DAILY_STATS_KEY = 'offline_queue_daily_stats';
 
 export interface QueueStats {
   totalQueued: number;
@@ -182,6 +183,14 @@ export interface QueueStats {
   totalFailed: number;
   lastSyncAt: string | null;
   firstQueuedAt: string | null;
+}
+
+export interface DailyStats {
+  [date: string]: {
+    queued: number;
+    sent: number;
+    failed: number;
+  };
 }
 
 const getDefaultStats = (): QueueStats => ({
@@ -215,6 +224,42 @@ export const updateQueueStats = (updates: Partial<QueueStats>): QueueStats => {
   return updated;
 };
 
+export const getDailyStats = (): DailyStats => {
+  try {
+    const stored = localStorage.getItem(DAILY_STATS_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Error reading daily stats:', error);
+  }
+  return {};
+};
+
+export const updateDailyStats = (stats: DailyStats): void => {
+  try {
+    localStorage.setItem(DAILY_STATS_KEY, JSON.stringify(stats));
+  } catch (error) {
+    console.error('Error saving daily stats:', error);
+  }
+};
+
+const getTodayKey = (): string => {
+  return new Date().toISOString().split('T')[0];
+};
+
+export const incrementDailyStat = (key: 'queued' | 'sent' | 'failed', amount: number = 1): void => {
+  const today = getTodayKey();
+  const daily = getDailyStats();
+  
+  if (!daily[today]) {
+    daily[today] = { queued: 0, sent: 0, failed: 0 };
+  }
+  
+  daily[today][key] += amount;
+  updateDailyStats(daily);
+};
+
 export const incrementQueueStat = (key: 'totalQueued' | 'totalSent' | 'totalFailed', amount: number = 1): void => {
   const current = getQueueStats();
   const updates: Partial<QueueStats> = {
@@ -230,8 +275,13 @@ export const incrementQueueStat = (key: 'totalQueued' | 'totalSent' | 'totalFail
   }
   
   updateQueueStats(updates);
+  
+  // Also update daily stats
+  const dailyKey = key === 'totalQueued' ? 'queued' : key === 'totalSent' ? 'sent' : 'failed';
+  incrementDailyStat(dailyKey, amount);
 };
 
 export const resetQueueStats = (): void => {
   localStorage.removeItem(STATS_STORAGE_KEY);
+  localStorage.removeItem(DAILY_STATS_KEY);
 };
