@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, X, Send, Trash2, Bot, User } from "lucide-react";
 import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 const SUGGESTED_QUESTIONS = [
   "¿Cuáles son mis quedadas?",
@@ -13,6 +14,209 @@ const SUGGESTED_QUESTIONS = [
   "¿Qué son los sparks?",
   "¿Cómo conecto con otros usuarios?",
 ];
+
+// Simple markdown parser for chat messages
+const parseMarkdown = (text: string): React.ReactNode[] => {
+  const elements: React.ReactNode[] = [];
+  const lines = text.split("\n");
+  let listItems: string[] = [];
+  let listType: "ul" | "ol" | null = null;
+
+  const flushList = () => {
+    if (listItems.length > 0 && listType) {
+      const ListTag = listType === "ul" ? "ul" : "ol";
+      elements.push(
+        <ListTag key={elements.length} className={cn("my-1 ml-4", listType === "ul" ? "list-disc" : "list-decimal")}>
+          {listItems.map((item, i) => (
+            <li key={i} className="text-sm">{parseInline(item)}</li>
+          ))}
+        </ListTag>
+      );
+      listItems = [];
+      listType = null;
+    }
+  };
+
+  const parseInline = (line: string): React.ReactNode => {
+    // Parse bold, italic, links, and code
+    const parts: React.ReactNode[] = [];
+    let remaining = line;
+    let key = 0;
+
+    while (remaining.length > 0) {
+      // Check for links [text](url)
+      const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
+      if (linkMatch && linkMatch.index !== undefined) {
+        if (linkMatch.index > 0) {
+          parts.push(<span key={key++}>{parseTextStyles(remaining.slice(0, linkMatch.index))}</span>);
+        }
+        const url = linkMatch[2];
+        const isInternal = url.startsWith("/");
+        parts.push(
+          <a
+            key={key++}
+            href={url}
+            target={isInternal ? undefined : "_blank"}
+            rel={isInternal ? undefined : "noopener noreferrer"}
+            className="text-primary underline hover:text-primary/80 cursor-pointer"
+            onClick={(e) => {
+              if (isInternal) {
+                e.preventDefault();
+                window.location.href = url;
+              }
+            }}
+          >
+            {linkMatch[1]}
+          </a>
+        );
+        remaining = remaining.slice(linkMatch.index + linkMatch[0].length);
+        continue;
+      }
+
+      // No more special patterns, add remaining text
+      parts.push(<span key={key++}>{parseTextStyles(remaining)}</span>);
+      break;
+    }
+
+    return parts;
+  };
+
+  const parseTextStyles = (text: string): React.ReactNode => {
+    // Parse **bold**, *italic*, and `code`
+    const parts: React.ReactNode[] = [];
+    let remaining = text;
+    let key = 0;
+
+    while (remaining.length > 0) {
+      // Check for bold **text**
+      const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
+      if (boldMatch && boldMatch.index !== undefined) {
+        if (boldMatch.index > 0) {
+          parts.push(remaining.slice(0, boldMatch.index));
+        }
+        parts.push(<strong key={key++}>{boldMatch[1]}</strong>);
+        remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
+        continue;
+      }
+
+      // Check for italic *text*
+      const italicMatch = remaining.match(/\*([^*]+)\*/);
+      if (italicMatch && italicMatch.index !== undefined) {
+        if (italicMatch.index > 0) {
+          parts.push(remaining.slice(0, italicMatch.index));
+        }
+        parts.push(<em key={key++}>{italicMatch[1]}</em>);
+        remaining = remaining.slice(italicMatch.index + italicMatch[0].length);
+        continue;
+      }
+
+      // Check for code `text`
+      const codeMatch = remaining.match(/`([^`]+)`/);
+      if (codeMatch && codeMatch.index !== undefined) {
+        if (codeMatch.index > 0) {
+          parts.push(remaining.slice(0, codeMatch.index));
+        }
+        parts.push(
+          <code key={key++} className="bg-muted-foreground/20 px-1 rounded text-xs">
+            {codeMatch[1]}
+          </code>
+        );
+        remaining = remaining.slice(codeMatch.index + codeMatch[0].length);
+        continue;
+      }
+
+      parts.push(remaining);
+      break;
+    }
+
+    return parts.length === 1 && typeof parts[0] === "string" ? parts[0] : <>{parts}</>;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Check for unordered list items (- or *)
+    const ulMatch = line.match(/^[\s]*[-*]\s+(.+)/);
+    if (ulMatch) {
+      if (listType !== "ul") {
+        flushList();
+        listType = "ul";
+      }
+      listItems.push(ulMatch[1]);
+      continue;
+    }
+
+    // Check for ordered list items (1. 2. etc)
+    const olMatch = line.match(/^[\s]*\d+\.\s+(.+)/);
+    if (olMatch) {
+      if (listType !== "ol") {
+        flushList();
+        listType = "ol";
+      }
+      listItems.push(olMatch[1]);
+      continue;
+    }
+
+    // Flush any pending list
+    flushList();
+
+    // Empty line
+    if (line.trim() === "") {
+      elements.push(<br key={elements.length} />);
+      continue;
+    }
+
+    // Check for headers
+    const h3Match = line.match(/^###\s+(.+)/);
+    if (h3Match) {
+      elements.push(<h4 key={elements.length} className="font-semibold mt-2 mb-1">{parseInline(h3Match[1])}</h4>);
+      continue;
+    }
+
+    const h2Match = line.match(/^##\s+(.+)/);
+    if (h2Match) {
+      elements.push(<h3 key={elements.length} className="font-semibold text-base mt-2 mb-1">{parseInline(h2Match[1])}</h3>);
+      continue;
+    }
+
+    const h1Match = line.match(/^#\s+(.+)/);
+    if (h1Match) {
+      elements.push(<h2 key={elements.length} className="font-bold text-base mt-2 mb-1">{parseInline(h1Match[1])}</h2>);
+      continue;
+    }
+
+    // Regular paragraph
+    elements.push(<p key={elements.length} className="text-sm">{parseInline(line)}</p>);
+  }
+
+  // Flush any remaining list
+  flushList();
+
+  return elements;
+};
+
+const FormattedMessage = ({ content, isUser }: { content: string; isUser: boolean }) => {
+  const parsed = useMemo(() => {
+    if (isUser || !content) return null;
+    return parseMarkdown(content);
+  }, [content, isUser]);
+
+  if (isUser) {
+    return <>{content}</>;
+  }
+
+  if (!content) {
+    return (
+      <span className="inline-flex gap-1">
+        <span className="animate-bounce">·</span>
+        <span className="animate-bounce delay-100">·</span>
+        <span className="animate-bounce delay-200">·</span>
+      </span>
+    );
+  }
+
+  return <div className="space-y-1">{parsed}</div>;
+};
 
 export const AIChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -146,13 +350,7 @@ export const AIChatBot = () => {
                           : "bg-muted"
                       )}
                     >
-                      {msg.content || (
-                        <span className="inline-flex gap-1">
-                          <span className="animate-bounce">·</span>
-                          <span className="animate-bounce delay-100">·</span>
-                          <span className="animate-bounce delay-200">·</span>
-                        </span>
-                      )}
+                      <FormattedMessage content={msg.content} isUser={msg.role === "user"} />
                     </div>
                     {msg.role === "user" && (
                       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
