@@ -27,12 +27,20 @@ export const setTheme = (theme: Theme) => {
 export const applyTheme = (theme: Theme) => {
   const root = document.documentElement;
   
+  // Add transitioning class for smooth animation
+  root.classList.add("theme-transitioning");
+  
   if (theme === "system") {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     root.classList.toggle("dark", prefersDark);
   } else {
     root.classList.toggle("dark", theme === "dark");
   }
+  
+  // Remove transitioning class after animation completes
+  setTimeout(() => {
+    root.classList.remove("theme-transitioning");
+  }, 300);
 };
 
 export const getReduceMotion = (): boolean => {
