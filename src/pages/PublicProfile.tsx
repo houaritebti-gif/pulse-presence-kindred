@@ -4,7 +4,7 @@ import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical,
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useIsBlocked } from "@/hooks/useUserModeration";
-import { useHasOrganizedQuedadas } from "@/hooks/useQuedadas";
+import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,7 +22,7 @@ const PublicProfile = () => {
   const { data: myTribes } = useProfileTribes(myProfile?.id);
   const { data: myMusicStyles } = useProfileMusicStyles(myProfile?.id);
   const isBlocked = useIsBlocked(profileId);
-  const { data: hasOrganizedQuedadas } = useHasOrganizedQuedadas(profileId);
+  const { data: organizedCount } = useOrganizedQuedadasCount(profileId);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
 
@@ -132,10 +132,12 @@ const PublicProfile = () => {
           </h1>
           
           {/* Organizer badge */}
-          {hasOrganizedQuedadas && (
+          {organizedCount && organizedCount > 0 && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-2">
               <Calendar className="w-3.5 h-3.5" />
-              <span className="font-body text-xs font-medium">Organizadora</span>
+              <span className="font-body text-xs font-medium">
+                {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
+              </span>
             </div>
           )}
           

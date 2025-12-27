@@ -557,20 +557,20 @@ export const useMarkQuedadaRead = () => {
   });
 };
 
-// Check if a user has organized any quedadas (for badge)
-export const useHasOrganizedQuedadas = (profileId: string | undefined) => {
+// Get count of quedadas organized by a user (for badge)
+export const useOrganizedQuedadasCount = (profileId: string | undefined) => {
   return useQuery({
-    queryKey: ["has_organized_quedadas", profileId],
+    queryKey: ["organized_quedadas_count", profileId],
     queryFn: async () => {
-      if (!profileId) return false;
+      if (!profileId) return 0;
 
       const { count, error } = await supabase
         .from("quedadas")
         .select("id", { count: "exact", head: true })
         .eq("creator_profile_id", profileId);
 
-      if (error) return false;
-      return (count || 0) > 0;
+      if (error) return 0;
+      return count || 0;
     },
     enabled: !!profileId,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
