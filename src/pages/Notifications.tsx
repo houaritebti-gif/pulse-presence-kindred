@@ -11,12 +11,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
+import { ArrowLeft, Bell, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification, useDeleteReadNotifications } from "@/hooks/useNotificationCenter";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
+import { SwipeableNotification } from "@/components/SwipeableNotification";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -197,53 +198,56 @@ const Notifications = () => {
           ) : (
             <div className="space-y-2">
               {filteredNotifications?.map((notification, index) => (
-                <button
+                <SwipeableNotification
                   key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`w-full text-left bg-card rounded-2xl p-4 animate-fade-up transition-all duration-300 border ${
-                    notification.read_at 
-                      ? "border-transparent opacity-70" 
-                      : "border-primary/20 hover:border-primary/40"
-                  }`}
-                  style={{ animationDelay: `${index * 50}ms` }}
+                  onDelete={() => deleteNotification.mutate(notification.id)}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      notification.read_at ? "bg-muted" : "bg-primary/10"
-                    }`}>
-                      {getIcon(notification.type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-display font-semibold text-card-foreground text-sm truncate">
-                          {notification.title}
-                        </h3>
-                        {!notification.read_at && (
-                          <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
-                        )}
+                  <button
+                    onClick={() => handleNotificationClick(notification)}
+                    className={`w-full text-left p-4 animate-fade-up transition-all duration-300 border rounded-2xl ${
+                      notification.read_at 
+                        ? "border-transparent opacity-70" 
+                        : "border-primary/20 hover:border-primary/40"
+                    }`}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        notification.read_at ? "bg-muted" : "bg-primary/10"
+                      }`}>
+                        {getIcon(notification.type)}
                       </div>
-                      {notification.description && (
-                        <p className="font-body text-xs text-card-foreground/60 truncate mt-0.5">
-                          {notification.description}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-display font-semibold text-card-foreground text-sm truncate">
+                            {notification.title}
+                          </h3>
+                          {!notification.read_at && (
+                            <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                          )}
+                        </div>
+                        {notification.description && (
+                          <p className="font-body text-xs text-card-foreground/60 truncate mt-0.5">
+                            {notification.description}
+                          </p>
+                        )}
+                        <p className="font-body text-xs text-card-foreground/40 mt-1">
+                          {formatDistanceToNow(new Date(notification.created_at), { 
+                            addSuffix: true, 
+                            locale: es 
+                          })}
                         </p>
-                      )}
-                      <p className="font-body text-xs text-card-foreground/40 mt-1">
-                        {formatDistanceToNow(new Date(notification.created_at), { 
-                          addSuffix: true, 
-                          locale: es 
-                        })}
-                      </p>
+                      </div>
+                      <div className="p-2 text-muted-foreground/30 flex-shrink-0">
+                        <Trash2 className="w-4 h-4" />
+                      </div>
                     </div>
-                    <button
-                      onClick={(e) => handleDeleteClick(e, notification.id)}
-                      className="p-2 rounded-full hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive transition-colors flex-shrink-0"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </button>
+                  </button>
+                </SwipeableNotification>
               ))}
+              <p className="text-center text-xs text-muted-foreground/50 pt-4 font-body">
+                Desliza a la izquierda para eliminar
+              </p>
             </div>
           )}
         </div>
