@@ -48,7 +48,7 @@ const NavItem = ({ icon, label, badge, isActive, onClick }: NavItemProps) => {
           <span 
             className={cn(
               "absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center",
-              isAnimating ? "animate-badge-bounce" : "animate-pulse-soft"
+              isAnimating ? "animate-badge-bounce" : "animate-badge-pulse"
             )}
           >
             {badge > 9 ? "9+" : badge}
