@@ -1,18 +1,34 @@
-import { useState } from "react";
-import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download } from "lucide-react";
+import { useState, useRef } from "react";
+import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOfflineQueue, QueuedMessage } from "@/hooks/useOfflineQueue";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
+interface BackupData {
+  exportedAt: string;
+  totalMessages: number;
+  messages: Array<{
+    id: string;
+    type: 'spark' | 'quedada';
+    chatId: string;
+    content: string;
+    timestamp: number;
+    status: 'pending' | 'sending' | 'failed';
+    retryCount: number;
+  }>;
+}
+
 const OfflineQueueManager = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [expanded, setExpanded] = useState(false);
   const {
     isOnline,
     queue,
     pendingCount,
     isSyncing,
+    addToQueue,
     removeFromQueue,
     resetForRetry,
     clearQueue,
@@ -91,6 +107,60 @@ const OfflineQueueManager = () => {
     URL.revokeObjectURL(url);
 
     toast.success("Cola exportada correctamente");
+  };
+
+  const handleImportQueue = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        const data: BackupData = JSON.parse(content);
+
+        // Validate structure
+        if (!data.messages || !Array.isArray(data.messages)) {
+          toast.error("Archivo de backup inválido");
+          return;
+        }
+
+        let importedCount = 0;
+        const existingIds = new Set(queue.map(m => m.id));
+
+        for (const msg of data.messages) {
+          // Skip if already exists
+          if (existingIds.has(msg.id)) continue;
+
+          // Validate message structure
+          if (!msg.id || !msg.type || !msg.chatId || !msg.content || !msg.timestamp) {
+            continue;
+          }
+
+          await addToQueue({
+            type: msg.type,
+            chatId: msg.chatId,
+            content: msg.content,
+          });
+          importedCount++;
+        }
+
+        if (importedCount > 0) {
+          toast.success(`${importedCount} mensaje(s) importado(s)`);
+        } else {
+          toast.info("No se importaron mensajes nuevos");
+        }
+      } catch (error) {
+        console.error("Error importing queue:", error);
+        toast.error("Error al leer el archivo de backup");
+      }
+    };
+
+    reader.readAsText(file);
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleClearAll = async () => {
@@ -194,6 +264,21 @@ const OfflineQueueManager = () => {
               >
                 <Download className="w-4 h-4" />
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                title="Importar backup"
+              >
+                <Upload className="w-4 h-4" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImportQueue}
+                className="hidden"
+              />
               <Button
                 variant="outline"
                 size="sm"
