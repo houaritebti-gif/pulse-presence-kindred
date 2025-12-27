@@ -22,7 +22,47 @@ import QuedadaChat from "./pages/QuedadaChat";
 import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Exponential backoff retry function
+const exponentialBackoff = (attemptIndex: number): number => {
+  // Base delay: 1s, max delay: 30s
+  const baseDelay = 1000;
+  const maxDelay = 30000;
+  const delay = Math.min(baseDelay * Math.pow(2, attemptIndex), maxDelay);
+  // Add jitter (±20%) to prevent thundering herd
+  const jitter = delay * 0.2 * (Math.random() - 0.5);
+  return delay + jitter;
+};
+
+// Check if error is a network/connection error worth retrying
+const isNetworkError = (error: unknown): boolean => {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes("network") ||
+      message.includes("fetch") ||
+      message.includes("connection") ||
+      message.includes("timeout") ||
+      message.includes("failed to fetch") ||
+      message.includes("networkerror")
+    );
+  }
+  return false;
+};
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Only retry network errors, up to 3 times
+        if (failureCount >= 3) return false;
+        return isNetworkError(error);
+      },
+      retryDelay: exponentialBackoff,
+      staleTime: 1000 * 60, // 1 minute
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
