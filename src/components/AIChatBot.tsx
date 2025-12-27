@@ -8,10 +8,10 @@ import { cn } from "@/lib/utils";
 
 const SUGGESTED_QUESTIONS = [
   "¿Cuáles son mis quedadas?",
+  "¿Con quién tengo sparks?",
   "¿Cómo creo una quedada?",
   "¿Qué son los sparks?",
   "¿Cómo conecto con otros usuarios?",
-  "¿Qué es el modo presencia?",
 ];
 
 export const AIChatBot = () => {
