@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Crop as CropIcon, RotateCcw, Check, X } from "lucide-react";
+import ImageFilters, { ImageFilterValues, getFilterStyle } from "./ImageFilters";
 
 interface ImageCropModalProps {
   isOpen: boolean;
@@ -18,6 +19,12 @@ interface ImageCropModalProps {
   onCropComplete: (croppedBlob: Blob) => void;
   aspectRatio?: number;
 }
+
+const DEFAULT_FILTERS: ImageFilterValues = {
+  brightness: 100,
+  contrast: 100,
+  saturation: 100,
+};
 
 function centerAspectCrop(
   mediaWidth: number,
@@ -41,7 +48,8 @@ function centerAspectCrop(
 
 async function getCroppedImg(
   image: HTMLImageElement,
-  crop: PixelCrop
+  crop: PixelCrop,
+  filters: ImageFilterValues
 ): Promise<Blob> {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -55,6 +63,9 @@ async function getCroppedImg(
 
   canvas.width = crop.width * scaleX;
   canvas.height = crop.height * scaleY;
+
+  // Apply filters to canvas context
+  ctx.filter = getFilterStyle(filters);
 
   ctx.drawImage(
     image,
@@ -93,6 +104,7 @@ const ImageCropModal = ({
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [filters, setFilters] = useState<ImageFilterValues>(DEFAULT_FILTERS);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const onImageLoad = useCallback(
@@ -108,6 +120,7 @@ const ImageCropModal = ({
       const { width, height } = imgRef.current;
       setCrop(centerAspectCrop(width, height, aspectRatio));
     }
+    setFilters(DEFAULT_FILTERS);
   };
 
   const handleConfirm = async () => {
@@ -115,7 +128,7 @@ const ImageCropModal = ({
 
     setIsProcessing(true);
     try {
-      const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
+      const croppedBlob = await getCroppedImg(imgRef.current, completedCrop, filters);
       onCropComplete(croppedBlob);
       onClose();
     } catch (error) {
@@ -128,42 +141,50 @@ const ImageCropModal = ({
   const handleCancel = () => {
     setCrop(undefined);
     setCompletedCrop(undefined);
+    setFilters(DEFAULT_FILTERS);
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden">
+      <DialogContent className="max-w-lg p-0 overflow-hidden max-h-[90vh] flex flex-col">
         <DialogHeader className="p-4 pb-2">
           <DialogTitle className="flex items-center gap-2">
             <CropIcon className="w-5 h-5 text-primary" />
-            Recortar imagen
+            Editar imagen
           </DialogTitle>
         </DialogHeader>
 
         <div className="px-4 pb-2">
           <p className="text-sm text-muted-foreground">
-            Ajusta el área de recorte arrastrando las esquinas
+            Ajusta el área de recorte y aplica filtros
           </p>
         </div>
 
-        <div className="flex items-center justify-center bg-muted/50 p-4 max-h-[60vh] overflow-auto">
-          <ReactCrop
-            crop={crop}
-            onChange={(_, percentCrop) => setCrop(percentCrop)}
-            onComplete={(c) => setCompletedCrop(c)}
-            aspect={aspectRatio}
-            className="max-w-full"
-          >
-            <img
-              ref={imgRef}
-              src={imageSrc}
-              alt="Imagen a recortar"
-              onLoad={onImageLoad}
-              className="max-h-[50vh] max-w-full object-contain"
-              crossOrigin="anonymous"
-            />
-          </ReactCrop>
+        <div className="flex-1 overflow-auto">
+          <div className="flex items-center justify-center bg-muted/50 p-4">
+            <ReactCrop
+              crop={crop}
+              onChange={(_, percentCrop) => setCrop(percentCrop)}
+              onComplete={(c) => setCompletedCrop(c)}
+              aspect={aspectRatio}
+              className="max-w-full"
+            >
+              <img
+                ref={imgRef}
+                src={imageSrc}
+                alt="Imagen a recortar"
+                onLoad={onImageLoad}
+                className="max-h-[35vh] max-w-full object-contain"
+                style={{ filter: getFilterStyle(filters) }}
+                crossOrigin="anonymous"
+              />
+            </ReactCrop>
+          </div>
+
+          <div className="px-4 py-2">
+            <ImageFilters values={filters} onChange={setFilters} />
+          </div>
         </div>
 
         <DialogFooter className="p-4 pt-2 flex gap-2 sm:gap-2">
