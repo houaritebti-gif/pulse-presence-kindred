@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead } from "@/hooks/useQuedadas";
+import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead, useQuedadaAttendees } from "@/hooks/useQuedadas";
 import { useChatImageUpload } from "@/hooks/useChatImageUpload";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +14,7 @@ import { es } from "date-fns/locale";
 import ImageLightbox from "@/components/ImageLightbox";
 import VoiceMessagePlayer from "@/components/VoiceMessagePlayer";
 import VoiceRecordButton from "@/components/VoiceRecordButton";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const QuedadaChat = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const QuedadaChat = () => {
   const { data: profile } = useProfile();
   const { data: quedada, isLoading: quedadaLoading } = useQuedada(quedadaId);
   const { data: messages, isLoading: messagesLoading } = useQuedadaMessages(quedadaId);
+  const { data: attendees } = useQuedadaAttendees(quedadaId);
   const sendMessage = useSendQuedadaMessage();
   const markRead = useMarkQuedadaRead();
   
@@ -46,6 +48,7 @@ const QuedadaChat = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [showAttendees, setShowAttendees] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Mark as read when entering chat
@@ -247,10 +250,13 @@ const QuedadaChat = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-muted-foreground">
+          <button 
+            onClick={() => setShowAttendees(true)}
+            className="flex items-center gap-1 text-muted-foreground hover:text-accent transition-colors"
+          >
             <Users className="w-4 h-4" />
             <span className="font-body text-xs">{quedada.attendee_count}</span>
-          </div>
+          </button>
         </div>
         
         {/* Event info bar */}
@@ -310,7 +316,10 @@ const QuedadaChat = () => {
                 style={{ animationDelay: `${Math.min(index * 30, 200)}ms` }}
               >
                 {!isOwn && (
-                  <div className={`w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ${showAvatar ? "opacity-100" : "opacity-0"}`}>
+                  <button 
+                    onClick={() => msg.sender?.id && navigate(`/profile/${msg.sender.id}`)}
+                    className={`w-6 h-6 rounded-full overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-accent/50 transition-all ${showAvatar ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+                  >
                     {msg.sender?.avatar_url ? (
                       <img src={msg.sender.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -318,14 +327,17 @@ const QuedadaChat = () => {
                         {(msg.sender?.name?.[0] || "?").toUpperCase()}
                       </div>
                     )}
-                  </div>
+                  </button>
                 )}
                 
                 <div className={`max-w-[75%] ${isOwn ? "" : ""}`}>
                   {showName && (
-                    <p className="font-body text-[10px] text-muted-foreground mb-1 ml-1">
+                    <button 
+                      onClick={() => msg.sender?.id && navigate(`/profile/${msg.sender.id}`)}
+                      className="font-body text-[10px] text-muted-foreground mb-1 ml-1 hover:text-accent transition-colors"
+                    >
                       {msg.sender?.name || "Anónima"}
-                    </p>
+                    </button>
                   )}
                   {isVoiceMessage(msg.content) ? (
                     <VoiceMessagePlayer audioUrl={msg.content} isOwn={isOwn} />
@@ -454,6 +466,88 @@ const QuedadaChat = () => {
         imageUrl={lightboxImage} 
         onClose={() => setLightboxImage(null)} 
       />
+
+      {/* Attendees Modal */}
+      {showAttendees && (
+        <div 
+          className="fixed inset-0 bg-background/90 backdrop-blur-md flex items-center justify-center p-6 z-50"
+          onClick={() => setShowAttendees(false)}
+        >
+          <div 
+            className="bg-card rounded-3xl p-6 max-w-sm w-full animate-fade-up shadow-2xl border border-border/20 max-h-[80vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg font-semibold text-card-foreground">
+                Asistentes ({quedada?.attendee_count || 0})
+              </h3>
+              <button
+                onClick={() => setShowAttendees(false)}
+                className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto space-y-2 flex-1">
+              {/* Creator */}
+              {quedada?.creator && (
+                <button
+                  onClick={() => {
+                    setShowAttendees(false);
+                    navigate(`/profile/${quedada.creator.id}`);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
+                >
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={quedada.creator.avatar_url || undefined} />
+                    <AvatarFallback className="bg-accent/20 text-accent font-display">
+                      {(quedada.creator.name?.[0] || "?").toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-sm text-card-foreground truncate">
+                      {quedada.creator.name || "Anónima"}
+                    </p>
+                    <p className="font-body text-xs text-accent">Organizadora</p>
+                  </div>
+                  <Sparkles className="w-4 h-4 text-accent" />
+                </button>
+              )}
+              
+              {/* Attendees */}
+              {attendees?.map((attendee) => (
+                <button
+                  key={attendee.id}
+                  onClick={() => {
+                    setShowAttendees(false);
+                    navigate(`/profile/${attendee.profile?.id}`);
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
+                >
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={attendee.profile?.avatar_url || undefined} />
+                    <AvatarFallback className="bg-card text-card-foreground font-display">
+                      {(attendee.profile?.name?.[0] || "?").toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-sm text-card-foreground truncate">
+                      {attendee.profile?.name || "Anónima"}
+                    </p>
+                  </div>
+                </button>
+              ))}
+              
+              {!attendees?.length && !quedada?.creator && (
+                <p className="text-center text-muted-foreground font-body text-sm py-4">
+                  No hay asistentes todavía
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 };
