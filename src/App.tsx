@@ -14,6 +14,7 @@ import { SkipLink } from "@/components/SkipLink";
 import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import { AIChatBot } from "@/components/AIChatBot";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -104,6 +105,7 @@ const App = () => {
             <KeyboardNavigationWrapper>
               <OfflineIndicator />
               <PWAInstallPrompt />
+              <AIChatBot />
               <BottomNavigation />
               <div id="main-content" tabIndex={-1} className="outline-none">
                 <Routes>
