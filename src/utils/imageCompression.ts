@@ -1,11 +1,14 @@
 // Image compression utility
 // Compresses images before upload to optimize storage and load times
 
+export type CompressionProgressCallback = (progress: number) => void;
+
 interface CompressionOptions {
   maxWidth?: number;
   maxHeight?: number;
   quality?: number; // 0-1
   mimeType?: "image/jpeg" | "image/webp";
+  onProgress?: CompressionProgressCallback;
 }
 
 const defaultOptions: CompressionOptions = {
@@ -25,10 +28,13 @@ export const compressImage = async (
   file: File,
   options: CompressionOptions = {}
 ): Promise<File> => {
-  const { maxWidth, maxHeight, quality, mimeType } = {
+  const { maxWidth, maxHeight, quality, mimeType, onProgress } = {
     ...defaultOptions,
     ...options,
   };
+
+  // Report initial progress
+  onProgress?.(0);
 
   return new Promise((resolve, reject) => {
     // Skip compression for non-image files
@@ -53,6 +59,9 @@ export const compressImage = async (
     }
 
     img.onload = () => {
+      // Report 30% progress after image loads
+      onProgress?.(30);
+
       // Calculate new dimensions maintaining aspect ratio
       let { width, height } = img;
 
@@ -76,6 +85,9 @@ export const compressImage = async (
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, 0, 0, width, height);
+
+      // Report 60% progress after drawing
+      onProgress?.(60);
 
       // Convert to blob
       canvas.toBlob(
@@ -104,6 +116,9 @@ export const compressImage = async (
             `Image compressed: ${formatBytes(originalSize)} → ${formatBytes(compressedSize)} (${savings}% smaller)`
           );
 
+          // Report 100% compression progress
+          onProgress?.(100);
+
           resolve(compressedFile);
         },
         mimeType,
@@ -123,24 +138,32 @@ export const compressImage = async (
 /**
  * Compresses image for avatar (smaller, square-optimized)
  */
-export const compressAvatar = (file: File): Promise<File> => {
+export const compressAvatar = (
+  file: File,
+  onProgress?: CompressionProgressCallback
+): Promise<File> => {
   return compressImage(file, {
     maxWidth: 500,
     maxHeight: 500,
     quality: 0.85,
     mimeType: "image/jpeg",
+    onProgress,
   });
 };
 
 /**
  * Compresses image for profile gallery (larger, portrait-optimized)
  */
-export const compressProfilePhoto = (file: File): Promise<File> => {
+export const compressProfilePhoto = (
+  file: File,
+  onProgress?: CompressionProgressCallback
+): Promise<File> => {
   return compressImage(file, {
     maxWidth: 1200,
     maxHeight: 1600,
     quality: 0.85,
     mimeType: "image/jpeg",
+    onProgress,
   });
 };
 
