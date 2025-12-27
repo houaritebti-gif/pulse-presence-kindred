@@ -125,7 +125,7 @@ const Landing = () => {
           >
             <div className="relative">
               <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-full scale-150 animate-pulse-soft" />
-              <Heart className="relative w-16 h-16 md:w-20 md:h-20 text-primary fill-primary animate-pulse-soft" />
+              <Heart className="relative w-16 h-16 md:w-20 md:h-20 text-primary fill-primary animate-heartbeat" />
             </div>
           </motion.div>
 
@@ -357,7 +357,7 @@ const Landing = () => {
           variants={staggerContainer}
         >
           <motion.div variants={scaleIn}>
-            <Heart className="w-20 h-20 text-primary fill-primary mx-auto animate-pulse-soft" />
+            <Heart className="w-20 h-20 text-primary fill-primary mx-auto animate-heartbeat" />
           </motion.div>
           
           <motion.h2 
