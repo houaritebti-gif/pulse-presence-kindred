@@ -8,6 +8,7 @@ const VIBRATION_ENABLED_KEY = "kiki_vibration_enabled";
 const DND_ENABLED_KEY = "kiki_dnd_enabled";
 const DND_START_KEY = "kiki_dnd_start";
 const DND_END_KEY = "kiki_dnd_end";
+const THEME_SOUND_ENABLED_KEY = "kiki_theme_sound_enabled";
 
 export const isSoundMuted = (): boolean => {
   return localStorage.getItem(SOUND_MUTED_KEY) === "true";
@@ -24,6 +25,16 @@ export const isVibrationEnabled = (): boolean => {
 
 export const setVibrationEnabled = (enabled: boolean): void => {
   localStorage.setItem(VIBRATION_ENABLED_KEY, enabled ? "true" : "false");
+};
+
+// Theme sound toggle
+export const isThemeSoundEnabled = (): boolean => {
+  const stored = localStorage.getItem(THEME_SOUND_ENABLED_KEY);
+  return stored === null ? true : stored === "true";
+};
+
+export const setThemeSoundEnabled = (enabled: boolean): void => {
+  localStorage.setItem(THEME_SOUND_ENABLED_KEY, enabled ? "true" : "false");
 };
 
 // Do Not Disturb functions
@@ -318,6 +329,7 @@ export const playSuccessSound = () => {
 // Subtle click sound for theme toggle
 export const playThemeToggleSound = () => {
   if (isSoundMuted()) return;
+  if (!isThemeSoundEnabled()) return;
   
   try {
     const ctx = getAudioContext();
