@@ -9,7 +9,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Crop as CropIcon, RotateCcw, RotateCw, Check, X, FlipHorizontal, FlipVertical } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Crop as CropIcon, RotateCcw, RotateCw, Check, X, FlipHorizontal, FlipVertical, ZoomIn, ZoomOut } from "lucide-react";
 import ImageFilters, { ImageFilterValues, getFilterStyle } from "./ImageFilters";
 
 interface ImageCropModalProps {
@@ -161,7 +162,12 @@ const ImageCropModal = ({
   const [transform, setTransform] = useState<TransformState>(DEFAULT_TRANSFORM);
   const [transformedImageSrc, setTransformedImageSrc] = useState<string>(imageSrc);
   const [isTransforming, setIsTransforming] = useState(false);
+  const [zoom, setZoom] = useState(1);
   const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 3;
 
   // Check if any transform is applied
   const hasTransform = transform.rotation !== 0 || transform.flipH || transform.flipV;
@@ -222,6 +228,19 @@ const ImageCropModal = ({
     }
     setFilters(DEFAULT_FILTERS);
     setTransform(DEFAULT_TRANSFORM);
+    setZoom(1);
+  };
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(prev + 0.25, MAX_ZOOM));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(prev - 0.25, MIN_ZOOM));
+  };
+
+  const handleZoomChange = (value: number[]) => {
+    setZoom(value[0]);
   };
 
   const handleConfirm = async () => {
@@ -311,30 +330,75 @@ const ImageCropModal = ({
         </div>
 
         <div className="flex-1 overflow-auto">
-          <div className="flex items-center justify-center bg-muted/50 p-4 min-h-[200px]">
+          <div 
+            ref={containerRef}
+            className="flex items-center justify-center bg-muted/50 p-4 min-h-[200px] overflow-auto"
+          >
             {isTransforming ? (
               <div className="flex items-center justify-center h-[35vh]">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             ) : (
-              <ReactCrop
-                crop={crop}
-                onChange={(_, percentCrop) => setCrop(percentCrop)}
-                onComplete={(c) => setCompletedCrop(c)}
-                aspect={aspectRatio}
-                className="max-w-full"
-              >
-                <img
-                  ref={imgRef}
-                  src={transformedImageSrc}
-                  alt="Imagen a recortar"
-                  onLoad={onImageLoad}
-                  className="max-h-[35vh] max-w-full object-contain"
-                  style={{ filter: getFilterStyle(filters) }}
-                  crossOrigin="anonymous"
-                />
-              </ReactCrop>
+              <div style={{ transform: `scale(${zoom})`, transformOrigin: 'center center', transition: 'transform 0.2s ease-out' }}>
+                <ReactCrop
+                  crop={crop}
+                  onChange={(_, percentCrop) => setCrop(percentCrop)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={aspectRatio}
+                  className="max-w-full"
+                >
+                  <img
+                    ref={imgRef}
+                    src={transformedImageSrc}
+                    alt="Imagen a recortar"
+                    onLoad={onImageLoad}
+                    className="max-h-[35vh] max-w-full object-contain"
+                    style={{ filter: getFilterStyle(filters) }}
+                    crossOrigin="anonymous"
+                  />
+                </ReactCrop>
+              </div>
             )}
+          </div>
+
+          {/* Zoom Controls */}
+          <div className="px-4 py-2 flex items-center gap-3 border-t border-border/50">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+              onClick={handleZoomOut}
+              disabled={zoom <= MIN_ZOOM || isTransforming}
+              title="Alejar"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <div className="flex-1 flex items-center gap-2">
+              <Slider
+                value={[zoom]}
+                min={MIN_ZOOM}
+                max={MAX_ZOOM}
+                step={0.1}
+                onValueChange={handleZoomChange}
+                disabled={isTransforming}
+                className="flex-1"
+              />
+              <span className="text-xs text-muted-foreground w-12 text-right">
+                {Math.round(zoom * 100)}%
+              </span>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+              onClick={handleZoomIn}
+              disabled={zoom >= MAX_ZOOM || isTransforming}
+              title="Acercar"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </Button>
           </div>
 
           <div className="px-4 py-2">
