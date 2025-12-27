@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
@@ -22,7 +22,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 const Profile = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
-  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useProfile();
   const { data: tribes } = useProfileTribes(profile?.id);
   const { data: musicStyles } = useProfileMusicStyles(profile?.id);
   const { data: organizedCount } = useOrganizedQuedadasCount(profile?.id);
@@ -291,6 +291,25 @@ const Profile = () => {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+          <User className="w-6 h-6 text-destructive/50" />
+        </div>
+        <h2 className="font-display text-xl font-semibold text-foreground mb-2">
+          Error al cargar perfil
+        </h2>
+        <p className="font-body text-muted-foreground text-center mb-6 max-w-[240px]">
+          No pudimos cargar tu perfil. Revisa tu conexión e inténtalo de nuevo.
+        </p>
+        <Button variant="kiki-soft" onClick={() => window.location.reload()}>
+          Reintentar
+        </Button>
       </main>
     );
   }

@@ -15,7 +15,7 @@ const Presence = () => {
   const { data: profile } = useProfile();
   const { data: myTribes } = useProfileTribes(profile?.id);
   const { data: myMusicStyles } = useProfileMusicStyles(profile?.id);
-  const { data: presenceList, isLoading } = usePresenceList();
+  const { data: presenceList, isLoading, isError } = usePresenceList();
   const { data: myPresence } = useMyPresence();
   const setPresence = useSetPresence();
   const { newSparkCount, hasNewSparks, totalSparkCount, markAllAsSeen, newSparks } = useNewSparks();
@@ -249,6 +249,18 @@ const Presence = () => {
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : isError ? (
+          <div className="text-center py-12 animate-fade-up">
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-6 h-6 text-destructive/50" />
+            </div>
+            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
+              Error de conexión
+            </h3>
+            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto">
+              No pudimos cargar la presencia. Revisa tu conexión.
+            </p>
           </div>
         ) : filteredProfiles.length === 0 ? (
           <div className="text-center py-12 animate-fade-up">

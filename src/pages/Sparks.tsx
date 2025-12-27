@@ -6,7 +6,7 @@ import { es } from "date-fns/locale";
 
 const Sparks = () => {
   const navigate = useNavigate();
-  const { data: chats, isLoading } = useSparkChats();
+  const { data: chats, isLoading, isError } = useSparkChats();
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24 relative overflow-hidden">
@@ -55,6 +55,20 @@ const Sparks = () => {
               <Flame className="w-10 h-10 text-primary animate-spark-flame" />
               <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
             </div>
+          </div>
+        ) : isError ? (
+          <div className="text-center py-16 animate-fade-up">
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="w-full h-full rounded-full bg-destructive/10 flex items-center justify-center">
+                <Flame className="w-8 h-8 text-destructive/50" />
+              </div>
+            </div>
+            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
+              Error de conexión
+            </h3>
+            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed">
+              No pudimos cargar tus chispas. Revisa tu conexión e inténtalo de nuevo.
+            </p>
           </div>
         ) : chats?.length === 0 ? (
           <div className="text-center py-16 animate-fade-up">

@@ -16,7 +16,7 @@ import { playCelebrationSound } from "@/utils/notificationSound";
 const Quedadas = () => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const { data: quedadas, isLoading } = useQuedadas();
+  const { data: quedadas, isLoading, isError } = useQuedadas();
   const createQuedada = useCreateQuedada();
   const joinQuedada = useJoinQuedada();
   const leaveQuedada = useLeaveQuedada();
@@ -249,6 +249,18 @@ const Quedadas = () => {
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Calendar className="w-10 h-10 text-accent animate-pulse-soft" />
+          </div>
+        ) : isError ? (
+          <div className="text-center py-16 animate-fade-up">
+            <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
+              <Calendar className="w-8 h-8 text-destructive/50" />
+            </div>
+            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
+              Error de conexión
+            </h3>
+            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto">
+              No pudimos cargar las quedadas. Revisa tu conexión e inténtalo de nuevo.
+            </p>
           </div>
         ) : quedadas?.length === 0 ? (
           <div className="text-center py-16 animate-fade-up">

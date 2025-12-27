@@ -194,7 +194,7 @@ const GhostMessageCard = ({
 
 const GhostMessages = () => {
   const navigate = useNavigate();
-  const { data: messages, isLoading } = useReceivedGhostMessages();
+  const { data: messages, isLoading, isError } = useReceivedGhostMessages();
 
   const handleNavigateToChat = (profileId: string) => {
     navigate(`/chat/${profileId}`);
@@ -248,6 +248,20 @@ const GhostMessages = () => {
               <Ghost className="w-10 h-10 text-primary/50 animate-pulse" />
               <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
             </div>
+          </div>
+        ) : isError ? (
+          <div className="text-center py-16 animate-fade-up">
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="w-full h-full rounded-full bg-destructive/10 flex items-center justify-center">
+                <Ghost className="w-8 h-8 text-destructive/50" />
+              </div>
+            </div>
+            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
+              Error de conexión
+            </h3>
+            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed">
+              No pudimos cargar tus mensajes. Revisa tu conexión.
+            </p>
           </div>
         ) : messages?.length === 0 ? (
           <div className="text-center py-16 animate-fade-up">

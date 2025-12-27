@@ -196,13 +196,35 @@ const QuedadaChat = () => {
     return format(date, "HH:mm");
   };
 
-  if (quedadaLoading || !quedada) {
+  if (quedadaLoading) {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="relative">
           <Calendar className="w-12 h-12 text-accent animate-pulse-soft" />
           <div className="absolute inset-0 bg-accent/20 blur-xl rounded-full" />
         </div>
+      </main>
+    );
+  }
+
+  if (!quedada) {
+    return (
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+        <div className="relative w-20 h-20 mb-6">
+          <div className="w-full h-full rounded-full bg-card/50 flex items-center justify-center">
+            <Calendar className="w-8 h-8 text-muted-foreground/30" />
+          </div>
+        </div>
+        <h2 className="font-display text-xl font-semibold text-foreground mb-2">
+          Quedada no encontrada
+        </h2>
+        <p className="font-body text-muted-foreground text-center mb-6 max-w-[240px]">
+          Esta quedada ya no existe o ha expirado.
+        </p>
+        <Button variant="kiki-soft" onClick={() => navigate("/quedadas")}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver a quedadas
+        </Button>
       </main>
     );
   }
