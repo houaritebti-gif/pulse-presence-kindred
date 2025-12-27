@@ -17,7 +17,7 @@ const Presence = () => {
   const { data: profile } = useProfile();
   const { data: myTribes } = useProfileTribes(profile?.id);
   const { data: myMusicStyles } = useProfileMusicStyles(profile?.id);
-  const { data: presenceList, isLoading, isError, refetch } = usePresenceList();
+  const { data: presenceList, isLoading, isError, refetch, isFetching } = usePresenceList();
   const { data: myPresence } = useMyPresence();
   const setPresence = useSetPresence();
   const { newSparkCount, hasNewSparks, totalSparkCount, markAllAsSeen, newSparks } = useNewSparks();
@@ -257,6 +257,7 @@ const Presence = () => {
             icon={Sparkles}
             description="No pudimos cargar la presencia. Revisa tu conexión."
             onRetry={() => refetch()}
+            isRetrying={isFetching}
           />
         ) : filteredProfiles.length === 0 ? (
           <EmptyState

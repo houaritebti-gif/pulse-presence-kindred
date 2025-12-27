@@ -8,7 +8,7 @@ import { es } from "date-fns/locale";
 
 const Sparks = () => {
   const navigate = useNavigate();
-  const { data: chats, isLoading, isError, refetch } = useSparkChats();
+  const { data: chats, isLoading, isError, refetch, isFetching } = useSparkChats();
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24 relative overflow-hidden">
@@ -63,6 +63,7 @@ const Sparks = () => {
             icon={Flame}
             description="No pudimos cargar tus chispas. Revisa tu conexión e inténtalo de nuevo."
             onRetry={() => refetch()}
+            isRetrying={isFetching}
           />
         ) : chats?.length === 0 ? (
           <EmptyState
