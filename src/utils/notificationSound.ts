@@ -326,6 +326,71 @@ export const playSuccessSound = () => {
   }
 };
 
+// Sync success sound for offline queue messages sent
+export const playSyncSuccessSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Uplifting "whoosh + ding" sound indicating successful sync
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const osc3 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    const gain2 = ctx.createGain();
+    const gain3 = ctx.createGain();
+    
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+    osc3.connect(gain3);
+    gain1.connect(ctx.destination);
+    gain2.connect(ctx.destination);
+    gain3.connect(ctx.destination);
+    
+    osc1.type = "sine";
+    osc2.type = "sine";
+    osc3.type = "sine";
+    
+    // Ascending sweep (whoosh)
+    osc1.frequency.setValueAtTime(400, ctx.currentTime);
+    osc1.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15);
+    gain1.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    
+    // First ding: E5
+    osc2.frequency.setValueAtTime(659, ctx.currentTime + 0.12);
+    gain2.gain.setValueAtTime(0, ctx.currentTime);
+    gain2.gain.setValueAtTime(0.1, ctx.currentTime + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+    
+    // Second ding: G5 (higher, confirmation)
+    osc3.frequency.setValueAtTime(784, ctx.currentTime + 0.22);
+    gain3.gain.setValueAtTime(0, ctx.currentTime);
+    gain3.gain.setValueAtTime(0.12, ctx.currentTime + 0.22);
+    gain3.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    
+    osc1.start(ctx.currentTime);
+    osc2.start(ctx.currentTime + 0.12);
+    osc3.start(ctx.currentTime + 0.22);
+    osc1.stop(ctx.currentTime + 0.25);
+    osc2.stop(ctx.currentTime + 0.4);
+    osc3.stop(ctx.currentTime + 0.55);
+    
+    // Subtle vibration
+    if ("vibrate" in navigator && isVibrationEnabled()) {
+      navigator.vibrate([50, 30, 80]);
+    }
+  } catch (error) {
+    console.log("Could not play sync success sound:", error);
+  }
+};
+
 // Subtle click sound for theme toggle
 export const playThemeToggleSound = () => {
   if (isSoundMuted()) return;
