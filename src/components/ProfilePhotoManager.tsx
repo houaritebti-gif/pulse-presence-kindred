@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
-import { Plus, X, GripVertical, Image as ImageIcon, Camera, Sparkles } from "lucide-react";
+import { Plus, X, GripVertical, Image as ImageIcon, Camera, Sparkles, Crop } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProfilePhotos, useUploadProfilePhoto, useDeleteProfilePhoto, useReorderProfilePhotos, ProfilePhoto } from "@/hooks/useProfilePhotos";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import UploadProgress, { UploadPhase } from "./UploadProgress";
+import ImageCropModal from "./ImageCropModal";
 
 interface ProfilePhotoManagerProps {
   profileId: string;
@@ -26,6 +27,11 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+  // Crop state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+
   const photoCount = photos?.length || 0;
   const emptySlots = MAX_PHOTOS - photoCount;
 
@@ -45,6 +51,31 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
       return;
     }
 
+    // Store file and open crop modal
+    setPendingFile(file);
+    const imageUrl = URL.createObjectURL(file);
+    setImageToCrop(imageUrl);
+    setCropModalOpen(true);
+
+    // Reset input for future selections
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    // Clean up object URL
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setPendingFile(null);
+
+    // Create file from blob
+    const croppedFile = new File([croppedBlob], "cropped-photo.jpg", {
+      type: "image/jpeg",
+    });
+
     setUploadingIndex(photoCount);
     setUploadPhase("compressing");
     setUploadProgress(0);
@@ -52,7 +83,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
     try {
       await uploadPhoto.mutateAsync({
         profileId,
-        file,
+        file: croppedFile,
         displayOrder: photoCount,
         onProgress: (phase, progress) => {
           setUploadPhase(phase);
@@ -64,14 +95,21 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
       setUploadPhase("complete");
       setUploadProgress(100);
       await new Promise(resolve => setTimeout(resolve, 500));
+      toast.success("Foto añadida correctamente");
     } finally {
       setUploadingIndex(null);
       setUploadProgress(0);
-      // Reset input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     }
+  };
+
+  const handleCropClose = () => {
+    // Clean up object URL
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setPendingFile(null);
+    setCropModalOpen(false);
   };
 
   const handleDelete = async (photoId: string, photoUrl: string) => {
@@ -296,9 +334,20 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
 
       {/* Footer info */}
       <div className="flex items-center justify-center gap-2 text-xs font-body text-muted-foreground bg-muted/30 rounded-lg py-2 px-3">
-        <ImageIcon className="w-3.5 h-3.5" />
-        <span>La primera foto será tu foto principal • Máx. 5MB</span>
+        <Crop className="w-3.5 h-3.5" />
+        <span>Recorta tus fotos antes de subir • Máx. 5MB</span>
       </div>
+
+      {/* Crop Modal */}
+      {imageToCrop && (
+        <ImageCropModal
+          isOpen={cropModalOpen}
+          onClose={handleCropClose}
+          imageSrc={imageToCrop}
+          onCropComplete={handleCropComplete}
+          aspectRatio={3 / 4}
+        />
+      )}
     </div>
   );
 };
