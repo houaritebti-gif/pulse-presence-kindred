@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban } from "lucide-react";
+import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useReceivedGhostMessages, useMarkGhostMessageRead } from "@/hooks/useReceivedGhostMessages";
 import { useHasSparkWith } from "@/hooks/useSparks";
@@ -194,7 +194,7 @@ const GhostMessageCard = ({
 
 const GhostMessages = () => {
   const navigate = useNavigate();
-  const { data: messages, isLoading, isError } = useReceivedGhostMessages();
+  const { data: messages, isLoading, isError, refetch } = useReceivedGhostMessages();
 
   const handleNavigateToChat = (profileId: string) => {
     navigate(`/chat/${profileId}`);
@@ -259,9 +259,13 @@ const GhostMessages = () => {
             <h3 className="font-display text-lg font-semibold text-foreground mb-2">
               Error de conexión
             </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed">
+            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed mb-6">
               No pudimos cargar tus mensajes. Revisa tu conexión.
             </p>
+            <Button variant="kiki-soft" onClick={() => refetch()}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reintentar
+            </Button>
           </div>
         ) : messages?.length === 0 ? (
           <div className="text-center py-16 animate-fade-up">

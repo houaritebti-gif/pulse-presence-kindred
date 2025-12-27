@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, RefreshCw } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
+import { Button } from "@/components/ui/button";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useNewSparks } from "@/hooks/useNewSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
@@ -15,7 +16,7 @@ const Presence = () => {
   const { data: profile } = useProfile();
   const { data: myTribes } = useProfileTribes(profile?.id);
   const { data: myMusicStyles } = useProfileMusicStyles(profile?.id);
-  const { data: presenceList, isLoading, isError } = usePresenceList();
+  const { data: presenceList, isLoading, isError, refetch } = usePresenceList();
   const { data: myPresence } = useMyPresence();
   const setPresence = useSetPresence();
   const { newSparkCount, hasNewSparks, totalSparkCount, markAllAsSeen, newSparks } = useNewSparks();
@@ -258,9 +259,13 @@ const Presence = () => {
             <h3 className="font-display text-lg font-semibold text-foreground mb-2">
               Error de conexión
             </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto">
+            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto mb-6">
               No pudimos cargar la presencia. Revisa tu conexión.
             </p>
+            <Button variant="kiki-soft" onClick={() => refetch()}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reintentar
+            </Button>
           </div>
         ) : filteredProfiles.length === 0 ? (
           <div className="text-center py-12 animate-fade-up">

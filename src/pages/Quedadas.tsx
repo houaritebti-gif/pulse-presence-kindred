@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff, RefreshCw } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada, useUpdateQuedada, Quedada } from "@/hooks/useQuedadas";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ import { playCelebrationSound } from "@/utils/notificationSound";
 const Quedadas = () => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const { data: quedadas, isLoading, isError } = useQuedadas();
+  const { data: quedadas, isLoading, isError, refetch } = useQuedadas();
   const createQuedada = useCreateQuedada();
   const joinQuedada = useJoinQuedada();
   const leaveQuedada = useLeaveQuedada();
@@ -258,9 +258,13 @@ const Quedadas = () => {
             <h3 className="font-display text-lg font-semibold text-foreground mb-2">
               Error de conexión
             </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto">
+            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto mb-6">
               No pudimos cargar las quedadas. Revisa tu conexión e inténtalo de nuevo.
             </p>
+            <Button variant="kiki-soft" onClick={() => refetch()}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reintentar
+            </Button>
           </div>
         ) : quedadas?.length === 0 ? (
           <div className="text-center py-16 animate-fade-up">

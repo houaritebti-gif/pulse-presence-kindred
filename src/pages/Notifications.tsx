@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
+import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2, RefreshCw } from "lucide-react";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification, useDeleteReadNotifications } from "@/hooks/useNotificationCenter";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -27,7 +27,7 @@ const FILTERS: { key: FilterType; label: string; icon: React.ReactNode }[] = [
 
 const Notifications = () => {
   const navigate = useNavigate();
-  const { data: notifications, isLoading, isError } = useNotifications();
+  const { data: notifications, isLoading, isError, refetch } = useNotifications();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const deleteNotification = useDeleteNotification();
@@ -182,9 +182,13 @@ const Notifications = () => {
               <h3 className="font-display text-lg font-semibold text-foreground mb-2">
                 Error de conexión
               </h3>
-              <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto">
+              <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto mb-6">
                 No pudimos cargar tus notificaciones. Revisa tu conexión.
               </p>
+              <Button variant="kiki-soft" onClick={() => refetch()}>
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Reintentar
+              </Button>
             </div>
           ) : filteredNotifications?.length === 0 ? (
             <div className="text-center py-16 animate-fade-up">
