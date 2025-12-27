@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useQuedadas } from "./useQuedadas";
 import { useProfile } from "./useProfile";
+import { useSparkChats } from "./useSparks";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -17,8 +18,17 @@ interface QuedadaContext {
   creator_name: string | null;
 }
 
+interface SparkContext {
+  other_name: string | null;
+  other_vibe: string | null;
+  created_at: string;
+  has_unread: boolean;
+  last_message: string | null;
+}
+
 interface ChatContext {
   quedadas: QuedadaContext[];
+  sparks: SparkContext[];
   profile: {
     name: string | null;
     city: string | null;
@@ -34,6 +44,7 @@ export const useAIChat = () => {
   
   const { data: quedadas } = useQuedadas();
   const { data: profile } = useProfile();
+  const { data: sparkChats } = useSparkChats();
 
   const buildContext = useCallback((): ChatContext => {
     const quedadasContext: QuedadaContext[] = (quedadas || []).map((q) => {
@@ -58,14 +69,27 @@ export const useAIChat = () => {
       };
     });
 
+    const sparksContext: SparkContext[] = (sparkChats || []).map((s) => ({
+      other_name: s.other_profile?.name || null,
+      other_vibe: s.other_profile?.vibe || null,
+      created_at: new Date(s.created_at).toLocaleString("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }),
+      has_unread: (s.unread_count || 0) > 0,
+      last_message: s.last_message_content || null,
+    }));
+
     return {
       quedadas: quedadasContext,
+      sparks: sparksContext,
       profile: profile ? {
         name: profile.name,
         city: profile.city,
       } : null,
     };
-  }, [quedadas, profile]);
+  }, [quedadas, profile, sparkChats]);
 
   const sendMessage = useCallback(async (input: string) => {
     if (!input.trim() || isLoading) return;

@@ -32,9 +32,19 @@ ${i + 1}. "${q.title}"
    - Lugar: ${q.location_hint || "No especificado"}
    - Asistentes: ${q.attendee_count || 0}${q.max_attendees ? `/${q.max_attendees}` : ""}
    - Creador: ${q.is_creator ? "Tú" : q.creator_name || "Otro usuario"}
-   - Estado: ${q.is_attending ? "Apuntado" : "No apuntado"}`).join("\n")}
+   - Estado: ${q.is_attending ? "Apuntado" : "No apuntado"}`).join("\n")}`;
+    }
 
-Usa esta información para responder preguntas específicas sobre las quedadas del usuario.`;
+    // Build context about user's sparks
+    let sparksContext = "";
+    if (context?.sparks && context.sparks.length > 0) {
+      sparksContext = `\n\nInformación sobre los sparks (conexiones) activos del usuario:
+${context.sparks.map((s: any, i: number) => `
+${i + 1}. Conexión con "${s.other_name || "Usuario anónimo"}"
+   - Vibra: ${s.other_vibe || "No especificada"}
+   - Conectados desde: ${s.created_at}
+   - Mensajes sin leer: ${s.has_unread ? "Sí" : "No"}
+   - Último mensaje: ${s.last_message ? `"${s.last_message.substring(0, 50)}${s.last_message.length > 50 ? '...' : ''}"` : "Sin mensajes aún"}`).join("\n")}`;
     }
 
     let userContext = "";
@@ -49,18 +59,18 @@ Ayudas a los usuarios con:
 - Información sobre cómo usar la app
 - Consejos para crear quedadas interesantes
 - Sugerencias para conectar con otros usuarios
-- Respuestas sobre sus quedadas específicas
+- Respuestas sobre sus quedadas y sparks específicos
 - Información general de la app
 
 Funcionalidades principales de la app:
 - Quedadas: eventos que los usuarios pueden crear y a los que pueden apuntarse
-- Sparks: conexiones entre usuarios que se dan cuando ambos se envían un mensaje fantasma mutuamente
-- Mensajes fantasma: mensajes anónimos que puedes enviar a otros usuarios desde su perfil
+- Sparks: conexiones entre usuarios que se dan cuando ambos se envían un mensaje fantasma mutuamente. Cuando hay un spark, se abre un chat privado entre los dos usuarios.
+- Mensajes fantasma: mensajes anónimos que puedes enviar a otros usuarios desde su perfil (límite de 5 al día)
 - Modo presencia: permite ver quién está online y disponible para conectar
 - Perfil: cada usuario tiene un perfil con foto, nombre, ciudad, y preferencias
-${userContext}${quedadasContext}
+${userContext}${quedadasContext}${sparksContext}
 
-Responde siempre en español de forma concisa y amable. Usa emojis ocasionalmente para ser más cercano. Si te preguntan sobre quedadas específicas, usa la información proporcionada.`;
+Responde siempre en español de forma concisa y amable. Usa emojis ocasionalmente para ser más cercano. Si te preguntan sobre quedadas o sparks específicos, usa la información proporcionada.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
