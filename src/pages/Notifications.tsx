@@ -11,8 +11,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification, useDeleteReadNotifications } from "@/hooks/useNotificationCenter";
+import ErrorState from "@/components/ErrorState";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -175,21 +176,11 @@ const Notifications = () => {
               <Bell className="w-10 h-10 text-primary animate-pulse-soft" />
             </div>
           ) : isError ? (
-            <div className="text-center py-16 animate-fade-up">
-              <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-6">
-                <Bell className="w-8 h-8 text-destructive/50" />
-              </div>
-              <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-                Error de conexión
-              </h3>
-              <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto mb-6">
-                No pudimos cargar tus notificaciones. Revisa tu conexión.
-              </p>
-              <Button variant="kiki-soft" onClick={() => refetch()}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Reintentar
-              </Button>
-            </div>
+            <ErrorState
+              icon={Bell}
+              description="No pudimos cargar tus notificaciones. Revisa tu conexión."
+              onRetry={() => refetch()}
+            />
           ) : filteredNotifications?.length === 0 ? (
             <div className="text-center py-16 animate-fade-up">
               <div className="w-20 h-20 rounded-full bg-card/50 flex items-center justify-center mx-auto mb-6">

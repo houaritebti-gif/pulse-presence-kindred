@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, RefreshCw } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
-import { Button } from "@/components/ui/button";
+import ErrorState from "@/components/ErrorState";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useNewSparks } from "@/hooks/useNewSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
@@ -252,21 +252,11 @@ const Presence = () => {
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : isError ? (
-          <div className="text-center py-12 animate-fade-up">
-            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-              <Sparkles className="w-6 h-6 text-destructive/50" />
-            </div>
-            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-              Error de conexión
-            </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto mb-6">
-              No pudimos cargar la presencia. Revisa tu conexión.
-            </p>
-            <Button variant="kiki-soft" onClick={() => refetch()}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Reintentar
-            </Button>
-          </div>
+          <ErrorState
+            icon={Sparkles}
+            description="No pudimos cargar la presencia. Revisa tu conexión."
+            onRetry={() => refetch()}
+          />
         ) : filteredProfiles.length === 0 ? (
           <div className="text-center py-12 animate-fade-up">
             <p className="font-body text-muted-foreground mb-4">

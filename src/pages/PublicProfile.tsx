@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User } from "lucide-react";
+import ErrorState from "@/components/ErrorState";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useIsBlocked } from "@/hooks/useUserModeration";
@@ -55,21 +56,17 @@ const PublicProfile = () => {
 
   if (isError) {
     return (
-      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
-        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
-          <User className="w-6 h-6 text-destructive/50" />
-        </div>
-        <h2 className="font-display text-xl font-semibold text-foreground mb-2">
-          Error de conexión
-        </h2>
-        <p className="font-body text-muted-foreground text-center mb-6 max-w-[240px]">
-          No pudimos cargar este perfil. Revisa tu conexión.
-        </p>
-        <Button variant="kiki-soft" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Volver
-        </Button>
-      </main>
+      <ErrorState
+        icon={User}
+        description="No pudimos cargar este perfil. Revisa tu conexión."
+        fullScreen
+        customAction={
+          <Button variant="kiki-soft" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver
+          </Button>
+        }
+      />
     );
   }
 
