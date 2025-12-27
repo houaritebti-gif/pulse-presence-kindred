@@ -11,6 +11,9 @@ import {
   getAllMessagesFromDB,
   registerBackgroundSync,
   migrateFromLocalStorage,
+  incrementQueueStat,
+  getQueueStats,
+  QueueStats,
 } from '@/utils/offlineQueueDB';
 
 const MAX_RETRIES = 3;
@@ -77,6 +80,9 @@ export const useOfflineQueue = () => {
       // Refresh queue from IndexedDB
       getAllMessagesFromDB().then(setQueue);
       
+      // Update stats
+      incrementQueueStat('totalSent', count);
+      
       // Play success sound
       playSyncSuccessSound();
       
@@ -110,6 +116,9 @@ export const useOfflineQueue = () => {
     // Play queue added sound
     playQueueAddedSound();
     
+    // Update stats
+    incrementQueueStat('totalQueued');
+    
     // Register for background sync
     const registered = await registerBackgroundSync();
     if (registered) {
@@ -138,6 +147,8 @@ export const useOfflineQueue = () => {
     const message = queue.find(m => m.id === messageId);
     if (message) {
       const newRetryCount = message.retryCount + 1;
+      const isFinalFailure = newRetryCount >= MAX_RETRIES;
+      
       await updateMessageInDB(messageId, { 
         status: 'failed' as const, 
         retryCount: newRetryCount 
@@ -147,6 +158,11 @@ export const useOfflineQueue = () => {
           ? { ...msg, status: 'failed' as const, retryCount: newRetryCount } 
           : msg
       ));
+      
+      // Increment failed stat only on final failure
+      if (isFinalFailure) {
+        incrementQueueStat('totalFailed');
+      }
     }
   }, [queue]);
 
@@ -231,8 +247,9 @@ export const useOfflineQueue = () => {
     notifySyncSuccess,
     triggerBackgroundSync,
     storeSupabaseConfigForSW,
+    getQueueStats,
     MAX_RETRIES,
   };
 };
 
-export type { QueuedMessage };
+export type { QueuedMessage, QueueStats };
