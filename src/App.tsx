@@ -12,6 +12,7 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { SkipLink } from "@/components/SkipLink";
 import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -100,6 +101,7 @@ const App = () => {
           <SkipLink />
           <NotificationProvider>
             <KeyboardNavigationWrapper>
+              <PWAInstallPrompt />
               <BottomNavigation />
               <div id="main-content" tabIndex={-1} className="outline-none">
                 <Routes>
