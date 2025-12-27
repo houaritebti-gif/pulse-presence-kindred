@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRe
 import { useChatImageUpload } from "@/hooks/useChatImageUpload";
 import { compressChatImage } from "@/utils/imageCompression";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
+import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -18,6 +19,8 @@ import UploadProgress from "@/components/UploadProgress";
 import LazyImage from "@/components/LazyImage";
 import VoiceMessagePlayer from "@/components/VoiceMessagePlayer";
 import VoiceRecordButton from "@/components/VoiceRecordButton";
+import OfflineMessageIndicator from "@/components/OfflineMessageIndicator";
+import PendingMessage from "@/components/PendingMessage";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const QuedadaChat = () => {
@@ -47,6 +50,18 @@ const QuedadaChat = () => {
     uploadAudio,
   } = useVoiceRecorder();
   
+  // Offline queue
+  const { 
+    isOnline, 
+    queue, 
+    pendingCount, 
+    isSyncing, 
+    setIsSyncing,
+    addToQueue, 
+    removeFromQueue,
+    getMessagesForChat 
+  } = useOfflineQueue();
+  
   const isUploading = isUploadingImage || isUploadingVoice;
   
   const [newMessage, setNewMessage] = useState("");
@@ -56,6 +71,9 @@ const QuedadaChat = () => {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showAttendees, setShowAttendees] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Get pending messages for this chat
+  const pendingMessages = quedadaId ? getMessagesForChat(quedadaId, 'quedada') : [];
 
   // Mark as read when entering chat
   useEffect(() => {
@@ -66,10 +84,10 @@ const QuedadaChat = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, pendingMessages]);
 
   // Get recipient IDs for notifications
-  const getRecipientIds = () => {
+  const getRecipientIds = useCallback(() => {
     const recipientIds: string[] = [];
     if (quedada?.creator?.id) {
       recipientIds.push(quedada.creator.id);
@@ -82,32 +100,83 @@ const QuedadaChat = () => {
       });
     }
     return recipientIds;
-  };
+  }, [quedada]);
+
+  // Sync pending messages when coming back online
+  const syncPendingMessages = useCallback(async () => {
+    if (!quedadaId || !quedada || pendingMessages.length === 0) return;
+    
+    setIsSyncing(true);
+    
+    for (const queuedMsg of pendingMessages) {
+      try {
+        await sendMessage.mutateAsync({ 
+          quedadaId: queuedMsg.chatId, 
+          content: queuedMsg.content,
+          recipientProfileIds: queuedMsg.metadata?.recipientProfileIds || [],
+          quedadaTitle: queuedMsg.metadata?.quedadaTitle || '',
+        });
+        removeFromQueue(queuedMsg.id);
+      } catch (error) {
+        console.error('Failed to sync message:', error);
+      }
+    }
+    
+    setIsSyncing(false);
+    
+    if (pendingMessages.length > 0) {
+      toast.success(`${pendingMessages.length} mensaje${pendingMessages.length > 1 ? 's' : ''} enviado${pendingMessages.length > 1 ? 's' : ''}`);
+    }
+  }, [quedadaId, quedada, pendingMessages, sendMessage, removeFromQueue, setIsSyncing]);
+
+  // Sync when coming back online
+  useEffect(() => {
+    if (isOnline && pendingMessages.length > 0 && !isSyncing) {
+      syncPendingMessages();
+    }
+  }, [isOnline, pendingMessages.length, isSyncing, syncPendingMessages]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!newMessage.trim() && !selectedFile) || !quedadaId || !quedada) return;
 
     const recipientIds = getRecipientIds();
+    const messageContent = newMessage.trim();
+
+    // If offline and no image, queue the message
+    if (!isOnline && !selectedFile && messageContent) {
+      addToQueue({
+        type: 'quedada',
+        chatId: quedadaId,
+        content: messageContent,
+        metadata: {
+          recipientProfileIds: recipientIds,
+          quedadaTitle: quedada.title,
+        },
+      });
+      setNewMessage("");
+      toast.info("Mensaje guardado. Se enviará al reconectar.");
+      return;
+    }
 
     try {
-      let messageContent = newMessage.trim();
+      let finalContent = messageContent;
       
       // If there's an image to upload
       if (selectedFile && user?.id) {
         const imageUrl = await uploadImage(selectedFile, user.id);
         if (imageUrl) {
-          messageContent = imageUrl;
+          finalContent = imageUrl;
         } else {
           return; // Upload failed, don't send message
         }
       }
       
-      if (!messageContent) return;
+      if (!finalContent) return;
       
       await sendMessage.mutateAsync({ 
         quedadaId, 
-        content: messageContent,
+        content: finalContent,
         recipientProfileIds: recipientIds,
         quedadaTitle: quedada.title,
       });
@@ -115,7 +184,22 @@ const QuedadaChat = () => {
       setSelectedFile(null);
       setImagePreview(null);
     } catch (error: any) {
-      toast.error("Error al enviar: " + error.message);
+      // If send fails and it's a text message, queue it
+      if (!selectedFile && messageContent) {
+        addToQueue({
+          type: 'quedada',
+          chatId: quedadaId,
+          content: messageContent,
+          metadata: {
+            recipientProfileIds: recipientIds,
+            quedadaTitle: quedada.title,
+          },
+        });
+        setNewMessage("");
+        toast.info("Mensaje guardado. Se enviará al reconectar.");
+      } else {
+        toast.error("Error al enviar: " + error.message);
+      }
     }
   };
 
@@ -422,8 +506,29 @@ const QuedadaChat = () => {
             );
           })
         )}
+        
+        {/* Pending messages (offline queue) */}
+        {pendingMessages.map((queuedMsg) => (
+          <PendingMessage
+            key={queuedMsg.id}
+            content={queuedMsg.content}
+            isPending={true}
+          />
+        ))}
+        
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Offline indicator */}
+      {(!isOnline || pendingMessages.length > 0) && (
+        <div className="relative z-10 flex justify-center py-2 border-t border-border/20">
+          <OfflineMessageIndicator
+            pendingCount={pendingMessages.length}
+            isOnline={isOnline}
+            isSyncing={isSyncing}
+          />
+        </div>
+      )}
 
       {/* Image preview with upload progress */}
       {(imagePreview || isUploadingImage) && (
