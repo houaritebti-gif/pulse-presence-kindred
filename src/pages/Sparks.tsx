@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Flame, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, Flame, MessageCircle, Sparkles, RefreshCw } from "lucide-react";
 import { useSparkChats } from "@/hooks/useSparks";
+import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
 const Sparks = () => {
   const navigate = useNavigate();
-  const { data: chats, isLoading, isError } = useSparkChats();
+  const { data: chats, isLoading, isError, refetch } = useSparkChats();
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24 relative overflow-hidden">
@@ -66,9 +67,13 @@ const Sparks = () => {
             <h3 className="font-display text-lg font-semibold text-foreground mb-2">
               Error de conexión
             </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed">
+            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed mb-6">
               No pudimos cargar tus chispas. Revisa tu conexión e inténtalo de nuevo.
             </p>
+            <Button variant="kiki-soft" onClick={() => refetch()}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Reintentar
+            </Button>
           </div>
         ) : chats?.length === 0 ? (
           <div className="text-center py-16 animate-fade-up">
