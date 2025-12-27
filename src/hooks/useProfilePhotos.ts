@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { compressProfilePhoto } from "@/utils/imageCompression";
 
 const MAX_PHOTOS = 6;
 
@@ -90,13 +91,18 @@ export const useUploadProfilePhoto = () => {
         throw new Error(`Máximo ${MAX_PHOTOS} fotos permitidas`);
       }
 
+      // Compress image before upload
+      const compressedFile = await compressProfilePhoto(file);
+
       // Upload to storage
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${user.id}/${Date.now()}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from("profile-photos")
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, compressedFile, { 
+          upsert: true,
+          contentType: "image/jpeg",
+        });
 
       if (uploadError) throw uploadError;
 
