@@ -418,7 +418,7 @@ const SparkChat = () => {
                     <Input
                       value={editingMessage.content}
                       onChange={(e) => setEditingMessage({ ...editingMessage, content: e.target.value })}
-                      className="h-10 font-body bg-card border-primary/30 focus:border-primary rounded-xl"
+                      className="h-10 font-body bg-card text-foreground border-primary/30 focus:border-primary rounded-xl"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
@@ -596,7 +596,7 @@ const SparkChat = () => {
                     handleTyping();
                   }}
                   placeholder={selectedFile ? "Añade un mensaje..." : "Escribe algo..."}
-                  className="h-12 font-body bg-card/50 text-card-foreground border-border/30 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-card-foreground/50"
+                  className="h-12 font-body bg-card/50 text-foreground border-border/30 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
                 />
                 {newMessage.length > 0 && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">

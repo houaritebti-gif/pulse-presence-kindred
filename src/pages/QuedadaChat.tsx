@@ -468,7 +468,7 @@ const QuedadaChat = () => {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder={selectedFile ? "Añade un mensaje..." : "Escribe algo..."}
-                  className="h-12 font-body bg-card/50 text-card-foreground border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-card-foreground/50"
+                  className="h-12 font-body bg-card/50 text-foreground border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
                 />
               </div>
               <Button
