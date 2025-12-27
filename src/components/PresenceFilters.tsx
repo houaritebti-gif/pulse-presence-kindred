@@ -103,15 +103,15 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
               <div className="flex flex-wrap gap-2 animate-fade-up">
                 {TRIBES.map(tribe => (
                   <button
-                    key={tribe}
-                    onClick={() => toggleTribe(tribe)}
+                    key={tribe.value}
+                    onClick={() => toggleTribe(tribe.value)}
                     className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
-                      filters.tribes.includes(tribe)
+                      filters.tribes.includes(tribe.value)
                         ? "bg-primary text-primary-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
                     }`}
                   >
-                    {tribe}
+                    {tribe.emoji} {tribe.value}
                   </button>
                 ))}
               </div>

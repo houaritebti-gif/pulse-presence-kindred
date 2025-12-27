@@ -219,16 +219,16 @@ const Onboarding = () => {
             <div className="flex flex-wrap gap-2 justify-center">
               {TRIBES.map((tribe, index) => (
                 <button
-                  key={tribe}
-                  onClick={() => toggleTribe(tribe)}
+                  key={tribe.value}
+                  onClick={() => toggleTribe(tribe.value)}
                   style={{ animationDelay: `${index * 30}ms` }}
                   className={`px-4 py-2 rounded-full font-body text-sm transition-all animate-bounce-in ${
-                    selectedTribes.includes(tribe)
+                    selectedTribes.includes(tribe.value)
                       ? "bg-primary text-primary-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
                   }`}
                 >
-                  {tribe}
+                  {tribe.emoji} {tribe.value}
                 </button>
               ))}
             </div>
