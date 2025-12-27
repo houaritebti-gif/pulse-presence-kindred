@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { sendPushNotification } from "@/utils/pushNotifications";
+import { vibrateDevice } from "@/utils/notificationSound";
 
 export interface SparkChat {
   id: string;
@@ -272,6 +273,7 @@ export const useSendMessage = () => {
       return data;
     },
     onSuccess: (_, { chatId }) => {
+      vibrateDevice("message");
       queryClient.invalidateQueries({ queryKey: ["chat_messages", chatId] });
     },
   });
