@@ -576,3 +576,9 @@ export const useOrganizedQuedadasCount = (profileId: string | undefined) => {
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 };
+
+// Count quedadas with unread messages
+export const useUnreadQuedadaCount = () => {
+  const { data: quedadas } = useQuedadas();
+  return quedadas?.filter(q => q.has_unread).length || 0;
+};
