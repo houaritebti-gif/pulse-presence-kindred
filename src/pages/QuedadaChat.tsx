@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X, EyeOff } from "lucide-react";
+import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X, EyeOff, UserX } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
-import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead, useQuedadaAttendees } from "@/hooks/useQuedadas";
+import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead, useQuedadaAttendees, useExpelAttendee } from "@/hooks/useQuedadas";
 import { useChatImageUpload } from "@/hooks/useChatImageUpload";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +26,7 @@ const QuedadaChat = () => {
   const { data: attendees } = useQuedadaAttendees(quedadaId);
   const sendMessage = useSendQuedadaMessage();
   const markRead = useMarkQuedadaRead();
+  const expelAttendee = useExpelAttendee();
   
   // Image upload
   const { uploadImage, isUploading: isUploadingImage } = useChatImageUpload();
@@ -535,26 +536,53 @@ const QuedadaChat = () => {
                 
                 {/* Attendees */}
                 {attendees?.map((attendee) => (
-                  <button
+                  <div
                     key={attendee.id}
-                    onClick={() => {
-                      setShowAttendees(false);
-                      navigate(`/profile/${attendee.profile?.id}`);
-                    }}
-                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
                   >
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={attendee.profile?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-card text-card-foreground font-display">
-                        {(attendee.profile?.name?.[0] || "?").toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body text-sm text-card-foreground truncate">
-                        {attendee.profile?.name || "Anónima"}
-                      </p>
-                    </div>
-                  </button>
+                    <button
+                      onClick={() => {
+                        setShowAttendees(false);
+                        navigate(`/profile/${attendee.profile?.id}`);
+                      }}
+                      className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                    >
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={attendee.profile?.avatar_url || undefined} />
+                        <AvatarFallback className="bg-card text-card-foreground font-display">
+                          {(attendee.profile?.name?.[0] || "?").toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-body text-sm text-card-foreground truncate">
+                          {attendee.profile?.name || "Anónima"}
+                        </p>
+                      </div>
+                    </button>
+                    
+                    {/* Expel button - only visible to creator */}
+                    {quedada?.is_creator && attendee.profile?.id && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`¿Seguro que quieres expulsar a ${attendee.profile?.name || "esta persona"} de la quedada?`)) return;
+                          try {
+                            await expelAttendee.mutateAsync({
+                              quedadaId: quedadaId!,
+                              attendeeProfileId: attendee.profile!.id,
+                            });
+                            toast.success("Asistente expulsado");
+                          } catch (error: any) {
+                            toast.error("Error: " + error.message);
+                          }
+                        }}
+                        disabled={expelAttendee.isPending}
+                        className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all disabled:opacity-50"
+                        title="Expulsar asistente"
+                      >
+                        <UserX className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 ))}
                 
                 {!attendees?.length && !quedada?.creator && (
