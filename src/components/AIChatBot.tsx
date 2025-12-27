@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Trash2, Bot, User } from "lucide-react";
+import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, UserCircle, Radio } from "lucide-react";
 import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,44 @@ const SUGGESTED_QUESTIONS = [
   "¿Qué son los sparks?",
   "¿Cómo conecto con otros usuarios?",
 ];
+
+// Action buttons that can be suggested by the AI
+interface QuickAction {
+  label: string;
+  route: string;
+  icon: "sparks" | "quedadas" | "presence" | "profile" | "create";
+}
+
+const ACTION_ICONS = {
+  sparks: Sparkles,
+  quedadas: Calendar,
+  presence: Radio,
+  profile: UserCircle,
+  create: Users,
+};
+
+// Detect action patterns in text and extract them
+const extractActions = (text: string): { cleanText: string; actions: QuickAction[] } => {
+  const actions: QuickAction[] = [];
+  let cleanText = text;
+
+  // Pattern: [[action:label|route|icon]]
+  const actionPattern = /\[\[action:([^|]+)\|([^|]+)\|([^\]]+)\]\]/g;
+  let match;
+
+  while ((match = actionPattern.exec(text)) !== null) {
+    actions.push({
+      label: match[1].trim(),
+      route: match[2].trim(),
+      icon: match[3].trim() as QuickAction["icon"],
+    });
+  }
+
+  // Remove action patterns from text
+  cleanText = text.replace(actionPattern, "").trim();
+
+  return { cleanText, actions };
+};
 
 // Simple markdown parser for chat messages
 const parseMarkdown = (text: string): React.ReactNode[] => {
@@ -38,13 +76,11 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
   };
 
   const parseInline = (line: string): React.ReactNode => {
-    // Parse bold, italic, links, and code
     const parts: React.ReactNode[] = [];
     let remaining = line;
     let key = 0;
 
     while (remaining.length > 0) {
-      // Check for links [text](url)
       const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
       if (linkMatch && linkMatch.index !== undefined) {
         if (linkMatch.index > 0) {
@@ -73,7 +109,6 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
         continue;
       }
 
-      // No more special patterns, add remaining text
       parts.push(<span key={key++}>{parseTextStyles(remaining)}</span>);
       break;
     }
@@ -82,13 +117,11 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
   };
 
   const parseTextStyles = (text: string): React.ReactNode => {
-    // Parse **bold**, *italic*, and `code`
     const parts: React.ReactNode[] = [];
     let remaining = text;
     let key = 0;
 
     while (remaining.length > 0) {
-      // Check for bold **text**
       const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
       if (boldMatch && boldMatch.index !== undefined) {
         if (boldMatch.index > 0) {
@@ -99,7 +132,6 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
         continue;
       }
 
-      // Check for italic *text*
       const italicMatch = remaining.match(/\*([^*]+)\*/);
       if (italicMatch && italicMatch.index !== undefined) {
         if (italicMatch.index > 0) {
@@ -110,7 +142,6 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
         continue;
       }
 
-      // Check for code `text`
       const codeMatch = remaining.match(/`([^`]+)`/);
       if (codeMatch && codeMatch.index !== undefined) {
         if (codeMatch.index > 0) {
@@ -135,7 +166,6 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Check for unordered list items (- or *)
     const ulMatch = line.match(/^[\s]*[-*]\s+(.+)/);
     if (ulMatch) {
       if (listType !== "ul") {
@@ -146,7 +176,6 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
       continue;
     }
 
-    // Check for ordered list items (1. 2. etc)
     const olMatch = line.match(/^[\s]*\d+\.\s+(.+)/);
     if (olMatch) {
       if (listType !== "ol") {
@@ -157,16 +186,13 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
       continue;
     }
 
-    // Flush any pending list
     flushList();
 
-    // Empty line
     if (line.trim() === "") {
       elements.push(<br key={elements.length} />);
       continue;
     }
 
-    // Check for headers
     const h3Match = line.match(/^###\s+(.+)/);
     if (h3Match) {
       elements.push(<h4 key={elements.length} className="font-semibold mt-2 mb-1">{parseInline(h3Match[1])}</h4>);
@@ -185,20 +211,28 @@ const parseMarkdown = (text: string): React.ReactNode[] => {
       continue;
     }
 
-    // Regular paragraph
     elements.push(<p key={elements.length} className="text-sm">{parseInline(line)}</p>);
   }
 
-  // Flush any remaining list
   flushList();
 
   return elements;
 };
 
-const FormattedMessage = ({ content, isUser }: { content: string; isUser: boolean }) => {
-  const parsed = useMemo(() => {
-    if (isUser || !content) return null;
-    return parseMarkdown(content);
+interface FormattedMessageProps {
+  content: string;
+  isUser: boolean;
+  onNavigate: (route: string) => void;
+}
+
+const FormattedMessage = ({ content, isUser, onNavigate }: FormattedMessageProps) => {
+  const { cleanText, actions, parsed } = useMemo(() => {
+    if (isUser || !content) return { cleanText: content, actions: [], parsed: null };
+    const extracted = extractActions(content);
+    return {
+      ...extracted,
+      parsed: parseMarkdown(extracted.cleanText),
+    };
   }, [content, isUser]);
 
   if (isUser) {
@@ -215,7 +249,32 @@ const FormattedMessage = ({ content, isUser }: { content: string; isUser: boolea
     );
   }
 
-  return <div className="space-y-1">{parsed}</div>;
+  return (
+    <div className="space-y-2">
+      <div className="space-y-1">{parsed}</div>
+      {actions.length > 0 && (
+        <div className="flex flex-wrap gap-2 pt-2">
+          {actions.map((action, i) => {
+            const Icon = ACTION_ICONS[action.icon] || Sparkles;
+            return (
+              <button
+                key={i}
+                onClick={() => onNavigate(action.route)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full",
+                  "bg-primary text-primary-foreground",
+                  "hover:bg-primary/90 transition-colors duration-200"
+                )}
+              >
+                <Icon className="h-3 w-3" />
+                {action.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export const AIChatBot = () => {
@@ -224,6 +283,7 @@ export const AIChatBot = () => {
   const { messages, isLoading, error, sendMessage, clearChat } = useAIChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -249,6 +309,11 @@ export const AIChatBot = () => {
     if (!isLoading) {
       sendMessage(question);
     }
+  };
+
+  const handleNavigate = (route: string) => {
+    setIsOpen(false);
+    navigate(route);
   };
 
   return (
@@ -350,7 +415,11 @@ export const AIChatBot = () => {
                           : "bg-muted"
                       )}
                     >
-                      <FormattedMessage content={msg.content} isUser={msg.role === "user"} />
+                      <FormattedMessage 
+                        content={msg.content} 
+                        isUser={msg.role === "user"} 
+                        onNavigate={handleNavigate}
+                      />
                     </div>
                     {msg.role === "user" && (
                       <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
