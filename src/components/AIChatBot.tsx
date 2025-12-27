@@ -6,6 +6,14 @@ import { MessageCircle, X, Send, Trash2, Bot, User } from "lucide-react";
 import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
 
+const SUGGESTED_QUESTIONS = [
+  "¿Cómo creo una quedada?",
+  "¿Qué son los sparks?",
+  "¿Cómo conecto con otros usuarios?",
+  "¿Cómo edito mi perfil?",
+  "¿Qué es el modo presencia?",
+];
+
 export const AIChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -30,6 +38,12 @@ export const AIChatBot = () => {
     if (input.trim() && !isLoading) {
       sendMessage(input);
       setInput("");
+    }
+  };
+
+  const handleSuggestionClick = (question: string) => {
+    if (!isLoading) {
+      sendMessage(question);
     }
   };
 
@@ -87,10 +101,27 @@ export const AIChatBot = () => {
           {/* Messages */}
           <ScrollArea className="h-[350px] p-3" ref={scrollRef}>
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                <Bot className="h-12 w-12 mb-3 opacity-50" />
-                <p className="text-sm">¡Hola! 👋</p>
-                <p className="text-xs mt-1">¿En qué puedo ayudarte hoy?</p>
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Bot className="h-10 w-10 mb-2 text-muted-foreground opacity-50" />
+                <p className="text-sm font-medium">¡Hola! 👋</p>
+                <p className="text-xs text-muted-foreground mt-1 mb-4">¿En qué puedo ayudarte?</p>
+                <div className="flex flex-wrap gap-2 justify-center px-2">
+                  {SUGGESTED_QUESTIONS.map((question, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSuggestionClick(question)}
+                      disabled={isLoading}
+                      className={cn(
+                        "text-xs px-3 py-1.5 rounded-full border",
+                        "bg-muted/50 hover:bg-muted text-foreground",
+                        "transition-colors duration-200",
+                        "disabled:opacity-50 disabled:cursor-not-allowed"
+                      )}
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="space-y-3">
