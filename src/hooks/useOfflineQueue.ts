@@ -3,54 +3,96 @@ import { useOnlineStatus } from './useOnlineStatus';
 import { toast } from 'sonner';
 import { showBrowserNotification, getNotificationPermission } from '@/utils/browserNotifications';
 import { playSyncSuccessSound } from '@/utils/notificationSound';
+import {
+  QueuedMessage,
+  addMessageToDB,
+  removeMessageFromDB,
+  updateMessageInDB,
+  getAllMessagesFromDB,
+  registerBackgroundSync,
+  migrateFromLocalStorage,
+} from '@/utils/offlineQueueDB';
 
-interface QueuedMessage {
-  id: string;
-  type: 'spark' | 'quedada';
-  chatId: string;
-  content: string;
-  timestamp: number;
-  status: 'pending' | 'sending' | 'failed';
-  retryCount: number;
-  metadata?: {
-    recipientProfileId?: string;
-    recipientProfileIds?: string[];
-    quedadaTitle?: string;
-  };
-}
-
-const QUEUE_STORAGE_KEY = 'offline_message_queue';
 const MAX_RETRIES = 3;
+
+// Store Supabase config for Service Worker
+const storeSupabaseConfigForSW = async (senderProfileId: string) => {
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      registration.active?.postMessage({
+        type: 'STORE_SUPABASE_CONFIG',
+        config: {
+          supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+          supabaseKey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          senderProfileId,
+        },
+      });
+    } catch (error) {
+      console.error('Failed to store Supabase config for SW:', error);
+    }
+  }
+};
+
+// Listen for sync complete messages from Service Worker
+const setupSWListener = (onSyncComplete: (count: number) => void) => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data.type === 'SYNC_COMPLETE') {
+        onSyncComplete(event.data.count);
+      }
+    });
+  }
+};
 
 export const useOfflineQueue = () => {
   const { isOnline, wasOffline } = useOnlineStatus();
   const [queue, setQueue] = useState<QueuedMessage[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load queue from localStorage on mount
+  // Load queue from IndexedDB on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(QUEUE_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setQueue(parsed);
+    const initializeQueue = async () => {
+      try {
+        // First migrate any existing localStorage data
+        await migrateFromLocalStorage();
+        
+        // Then load from IndexedDB
+        const messages = await getAllMessagesFromDB();
+        setQueue(messages);
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error loading offline queue:', error);
+        setIsInitialized(true);
       }
-    } catch (error) {
-      console.error('Error loading offline queue:', error);
-    }
+    };
+
+    initializeQueue();
   }, []);
 
-  // Save queue to localStorage whenever it changes
+  // Set up Service Worker message listener
   useEffect(() => {
-    try {
-      localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(queue));
-    } catch (error) {
-      console.error('Error saving offline queue:', error);
-    }
-  }, [queue]);
+    const handleSyncComplete = (count: number) => {
+      // Refresh queue from IndexedDB
+      getAllMessagesFromDB().then(setQueue);
+      
+      // Play success sound
+      playSyncSuccessSound();
+      
+      // Show toast if app is visible
+      if (document.visibilityState === 'visible') {
+        toast.success(`${count} mensaje${count > 1 ? 's' : ''} enviado${count > 1 ? 's' : ''}`);
+      }
+    };
+
+    setupSWListener(handleSyncComplete);
+  }, []);
 
   // Add message to queue
-  const addToQueue = useCallback((message: Omit<QueuedMessage, 'id' | 'timestamp' | 'status' | 'retryCount'>) => {
+  const addToQueue = useCallback(async (
+    message: Omit<QueuedMessage, 'id' | 'timestamp' | 'status' | 'retryCount'>
+  ) => {
     const queuedMessage: QueuedMessage = {
       ...message,
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -59,41 +101,67 @@ export const useOfflineQueue = () => {
       retryCount: 0,
     };
 
+    // Add to IndexedDB
+    await addMessageToDB(queuedMessage);
+    
+    // Update local state
     setQueue(prev => [...prev, queuedMessage]);
+    
+    // Register for background sync
+    const registered = await registerBackgroundSync();
+    if (registered) {
+      console.log('Background sync registered for offline message');
+    }
     
     return queuedMessage;
   }, []);
 
   // Remove message from queue
-  const removeFromQueue = useCallback((messageId: string) => {
+  const removeFromQueue = useCallback(async (messageId: string) => {
+    await removeMessageFromDB(messageId);
     setQueue(prev => prev.filter(msg => msg.id !== messageId));
   }, []);
 
   // Update message status
-  const updateMessageStatus = useCallback((messageId: string, status: QueuedMessage['status']) => {
+  const updateMessageStatus = useCallback(async (messageId: string, status: QueuedMessage['status']) => {
+    await updateMessageInDB(messageId, { status });
     setQueue(prev => prev.map(msg => 
       msg.id === messageId ? { ...msg, status } : msg
     ));
   }, []);
 
   // Mark message as failed
-  const markAsFailed = useCallback((messageId: string) => {
-    setQueue(prev => prev.map(msg => 
-      msg.id === messageId 
-        ? { ...msg, status: 'failed' as const, retryCount: msg.retryCount + 1 } 
-        : msg
-    ));
-  }, []);
+  const markAsFailed = useCallback(async (messageId: string) => {
+    const message = queue.find(m => m.id === messageId);
+    if (message) {
+      const newRetryCount = message.retryCount + 1;
+      await updateMessageInDB(messageId, { 
+        status: 'failed' as const, 
+        retryCount: newRetryCount 
+      });
+      setQueue(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, status: 'failed' as const, retryCount: newRetryCount } 
+          : msg
+      ));
+    }
+  }, [queue]);
 
   // Reset message for retry
-  const resetForRetry = useCallback((messageId: string) => {
+  const resetForRetry = useCallback(async (messageId: string) => {
+    await updateMessageInDB(messageId, { status: 'pending' as const });
     setQueue(prev => prev.map(msg => 
       msg.id === messageId ? { ...msg, status: 'pending' as const } : msg
     ));
+    
+    // Register for background sync again
+    await registerBackgroundSync();
   }, []);
 
   // Clear all messages from queue
-  const clearQueue = useCallback(() => {
+  const clearQueue = useCallback(async () => {
+    const { clearAllMessagesFromDB } = await import('@/utils/offlineQueueDB');
+    await clearAllMessagesFromDB();
     setQueue([]);
   }, []);
 
@@ -129,6 +197,18 @@ export const useOfflineQueue = () => {
     }
   }, []);
 
+  // Trigger manual sync via Service Worker
+  const triggerBackgroundSync = useCallback(async () => {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        registration.active?.postMessage({ type: 'TRIGGER_SYNC' });
+      } catch (error) {
+        console.error('Failed to trigger background sync:', error);
+      }
+    }
+  }, []);
+
   return {
     isOnline,
     wasOffline,
@@ -136,6 +216,7 @@ export const useOfflineQueue = () => {
     pendingCount,
     isSyncing,
     setIsSyncing,
+    isInitialized,
     addToQueue,
     removeFromQueue,
     updateMessageStatus,
@@ -145,6 +226,10 @@ export const useOfflineQueue = () => {
     getMessagesForChat,
     canRetry,
     notifySyncSuccess,
+    triggerBackgroundSync,
+    storeSupabaseConfigForSW,
     MAX_RETRIES,
   };
 };
+
+export type { QueuedMessage };

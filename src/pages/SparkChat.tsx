@@ -74,8 +74,16 @@ const SparkChat = () => {
     resetForRetry,
     getMessagesForChat,
     notifySyncSuccess,
+    storeSupabaseConfigForSW,
     MAX_RETRIES,
   } = useOfflineQueue();
+  
+  // Store Supabase config for Service Worker background sync
+  useEffect(() => {
+    if (profile?.id) {
+      storeSupabaseConfigForSW(profile.id);
+    }
+  }, [profile?.id, storeSupabaseConfigForSW]);
   
   const isUploading = isUploadingImage || isUploadingVoice;
   
@@ -120,18 +128,18 @@ const SparkChat = () => {
     let successCount = 0;
     
     for (const queuedMsg of pendingOnly) {
-      updateMessageStatus(queuedMsg.id, 'sending');
+      await updateMessageStatus(queuedMsg.id, 'sending');
       try {
         await sendMessage.mutateAsync({ 
           chatId: queuedMsg.chatId, 
           content: queuedMsg.content,
           recipientProfileId: queuedMsg.metadata?.recipientProfileId,
         });
-        removeFromQueue(queuedMsg.id);
+        await removeFromQueue(queuedMsg.id);
         successCount++;
       } catch (error) {
         console.error('Failed to sync message:', error);
-        markAsFailed(queuedMsg.id);
+        await markAsFailed(queuedMsg.id);
       }
     }
     
@@ -150,7 +158,7 @@ const SparkChat = () => {
   const handleRetryMessage = useCallback(async (queuedMsg: typeof pendingMessages[0]) => {
     if (!chatId || !chat) return;
     
-    updateMessageStatus(queuedMsg.id, 'sending');
+    await updateMessageStatus(queuedMsg.id, 'sending');
     
     try {
       await sendMessage.mutateAsync({ 
@@ -158,11 +166,11 @@ const SparkChat = () => {
         content: queuedMsg.content,
         recipientProfileId: queuedMsg.metadata?.recipientProfileId,
       });
-      removeFromQueue(queuedMsg.id);
+      await removeFromQueue(queuedMsg.id);
       toast.success("Mensaje enviado");
     } catch (error) {
       console.error('Failed to retry message:', error);
-      markAsFailed(queuedMsg.id);
+      await markAsFailed(queuedMsg.id);
       toast.error("Error al enviar el mensaje");
     }
   }, [chatId, chat, sendMessage, removeFromQueue, updateMessageStatus, markAsFailed]);
@@ -185,12 +193,13 @@ const SparkChat = () => {
     
     // If offline and no image, queue the message
     if (!isOnline && !selectedFile && messageContent) {
-      addToQueue({
+      await addToQueue({
         type: 'spark',
         chatId,
         content: messageContent,
         metadata: {
           recipientProfileId: chat.other_profile?.id,
+          senderProfileId: profile?.id,
         },
       });
       setNewMessage("");
