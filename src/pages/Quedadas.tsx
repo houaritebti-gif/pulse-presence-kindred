@@ -282,9 +282,13 @@ const Quedadas = () => {
                       </div>
                     )}
                     <div className="flex items-center gap-1.5 text-card-foreground/60">
-                      <Users className="w-3.5 h-3.5" />
+                      {quedada.private_attendees ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Users className="w-3.5 h-3.5" />
+                      )}
                       <span className="font-body text-xs">
-                        {quedada.attendee_count}{quedada.max_attendees ? `/${quedada.max_attendees}` : ""} asistentes
+                        {quedada.attendee_count}{quedada.max_attendees ? `/${quedada.max_attendees}` : ""} {quedada.private_attendees ? "(privada)" : "asistentes"}
                       </span>
                     </div>
                   </div>
