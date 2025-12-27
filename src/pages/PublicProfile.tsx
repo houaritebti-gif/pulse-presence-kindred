@@ -12,6 +12,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
 
 const PublicProfile = () => {
@@ -133,12 +139,21 @@ const PublicProfile = () => {
           
           {/* Organizer badge */}
           {organizedCount && organizedCount > 0 && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-2">
-              <Calendar className="w-3.5 h-3.5" />
-              <span className="font-body text-xs font-medium">
-                {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
-              </span>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-2 cursor-help">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span className="font-body text-xs font-medium">
+                      {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Esta persona organiza eventos para la comunidad</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           
           {profile.vibe && (
