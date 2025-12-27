@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ImageLightbox from "@/components/ImageLightbox";
 import UploadProgress from "@/components/UploadProgress";
+import LazyImage from "@/components/LazyImage";
 import VoiceMessagePlayer from "@/components/VoiceMessagePlayer";
 import VoiceRecordButton from "@/components/VoiceRecordButton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -404,10 +405,11 @@ const QuedadaChat = () => {
                       }`}
                     >
                       {isImageMessage(msg.content) ? (
-                        <img 
+                        <LazyImage 
                           src={msg.content} 
                           alt="Imagen compartida"
                           className="max-w-full max-h-64 rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          placeholderClassName="min-w-[200px] min-h-[150px] rounded-xl"
                           onClick={() => setLightboxImage(msg.content)}
                         />
                       ) : (
