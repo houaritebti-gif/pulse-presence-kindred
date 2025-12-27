@@ -32,6 +32,7 @@ export const showBrowserNotification = (
     icon?: string;
     tag?: string;
     onClick?: () => void;
+    forceShow?: boolean; // Allow showing even when tab is visible
   }
 ) => {
   if (!("Notification" in window)) {
@@ -44,8 +45,8 @@ export const showBrowserNotification = (
     return;
   }
 
-  // Only show if tab is not visible
-  if (document.visibilityState === "visible") {
+  // Only show if tab is not visible, unless forceShow is true
+  if (document.visibilityState === "visible" && !options?.forceShow) {
     return;
   }
 

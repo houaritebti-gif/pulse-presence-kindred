@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useOnlineStatus } from './useOnlineStatus';
 import { toast } from 'sonner';
+import { showBrowserNotification, getNotificationPermission } from '@/utils/browserNotifications';
 
 interface QueuedMessage {
   id: string;
@@ -109,6 +110,21 @@ export const useOfflineQueue = () => {
     return msg && msg.retryCount < MAX_RETRIES;
   }, [queue]);
 
+  // Send browser notification for synced messages
+  const notifySyncSuccess = useCallback((count: number, isBackground: boolean = false) => {
+    // Only show browser notification if app is in background
+    if (isBackground && getNotificationPermission() === 'granted') {
+      showBrowserNotification(
+        '✓ Mensajes enviados',
+        {
+          body: `${count} mensaje${count > 1 ? 's' : ''} pendiente${count > 1 ? 's' : ''} enviado${count > 1 ? 's' : ''} correctamente`,
+          icon: '/pwa-192x192.png',
+          tag: 'offline-sync',
+        }
+      );
+    }
+  }, []);
+
   return {
     isOnline,
     wasOffline,
@@ -124,6 +140,7 @@ export const useOfflineQueue = () => {
     clearQueue,
     getMessagesForChat,
     canRetry,
+    notifySyncSuccess,
     MAX_RETRIES,
   };
 };
