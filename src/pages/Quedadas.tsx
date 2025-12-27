@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,16 @@ const Quedadas = () => {
   const leaveQuedada = useLeaveQuedada();
   const deleteQuedada = useDeleteQuedada();
   const updateQuedada = useUpdateQuedada();
+  const wasError = useRef(false);
+
+  useEffect(() => {
+    if (isError) {
+      wasError.current = true;
+    } else if (wasError.current && !isLoading && !isFetching && quedadas !== undefined) {
+      wasError.current = false;
+      toast.success("Datos cargados correctamente");
+    }
+  }, [isError, isLoading, isFetching, quedadas]);
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingQuedada, setEditingQuedada] = useState<Quedada | null>(null);

@@ -1,14 +1,26 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import { ArrowLeft, Flame, MessageCircle, Sparkles } from "lucide-react";
 import { useSparkChats } from "@/hooks/useSparks";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { toast } from "sonner";
 
 const Sparks = () => {
   const navigate = useNavigate();
   const { data: chats, isLoading, isError, refetch, isFetching } = useSparkChats();
+  const wasError = useRef(false);
+
+  useEffect(() => {
+    if (isError) {
+      wasError.current = true;
+    } else if (wasError.current && !isLoading && !isFetching && chats !== undefined) {
+      wasError.current = false;
+      toast.success("Datos cargados correctamente");
+    }
+  }, [isError, isLoading, isFetching, chats]);
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24 relative overflow-hidden">

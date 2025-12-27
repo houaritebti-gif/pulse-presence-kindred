@@ -7,9 +7,10 @@ import { useReceivedGhostMessages, useMarkGhostMessageRead } from "@/hooks/useRe
 import { useHasSparkWith } from "@/hooks/useSparks";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
+import { toast } from "sonner";
 
 // Component to show a single ghost message card
 const GhostMessageCard = ({ 
@@ -197,6 +198,16 @@ const GhostMessageCard = ({
 const GhostMessages = () => {
   const navigate = useNavigate();
   const { data: messages, isLoading, isError, refetch, isFetching } = useReceivedGhostMessages();
+  const wasError = useRef(false);
+
+  useEffect(() => {
+    if (isError) {
+      wasError.current = true;
+    } else if (wasError.current && !isLoading && !isFetching && messages !== undefined) {
+      wasError.current = false;
+      toast.success("Datos cargados correctamente");
+    }
+  }, [isError, isLoading, isFetching, messages]);
 
   const handleNavigateToChat = (profileId: string) => {
     navigate(`/chat/${profileId}`);
