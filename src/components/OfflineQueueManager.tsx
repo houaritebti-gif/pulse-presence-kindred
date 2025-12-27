@@ -40,6 +40,8 @@ type StatusFilter = 'all' | 'pending' | 'failed';
 type SortBy = 'date' | 'retries';
 type SortOrder = 'asc' | 'desc';
 
+type ChartRange = 7 | 14 | 30;
+
 const OfflineQueueManager = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -51,6 +53,7 @@ const OfflineQueueManager = () => {
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [showResetStatsConfirm, setShowResetStatsConfirm] = useState(false);
+  const [chartRange, setChartRange] = useState<ChartRange>(7);
   const {
     isOnline,
     queue,
@@ -71,25 +74,25 @@ const OfflineQueueManager = () => {
     ? Math.round((stats.totalSent / stats.totalQueued) * 100) 
     : 0;
 
-  // Prepare chart data for last 7 days
+  // Prepare chart data based on selected range
   const chartData = useMemo(() => {
     const dailyStats = getDailyStats();
     const data = [];
     
-    for (let i = 6; i >= 0; i--) {
+    for (let i = chartRange - 1; i >= 0; i--) {
       const date = subDays(new Date(), i);
       const dateKey = date.toISOString().split('T')[0];
       const dayStats = dailyStats[dateKey] || { queued: 0, sent: 0, failed: 0 };
       
       data.push({
-        date: format(date, 'd MMM', { locale: es }),
+        date: format(date, chartRange <= 7 ? 'd MMM' : 'd', { locale: es }),
         enviados: dayStats.sent,
         fallidos: dayStats.failed,
       });
     }
     
     return data;
-  }, [stats]);
+  }, [stats, chartRange]);
 
   const getStatusIcon = (status: QueuedMessage['status']) => {
     switch (status) {
@@ -409,7 +412,19 @@ const OfflineQueueManager = () => {
               {/* Daily Chart */}
               {chartData.some(d => d.enviados > 0 || d.fallidos > 0) && (
                 <div className="mt-4 pt-3 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground mb-2">Últimos 7 días</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs text-muted-foreground">Últimos {chartRange} días</p>
+                    <ToggleGroup 
+                      type="single" 
+                      value={String(chartRange)} 
+                      onValueChange={(v) => v && setChartRange(Number(v) as ChartRange)}
+                      className="h-6"
+                    >
+                      <ToggleGroupItem value="7" className="h-6 px-2 text-[10px]">7d</ToggleGroupItem>
+                      <ToggleGroupItem value="14" className="h-6 px-2 text-[10px]">14d</ToggleGroupItem>
+                      <ToggleGroupItem value="30" className="h-6 px-2 text-[10px]">30d</ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
                   <div className="h-24">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={chartData} barGap={1}>
