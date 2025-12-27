@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban } from "lucide-react";
+import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -7,10 +8,9 @@ import { useReceivedGhostMessages, useMarkGhostMessageRead } from "@/hooks/useRe
 import { useHasSparkWith } from "@/hooks/useSparks";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
-import { toast } from "sonner";
 
 // Component to show a single ghost message card
 const GhostMessageCard = ({ 
@@ -198,16 +198,8 @@ const GhostMessageCard = ({
 const GhostMessages = () => {
   const navigate = useNavigate();
   const { data: messages, isLoading, isError, refetch, isFetching } = useReceivedGhostMessages();
-  const wasError = useRef(false);
 
-  useEffect(() => {
-    if (isError) {
-      wasError.current = true;
-    } else if (wasError.current && !isLoading && !isFetching && messages !== undefined) {
-      wasError.current = false;
-      toast.success("Datos cargados correctamente");
-    }
-  }, [isError, isLoading, isFetching, messages]);
+  useRetrySuccessToast({ isError, isLoading, isFetching, data: messages });
 
   const handleNavigateToChat = (profileId: string) => {
     navigate(`/chat/${profileId}`);

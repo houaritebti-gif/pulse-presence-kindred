@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff } from "lucide-react";
+import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import { useProfile } from "@/hooks/useProfile";
@@ -24,16 +25,8 @@ const Quedadas = () => {
   const leaveQuedada = useLeaveQuedada();
   const deleteQuedada = useDeleteQuedada();
   const updateQuedada = useUpdateQuedada();
-  const wasError = useRef(false);
 
-  useEffect(() => {
-    if (isError) {
-      wasError.current = true;
-    } else if (wasError.current && !isLoading && !isFetching && quedadas !== undefined) {
-      wasError.current = false;
-      toast.success("Datos cargados correctamente");
-    }
-  }, [isError, isLoading, isFetching, quedadas]);
+  useRetrySuccessToast({ isError, isLoading, isFetching, data: quedadas });
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingQuedada, setEditingQuedada] = useState<Quedada | null>(null);
