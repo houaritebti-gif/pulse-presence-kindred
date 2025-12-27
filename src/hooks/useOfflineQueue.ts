@@ -8,6 +8,8 @@ interface QueuedMessage {
   chatId: string;
   content: string;
   timestamp: number;
+  status: 'pending' | 'sending' | 'failed';
+  retryCount: number;
   metadata?: {
     recipientProfileId?: string;
     recipientProfileIds?: string[];
@@ -16,6 +18,7 @@ interface QueuedMessage {
 }
 
 const QUEUE_STORAGE_KEY = 'offline_message_queue';
+const MAX_RETRIES = 3;
 
 export const useOfflineQueue = () => {
   const { isOnline, wasOffline } = useOnlineStatus();
@@ -45,11 +48,13 @@ export const useOfflineQueue = () => {
   }, [queue]);
 
   // Add message to queue
-  const addToQueue = useCallback((message: Omit<QueuedMessage, 'id' | 'timestamp'>) => {
+  const addToQueue = useCallback((message: Omit<QueuedMessage, 'id' | 'timestamp' | 'status' | 'retryCount'>) => {
     const queuedMessage: QueuedMessage = {
       ...message,
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
+      status: 'pending',
+      retryCount: 0,
     };
 
     setQueue(prev => [...prev, queuedMessage]);
@@ -60,6 +65,29 @@ export const useOfflineQueue = () => {
   // Remove message from queue
   const removeFromQueue = useCallback((messageId: string) => {
     setQueue(prev => prev.filter(msg => msg.id !== messageId));
+  }, []);
+
+  // Update message status
+  const updateMessageStatus = useCallback((messageId: string, status: QueuedMessage['status']) => {
+    setQueue(prev => prev.map(msg => 
+      msg.id === messageId ? { ...msg, status } : msg
+    ));
+  }, []);
+
+  // Mark message as failed
+  const markAsFailed = useCallback((messageId: string) => {
+    setQueue(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, status: 'failed' as const, retryCount: msg.retryCount + 1 } 
+        : msg
+    ));
+  }, []);
+
+  // Reset message for retry
+  const resetForRetry = useCallback((messageId: string) => {
+    setQueue(prev => prev.map(msg => 
+      msg.id === messageId ? { ...msg, status: 'pending' as const } : msg
+    ));
   }, []);
 
   // Clear all messages from queue
@@ -75,6 +103,12 @@ export const useOfflineQueue = () => {
     return queue.filter(msg => msg.chatId === chatId && msg.type === type);
   }, [queue]);
 
+  // Check if message can be retried
+  const canRetry = useCallback((messageId: string) => {
+    const msg = queue.find(m => m.id === messageId);
+    return msg && msg.retryCount < MAX_RETRIES;
+  }, [queue]);
+
   return {
     isOnline,
     wasOffline,
@@ -84,7 +118,12 @@ export const useOfflineQueue = () => {
     setIsSyncing,
     addToQueue,
     removeFromQueue,
+    updateMessageStatus,
+    markAsFailed,
+    resetForRetry,
     clearQueue,
     getMessagesForChat,
+    canRetry,
+    MAX_RETRIES,
   };
 };

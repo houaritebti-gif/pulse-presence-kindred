@@ -59,7 +59,11 @@ const QuedadaChat = () => {
     setIsSyncing,
     addToQueue, 
     removeFromQueue,
-    getMessagesForChat 
+    updateMessageStatus,
+    markAsFailed,
+    resetForRetry,
+    getMessagesForChat,
+    MAX_RETRIES,
   } = useOfflineQueue();
   
   const isUploading = isUploadingImage || isUploadingVoice;
@@ -104,11 +108,16 @@ const QuedadaChat = () => {
 
   // Sync pending messages when coming back online
   const syncPendingMessages = useCallback(async () => {
-    if (!quedadaId || !quedada || pendingMessages.length === 0) return;
+    if (!quedadaId || !quedada) return;
+    
+    const pendingOnly = pendingMessages.filter(m => m.status === 'pending');
+    if (pendingOnly.length === 0) return;
     
     setIsSyncing(true);
+    let successCount = 0;
     
-    for (const queuedMsg of pendingMessages) {
+    for (const queuedMsg of pendingOnly) {
+      updateMessageStatus(queuedMsg.id, 'sending');
       try {
         await sendMessage.mutateAsync({ 
           quedadaId: queuedMsg.chatId, 
@@ -117,24 +126,49 @@ const QuedadaChat = () => {
           quedadaTitle: queuedMsg.metadata?.quedadaTitle || '',
         });
         removeFromQueue(queuedMsg.id);
+        successCount++;
       } catch (error) {
         console.error('Failed to sync message:', error);
+        markAsFailed(queuedMsg.id);
       }
     }
     
     setIsSyncing(false);
     
-    if (pendingMessages.length > 0) {
-      toast.success(`${pendingMessages.length} mensaje${pendingMessages.length > 1 ? 's' : ''} enviado${pendingMessages.length > 1 ? 's' : ''}`);
+    if (successCount > 0) {
+      toast.success(`${successCount} mensaje${successCount > 1 ? 's' : ''} enviado${successCount > 1 ? 's' : ''}`);
     }
-  }, [quedadaId, quedada, pendingMessages, sendMessage, removeFromQueue, setIsSyncing]);
+  }, [quedadaId, quedada, pendingMessages, sendMessage, removeFromQueue, updateMessageStatus, markAsFailed, setIsSyncing]);
+
+  // Retry a single message
+  const handleRetryMessage = useCallback(async (queuedMsg: typeof pendingMessages[0]) => {
+    if (!quedadaId || !quedada) return;
+    
+    updateMessageStatus(queuedMsg.id, 'sending');
+    
+    try {
+      await sendMessage.mutateAsync({ 
+        quedadaId: queuedMsg.chatId, 
+        content: queuedMsg.content,
+        recipientProfileIds: queuedMsg.metadata?.recipientProfileIds || [],
+        quedadaTitle: queuedMsg.metadata?.quedadaTitle || '',
+      });
+      removeFromQueue(queuedMsg.id);
+      toast.success("Mensaje enviado");
+    } catch (error) {
+      console.error('Failed to retry message:', error);
+      markAsFailed(queuedMsg.id);
+      toast.error("Error al enviar el mensaje");
+    }
+  }, [quedadaId, quedada, sendMessage, removeFromQueue, updateMessageStatus, markAsFailed]);
 
   // Sync when coming back online
   useEffect(() => {
-    if (isOnline && pendingMessages.length > 0 && !isSyncing) {
+    const pendingOnly = pendingMessages.filter(m => m.status === 'pending');
+    if (isOnline && pendingOnly.length > 0 && !isSyncing) {
       syncPendingMessages();
     }
-  }, [isOnline, pendingMessages.length, isSyncing, syncPendingMessages]);
+  }, [isOnline, pendingMessages, isSyncing, syncPendingMessages]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -512,7 +546,11 @@ const QuedadaChat = () => {
           <PendingMessage
             key={queuedMsg.id}
             content={queuedMsg.content}
-            isPending={true}
+            status={queuedMsg.status}
+            retryCount={queuedMsg.retryCount}
+            maxRetries={MAX_RETRIES}
+            onRetry={() => handleRetryMessage(queuedMsg)}
+            onDelete={() => removeFromQueue(queuedMsg.id)}
           />
         ))}
         
