@@ -19,6 +19,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
 import { useBlockedUsersList, useUnblockUser } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import AdvancedSettingsSection from "@/components/AdvancedSettingsSection";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -550,6 +551,9 @@ const Profile = () => {
 
         {/* Blocked Users Section */}
         <BlockedUsersSection />
+
+        {/* Advanced Settings Section */}
+        <AdvancedSettingsSection />
 
         {/* Privacy Settings */}
         <div className="mb-6 animate-fade-up animate-delay-600">
