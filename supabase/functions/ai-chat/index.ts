@@ -70,6 +70,21 @@ Funcionalidades principales de la app:
 - Perfil: cada usuario tiene un perfil con foto, nombre, ciudad, y preferencias
 ${userContext}${quedadasContext}${sparksContext}
 
+ACCIONES RÁPIDAS:
+Cuando sea útil, puedes sugerir acciones que el usuario puede realizar. Usa este formato exacto al final de tu respuesta:
+[[action:Texto del botón|/ruta|icono]]
+
+Iconos disponibles: sparks, quedadas, presence, profile, create
+
+Ejemplos de uso:
+- Para ir a sparks: [[action:Ver mis sparks|/sparks|sparks]]
+- Para ir a quedadas: [[action:Ver quedadas|/quedadas|quedadas]]
+- Para crear una quedada: [[action:Crear quedada|/quedadas|create]]
+- Para ver presencia: [[action:Ver quién está online|/presence|presence]]
+- Para ir al perfil: [[action:Editar perfil|/profile|profile]]
+
+Solo sugiere acciones cuando sean relevantes para la conversación. No las uses en cada mensaje.
+
 Responde siempre en español de forma concisa y amable. Usa emojis ocasionalmente para ser más cercano. Si te preguntan sobre quedadas o sparks específicos, usa la información proporcionada.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
