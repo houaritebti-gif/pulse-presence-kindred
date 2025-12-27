@@ -60,6 +60,29 @@ const Profile = () => {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | null>(() => {
     return getNotificationPermission();
   });
+
+  const isInIframe = (() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
+  })();
+
+  useEffect(() => {
+    // Refresh permission when user returns from browser settings.
+    const refresh = () => setNotificationPermission(getNotificationPermission());
+    refresh();
+
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
   const { 
     isSupported: pushSupported, 
     isSubscribed: pushSubscribed, 
@@ -581,25 +604,47 @@ const Profile = () => {
                     </span>
                     {notificationPermission === "denied" && (
                       <span className="font-body text-xs text-destructive">
-                        Desbloquéalas en ajustes del navegador
+                        {isInIframe
+                          ? "En el preview puede salir bloqueado. Ábrelo en nueva pestaña."
+                          : "Si ya las permitiste, recarga o pulsa Revisar."}
                       </span>
                     )}
                   </div>
                 </div>
+
                 {notificationPermission === "default" && (
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={handleRequestNotificationPermission}
                   >
                     Activar
                   </Button>
                 )}
+
                 {notificationPermission === "granted" && (
                   <span className="text-xs text-primary font-body">Activas</span>
                 )}
+
                 {notificationPermission === "denied" && (
-                  <span className="text-xs text-destructive font-body">Bloqueadas</span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNotificationPermission(getNotificationPermission())}
+                    >
+                      Revisar
+                    </Button>
+                    {isInIframe && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(window.location.href, "_blank", "noopener,noreferrer")}
+                      >
+                        Abrir
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
             )}
