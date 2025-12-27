@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import UploadProgress, { UploadPhase } from "./UploadProgress";
 import ImageCropModal from "./ImageCropModal";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ProfilePhotoManagerProps {
   profileId: string;
@@ -135,9 +136,11 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
     }, 0);
   };
 
-  const handleDragEnd = (e: React.DragEvent) => {
-    const target = e.target as HTMLElement;
-    target.style.opacity = "1";
+  const handleDragEnd = (e?: React.DragEvent) => {
+    if (e) {
+      const target = e.target as HTMLElement;
+      target.style.opacity = "1";
+    }
     setDraggedIndex(null);
     setDragOverIndex(null);
   };
@@ -238,53 +241,66 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
       {/* Photo grid */}
       <div className="grid grid-cols-3 gap-3">
         {/* Existing photos */}
-        {photos?.map((photo, index) => (
-          <div
-            key={photo.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, index)}
-            onDragEnd={handleDragEnd}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, index)}
-            className={cn(
-              "relative aspect-[3/4] rounded-xl overflow-hidden group cursor-grab active:cursor-grabbing transition-all shadow-md",
-              draggedIndex === index && "opacity-50 scale-95",
-              dragOverIndex === index && "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105"
-            )}
-          >
-            <img
-              src={photo.photo_url}
-              alt={`Foto ${index + 1}`}
-              className="w-full h-full object-cover pointer-events-none"
-            />
-            
-            {/* Delete button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(photo.id, photo.photo_url);
+        <AnimatePresence mode="popLayout">
+          {photos?.map((photo, index) => (
+            <motion.div
+              key={photo.id}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ 
+                duration: 0.3, 
+                delay: index * 0.05,
+                type: "spring",
+                stiffness: 300,
+                damping: 25
               }}
-              className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg"
-              disabled={deletePhoto.isPending}
+              layout
+              draggable
+              onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, index)}
+              onDragEnd={() => handleDragEnd()}
+              onDragOver={(e) => handleDragOver(e as unknown as React.DragEvent, index)}
+              onDragLeave={() => handleDragLeave()}
+              onDrop={(e) => handleDrop(e as unknown as React.DragEvent, index)}
+              className={cn(
+                "relative aspect-[3/4] rounded-xl overflow-hidden group cursor-grab active:cursor-grabbing transition-all shadow-md",
+                draggedIndex === index && "opacity-50 scale-95",
+                dragOverIndex === index && "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105"
+              )}
             >
-              <X className="w-3.5 h-3.5 text-destructive-foreground" />
-            </button>
+              <img
+                src={photo.photo_url}
+                alt={`Foto ${index + 1}`}
+                className="w-full h-full object-cover pointer-events-none"
+              />
+              
+              {/* Delete button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(photo.id, photo.photo_url);
+                }}
+                className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg"
+                disabled={deletePhoto.isPending}
+              >
+                <X className="w-3.5 h-3.5 text-destructive-foreground" />
+              </button>
 
-            {/* Drag handle indicator */}
-            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-1 rounded-full bg-background/90 backdrop-blur-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
-              <GripVertical className="w-3 h-3 text-foreground" />
-              <span className="text-[10px] font-body font-medium text-foreground">Arrastra</span>
-            </div>
-
-            {/* Order badge */}
-            {index === 0 && (
-              <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
-                Principal
+              {/* Drag handle indicator */}
+              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-1 rounded-full bg-background/90 backdrop-blur-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                <GripVertical className="w-3 h-3 text-foreground" />
+                <span className="text-[10px] font-body font-medium text-foreground">Arrastra</span>
               </div>
-            )}
-          </div>
-        ))}
+
+              {/* Order badge */}
+              {index === 0 && (
+                <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
+                  Principal
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
         {/* Uploading placeholder with progress */}
         {uploadingIndex !== null && (
