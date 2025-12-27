@@ -7,6 +7,7 @@ import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } f
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
 import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
+import confetti from "canvas-confetti";
 
 const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
@@ -114,6 +115,34 @@ const Onboarding = () => {
     }
   };
 
+  const fireConfetti = () => {
+    // First burst from the left
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { x: 0.1, y: 0.6 },
+      colors: ['#FF69B4', '#FFB6C1', '#FFC0CB', '#FF1493', '#DB7093'],
+    });
+    
+    // Second burst from the right
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { x: 0.9, y: 0.6 },
+      colors: ['#FF69B4', '#FFB6C1', '#FFC0CB', '#FF1493', '#DB7093'],
+    });
+    
+    // Center burst with more particles
+    setTimeout(() => {
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { x: 0.5, y: 0.5 },
+        colors: ['#FF69B4', '#FFB6C1', '#FFC0CB', '#FF1493', '#DB7093', '#000000'],
+      });
+    }, 200);
+  };
+
   const handleComplete = async () => {
     if (!profile?.id) return;
 
@@ -145,8 +174,15 @@ const Onboarding = () => {
         });
       }
 
+      // Fire confetti celebration!
+      fireConfetti();
+
       toast.success("¡Perfil completado!");
-      navigate("/presence");
+      
+      // Small delay to enjoy the confetti before navigating
+      setTimeout(() => {
+        navigate("/presence");
+      }, 1000);
     } catch (error) {
       toast.error("Error al guardar el perfil");
     }
