@@ -15,9 +15,10 @@ interface NavItemProps {
   badge?: number;
   isActive: boolean;
   onClick: () => void;
+  isOfflineBadge?: boolean;
 }
 
-const NavItem = ({ icon, label, badge, isActive, onClick }: NavItemProps) => {
+const NavItem = ({ icon, label, badge, isActive, onClick, isOfflineBadge }: NavItemProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const prevBadgeRef = useRef(badge);
 
@@ -48,8 +49,12 @@ const NavItem = ({ icon, label, badge, isActive, onClick }: NavItemProps) => {
         {badge !== undefined && badge > 0 && (
           <span 
             className={cn(
-              "absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center",
-              isAnimating ? "animate-badge-bounce" : "animate-badge-pulse"
+              "absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center",
+              isOfflineBadge 
+                ? "animate-offline-pulse text-destructive-foreground" 
+                : "bg-primary text-primary-foreground",
+              isAnimating && !isOfflineBadge && "animate-badge-bounce",
+              !isAnimating && !isOfflineBadge && "animate-badge-pulse"
             )}
           >
             {badge > 9 ? "9+" : badge}
@@ -105,6 +110,7 @@ export const BottomNavigation = () => {
       label: "Perfil",
       path: "/profile",
       badge: pendingCount > 0 ? pendingCount : undefined,
+      isOfflineBadge: pendingCount > 0,
     },
   ];
 
@@ -129,6 +135,7 @@ export const BottomNavigation = () => {
             badge={item.badge}
             isActive={location.pathname === item.path}
             onClick={() => navigate(item.path)}
+            isOfflineBadge={item.isOfflineBadge}
           />
         ))}
       </div>
