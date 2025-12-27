@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
-import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye, Filter } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { useOfflineQueue, QueuedMessage } from "@/hooks/useOfflineQueue";
 import { toast } from "sonner";
@@ -31,12 +32,17 @@ interface BackupData {
   }>;
 }
 
+type TypeFilter = 'all' | 'spark' | 'quedada';
+type StatusFilter = 'all' | 'pending' | 'failed';
+
 const OfflineQueueManager = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [expanded, setExpanded] = useState(false);
   const [pendingImport, setPendingImport] = useState<BackupData | null>(null);
   const [showImportConfirm, setShowImportConfirm] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const {
     isOnline,
     queue,
@@ -217,6 +223,13 @@ const OfflineQueueManager = () => {
   const failedMessages = queue.filter(m => m.status === 'failed');
   const sendingMessages = queue.filter(m => m.status === 'sending');
 
+  // Filtered messages based on filters
+  const filteredQueue = queue.filter(m => {
+    const matchesType = typeFilter === 'all' || m.type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || m.status === statusFilter;
+    return matchesType && matchesStatus;
+  });
+
   return (
     <div className="mb-10 animate-fade-up animate-delay-500">
       <button
@@ -326,6 +339,55 @@ const OfflineQueueManager = () => {
             </div>
           )}
 
+          {/* Filters */}
+          {queue.length > 0 && (
+            <div className="flex flex-wrap gap-3 p-3 bg-secondary/30 rounded-xl">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Tipo:</span>
+                <ToggleGroup 
+                  type="single" 
+                  value={typeFilter} 
+                  onValueChange={(value) => value && setTypeFilter(value as TypeFilter)}
+                  size="sm"
+                >
+                  <ToggleGroupItem value="all" className="text-xs px-2 h-7">
+                    Todos
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="spark" className="text-xs px-2 h-7">
+                    <MessageSquare className="w-3 h-3 mr-1" />
+                    Spark
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="quedada" className="text-xs px-2 h-7">
+                    <Calendar className="w-3 h-3 mr-1" />
+                    Quedada
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Estado:</span>
+                <ToggleGroup 
+                  type="single" 
+                  value={statusFilter} 
+                  onValueChange={(value) => value && setStatusFilter(value as StatusFilter)}
+                  size="sm"
+                >
+                  <ToggleGroupItem value="all" className="text-xs px-2 h-7">
+                    Todos
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="pending" className="text-xs px-2 h-7">
+                    <Clock className="w-3 h-3 mr-1" />
+                    Pendientes
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="failed" className="text-xs px-2 h-7">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    Fallidos
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </div>
+          )}
+
           {/* Message List */}
           {queue.length === 0 ? (
             <div className="p-6 bg-secondary/30 rounded-xl text-center">
@@ -334,9 +396,16 @@ const OfflineQueueManager = () => {
                 No hay mensajes pendientes
               </p>
             </div>
+          ) : filteredQueue.length === 0 ? (
+            <div className="p-6 bg-secondary/30 rounded-xl text-center">
+              <Filter className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+              <p className="font-body text-sm text-muted-foreground">
+                No hay mensajes con los filtros seleccionados
+              </p>
+            </div>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
-              {queue.map((message) => (
+              {filteredQueue.map((message) => (
                 <div
                   key={message.id}
                   className={`p-3 rounded-xl border ${
