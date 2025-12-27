@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Flame, Sparkles, Heart, MessageCircle, Users, Zap, Eye, Shield } from "lucide-react";
+import { Sparkles, Heart, MessageCircle, Users, Zap, Eye, Shield } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 
@@ -125,7 +125,7 @@ const Landing = () => {
           >
             <div className="relative">
               <div className="absolute inset-0 bg-primary/30 blur-2xl rounded-full scale-150 animate-pulse-soft" />
-              <Flame className="relative w-16 h-16 md:w-20 md:h-20 text-primary animate-spark-flame" />
+              <Heart className="relative w-16 h-16 md:w-20 md:h-20 text-primary fill-primary animate-pulse-soft" />
             </div>
           </motion.div>
 
@@ -194,7 +194,7 @@ const Landing = () => {
               className="w-full max-w-xs relative group overflow-hidden"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
-                <Flame className="w-5 h-5 group-hover:animate-spark-flame" />
+                <Heart className="w-5 h-5 fill-current" />
                 Entrar
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ backgroundPosition: "0% 0%", animation: "shimmer 3s ease-in-out infinite" }} />
@@ -357,7 +357,7 @@ const Landing = () => {
           variants={staggerContainer}
         >
           <motion.div variants={scaleIn}>
-            <Flame className="w-20 h-20 text-primary mx-auto animate-spark-flame" />
+            <Heart className="w-20 h-20 text-primary fill-primary mx-auto animate-pulse-soft" />
           </motion.div>
           
           <motion.h2 
