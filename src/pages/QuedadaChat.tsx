@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X, EyeOff, UserX } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead, useQuedadaAttendees, useExpelAttendee } from "@/hooks/useQuedadas";
 import { useChatImageUpload } from "@/hooks/useChatImageUpload";
@@ -273,17 +274,20 @@ const QuedadaChat = () => {
             </span>
           </div>
 
-          <button 
-            onClick={() => setShowAttendees(true)}
-            className="flex items-center gap-1 text-muted-foreground hover:text-accent transition-colors"
-          >
-            {quedada.private_attendees && !quedada.is_creator && !quedada.is_attending ? (
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button 
+              onClick={() => setShowAttendees(true)}
+              className="flex items-center gap-1 text-muted-foreground hover:text-accent transition-colors"
+            >
+              {quedada.private_attendees && !quedada.is_creator && !quedada.is_attending ? (
               <EyeOff className="w-4 h-4" />
             ) : (
               <Users className="w-4 h-4" />
             )}
             <span className="font-body text-xs">{quedada.attendee_count}</span>
           </button>
+          </div>
         </div>
         
         {/* Event info bar */}
