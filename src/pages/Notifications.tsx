@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,7 @@ import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { toast } from "sonner";
 
 type FilterType = "all" | "spark" | "message" | "quedada";
 
@@ -37,6 +38,16 @@ const Notifications = () => {
   const [filter, setFilter] = useState<FilterType>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showDeleteReadDialog, setShowDeleteReadDialog] = useState(false);
+  const wasError = useRef(false);
+
+  useEffect(() => {
+    if (isError) {
+      wasError.current = true;
+    } else if (wasError.current && !isLoading && !isFetching && notifications !== undefined) {
+      wasError.current = false;
+      toast.success("Datos cargados correctamente");
+    }
+  }, [isError, isLoading, isFetching, notifications]);
 
   const readCount = notifications?.filter(n => n.read_at).length || 0;
 

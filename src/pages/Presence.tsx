@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
@@ -12,6 +12,8 @@ import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
 import { useBlockedUsers } from "@/hooks/useUserModeration";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 import PresenceCard from "@/components/PresenceCard";
+import { toast } from "sonner";
+
 const Presence = () => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
@@ -26,6 +28,16 @@ const Presence = () => {
   const unreadCount = useUnreadNotificationCount();
   const unreadGhostCount = useUnreadGhostMessageCount();
   const { data: blockedIds } = useBlockedUsers();
+  const wasError = useRef(false);
+
+  useEffect(() => {
+    if (isError) {
+      wasError.current = true;
+    } else if (wasError.current && !isLoading && !isFetching && presenceList !== undefined) {
+      wasError.current = false;
+      toast.success("Datos cargados correctamente");
+    }
+  }, [isError, isLoading, isFetching, presenceList]);
 
   // My tribes and music for compatibility calculation
   const myTribeNames = useMemo(() => myTribes?.map(t => t.tribe) || [], [myTribes]);
