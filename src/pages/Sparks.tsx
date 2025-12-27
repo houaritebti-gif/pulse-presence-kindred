@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Flame, MessageCircle, Sparkles } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSparkChats } from "@/hooks/useSparks";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
@@ -29,7 +30,7 @@ const Sparks = () => {
           <span>Presencia</span>
         </button>
         <span className="font-display text-xl font-bold text-foreground">KIKI</span>
-        <div className="w-20" />
+        <ThemeToggle />
       </div>
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
