@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X } from "lucide-react";
+import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X, EyeOff } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead, useQuedadaAttendees } from "@/hooks/useQuedadas";
 import { useChatImageUpload } from "@/hooks/useChatImageUpload";
@@ -254,7 +254,11 @@ const QuedadaChat = () => {
             onClick={() => setShowAttendees(true)}
             className="flex items-center gap-1 text-muted-foreground hover:text-accent transition-colors"
           >
-            <Users className="w-4 h-4" />
+            {quedada.private_attendees && !quedada.is_creator && !quedada.is_attending ? (
+              <EyeOff className="w-4 h-4" />
+            ) : (
+              <Users className="w-4 h-4" />
+            )}
             <span className="font-body text-xs">{quedada.attendee_count}</span>
           </button>
         </div>
@@ -489,62 +493,77 @@ const QuedadaChat = () => {
               </button>
             </div>
             
-            <div className="overflow-y-auto space-y-2 flex-1">
-              {/* Creator */}
-              {quedada?.creator && (
-                <button
-                  onClick={() => {
-                    setShowAttendees(false);
-                    navigate(`/profile/${quedada.creator.id}`);
-                  }}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
-                >
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={quedada.creator.avatar_url || undefined} />
-                    <AvatarFallback className="bg-accent/20 text-accent font-display">
-                      {(quedada.creator.name?.[0] || "?").toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-body text-sm text-card-foreground truncate">
-                      {quedada.creator.name || "Anónima"}
-                    </p>
-                    <p className="font-body text-xs text-accent">Organizadora</p>
-                  </div>
-                  <Sparkles className="w-4 h-4 text-accent" />
-                </button>
-              )}
-              
-              {/* Attendees */}
-              {attendees?.map((attendee) => (
-                <button
-                  key={attendee.id}
-                  onClick={() => {
-                    setShowAttendees(false);
-                    navigate(`/profile/${attendee.profile?.id}`);
-                  }}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
-                >
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={attendee.profile?.avatar_url || undefined} />
-                    <AvatarFallback className="bg-card text-card-foreground font-display">
-                      {(attendee.profile?.name?.[0] || "?").toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-body text-sm text-card-foreground truncate">
-                      {attendee.profile?.name || "Anónima"}
-                    </p>
-                  </div>
-                </button>
-              ))}
-              
-              {!attendees?.length && !quedada?.creator && (
-                <p className="text-center text-muted-foreground font-body text-sm py-4">
-                  No hay asistentes todavía
+            {/* Check if user can see the attendee list */}
+            {quedada?.private_attendees && !quedada.is_creator && !quedada.is_attending ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
+                  <EyeOff className="w-8 h-8 text-muted-foreground/50" />
+                </div>
+                <h4 className="font-display text-base font-semibold text-card-foreground mb-2">
+                  Lista privada
+                </h4>
+                <p className="font-body text-sm text-muted-foreground max-w-[200px]">
+                  Únete a la quedada para ver quién asiste.
                 </p>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="overflow-y-auto space-y-2 flex-1">
+                {/* Creator */}
+                {quedada?.creator && (
+                  <button
+                    onClick={() => {
+                      setShowAttendees(false);
+                      navigate(`/profile/${quedada.creator.id}`);
+                    }}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
+                  >
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={quedada.creator.avatar_url || undefined} />
+                      <AvatarFallback className="bg-accent/20 text-accent font-display">
+                        {(quedada.creator.name?.[0] || "?").toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body text-sm text-card-foreground truncate">
+                        {quedada.creator.name || "Anónima"}
+                      </p>
+                      <p className="font-body text-xs text-accent">Organizadora</p>
+                    </div>
+                    <Sparkles className="w-4 h-4 text-accent" />
+                  </button>
+                )}
+                
+                {/* Attendees */}
+                {attendees?.map((attendee) => (
+                  <button
+                    key={attendee.id}
+                    onClick={() => {
+                      setShowAttendees(false);
+                      navigate(`/profile/${attendee.profile?.id}`);
+                    }}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
+                  >
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={attendee.profile?.avatar_url || undefined} />
+                      <AvatarFallback className="bg-card text-card-foreground font-display">
+                        {(attendee.profile?.name?.[0] || "?").toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body text-sm text-card-foreground truncate">
+                        {attendee.profile?.name || "Anónima"}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+                
+                {!attendees?.length && !quedada?.creator && (
+                  <p className="text-center text-muted-foreground font-body text-sm py-4">
+                    No hay asistentes todavía
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

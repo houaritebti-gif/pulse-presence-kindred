@@ -430,6 +430,7 @@ export type Database = {
           id: string
           location_hint: string | null
           max_attendees: number | null
+          private_attendees: boolean
           title: string
         }
         Insert: {
@@ -441,6 +442,7 @@ export type Database = {
           id?: string
           location_hint?: string | null
           max_attendees?: number | null
+          private_attendees?: boolean
           title: string
         }
         Update: {
@@ -452,6 +454,7 @@ export type Database = {
           id?: string
           location_hint?: string | null
           max_attendees?: number | null
+          private_attendees?: boolean
           title?: string
         }
         Relationships: [
