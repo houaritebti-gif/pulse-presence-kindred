@@ -367,15 +367,16 @@ const Profile = () => {
           <div className="flex flex-wrap gap-2">
             {VIBES.map(vibe => (
               <button
-                key={vibe}
-                onClick={() => { setSelectedVibe(vibe); setHasChanges(true); }}
-                className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
-                  selectedVibe === vibe
+                key={vibe.value}
+                onClick={() => { setSelectedVibe(vibe.value); setHasChanges(true); }}
+                className={`px-4 py-2 rounded-full font-body text-sm transition-all flex items-center gap-2 ${
+                  selectedVibe === vibe.value
                     ? "bg-card text-card-foreground"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
                 }`}
               >
-                {vibe}
+                <span>{vibe.emoji}</span>
+                <span>{vibe.value}</span>
               </button>
             ))}
           </div>
