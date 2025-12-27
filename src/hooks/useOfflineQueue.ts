@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useOnlineStatus } from './useOnlineStatus';
 import { toast } from 'sonner';
 import { showBrowserNotification, getNotificationPermission } from '@/utils/browserNotifications';
-import { playSyncSuccessSound } from '@/utils/notificationSound';
+import { playSyncSuccessSound, playQueueAddedSound } from '@/utils/notificationSound';
 import {
   QueuedMessage,
   addMessageToDB,
@@ -106,6 +106,9 @@ export const useOfflineQueue = () => {
     
     // Update local state
     setQueue(prev => [...prev, queuedMessage]);
+    
+    // Play queue added sound
+    playQueueAddedSound();
     
     // Register for background sync
     const registered = await registerBackgroundSync();

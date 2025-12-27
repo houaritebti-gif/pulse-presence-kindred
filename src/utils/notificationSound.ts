@@ -326,6 +326,46 @@ export const playSuccessSound = () => {
   }
 };
 
+// Queue added sound - soft descending "plop" indicating message queued
+export const playQueueAddedSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Soft "plop" sound - descending tone indicating queued
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.type = "sine";
+    
+    // Descending frequency (opposite of sync success)
+    osc.frequency.setValueAtTime(600, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(350, ctx.currentTime + 0.15);
+    
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.25);
+    
+    // Short vibration
+    if ("vibrate" in navigator && isVibrationEnabled()) {
+      navigator.vibrate([40]);
+    }
+  } catch (error) {
+    console.log("Could not play queue added sound:", error);
+  }
+};
+
 // Sync success sound for offline queue messages sent
 export const playSyncSuccessSound = () => {
   if (isSoundMuted()) return;
