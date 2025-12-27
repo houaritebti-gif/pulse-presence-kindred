@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from "react";
-import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye, Filter, ArrowUpDown, ArrowDown, ArrowUp, BarChart3, TrendingUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye, Filter, ArrowUpDown, ArrowDown, ArrowUp, BarChart3, TrendingUp, Zap } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,8 @@ const OfflineQueueManager = () => {
     triggerBackgroundSync,
     canRetry,
     getQueueStats,
+    autoSyncEnabled,
+    toggleAutoSync,
     MAX_RETRIES,
   } = useOfflineQueue();
   
@@ -326,20 +328,46 @@ const OfflineQueueManager = () => {
 
       {expanded && (
         <div className="space-y-4">
-          {/* Connection Status */}
-          <div className={`flex items-center gap-3 p-4 rounded-xl ${
+          {/* Connection Status & Auto-Sync */}
+          <div className={`p-4 rounded-xl ${
             isOnline ? "bg-green-500/10" : "bg-yellow-500/10"
           }`}>
-            {isOnline ? (
-              <>
-                <Wifi className="w-5 h-5 text-green-500" />
-                <span className="font-body text-sm text-foreground">Conectado</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="w-5 h-5 text-yellow-500" />
-                <span className="font-body text-sm text-foreground">Sin conexión</span>
-              </>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {isOnline ? (
+                  <>
+                    <Wifi className="w-5 h-5 text-green-500" />
+                    <span className="font-body text-sm text-foreground">Conectado</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-5 h-5 text-yellow-500" />
+                    <span className="font-body text-sm text-foreground">Sin conexión</span>
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className={`w-4 h-4 ${autoSyncEnabled ? 'text-primary' : 'text-muted-foreground'}`} />
+                <span className="text-xs text-muted-foreground">Auto-sync</span>
+                <button
+                  onClick={() => toggleAutoSync(!autoSyncEnabled)}
+                  className={`relative w-10 h-5 rounded-full transition-colors ${
+                    autoSyncEnabled ? 'bg-primary' : 'bg-muted'
+                  }`}
+                  title={autoSyncEnabled ? 'Auto-sync activado' : 'Auto-sync desactivado'}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+                      autoSyncEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+            {autoSyncEnabled && (
+              <p className="text-[10px] text-muted-foreground mt-2">
+                Los mensajes se enviarán automáticamente al recuperar conexión
+              </p>
             )}
           </div>
 
