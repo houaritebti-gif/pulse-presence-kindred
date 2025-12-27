@@ -196,7 +196,7 @@ const GhostMessageCard = ({
 
 const GhostMessages = () => {
   const navigate = useNavigate();
-  const { data: messages, isLoading, isError, refetch } = useReceivedGhostMessages();
+  const { data: messages, isLoading, isError, refetch, isFetching } = useReceivedGhostMessages();
 
   const handleNavigateToChat = (profileId: string) => {
     navigate(`/chat/${profileId}`);
@@ -256,6 +256,7 @@ const GhostMessages = () => {
             icon={Ghost}
             description="No pudimos cargar tus mensajes. Revisa tu conexión."
             onRetry={() => refetch()}
+            isRetrying={isFetching}
           />
         ) : messages?.length === 0 ? (
           <EmptyState

@@ -10,6 +10,7 @@ interface ErrorStateProps {
   retryLabel?: string;
   fullScreen?: boolean;
   customAction?: ReactNode;
+  isRetrying?: boolean;
 }
 
 const ErrorState = ({
@@ -20,6 +21,7 @@ const ErrorState = ({
   retryLabel = "Reintentar",
   fullScreen = false,
   customAction,
+  isRetrying = false,
 }: ErrorStateProps) => {
   const content = (
     <div className="text-center py-16 animate-fade-up">
@@ -35,9 +37,9 @@ const ErrorState = ({
         {description}
       </p>
       {customAction ? customAction : onRetry && (
-        <Button variant="kiki-soft" onClick={onRetry}>
-          <RefreshCw className="w-4 h-4 mr-2" />
-          {retryLabel}
+        <Button variant="kiki-soft" onClick={onRetry} disabled={isRetrying}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${isRetrying ? "animate-spin" : ""}`} />
+          {isRetrying ? "Cargando..." : retryLabel}
         </Button>
       )}
     </div>

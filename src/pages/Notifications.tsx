@@ -29,7 +29,7 @@ const FILTERS: { key: FilterType; label: string; icon: React.ReactNode }[] = [
 
 const Notifications = () => {
   const navigate = useNavigate();
-  const { data: notifications, isLoading, isError, refetch } = useNotifications();
+  const { data: notifications, isLoading, isError, refetch, isFetching } = useNotifications();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const deleteNotification = useDeleteNotification();
@@ -181,6 +181,7 @@ const Notifications = () => {
               icon={Bell}
               description="No pudimos cargar tus notificaciones. Revisa tu conexión."
               onRetry={() => refetch()}
+              isRetrying={isFetching}
             />
           ) : filteredNotifications?.length === 0 ? (
             <EmptyState

@@ -18,7 +18,7 @@ import { playCelebrationSound } from "@/utils/notificationSound";
 const Quedadas = () => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const { data: quedadas, isLoading, isError, refetch } = useQuedadas();
+  const { data: quedadas, isLoading, isError, refetch, isFetching } = useQuedadas();
   const createQuedada = useCreateQuedada();
   const joinQuedada = useJoinQuedada();
   const leaveQuedada = useLeaveQuedada();
@@ -257,6 +257,7 @@ const Quedadas = () => {
             icon={Calendar}
             description="No pudimos cargar las quedadas. Revisa tu conexión e inténtalo de nuevo."
             onRetry={() => refetch()}
+            isRetrying={isFetching}
           />
         ) : quedadas?.length === 0 ? (
           <EmptyState
