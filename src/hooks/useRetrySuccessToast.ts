@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { playSuccessSound } from "@/utils/notificationSound";
 
 interface UseRetrySuccessToastOptions {
   isError: boolean;
@@ -7,6 +8,7 @@ interface UseRetrySuccessToastOptions {
   isFetching: boolean;
   data: unknown;
   successMessage?: string;
+  playSound?: boolean;
 }
 
 export const useRetrySuccessToast = ({
@@ -15,6 +17,7 @@ export const useRetrySuccessToast = ({
   isFetching,
   data,
   successMessage = "Datos cargados correctamente",
+  playSound = true,
 }: UseRetrySuccessToastOptions) => {
   const wasError = useRef(false);
 
@@ -24,6 +27,9 @@ export const useRetrySuccessToast = ({
     } else if (wasError.current && !isLoading && !isFetching && data !== undefined) {
       wasError.current = false;
       toast.success(successMessage);
+      if (playSound) {
+        playSuccessSound();
+      }
     }
-  }, [isError, isLoading, isFetching, data, successMessage]);
+  }, [isError, isLoading, isFetching, data, successMessage, playSound]);
 };

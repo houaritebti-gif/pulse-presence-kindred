@@ -268,3 +268,49 @@ export const playCelebrationSound = () => {
     console.log("Could not play celebration sound:", error);
   }
 };
+
+// Subtle success sound for retry success toasts
+export const playSuccessSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Simple ascending two-note chime (very subtle)
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    const gain2 = ctx.createGain();
+    
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+    gain1.connect(ctx.destination);
+    gain2.connect(ctx.destination);
+    
+    osc1.type = "sine";
+    osc2.type = "sine";
+    
+    // First note: G5
+    osc1.frequency.setValueAtTime(784, ctx.currentTime);
+    gain1.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    
+    // Second note: C6 (starts slightly after)
+    osc2.frequency.setValueAtTime(1047, ctx.currentTime + 0.08);
+    gain2.gain.setValueAtTime(0, ctx.currentTime);
+    gain2.gain.setValueAtTime(0.08, ctx.currentTime + 0.08);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+    
+    osc1.start(ctx.currentTime);
+    osc2.start(ctx.currentTime + 0.08);
+    osc1.stop(ctx.currentTime + 0.2);
+    osc2.stop(ctx.currentTime + 0.3);
+  } catch (error) {
+    console.log("Could not play success sound:", error);
+  }
+};
