@@ -314,3 +314,35 @@ export const playSuccessSound = () => {
     console.log("Could not play success sound:", error);
   }
 };
+
+// Subtle click sound for theme toggle
+export const playThemeToggleSound = () => {
+  if (isSoundMuted()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Soft "click" sound - very short and subtle
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(1200, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
+    
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+    
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.1);
+  } catch (error) {
+    console.log("Could not play theme toggle sound:", error);
+  }
+};

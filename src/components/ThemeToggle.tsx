@@ -2,6 +2,7 @@ import { Moon, Sun } from "lucide-react";
 import { getTheme, setTheme, type Theme } from "@/hooks/useAdvancedSettings";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { playThemeToggleSound } from "@/utils/notificationSound";
 
 export const ThemeToggle = () => {
   const [currentTheme, setCurrentTheme] = useState<Theme>(getTheme);
@@ -28,8 +29,10 @@ export const ThemeToggle = () => {
 
   const toggleTheme = () => {
     setIsTransitioning(true);
+    playThemeToggleSound();
     const newTheme: Theme = isDark ? "light" : "dark";
     setTheme(newTheme);
+    setCurrentTheme(newTheme);
     setCurrentTheme(newTheme);
     
     // Remove transitioning state after animation
