@@ -562,7 +562,8 @@ const Profile = () => {
               </div>
             )}
             
-            {notificationPermission !== null && (
+            {/* Browser Notifications */}
+            {"Notification" in window && (
               <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
                 <div className="flex items-center gap-3">
                   {notificationPermission === "granted" ? (
@@ -570,13 +571,22 @@ const Profile = () => {
                   ) : (
                     <BellOff className="w-5 h-5 text-muted-foreground" />
                   )}
-                  <span className="font-body text-sm text-foreground">
-                    {notificationPermission === "granted" 
-                      ? "Notificaciones del navegador activas" 
-                      : "Notificaciones del navegador"}
-                  </span>
+                  <div>
+                    <span className="font-body text-sm text-foreground block">
+                      {notificationPermission === "granted" 
+                        ? "Notificaciones activas" 
+                        : notificationPermission === "denied"
+                          ? "Notificaciones bloqueadas"
+                          : "Notificaciones del navegador"}
+                    </span>
+                    {notificationPermission === "denied" && (
+                      <span className="font-body text-xs text-destructive">
+                        Desbloquéalas en ajustes del navegador
+                      </span>
+                    )}
+                  </div>
                 </div>
-                {notificationPermission !== "granted" && (
+                {notificationPermission === "default" && (
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -587,6 +597,9 @@ const Profile = () => {
                 )}
                 {notificationPermission === "granted" && (
                   <span className="text-xs text-primary font-body">Activas</span>
+                )}
+                {notificationPermission === "denied" && (
+                  <span className="text-xs text-destructive font-body">Bloqueadas</span>
                 )}
               </div>
             )}
