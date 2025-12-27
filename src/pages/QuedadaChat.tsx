@@ -569,6 +569,7 @@ const QuedadaChat = () => {
                             await expelAttendee.mutateAsync({
                               quedadaId: quedadaId!,
                               attendeeProfileId: attendee.profile!.id,
+                              quedadaTitle: quedada.title,
                             });
                             toast.success("Asistente expulsado");
                           } catch (error: any) {

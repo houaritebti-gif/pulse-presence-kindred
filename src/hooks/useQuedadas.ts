@@ -271,7 +271,15 @@ export const useExpelAttendee = () => {
   const { data: profile } = useProfile();
 
   return useMutation({
-    mutationFn: async ({ quedadaId, attendeeProfileId }: { quedadaId: string; attendeeProfileId: string }) => {
+    mutationFn: async ({ 
+      quedadaId, 
+      attendeeProfileId,
+      quedadaTitle 
+    }: { 
+      quedadaId: string; 
+      attendeeProfileId: string;
+      quedadaTitle?: string;
+    }) => {
       if (!profile) throw new Error("No profile");
 
       const { error } = await supabase
@@ -281,6 +289,30 @@ export const useExpelAttendee = () => {
         .eq("profile_id", attendeeProfileId);
 
       if (error) throw error;
+
+      // Create notification for expelled user
+      await supabase
+        .from("notifications")
+        .insert({
+          profile_id: attendeeProfileId,
+          type: "quedada_expelled",
+          title: "Has sido removido de una quedada",
+          description: quedadaTitle 
+            ? `Ya no formas parte de "${quedadaTitle}"`
+            : "El organizador te ha removido del evento",
+          link: "/quedadas",
+        });
+
+      // Send push notification to expelled user
+      sendPushNotification({
+        profileId: attendeeProfileId,
+        title: "😔 Has sido removido de una quedada",
+        body: quedadaTitle 
+          ? `Ya no formas parte de "${quedadaTitle}"`
+          : "El organizador te ha removido del evento",
+        url: "/quedadas",
+        tag: `expelled-${quedadaId}`,
+      });
     },
     onSuccess: (_, { quedadaId }) => {
       queryClient.invalidateQueries({ queryKey: ["quedadas", profile?.city] });
