@@ -8,6 +8,7 @@ import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
 import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
 import confetti from "canvas-confetti";
+import { motion, AnimatePresence } from "framer-motion";
 
 const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
@@ -44,10 +45,56 @@ const Onboarding = () => {
   const currentStep = STEPS.find(s => s.id === step)!;
   const progress = (step / STEPS.length) * 100;
 
-  // Animation helper for step transitions
-  const animationClass = direction === "forward" 
-    ? "animate-slide-in-right" 
-    : "animate-slide-in-left";
+  // Animation variants for framer-motion
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.1,
+      },
+    },
+    exit: { 
+      opacity: 0,
+      transition: { duration: 0.15 }
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { 
+        type: "spring" as const,
+        stiffness: 300,
+        damping: 24,
+      }
+    },
+  };
+
+  const slideVariants = {
+    enter: (dir: "forward" | "back") => ({
+      x: dir === "forward" ? 100 : -100,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: "spring" as const,
+        stiffness: 300,
+        damping: 30,
+      },
+    },
+    exit: (dir: "forward" | "back") => ({
+      x: dir === "forward" ? -100 : 100,
+      opacity: 0,
+      transition: { duration: 0.2 },
+    }),
+  };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -189,13 +236,18 @@ const Onboarding = () => {
   };
 
   const renderStepContent = () => {
-    const baseClass = `${animationClass}`;
-    
     switch (step) {
       case 1:
         return (
-          <div key="step-1" className={`space-y-6 ${baseClass}`}>
-            <div className="relative">
+          <motion.div 
+            key="step-1" 
+            className="space-y-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div className="relative" variants={itemVariants}>
               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-card-foreground/60 pointer-events-none transition-all duration-200 peer-focus:text-primary peer-focus:scale-110" />
               <Input
                 type="text"
@@ -205,14 +257,21 @@ const Onboarding = () => {
                 className="peer h-14 text-lg pl-12 text-center rounded-2xl bg-card border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/60"
                 autoFocus
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         );
 
       case 2:
         return (
-          <div key="step-2" className={`space-y-6 ${baseClass}`}>
-            <div className="relative">
+          <motion.div 
+            key="step-2" 
+            className="space-y-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div className="relative" variants={itemVariants}>
               <Input
                 type="text"
                 placeholder="Tu ciudad"
@@ -222,68 +281,99 @@ const Onboarding = () => {
                 autoFocus
               />
               <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-card-foreground/60 pointer-events-none transition-all duration-200 peer-focus:text-primary peer-focus:scale-110" />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         );
 
       case 3:
         return (
-          <div key="step-3" className={`space-y-4 ${baseClass}`}>
+          <motion.div 
+            key="step-3" 
+            className="space-y-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
             <div className="grid grid-cols-2 gap-3">
-              {VIBES.map((vibe, index) => (
-                <button
+              {VIBES.map((vibe) => (
+                <motion.button
                   key={vibe.value}
                   onClick={() => setSelectedVibe(vibe.value)}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                  className={`p-4 rounded-2xl font-body text-base transition-all animate-bounce-in flex items-center justify-center gap-2 ${
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`p-4 rounded-2xl font-body text-base transition-colors flex items-center justify-center gap-2 ${
                     selectedVibe === vibe.value
-                      ? "bg-primary text-primary-foreground scale-105"
+                      ? "bg-primary text-primary-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
                   }`}
                 >
                   <span className="text-xl">{vibe.emoji}</span>
                   <span>{vibe.value}</span>
-                </button>
+                </motion.button>
               ))}
             </div>
-          </div>
+          </motion.div>
         );
 
       case 4:
         return (
-          <div key="step-4" className={`space-y-4 ${baseClass}`}>
+          <motion.div 
+            key="step-4" 
+            className="space-y-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
             <div className="flex flex-wrap gap-2 justify-center">
-              {TRIBES.map((tribe, index) => (
-                <button
+              {TRIBES.map((tribe) => (
+                <motion.button
                   key={tribe.value}
                   onClick={() => toggleTribe(tribe.value)}
-                  style={{ animationDelay: `${index * 30}ms` }}
-                  className={`px-4 py-2 rounded-full font-body text-sm transition-all animate-bounce-in ${
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-4 py-2 rounded-full font-body text-sm transition-colors ${
                     selectedTribes.includes(tribe.value)
                       ? "bg-primary text-primary-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
                   }`}
                 >
                   {tribe.emoji} {tribe.value}
-                </button>
+                </motion.button>
               ))}
             </div>
-            {selectedTribes.length > 0 && (
-              <p className="text-center text-sm text-muted-foreground animate-fade-up">
-                {selectedTribes.length} seleccionadas
-              </p>
-            )}
-          </div>
+            <AnimatePresence>
+              {selectedTribes.length > 0 && (
+                <motion.p 
+                  className="text-center text-sm text-muted-foreground"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  {selectedTribes.length} seleccionadas
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </motion.div>
         );
 
       case 5:
         return (
-          <div key="step-5" className={`space-y-6 max-h-[50vh] overflow-y-auto ${baseClass}`}>
-            {MUSIC_CATEGORIES.map((category, catIndex) => (
-              <div 
+          <motion.div 
+            key="step-5" 
+            className="space-y-6 max-h-[50vh] overflow-y-auto"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            {MUSIC_CATEGORIES.map((category) => (
+              <motion.div 
                 key={category.name}
-                style={{ animationDelay: `${catIndex * 50}ms` }}
-                className="animate-fade-up"
+                variants={itemVariants}
               >
                 <h3 className="font-display text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
                   <Music className="w-3 h-3" />
@@ -291,37 +381,56 @@ const Onboarding = () => {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {category.styles.map((style) => (
-                    <button
+                    <motion.button
                       key={style}
                       onClick={() => toggleMusicStyle(style)}
-                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                      whileHover={{ scale: 1.08 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-colors ${
                         selectedMusicStyles.includes(style)
-                          ? "bg-primary text-primary-foreground scale-105"
+                          ? "bg-primary text-primary-foreground"
                           : "bg-card text-card-foreground hover:bg-card/80"
                       }`}
                     >
                       {style}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ))}
-            {selectedMusicStyles.length > 0 && (
-              <p className="text-center text-sm text-primary sticky bottom-0 bg-background py-2 animate-fade-up">
-                {selectedMusicStyles.length}/5 estilos
-              </p>
-            )}
-          </div>
+            <AnimatePresence>
+              {selectedMusicStyles.length > 0 && (
+                <motion.p 
+                  className="text-center text-sm text-primary sticky bottom-0 bg-background py-2"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  {selectedMusicStyles.length}/5 estilos
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </motion.div>
         );
 
       case 6:
         return (
-          <div key="step-6" className={`space-y-4 ${baseClass}`}>
-            <div className="flex items-center gap-2 text-muted-foreground mb-4 animate-fade-up">
+          <motion.div 
+            key="step-6" 
+            className="space-y-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div 
+              className="flex items-center gap-2 text-muted-foreground mb-4"
+              variants={itemVariants}
+            >
               <Sparkles className="w-4 h-4" />
               <span className="font-body text-sm">Comparte lo que quieras</span>
-            </div>
-            {OPTIONAL_DETAILS.map((detail, index) => {
+            </motion.div>
+            {OPTIONAL_DETAILS.map((detail) => {
               const isSelected = 
                 detail.key === "has_tattoos" ? hasTattoos :
                 detail.key === "has_piercings" ? hasPiercings :
@@ -334,27 +443,47 @@ const Onboarding = () => {
               };
 
               return (
-                <button
+                <motion.button
                   key={detail.key}
                   onClick={toggle}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                  className={`w-full p-4 rounded-2xl font-body text-base transition-all flex items-center justify-between animate-bounce-in ${
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`w-full p-4 rounded-2xl font-body text-base transition-colors flex items-center justify-between ${
                     isSelected
                       ? "bg-accent text-accent-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
                   }`}
                 >
                   <span>{detail.label}</span>
-                  {isSelected && <Check className="w-5 h-5" />}
-                </button>
+                  <AnimatePresence>
+                    {isSelected && (
+                      <motion.div
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        exit={{ scale: 0, rotate: 180 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                      >
+                        <Check className="w-5 h-5" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
               );
             })}
-          </div>
+          </motion.div>
         );
 
       case 7:
         return (
-          <div key="step-7" className={`space-y-6 flex flex-col items-center ${baseClass}`}>
+          <motion.div 
+            key="step-7" 
+            className="space-y-6 flex flex-col items-center"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
             <input
               type="file"
               ref={fileInputRef}
@@ -362,10 +491,13 @@ const Onboarding = () => {
               accept="image/*"
               onChange={handleAvatarChange}
             />
-            <button
+            <motion.button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="w-32 h-32 rounded-full bg-card flex items-center justify-center overflow-hidden ring-4 ring-primary/20 hover:ring-primary/40 transition-all animate-bounce-in"
+              variants={itemVariants}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-32 h-32 rounded-full bg-card flex items-center justify-center overflow-hidden ring-4 ring-primary/20 hover:ring-primary/40 transition-all"
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
@@ -374,11 +506,14 @@ const Onboarding = () => {
               ) : (
                 <Camera className="w-10 h-10 text-muted-foreground" />
               )}
-            </button>
-            <p className="text-center text-sm text-muted-foreground animate-fade-up animate-delay-200">
+            </motion.button>
+            <motion.p 
+              className="text-center text-sm text-muted-foreground"
+              variants={itemVariants}
+            >
               Toca para subir una foto
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
         );
 
       default:
@@ -389,38 +524,58 @@ const Onboarding = () => {
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8 overflow-hidden">
       {/* Progress bar */}
-      <div className="w-full h-1 bg-card rounded-full mb-8 overflow-hidden">
-        <div 
-          className="h-full bg-primary transition-all duration-500 ease-out"
-          style={{ width: `${progress}%` }}
+      <motion.div 
+        className="w-full h-1 bg-card rounded-full mb-8 overflow-hidden"
+        initial={{ opacity: 0, scaleX: 0 }}
+        animate={{ opacity: 1, scaleX: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <motion.div 
+          className="h-full bg-primary"
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         />
-      </div>
+      </motion.div>
 
       {/* Header with step indicator */}
       <div className="text-center mb-12">
-        <span className="font-display text-xl font-bold text-primary mb-4 block">KIKI</span>
-        <div 
-          key={`header-${step}`}
-          className={animationClass}
+        <motion.span 
+          className="font-display text-xl font-bold text-primary mb-4 block"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
         >
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-            {currentStep.title}
-          </h1>
-          <p className="font-body text-muted-foreground">
-            {currentStep.subtitle}
-          </p>
-        </div>
+          KIKI
+        </motion.span>
+        <AnimatePresence mode="wait" custom={direction}>
+          <motion.div 
+            key={`header-${step}`}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+          >
+            <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+              {currentStep.title}
+            </h1>
+            <p className="font-body text-muted-foreground">
+              {currentStep.subtitle}
+            </p>
+          </motion.div>
+        </AnimatePresence>
         <div className="flex justify-center gap-1.5 mt-6">
           {STEPS.map((s) => (
-            <div 
+            <motion.div 
               key={s.id}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                s.id === step 
-                  ? "w-6 bg-primary" 
-                  : s.id < step 
-                    ? "w-1.5 bg-primary/50" 
-                    : "w-1.5 bg-card"
-              }`}
+              className="h-1.5 rounded-full bg-card"
+              animate={{
+                width: s.id === step ? 24 : 6,
+                backgroundColor: s.id <= step ? "hsl(var(--primary))" : "hsl(var(--card))",
+                opacity: s.id < step ? 0.5 : 1,
+              }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             />
           ))}
         </div>
@@ -428,7 +583,9 @@ const Onboarding = () => {
 
       {/* Step content */}
       <div className="flex-1 max-w-md mx-auto w-full">
-        {renderStepContent()}
+        <AnimatePresence mode="wait" custom={direction}>
+          {renderStepContent()}
+        </AnimatePresence>
       </div>
 
       {/* Navigation */}
