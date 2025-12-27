@@ -48,11 +48,32 @@ const setupSWListener = (onSyncComplete: (count: number) => void) => {
   }
 };
 
+// LocalStorage key for auto-sync preference
+const AUTO_SYNC_KEY = 'kiki-auto-sync-enabled';
+
+export const getAutoSyncEnabled = (): boolean => {
+  try {
+    const stored = localStorage.getItem(AUTO_SYNC_KEY);
+    return stored === null ? true : stored === 'true'; // Default to true
+  } catch {
+    return true;
+  }
+};
+
+export const setAutoSyncEnabled = (enabled: boolean): void => {
+  try {
+    localStorage.setItem(AUTO_SYNC_KEY, String(enabled));
+  } catch (error) {
+    console.error('Error saving auto-sync preference:', error);
+  }
+};
+
 export const useOfflineQueue = () => {
   const { isOnline, wasOffline } = useOnlineStatus();
   const [queue, setQueue] = useState<QueuedMessage[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [autoSyncEnabled, setAutoSyncState] = useState(getAutoSyncEnabled);
 
   // Load queue from IndexedDB on mount
   useEffect(() => {
@@ -72,6 +93,23 @@ export const useOfflineQueue = () => {
     };
 
     initializeQueue();
+  }, []);
+
+  // Auto-sync when coming back online
+  useEffect(() => {
+    if (isOnline && wasOffline && autoSyncEnabled && isInitialized) {
+      const pendingMessages = queue.filter(m => m.status === 'pending' || m.status === 'failed');
+      if (pendingMessages.length > 0) {
+        toast.info('Conexión restaurada. Sincronizando mensajes...');
+        registerBackgroundSync();
+      }
+    }
+  }, [isOnline, wasOffline, autoSyncEnabled, isInitialized, queue]);
+
+  // Toggle auto-sync preference
+  const toggleAutoSync = useCallback((enabled: boolean) => {
+    setAutoSyncEnabled(enabled);
+    setAutoSyncState(enabled);
   }, []);
 
   // Set up Service Worker message listener
@@ -236,6 +274,8 @@ export const useOfflineQueue = () => {
     isSyncing,
     setIsSyncing,
     isInitialized,
+    autoSyncEnabled,
+    toggleAutoSync,
     addToQueue,
     removeFromQueue,
     updateMessageStatus,
