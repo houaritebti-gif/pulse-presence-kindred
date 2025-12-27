@@ -1,9 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Bell, Calendar, Flame, Users, User, Ghost } from "lucide-react";
+import { Bell, Calendar, Flame, Users, User, Ghost, CloudOff } from "lucide-react";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
 import { useUnreadSparkCount } from "@/hooks/useSparks";
 import { useUnreadQuedadaCount } from "@/hooks/useQuedadas";
 import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
+import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
@@ -70,6 +71,7 @@ export const BottomNavigation = () => {
   const unreadSparkCount = useUnreadSparkCount();
   const unreadQuedadaCount = useUnreadQuedadaCount();
   const unreadGhostCount = useUnreadGhostMessageCount();
+  const { pendingCount } = useOfflineQueue();
 
   // Combine ghost messages with notifications count
   const totalAlertCount = unreadNotificationCount + unreadGhostCount;
@@ -99,9 +101,10 @@ export const BottomNavigation = () => {
       badge: totalAlertCount > 0 ? totalAlertCount : undefined,
     },
     {
-      icon: <User className="w-5 h-5" />,
+      icon: pendingCount > 0 ? <CloudOff className="w-5 h-5" /> : <User className="w-5 h-5" />,
       label: "Perfil",
       path: "/profile",
+      badge: pendingCount > 0 ? pendingCount : undefined,
     },
   ];
 
