@@ -14,6 +14,7 @@ import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
 import { useBlockedUsers } from "@/hooks/useUserModeration";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 import PresenceCard from "@/components/PresenceCard";
+import { PullToRefresh } from "@/components/PullToRefresh";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -107,7 +108,12 @@ const Presence = () => {
     return filtered.sort((a, b) => getCompatibility(b) - getCompatibility(a));
   }, [otherProfiles, filters, myTribeNames, myStyleNames]);
 
+  const handleRefresh = async () => {
+    await refetch();
+  };
+
   return (
+    <PullToRefresh onRefresh={handleRefresh}>
     <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -294,6 +300,7 @@ const Presence = () => {
         </p>
       </div>
     </main>
+    </PullToRefresh>
   );
 };
 

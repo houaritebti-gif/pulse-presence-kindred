@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { useQueryClient } from "@tanstack/react-query";
+import { vibrateDevice, playNotificationSound } from "@/utils/notificationSound";
 
 interface SparkDetectionResult {
   sparkDetected: boolean;
@@ -45,6 +46,10 @@ export const useSparkDetection = (): SparkDetectionResult => {
       if (sparkChat) {
         setSparkDetected(true);
         setSparkChatId(sparkChat.id);
+        
+        // Haptic and sound feedback for spark match!
+        vibrateDevice("spark");
+        playNotificationSound("spark");
         
         // Get other profile's name
         const otherProfile = sparkChat.profile_a?.id === profile.id 
