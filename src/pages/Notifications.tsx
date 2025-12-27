@@ -201,6 +201,8 @@ const Notifications = () => {
                 <SwipeableNotification
                   key={notification.id}
                   onDelete={() => deleteNotification.mutate(notification.id)}
+                  onMarkRead={() => markRead.mutate(notification.id)}
+                  isRead={!!notification.read_at}
                 >
                   <button
                     onClick={() => handleNotificationClick(notification)}
@@ -246,7 +248,7 @@ const Notifications = () => {
                 </SwipeableNotification>
               ))}
               <p className="text-center text-xs text-muted-foreground/50 pt-4 font-body">
-                Desliza a la izquierda para eliminar
+                ← Eliminar · Marcar leído →
               </p>
             </div>
           )}
