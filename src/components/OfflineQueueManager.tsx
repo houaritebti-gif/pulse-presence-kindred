@@ -1,10 +1,11 @@
 import { useState, useRef, useMemo } from "react";
-import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye, Filter, ArrowUpDown, ArrowDown, ArrowUp, BarChart3, TrendingUp, Zap } from "lucide-react";
+import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye, Filter, ArrowUpDown, ArrowDown, ArrowUp, BarChart3, TrendingUp, Zap, Volume2, Play } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { useOfflineQueue, QueuedMessage } from "@/hooks/useOfflineQueue";
 import { resetQueueStats, getQueueStats as getStoredQueueStats, updateQueueStats, getDailyStats, QueueStats } from "@/utils/offlineQueueDB";
+import { getSyncSoundType, setSyncSoundType, SYNC_SOUND_OPTIONS, previewSyncSound, SyncSoundType } from "@/utils/notificationSound";
 import { toast } from "sonner";
 import { format, subDays } from "date-fns";
 import { es } from "date-fns/locale";
@@ -54,6 +55,7 @@ const OfflineQueueManager = () => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [showResetStatsConfirm, setShowResetStatsConfirm] = useState(false);
   const [chartRange, setChartRange] = useState<ChartRange>(7);
+  const [syncSoundType, setSyncSoundTypeState] = useState<SyncSoundType>(getSyncSoundType);
   const {
     isOnline,
     queue,
@@ -369,6 +371,43 @@ const OfflineQueueManager = () => {
                 Los mensajes se enviarán automáticamente al recuperar conexión
               </p>
             )}
+          </div>
+
+          {/* Sync Sound Selector */}
+          <div className="p-4 bg-secondary/30 rounded-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Volume2 className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">Sonido de sincronización</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={syncSoundType}
+                  onChange={(e) => {
+                    const newType = e.target.value as SyncSoundType;
+                    setSyncSoundType(newType);
+                    setSyncSoundTypeState(newType);
+                  }}
+                  className="text-xs bg-background border border-border rounded-md px-2 py-1 text-foreground"
+                >
+                  {SYNC_SOUND_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => previewSyncSound(syncSoundType)}
+                  className="h-7 w-7 p-0"
+                  title="Previsualizar sonido"
+                  disabled={syncSoundType === 'silent'}
+                >
+                  <Play className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Queue Summary */}
