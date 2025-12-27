@@ -64,8 +64,16 @@ const QuedadaChat = () => {
     resetForRetry,
     getMessagesForChat,
     notifySyncSuccess,
+    storeSupabaseConfigForSW,
     MAX_RETRIES,
   } = useOfflineQueue();
+  
+  // Store Supabase config for Service Worker background sync
+  useEffect(() => {
+    if (profile?.id) {
+      storeSupabaseConfigForSW(profile.id);
+    }
+  }, [profile?.id, storeSupabaseConfigForSW]);
   
   const isUploading = isUploadingImage || isUploadingVoice;
   
@@ -121,7 +129,7 @@ const QuedadaChat = () => {
     let successCount = 0;
     
     for (const queuedMsg of pendingOnly) {
-      updateMessageStatus(queuedMsg.id, 'sending');
+      await updateMessageStatus(queuedMsg.id, 'sending');
       try {
         await sendMessage.mutateAsync({ 
           quedadaId: queuedMsg.chatId, 
@@ -129,11 +137,11 @@ const QuedadaChat = () => {
           recipientProfileIds: queuedMsg.metadata?.recipientProfileIds || [],
           quedadaTitle: queuedMsg.metadata?.quedadaTitle || '',
         });
-        removeFromQueue(queuedMsg.id);
+        await removeFromQueue(queuedMsg.id);
         successCount++;
       } catch (error) {
         console.error('Failed to sync message:', error);
-        markAsFailed(queuedMsg.id);
+        await markAsFailed(queuedMsg.id);
       }
     }
     
@@ -152,7 +160,7 @@ const QuedadaChat = () => {
   const handleRetryMessage = useCallback(async (queuedMsg: typeof pendingMessages[0]) => {
     if (!quedadaId || !quedada) return;
     
-    updateMessageStatus(queuedMsg.id, 'sending');
+    await updateMessageStatus(queuedMsg.id, 'sending');
     
     try {
       await sendMessage.mutateAsync({ 
@@ -161,11 +169,11 @@ const QuedadaChat = () => {
         recipientProfileIds: queuedMsg.metadata?.recipientProfileIds || [],
         quedadaTitle: queuedMsg.metadata?.quedadaTitle || '',
       });
-      removeFromQueue(queuedMsg.id);
+      await removeFromQueue(queuedMsg.id);
       toast.success("Mensaje enviado");
     } catch (error) {
       console.error('Failed to retry message:', error);
-      markAsFailed(queuedMsg.id);
+      await markAsFailed(queuedMsg.id);
       toast.error("Error al enviar el mensaje");
     }
   }, [quedadaId, quedada, sendMessage, removeFromQueue, updateMessageStatus, markAsFailed]);
@@ -187,13 +195,14 @@ const QuedadaChat = () => {
 
     // If offline and no image, queue the message
     if (!isOnline && !selectedFile && messageContent) {
-      addToQueue({
+      await addToQueue({
         type: 'quedada',
         chatId: quedadaId,
         content: messageContent,
         metadata: {
           recipientProfileIds: recipientIds,
           quedadaTitle: quedada.title,
+          senderProfileId: profile?.id,
         },
       });
       setNewMessage("");
