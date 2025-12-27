@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import ErrorState from "@/components/ErrorState";
+import EmptyState from "@/components/EmptyState";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useNewSparks } from "@/hooks/useNewSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
@@ -258,18 +259,13 @@ const Presence = () => {
             onRetry={() => refetch()}
           />
         ) : filteredProfiles.length === 0 ? (
-          <div className="text-center py-12 animate-fade-up">
-            <p className="font-body text-muted-foreground mb-4">
-              {otherProfiles.length === 0 
-                ? "Nadie más está presente ahora."
-                : "No hay personas que coincidan con tus filtros."}
-            </p>
-            <p className="font-body text-sm text-muted-foreground/60">
-              {otherProfiles.length === 0 
-                ? "Quédate un rato. Alguien aparecerá."
-                : "Prueba con otros criterios."}
-            </p>
-          </div>
+          <EmptyState
+            icon={Sparkles}
+            title={otherProfiles.length === 0 ? "Nadie más está presente" : "Sin coincidencias"}
+            description={otherProfiles.length === 0 
+              ? "Quédate un rato. Alguien aparecerá."
+              : "No hay personas que coincidan con tus filtros. Prueba con otros criterios."}
+          />
         ) : (
           <div className="space-y-4">
             {filteredProfiles.map((presence, index) => (

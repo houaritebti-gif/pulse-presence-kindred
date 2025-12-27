@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
+import EmptyState from "@/components/EmptyState";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada, useUpdateQuedada, Quedada } from "@/hooks/useQuedadas";
 import { toast } from "sonner";
@@ -258,21 +259,17 @@ const Quedadas = () => {
             onRetry={() => refetch()}
           />
         ) : quedadas?.length === 0 ? (
-          <div className="text-center py-16 animate-fade-up">
-            <div className="w-20 h-20 rounded-full bg-card/50 flex items-center justify-center mx-auto mb-6">
-              <Calendar className="w-8 h-8 text-muted-foreground/30" />
-            </div>
-            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-              No hay quedadas
-            </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto mb-6">
-              Sé la primera persona en crear una.
-            </p>
-            <Button variant="kiki" onClick={() => setShowCreate(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Crear quedada
-            </Button>
-          </div>
+          <EmptyState
+            icon={Calendar}
+            title="No hay quedadas"
+            description="Sé la primera persona en crear una."
+            action={
+              <Button variant="kiki" onClick={() => setShowCreate(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Crear quedada
+              </Button>
+            }
+          />
         ) : (
           <div className="space-y-4">
             {quedadas?.map((quedada, index) => {

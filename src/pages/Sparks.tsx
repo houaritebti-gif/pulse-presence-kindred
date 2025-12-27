@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Flame, MessageCircle, Sparkles } from "lucide-react";
 import { useSparkChats } from "@/hooks/useSparks";
 import ErrorState from "@/components/ErrorState";
+import EmptyState from "@/components/EmptyState";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -64,19 +65,11 @@ const Sparks = () => {
             onRetry={() => refetch()}
           />
         ) : chats?.length === 0 ? (
-          <div className="text-center py-16 animate-fade-up">
-            <div className="relative w-20 h-20 mx-auto mb-6">
-              <div className="w-full h-full rounded-full bg-card/50 flex items-center justify-center">
-                <MessageCircle className="w-8 h-8 text-muted-foreground/30" />
-              </div>
-            </div>
-            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-              Aún no hay chispas
-            </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed">
-              Envía mensajes fantasma y espera que la magia ocurra.
-            </p>
-          </div>
+          <EmptyState
+            icon={MessageCircle}
+            title="Aún no hay chispas"
+            description="Envía mensajes fantasma y espera que la magia ocurra."
+          />
         ) : (
           <div className="space-y-4">
             {chats?.map((chat, index) => (
