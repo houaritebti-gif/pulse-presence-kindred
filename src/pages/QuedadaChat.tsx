@@ -344,7 +344,7 @@ const QuedadaChat = () => {
               >
                 {!isOwn && (
                   <button 
-                    onClick={() => msg.sender?.id && navigate(`/profile/${msg.sender.id}`)}
+                    onClick={() => msg.sender?.id && navigate(`/user/${msg.sender.id}`)}
                     className={`w-6 h-6 rounded-full overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-accent/50 transition-all ${showAvatar ? "opacity-100" : "opacity-0 pointer-events-none"}`}
                   >
                     {msg.sender?.avatar_url ? (
@@ -360,7 +360,7 @@ const QuedadaChat = () => {
                 <div className={`max-w-[75%] ${isOwn ? "" : ""}`}>
                   {showName && (
                     <button 
-                      onClick={() => msg.sender?.id && navigate(`/profile/${msg.sender.id}`)}
+                      onClick={() => msg.sender?.id && navigate(`/user/${msg.sender.id}`)}
                       className="font-body text-[10px] text-muted-foreground mb-1 ml-1 hover:text-accent transition-colors"
                     >
                       {msg.sender?.name || "Anónima"}
@@ -536,7 +536,7 @@ const QuedadaChat = () => {
                   <button
                     onClick={() => {
                       setShowAttendees(false);
-                      navigate(`/profile/${quedada.creator.id}`);
+                      navigate(`/user/${quedada.creator.id}`);
                     }}
                     className="w-full flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left"
                   >
@@ -565,7 +565,7 @@ const QuedadaChat = () => {
                     <button
                       onClick={() => {
                         setShowAttendees(false);
-                        navigate(`/profile/${attendee.profile?.id}`);
+                        navigate(`/user/${attendee.profile?.id}`);
                       }}
                       className="flex items-center gap-3 flex-1 min-w-0 text-left"
                     >
