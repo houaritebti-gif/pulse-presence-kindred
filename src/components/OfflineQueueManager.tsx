@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { useOfflineQueue, QueuedMessage } from "@/hooks/useOfflineQueue";
+import { resetQueueStats } from "@/utils/offlineQueueDB";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -318,9 +319,24 @@ const OfflineQueueManager = () => {
           {/* Historical Stats */}
           {stats.totalQueued > 0 && (
             <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
-              <div className="flex items-center gap-2 mb-3">
-                <BarChart3 className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">Estadísticas históricas</span>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">Estadísticas históricas</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    resetQueueStats();
+                    toast.success("Estadísticas reseteadas");
+                  }}
+                  className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+                  title="Resetear estadísticas"
+                >
+                  <Trash2 className="w-3 h-3 mr-1" />
+                  Resetear
+                </Button>
               </div>
               <div className="grid grid-cols-4 gap-3 text-center">
                 <div>
