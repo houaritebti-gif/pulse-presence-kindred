@@ -556,3 +556,23 @@ export const useMarkQuedadaRead = () => {
     },
   });
 };
+
+// Check if a user has organized any quedadas (for badge)
+export const useHasOrganizedQuedadas = (profileId: string | undefined) => {
+  return useQuery({
+    queryKey: ["has_organized_quedadas", profileId],
+    queryFn: async () => {
+      if (!profileId) return false;
+
+      const { count, error } = await supabase
+        .from("quedadas")
+        .select("id", { count: "exact", head: true })
+        .eq("creator_profile_id", profileId);
+
+      if (error) return false;
+      return (count || 0) > 0;
+    },
+    enabled: !!profileId,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+};

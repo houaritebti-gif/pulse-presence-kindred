@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
+import { useHasOrganizedQuedadas } from "@/hooks/useQuedadas";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
 import { requestNotificationPermission, getNotificationPermission } from "@/utils/browserNotifications";
@@ -23,6 +24,7 @@ const Profile = () => {
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: tribes } = useProfileTribes(profile?.id);
   const { data: musicStyles } = useProfileMusicStyles(profile?.id);
+  const { data: hasOrganizedQuedadas } = useHasOrganizedQuedadas(profile?.id);
   const updateProfile = useUpdateProfile();
   const updateTribes = useUpdateTribes();
   const updateMusicStyles = useUpdateMusicStyles();
@@ -318,6 +320,12 @@ const Profile = () => {
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">
             Tu perfil
           </h1>
+          {hasOrganizedQuedadas && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-2">
+              <Calendar className="w-3.5 h-3.5" />
+              <span className="font-body text-xs font-medium">Organizadora</span>
+            </div>
+          )}
           <p className="font-body text-muted-foreground text-sm">
             Solo lo esencial. Nada más.
           </p>

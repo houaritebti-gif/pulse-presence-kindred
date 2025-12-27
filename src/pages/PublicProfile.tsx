@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield } from "lucide-react";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar } from "lucide-react";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useIsBlocked } from "@/hooks/useUserModeration";
+import { useHasOrganizedQuedadas } from "@/hooks/useQuedadas";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,6 +22,7 @@ const PublicProfile = () => {
   const { data: myTribes } = useProfileTribes(myProfile?.id);
   const { data: myMusicStyles } = useProfileMusicStyles(myProfile?.id);
   const isBlocked = useIsBlocked(profileId);
+  const { data: hasOrganizedQuedadas } = useHasOrganizedQuedadas(profileId);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
 
@@ -128,6 +130,15 @@ const PublicProfile = () => {
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">
             {profile.name || "Anónima"}
           </h1>
+          
+          {/* Organizer badge */}
+          {hasOrganizedQuedadas && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-2">
+              <Calendar className="w-3.5 h-3.5" />
+              <span className="font-body text-xs font-medium">Organizadora</span>
+            </div>
+          )}
+          
           {profile.vibe && (
             <p className="font-body text-primary text-lg">
               Vibra {profile.vibe.toLowerCase()}
