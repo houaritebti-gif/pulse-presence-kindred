@@ -1,13 +1,14 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download, Upload, Eye, Filter, ArrowUpDown, ArrowDown, ArrowUp, BarChart3, TrendingUp } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { useOfflineQueue, QueuedMessage } from "@/hooks/useOfflineQueue";
-import { resetQueueStats, getQueueStats as getStoredQueueStats, updateQueueStats, QueueStats } from "@/utils/offlineQueueDB";
+import { resetQueueStats, getQueueStats as getStoredQueueStats, updateQueueStats, getDailyStats, QueueStats } from "@/utils/offlineQueueDB";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { es } from "date-fns/locale";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,6 +70,26 @@ const OfflineQueueManager = () => {
   const successRate = stats.totalQueued > 0 
     ? Math.round((stats.totalSent / stats.totalQueued) * 100) 
     : 0;
+
+  // Prepare chart data for last 7 days
+  const chartData = useMemo(() => {
+    const dailyStats = getDailyStats();
+    const data = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = subDays(new Date(), i);
+      const dateKey = date.toISOString().split('T')[0];
+      const dayStats = dailyStats[dateKey] || { queued: 0, sent: 0, failed: 0 };
+      
+      data.push({
+        date: format(date, 'd MMM', { locale: es }),
+        enviados: dayStats.sent,
+        fallidos: dayStats.failed,
+      });
+    }
+    
+    return data;
+  }, [stats]);
 
   const getStatusIcon = (status: QueuedMessage['status']) => {
     switch (status) {
@@ -383,6 +404,47 @@ const OfflineQueueManager = () => {
                 <p className="text-[10px] text-muted-foreground text-center mt-2">
                   Última sync: {format(new Date(stats.lastSyncAt), "d MMM, HH:mm", { locale: es })}
                 </p>
+              )}
+              
+              {/* Daily Chart */}
+              {chartData.some(d => d.enviados > 0 || d.fallidos > 0) && (
+                <div className="mt-4 pt-3 border-t border-border/50">
+                  <p className="text-xs text-muted-foreground mb-2">Últimos 7 días</p>
+                  <div className="h-24">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} barGap={1}>
+                        <XAxis 
+                          dataKey="date" 
+                          tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis hide />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--popover))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                            fontSize: '11px',
+                          }}
+                          labelStyle={{ color: 'hsl(var(--foreground))' }}
+                        />
+                        <Bar dataKey="enviados" fill="hsl(142.1, 76.2%, 36.3%)" radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="fallidos" fill="hsl(var(--destructive))" radius={[2, 2, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex justify-center gap-4 mt-1">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-sm bg-green-600" />
+                      <span className="text-[10px] text-muted-foreground">Enviados</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-sm bg-destructive" />
+                      <span className="text-[10px] text-muted-foreground">Fallidos</span>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           )}
