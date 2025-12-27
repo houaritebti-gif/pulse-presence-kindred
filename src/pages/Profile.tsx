@@ -20,6 +20,7 @@ import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/p
 import { useBlockedUsersList, useUnblockUser } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AdvancedSettingsSection from "@/components/AdvancedSettingsSection";
+import OfflineQueueManager from "@/components/OfflineQueueManager";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfilePhotoManager from "@/components/ProfilePhotoManager";
 import UploadProgress from "@/components/UploadProgress";
@@ -576,6 +577,9 @@ const Profile = () => {
 
         {/* Advanced Settings Section */}
         <AdvancedSettingsSection />
+
+        {/* Offline Queue Manager */}
+        <OfflineQueueManager />
 
         {/* Privacy Settings */}
         <div className="mb-6 animate-fade-up animate-delay-600">
