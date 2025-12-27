@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Crop as CropIcon, RotateCcw, RotateCw, Check, X, FlipHorizontal, FlipVertical, ZoomIn, ZoomOut } from "lucide-react";
+import { Crop as CropIcon, RotateCcw, RotateCw, Check, X, FlipHorizontal, FlipVertical, ZoomIn, ZoomOut, Undo2, Redo2 } from "lucide-react";
 import ImageFilters, { ImageFilterValues, getFilterStyle } from "./ImageFilters";
+import { useEditHistory } from "@/hooks/useEditHistory";
 
 interface ImageCropModalProps {
   isOpen: boolean;
@@ -27,6 +28,12 @@ interface TransformState {
   flipV: boolean;
 }
 
+interface EditState {
+  filters: ImageFilterValues;
+  transform: TransformState;
+  zoom: number;
+}
+
 const DEFAULT_FILTERS: ImageFilterValues = {
   brightness: 100,
   contrast: 100,
@@ -37,6 +44,12 @@ const DEFAULT_TRANSFORM: TransformState = {
   rotation: 0,
   flipH: false,
   flipV: false,
+};
+
+const DEFAULT_EDIT_STATE: EditState = {
+  filters: DEFAULT_FILTERS,
+  transform: DEFAULT_TRANSFORM,
+  zoom: 1,
 };
 
 function centerAspectCrop(
@@ -158,13 +171,23 @@ const ImageCropModal = ({
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [filters, setFilters] = useState<ImageFilterValues>(DEFAULT_FILTERS);
-  const [transform, setTransform] = useState<TransformState>(DEFAULT_TRANSFORM);
   const [transformedImageSrc, setTransformedImageSrc] = useState<string>(imageSrc);
   const [isTransforming, setIsTransforming] = useState(false);
-  const [zoom, setZoom] = useState(1);
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // History management for edits
+  const {
+    state: editState,
+    setState: setEditState,
+    undo,
+    redo,
+    reset: resetHistory,
+    canUndo,
+    canRedo,
+  } = useEditHistory<EditState>(DEFAULT_EDIT_STATE);
+
+  const { filters, transform, zoom } = editState;
 
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 3;
@@ -206,19 +229,31 @@ const ImageCropModal = ({
   );
 
   const handleRotateLeft = () => {
-    setTransform((prev) => ({ ...prev, rotation: (prev.rotation - 90 + 360) % 360 }));
+    setEditState({
+      ...editState,
+      transform: { ...transform, rotation: (transform.rotation - 90 + 360) % 360 },
+    });
   };
 
   const handleRotateRight = () => {
-    setTransform((prev) => ({ ...prev, rotation: (prev.rotation + 90) % 360 }));
+    setEditState({
+      ...editState,
+      transform: { ...transform, rotation: (transform.rotation + 90) % 360 },
+    });
   };
 
   const handleFlipHorizontal = () => {
-    setTransform((prev) => ({ ...prev, flipH: !prev.flipH }));
+    setEditState({
+      ...editState,
+      transform: { ...transform, flipH: !transform.flipH },
+    });
   };
 
   const handleFlipVertical = () => {
-    setTransform((prev) => ({ ...prev, flipV: !prev.flipV }));
+    setEditState({
+      ...editState,
+      transform: { ...transform, flipV: !transform.flipV },
+    });
   };
 
   const handleReset = () => {
@@ -226,21 +261,25 @@ const ImageCropModal = ({
       const { width, height } = imgRef.current;
       setCrop(centerAspectCrop(width, height, aspectRatio));
     }
-    setFilters(DEFAULT_FILTERS);
-    setTransform(DEFAULT_TRANSFORM);
-    setZoom(1);
+    resetHistory(DEFAULT_EDIT_STATE);
   };
 
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 0.25, MAX_ZOOM));
+    const newZoom = Math.min(zoom + 0.25, MAX_ZOOM);
+    setEditState({ ...editState, zoom: newZoom });
   };
 
   const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 0.25, MIN_ZOOM));
+    const newZoom = Math.max(zoom - 0.25, MIN_ZOOM);
+    setEditState({ ...editState, zoom: newZoom });
   };
 
   const handleZoomChange = (value: number[]) => {
-    setZoom(value[0]);
+    setEditState({ ...editState, zoom: value[0] });
+  };
+
+  const handleFiltersChange = (newFilters: ImageFilterValues) => {
+    setEditState({ ...editState, filters: newFilters });
   };
 
   const handleConfirm = async () => {
@@ -261,8 +300,7 @@ const ImageCropModal = ({
   const handleCancel = () => {
     setCrop(undefined);
     setCompletedCrop(undefined);
-    setFilters(DEFAULT_FILTERS);
-    setTransform(DEFAULT_TRANSFORM);
+    resetHistory(DEFAULT_EDIT_STATE);
     onClose();
   };
 
@@ -277,9 +315,30 @@ const ImageCropModal = ({
         </DialogHeader>
 
         <div className="px-4 pb-2 flex items-center justify-between gap-2">
-          <p className="text-sm text-muted-foreground flex-1">
-            Recorta, rota, voltea y aplica filtros
-          </p>
+          <div className="flex items-center gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={undo}
+              disabled={!canUndo || isTransforming}
+              title="Deshacer (Ctrl+Z)"
+            >
+              <Undo2 className="w-4 h-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8"
+              onClick={redo}
+              disabled={!canRedo || isTransforming}
+              title="Rehacer (Ctrl+Y)"
+            >
+              <Redo2 className="w-4 h-4" />
+            </Button>
+          </div>
           <div className="flex items-center gap-1">
             <Button
               type="button"
@@ -402,7 +461,7 @@ const ImageCropModal = ({
           </div>
 
           <div className="px-4 py-2">
-            <ImageFilters values={filters} onChange={setFilters} />
+            <ImageFilters values={filters} onChange={handleFiltersChange} />
           </div>
         </div>
 
