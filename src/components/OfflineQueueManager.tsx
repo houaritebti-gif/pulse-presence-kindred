@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { useOfflineQueue, QueuedMessage } from "@/hooks/useOfflineQueue";
-import { resetQueueStats } from "@/utils/offlineQueueDB";
+import { resetQueueStats, getQueueStats as getStoredQueueStats, updateQueueStats, QueueStats } from "@/utils/offlineQueueDB";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -31,6 +31,7 @@ interface BackupData {
     status: 'pending' | 'sending' | 'failed';
     retryCount: number;
   }>;
+  stats?: QueueStats;
 }
 
 type TypeFilter = 'all' | 'spark' | 'quedada';
@@ -109,12 +110,14 @@ const OfflineQueueManager = () => {
   };
 
   const handleExportQueue = () => {
-    if (queue.length === 0) {
-      toast.info("No hay mensajes para exportar");
+    const currentStats = getStoredQueueStats();
+    
+    if (queue.length === 0 && currentStats.totalQueued === 0) {
+      toast.info("No hay datos para exportar");
       return;
     }
 
-    const exportData = {
+    const exportData: BackupData = {
       exportedAt: new Date().toISOString(),
       totalMessages: queue.length,
       messages: queue.map(msg => ({
@@ -126,6 +129,7 @@ const OfflineQueueManager = () => {
         status: msg.status,
         retryCount: msg.retryCount,
       })),
+      stats: currentStats,
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -138,7 +142,7 @@ const OfflineQueueManager = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    toast.success("Cola exportada correctamente");
+    toast.success("Cola y estadísticas exportadas");
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,14 +201,30 @@ const OfflineQueueManager = () => {
         importedCount++;
       }
 
-      if (importedCount > 0) {
-        toast.success(`${importedCount} mensaje(s) importado(s)`);
+      // Import stats if present - merge with existing stats
+      if (pendingImport.stats) {
+        const currentStats = getStoredQueueStats();
+        updateQueueStats({
+          totalQueued: currentStats.totalQueued + pendingImport.stats.totalQueued,
+          totalSent: currentStats.totalSent + pendingImport.stats.totalSent,
+          totalFailed: currentStats.totalFailed + pendingImport.stats.totalFailed,
+          lastSyncAt: pendingImport.stats.lastSyncAt && (!currentStats.lastSyncAt || new Date(pendingImport.stats.lastSyncAt) > new Date(currentStats.lastSyncAt))
+            ? pendingImport.stats.lastSyncAt
+            : currentStats.lastSyncAt,
+          firstQueuedAt: pendingImport.stats.firstQueuedAt && (!currentStats.firstQueuedAt || new Date(pendingImport.stats.firstQueuedAt) < new Date(currentStats.firstQueuedAt))
+            ? pendingImport.stats.firstQueuedAt
+            : currentStats.firstQueuedAt,
+        });
+      }
+
+      if (importedCount > 0 || pendingImport.stats) {
+        toast.success(`${importedCount} mensaje(s) y estadísticas importados`);
       } else {
-        toast.info("No se importaron mensajes nuevos");
+        toast.info("No se importaron datos nuevos");
       }
     } catch (error) {
       console.error("Error importing queue:", error);
-      toast.error("Error al importar mensajes");
+      toast.error("Error al importar datos");
     } finally {
       setPendingImport(null);
       setShowImportConfirm(false);
