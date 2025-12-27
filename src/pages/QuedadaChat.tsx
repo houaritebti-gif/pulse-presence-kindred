@@ -63,6 +63,7 @@ const QuedadaChat = () => {
     markAsFailed,
     resetForRetry,
     getMessagesForChat,
+    notifySyncSuccess,
     MAX_RETRIES,
   } = useOfflineQueue();
   
@@ -113,6 +114,9 @@ const QuedadaChat = () => {
     const pendingOnly = pendingMessages.filter(m => m.status === 'pending');
     if (pendingOnly.length === 0) return;
     
+    // Check if app is in background for notification
+    const isBackground = document.visibilityState === 'hidden';
+    
     setIsSyncing(true);
     let successCount = 0;
     
@@ -136,9 +140,13 @@ const QuedadaChat = () => {
     setIsSyncing(false);
     
     if (successCount > 0) {
-      toast.success(`${successCount} mensaje${successCount > 1 ? 's' : ''} enviado${successCount > 1 ? 's' : ''}`);
+      // Show toast if in foreground, browser notification if in background
+      if (!isBackground) {
+        toast.success(`${successCount} mensaje${successCount > 1 ? 's' : ''} enviado${successCount > 1 ? 's' : ''}`);
+      }
+      notifySyncSuccess(successCount, isBackground);
     }
-  }, [quedadaId, quedada, pendingMessages, sendMessage, removeFromQueue, updateMessageStatus, markAsFailed, setIsSyncing]);
+  }, [quedadaId, quedada, pendingMessages, sendMessage, removeFromQueue, updateMessageStatus, markAsFailed, setIsSyncing, notifySyncSuccess]);
 
   // Retry a single message
   const handleRetryMessage = useCallback(async (queuedMsg: typeof pendingMessages[0]) => {
