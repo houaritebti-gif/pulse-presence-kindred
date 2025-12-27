@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Music, Sparkles, MoreVertical, Flag, Ban } from "lucide-react";
+import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar } from "lucide-react";
+import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +33,7 @@ interface PresenceCardProps {
 
 const PresenceCard = ({ presence, compatibility, animationDelay }: PresenceCardProps) => {
   const navigate = useNavigate();
+  const { data: organizedCount } = useOrganizedQuedadasCount(presence.profile?.id);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
 
@@ -83,11 +85,17 @@ const PresenceCard = ({ presence, compatibility, animationDelay }: PresenceCardP
           
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <h3 className="font-display text-lg font-semibold text-card-foreground">
                 {presence.profile?.name || "Anónima"}
               </h3>
               <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
+              {organizedCount && organizedCount > 0 && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-body text-accent bg-accent/10 px-2 py-0.5 rounded-full">
+                  <Calendar className="w-2.5 h-2.5" />
+                  {organizedCount}
+                </span>
+              )}
               {compatibility > 0 && (
                 <span className="text-xs font-body text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                   {compatibility} en común
