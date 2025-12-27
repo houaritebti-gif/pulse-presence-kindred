@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ImageIcon, Upload, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type UploadPhase = "compressing" | "uploading" | "complete";
+export type UploadPhase = "idle" | "compressing" | "uploading" | "complete";
 
 interface UploadProgressProps {
   isVisible: boolean;
