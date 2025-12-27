@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUpdateProfile } from "./useProfile";
+import { compressAvatar } from "@/utils/imageCompression";
 
 export const useAvatarUpload = () => {
   const { user } = useAuth();
@@ -19,18 +20,24 @@ export const useAvatarUpload = () => {
         throw new Error("Solo se permiten imágenes");
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error("La imagen no puede superar 5MB");
+      // Validate file size (max 10MB before compression)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error("La imagen no puede superar 10MB");
       }
 
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
+      // Compress image before upload
+      const compressedFile = await compressAvatar(file);
 
-      // Upload to storage
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/avatar.jpg`;
+
+      // Upload compressed image to storage
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, compressedFile, { 
+          upsert: true,
+          contentType: "image/jpeg",
+        });
 
       if (uploadError) throw uploadError;
 
