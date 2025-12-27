@@ -1,8 +1,9 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Bell, Calendar, Flame, Users, User } from "lucide-react";
+import { Bell, Calendar, Flame, Users, User, Ghost } from "lucide-react";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
-import { useSparkChats, useUnreadSparkCount } from "@/hooks/useSparks";
-import { useQuedadas } from "@/hooks/useQuedadas";
+import { useUnreadSparkCount } from "@/hooks/useSparks";
+import { useUnreadQuedadaCount } from "@/hooks/useQuedadas";
+import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 
@@ -65,13 +66,13 @@ const NavItem = ({ icon, label, badge, isActive, onClick }: NavItemProps) => {
 export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const unreadCount = useUnreadNotificationCount();
-  const { data: sparks } = useSparkChats();
+  const unreadNotificationCount = useUnreadNotificationCount();
   const unreadSparkCount = useUnreadSparkCount();
-  const { data: quedadas } = useQuedadas();
+  const unreadQuedadaCount = useUnreadQuedadaCount();
+  const unreadGhostCount = useUnreadGhostMessageCount();
 
-  const sparkCount = sparks?.length || 0;
-  const quedadaCount = quedadas?.length || 0;
+  // Combine ghost messages with notifications count
+  const totalAlertCount = unreadNotificationCount + unreadGhostCount;
 
   const navItems = [
     {
@@ -83,19 +84,19 @@ export const BottomNavigation = () => {
       icon: <Flame className="w-5 h-5" />,
       label: "Sparks",
       path: "/sparks",
-      badge: unreadSparkCount > 0 ? unreadSparkCount : (sparkCount > 0 ? sparkCount : undefined),
+      badge: unreadSparkCount > 0 ? unreadSparkCount : undefined,
     },
     {
       icon: <Calendar className="w-5 h-5" />,
       label: "Quedadas",
       path: "/quedadas",
-      badge: quedadaCount,
+      badge: unreadQuedadaCount > 0 ? unreadQuedadaCount : undefined,
     },
     {
-      icon: <Bell className="w-5 h-5" />,
+      icon: unreadGhostCount > 0 ? <Ghost className="w-5 h-5" /> : <Bell className="w-5 h-5" />,
       label: "Alertas",
       path: "/notifications",
-      badge: unreadCount,
+      badge: totalAlertCount > 0 ? totalAlertCount : undefined,
     },
     {
       icon: <User className="w-5 h-5" />,
