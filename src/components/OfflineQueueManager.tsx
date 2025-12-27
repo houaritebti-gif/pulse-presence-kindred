@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, ChevronUp, Clock, Send, Trash2, RefreshCw, Wifi, WifiOff, MessageSquare, Calendar, AlertCircle, CheckCircle2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOfflineQueue, QueuedMessage } from "@/hooks/useOfflineQueue";
 import { toast } from "sonner";
@@ -58,6 +58,39 @@ const OfflineQueueManager = () => {
   const handleDelete = async (messageId: string) => {
     await removeFromQueue(messageId);
     toast.success("Mensaje eliminado de la cola");
+  };
+
+  const handleExportQueue = () => {
+    if (queue.length === 0) {
+      toast.info("No hay mensajes para exportar");
+      return;
+    }
+
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      totalMessages: queue.length,
+      messages: queue.map(msg => ({
+        id: msg.id,
+        type: msg.type,
+        chatId: msg.chatId,
+        content: msg.content,
+        timestamp: msg.timestamp,
+        status: msg.status,
+        retryCount: msg.retryCount,
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `kiki-offline-queue-backup-${format(new Date(), 'yyyy-MM-dd-HHmm')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success("Cola exportada correctamente");
   };
 
   const handleClearAll = async () => {
@@ -156,8 +189,17 @@ const OfflineQueueManager = () => {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={handleExportQueue}
+                title="Exportar como backup"
+              >
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleClearAll}
                 className="text-destructive hover:text-destructive"
+                title="Vaciar cola"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
