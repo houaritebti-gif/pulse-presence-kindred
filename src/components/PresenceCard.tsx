@@ -100,7 +100,7 @@ const PresenceCard = ({ presence, compatibility, animationDelay }: PresenceCardP
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-body text-accent bg-accent/10 px-2 py-0.5 rounded-full cursor-help">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-body text-accent bg-accent/10 px-2 py-0.5 rounded-full cursor-help animate-pulse-soft">
                         <Calendar className="w-2.5 h-2.5" />
                         {organizedCount}
                       </span>
