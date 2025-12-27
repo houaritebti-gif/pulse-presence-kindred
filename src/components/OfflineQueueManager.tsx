@@ -739,6 +739,34 @@ const OfflineQueueManager = () => {
                       </strong>{" "}
                       con <strong>{pendingImport.totalMessages} mensaje(s)</strong>.
                     </p>
+                    
+                    {/* Stats Preview */}
+                    {pendingImport.stats && (
+                      <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg mb-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <BarChart3 className="w-4 h-4 text-primary" />
+                          <span className="text-xs font-medium text-foreground">Estadísticas incluidas</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div>
+                            <div className="text-sm font-bold text-foreground">{pendingImport.stats.totalQueued}</div>
+                            <div className="text-[10px] text-muted-foreground">Encolados</div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-green-500">{pendingImport.stats.totalSent}</div>
+                            <div className="text-[10px] text-muted-foreground">Enviados</div>
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-destructive">{pendingImport.stats.totalFailed}</div>
+                            <div className="text-[10px] text-muted-foreground">Fallidos</div>
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground text-center mt-2">
+                          Se sumarán a tus estadísticas actuales
+                        </p>
+                      </div>
+                    )}
+
                     <p className="text-xs text-muted-foreground mb-3">
                       Los mensajes que ya existan en la cola serán ignorados.
                     </p>
