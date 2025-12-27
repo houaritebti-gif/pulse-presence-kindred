@@ -6,6 +6,7 @@ import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useIsBlocked } from "@/hooks/useUserModeration";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
+import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,6 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
+import ProfilePhotoGallery from "@/components/ProfilePhotoGallery";
 
 const PublicProfile = () => {
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ const PublicProfile = () => {
   const { data: myMusicStyles } = useProfileMusicStyles(myProfile?.id);
   const isBlocked = useIsBlocked(profileId);
   const { data: organizedCount } = useOrganizedQuedadasCount(profileId);
+  const { data: profilePhotos } = useProfilePhotos(profileId);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
 
@@ -139,21 +142,13 @@ const PublicProfile = () => {
 
       {/* Profile content */}
       <div className="flex-1 px-6 max-w-lg mx-auto w-full">
-        {/* Avatar */}
-        <div className="flex justify-center mb-6 animate-fade-up">
-          <div className="w-32 h-32 rounded-full bg-card overflow-hidden ring-4 ring-primary/20">
-            {profile.avatar_url ? (
-              <img 
-                src={profile.avatar_url} 
-                alt={profile.name || "Avatar"}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground font-display text-4xl bg-card">
-                {(profile.name?.[0] || "?").toUpperCase()}
-              </div>
-            )}
-          </div>
+        {/* Photo Gallery */}
+        <div className="mb-6 animate-fade-up">
+          <ProfilePhotoGallery
+            photos={profilePhotos?.map(p => p.photo_url) || []}
+            avatarUrl={profile.avatar_url}
+            name={profile.name}
+          />
         </div>
 
         {/* Name and vibe */}
