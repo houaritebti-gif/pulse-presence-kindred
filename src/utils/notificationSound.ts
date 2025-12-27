@@ -9,6 +9,27 @@ const DND_ENABLED_KEY = "kiki_dnd_enabled";
 const DND_START_KEY = "kiki_dnd_start";
 const DND_END_KEY = "kiki_dnd_end";
 const THEME_SOUND_ENABLED_KEY = "kiki_theme_sound_enabled";
+const SYNC_SOUND_TYPE_KEY = "kiki_sync_sound_type";
+
+export type SyncSoundType = 'default' | 'chime' | 'bubble' | 'whoosh' | 'minimal' | 'silent';
+
+export const SYNC_SOUND_OPTIONS: { value: SyncSoundType; label: string }[] = [
+  { value: 'default', label: 'Por defecto' },
+  { value: 'chime', label: 'Campanilla' },
+  { value: 'bubble', label: 'Burbuja' },
+  { value: 'whoosh', label: 'Swoosh' },
+  { value: 'minimal', label: 'Mínimo' },
+  { value: 'silent', label: 'Silencio' },
+];
+
+export const getSyncSoundType = (): SyncSoundType => {
+  const stored = localStorage.getItem(SYNC_SOUND_TYPE_KEY);
+  return (stored as SyncSoundType) || 'default';
+};
+
+export const setSyncSoundType = (type: SyncSoundType): void => {
+  localStorage.setItem(SYNC_SOUND_TYPE_KEY, type);
+};
 
 export const isSoundMuted = (): boolean => {
   return localStorage.getItem(SOUND_MUTED_KEY) === "true";
@@ -371,6 +392,9 @@ export const playSyncSuccessSound = () => {
   if (isSoundMuted()) return;
   if (isInDndPeriod()) return;
   
+  const soundType = getSyncSoundType();
+  if (soundType === 'silent') return;
+  
   try {
     const ctx = getAudioContext();
     
@@ -378,49 +402,22 @@ export const playSyncSuccessSound = () => {
       ctx.resume();
     }
     
-    // Uplifting "whoosh + ding" sound indicating successful sync
-    const osc1 = ctx.createOscillator();
-    const osc2 = ctx.createOscillator();
-    const osc3 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    const gain2 = ctx.createGain();
-    const gain3 = ctx.createGain();
-    
-    osc1.connect(gain1);
-    osc2.connect(gain2);
-    osc3.connect(gain3);
-    gain1.connect(ctx.destination);
-    gain2.connect(ctx.destination);
-    gain3.connect(ctx.destination);
-    
-    osc1.type = "sine";
-    osc2.type = "sine";
-    osc3.type = "sine";
-    
-    // Ascending sweep (whoosh)
-    osc1.frequency.setValueAtTime(400, ctx.currentTime);
-    osc1.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15);
-    gain1.gain.setValueAtTime(0.05, ctx.currentTime);
-    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-    
-    // First ding: E5
-    osc2.frequency.setValueAtTime(659, ctx.currentTime + 0.12);
-    gain2.gain.setValueAtTime(0, ctx.currentTime);
-    gain2.gain.setValueAtTime(0.1, ctx.currentTime + 0.12);
-    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
-    
-    // Second ding: G5 (higher, confirmation)
-    osc3.frequency.setValueAtTime(784, ctx.currentTime + 0.22);
-    gain3.gain.setValueAtTime(0, ctx.currentTime);
-    gain3.gain.setValueAtTime(0.12, ctx.currentTime + 0.22);
-    gain3.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-    
-    osc1.start(ctx.currentTime);
-    osc2.start(ctx.currentTime + 0.12);
-    osc3.start(ctx.currentTime + 0.22);
-    osc1.stop(ctx.currentTime + 0.25);
-    osc2.stop(ctx.currentTime + 0.4);
-    osc3.stop(ctx.currentTime + 0.55);
+    switch (soundType) {
+      case 'chime':
+        playSyncChime(ctx);
+        break;
+      case 'bubble':
+        playSyncBubble(ctx);
+        break;
+      case 'whoosh':
+        playSyncWhoosh(ctx);
+        break;
+      case 'minimal':
+        playSyncMinimal(ctx);
+        break;
+      default:
+        playSyncDefault(ctx);
+    }
     
     // Subtle vibration
     if ("vibrate" in navigator && isVibrationEnabled()) {
@@ -428,6 +425,149 @@ export const playSyncSuccessSound = () => {
     }
   } catch (error) {
     console.log("Could not play sync success sound:", error);
+  }
+};
+
+// Default sync sound - uplifting whoosh + ding
+const playSyncDefault = (ctx: AudioContext) => {
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const osc3 = ctx.createOscillator();
+  const gain1 = ctx.createGain();
+  const gain2 = ctx.createGain();
+  const gain3 = ctx.createGain();
+  
+  osc1.connect(gain1);
+  osc2.connect(gain2);
+  osc3.connect(gain3);
+  gain1.connect(ctx.destination);
+  gain2.connect(ctx.destination);
+  gain3.connect(ctx.destination);
+  
+  osc1.type = "sine";
+  osc2.type = "sine";
+  osc3.type = "sine";
+  
+  // Ascending sweep (whoosh)
+  osc1.frequency.setValueAtTime(400, ctx.currentTime);
+  osc1.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15);
+  gain1.gain.setValueAtTime(0.05, ctx.currentTime);
+  gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+  
+  // First ding: E5
+  osc2.frequency.setValueAtTime(659, ctx.currentTime + 0.12);
+  gain2.gain.setValueAtTime(0, ctx.currentTime);
+  gain2.gain.setValueAtTime(0.1, ctx.currentTime + 0.12);
+  gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+  
+  // Second ding: G5 (higher, confirmation)
+  osc3.frequency.setValueAtTime(784, ctx.currentTime + 0.22);
+  gain3.gain.setValueAtTime(0, ctx.currentTime);
+  gain3.gain.setValueAtTime(0.12, ctx.currentTime + 0.22);
+  gain3.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+  
+  osc1.start(ctx.currentTime);
+  osc2.start(ctx.currentTime + 0.12);
+  osc3.start(ctx.currentTime + 0.22);
+  osc1.stop(ctx.currentTime + 0.25);
+  osc2.stop(ctx.currentTime + 0.4);
+  osc3.stop(ctx.currentTime + 0.55);
+};
+
+// Chime sound - melodic bell-like
+const playSyncChime = (ctx: AudioContext) => {
+  const notes = [784, 988, 1175]; // G5, B5, D6
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
+    gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.1);
+    gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + i * 0.1 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.1 + 0.4);
+    osc.start(ctx.currentTime + i * 0.1);
+    osc.stop(ctx.currentTime + i * 0.1 + 0.45);
+  });
+};
+
+// Bubble sound - soft popping
+const playSyncBubble = (ctx: AudioContext) => {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(300, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.05);
+  osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.15);
+  gain.gain.setValueAtTime(0.15, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.25);
+};
+
+// Whoosh sound - swift air movement
+const playSyncWhoosh = (ctx: AudioContext) => {
+  // Create noise-like effect with multiple oscillators
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(200, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
+  osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.25);
+  gain.gain.setValueAtTime(0.02, ctx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.1);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.35);
+};
+
+// Minimal sound - single subtle ping
+const playSyncMinimal = (ctx: AudioContext) => {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(880, ctx.currentTime);
+  gain.gain.setValueAtTime(0.08, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.2);
+};
+
+// Preview sync sound (for settings)
+export const previewSyncSound = (type: SyncSoundType) => {
+  if (type === 'silent') return;
+  
+  try {
+    const ctx = getAudioContext();
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    switch (type) {
+      case 'chime':
+        playSyncChime(ctx);
+        break;
+      case 'bubble':
+        playSyncBubble(ctx);
+        break;
+      case 'whoosh':
+        playSyncWhoosh(ctx);
+        break;
+      case 'minimal':
+        playSyncMinimal(ctx);
+        break;
+      default:
+        playSyncDefault(ctx);
+    }
+  } catch (error) {
+    console.log("Could not preview sound:", error);
   }
 };
 
