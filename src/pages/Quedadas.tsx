@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada, useUpdateQuedada, Quedada } from "@/hooks/useQuedadas";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ const Quedadas = () => {
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
   const [maxAttendees, setMaxAttendees] = useState("");
+  const [privateAttendees, setPrivateAttendees] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +47,7 @@ const Quedadas = () => {
         location_hint: locationHint.trim() || undefined,
         event_date: dateTime.toISOString(),
         max_attendees: maxAttendees ? parseInt(maxAttendees) : undefined,
+        private_attendees: privateAttendees,
       });
 
       toast.success("¡Quedada creada!");
@@ -55,6 +58,7 @@ const Quedadas = () => {
       setEventDate("");
       setEventTime("");
       setMaxAttendees("");
+      setPrivateAttendees(false);
     } catch (error: any) {
       toast.error("Error al crear: " + error.message);
     }
@@ -103,6 +107,7 @@ const Quedadas = () => {
     setEventDate(eventDateObj.toISOString().split("T")[0]);
     setEventTime(format(eventDateObj, "HH:mm"));
     setMaxAttendees(quedada.max_attendees?.toString() || "");
+    setPrivateAttendees(quedada.private_attendees || false);
   };
 
   const closeEditModal = () => {
@@ -113,6 +118,7 @@ const Quedadas = () => {
     setEventDate("");
     setEventTime("");
     setMaxAttendees("");
+    setPrivateAttendees(false);
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -133,6 +139,7 @@ const Quedadas = () => {
           location_hint: locationHint.trim() || null,
           event_date: dateTime.toISOString(),
           max_attendees: maxAttendees ? parseInt(maxAttendees) : null,
+          private_attendees: privateAttendees,
         },
       });
 
@@ -422,6 +429,20 @@ const Quedadas = () => {
                 />
               </div>
 
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-2">
+                  <EyeOff className="w-4 h-4 text-card-foreground/60" />
+                  <div>
+                    <span className="font-body text-sm text-card-foreground">Lista privada</span>
+                    <p className="font-body text-xs text-card-foreground/50">Solo asistentes ven quién va</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={privateAttendees}
+                  onCheckedChange={setPrivateAttendees}
+                />
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <Button
                   type="button"
@@ -508,6 +529,20 @@ const Quedadas = () => {
                   onChange={(e) => setMaxAttendees(e.target.value)}
                   className="h-12 bg-background/50"
                   min="2"
+                />
+              </div>
+
+              <div className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-2">
+                  <EyeOff className="w-4 h-4 text-card-foreground/60" />
+                  <div>
+                    <span className="font-body text-sm text-card-foreground">Lista privada</span>
+                    <p className="font-body text-xs text-card-foreground/50">Solo asistentes ven quién va</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={privateAttendees}
+                  onCheckedChange={setPrivateAttendees}
                 />
               </div>
 

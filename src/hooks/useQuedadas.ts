@@ -13,6 +13,7 @@ export interface Quedada {
   location_hint: string | null;
   event_date: string;
   max_attendees: number | null;
+  private_attendees: boolean;
   created_at: string;
   creator?: {
     id: string;
@@ -178,6 +179,7 @@ export const useCreateQuedada = () => {
       location_hint?: string;
       event_date: string;
       max_attendees?: number;
+      private_attendees?: boolean;
     }) => {
       if (!profile) throw new Error("No profile");
 
@@ -191,6 +193,7 @@ export const useCreateQuedada = () => {
           location_hint: quedada.location_hint || null,
           event_date: quedada.event_date,
           max_attendees: quedada.max_attendees || null,
+          private_attendees: quedada.private_attendees || false,
         })
         .select()
         .single();
@@ -299,6 +302,7 @@ export const useUpdateQuedada = () => {
         location_hint?: string | null;
         event_date?: string;
         max_attendees?: number | null;
+        private_attendees?: boolean;
       };
     }) => {
       const { error } = await supabase
