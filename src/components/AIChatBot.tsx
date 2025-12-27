@@ -6,6 +6,7 @@ import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, U
 import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { TypingIndicator } from "./TypingIndicator";
 
 const SUGGESTED_QUESTIONS = [
   "¿Cuáles son mis quedadas?",
@@ -240,13 +241,7 @@ const FormattedMessage = ({ content, isUser, onNavigate }: FormattedMessageProps
   }
 
   if (!content) {
-    return (
-      <span className="inline-flex gap-1">
-        <span className="animate-bounce">·</span>
-        <span className="animate-bounce delay-100">·</span>
-        <span className="animate-bounce delay-200">·</span>
-      </span>
-    );
+    return <TypingIndicator />;
   }
 
   return (
