@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Images } from "lucide-react";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ImageLightbox from "@/components/ImageLightbox";
 
@@ -12,6 +13,7 @@ interface ProfilePhotoGalleryProps {
 const ProfilePhotoGallery = ({ photos, avatarUrl, name }: ProfilePhotoGalleryProps) => {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
 
   // Combine photos with avatar as fallback
   const allPhotos = photos.length > 0 ? photos : avatarUrl ? [avatarUrl] : [];
@@ -20,17 +22,20 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name }: ProfilePhotoGalleryPro
     return null;
   }
 
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handlePrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setDirection(-1);
     setCurrentIndex((prev) => (prev === 0 ? allPhotos.length - 1 : prev - 1));
   };
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setDirection(1);
     setCurrentIndex((prev) => (prev === allPhotos.length - 1 ? 0 : prev + 1));
   };
 
   const handleThumbnailClick = (index: number) => {
+    setDirection(index > currentIndex ? 1 : -1);
     setCurrentIndex(index);
   };
 
@@ -38,39 +43,94 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name }: ProfilePhotoGalleryPro
     setLightboxImage(allPhotos[currentIndex]);
   };
 
+  // Swipe handler
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+  };
+
+  const handleDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const swipe = swipePower(info.offset.x, info.velocity.x);
+
+    if (swipe < -swipeConfidenceThreshold) {
+      handleNext();
+    } else if (swipe > swipeConfidenceThreshold) {
+      handlePrev();
+    }
+  };
+
+  const variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 300 : -300,
+      opacity: 0,
+    }),
+  };
+
   return (
     <>
       <div className="space-y-3">
-        {/* Main image display */}
-        <div 
-          className="relative aspect-[4/5] rounded-2xl overflow-hidden cursor-pointer group"
-          onClick={handleMainImageClick}
-        >
-          <img
-            src={allPhotos[currentIndex]}
-            alt={`${name || "Foto"} ${currentIndex + 1}`}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors flex items-center justify-center">
+        {/* Main image display with swipe */}
+        <div className="relative aspect-[4/5] rounded-2xl overflow-hidden cursor-pointer group">
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
+            <motion.img
+              key={currentIndex}
+              custom={direction}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 },
+              }}
+              drag={allPhotos.length > 1 ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={1}
+              onDragEnd={handleDragEnd}
+              onClick={handleMainImageClick}
+              src={allPhotos[currentIndex]}
+              alt={`${name || "Foto"} ${currentIndex + 1}`}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ touchAction: "pan-y" }}
+            />
+          </AnimatePresence>
+
+          {/* Hover overlay - only show on non-touch devices */}
+          <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors flex items-center justify-center pointer-events-none">
             <div className="w-12 h-12 rounded-full bg-background/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <Images className="w-5 h-5 text-foreground" />
             </div>
           </div>
+
+          {/* Swipe hint for mobile */}
+          {allPhotos.length > 1 && (
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-background/60 backdrop-blur-sm text-xs font-body text-foreground/70 md:hidden animate-pulse-soft pointer-events-none">
+              ← Desliza →
+            </div>
+          )}
 
           {/* Navigation arrows (only if multiple photos) */}
           {allPhotos.length > 1 && (
             <>
               <button
                 onClick={handlePrev}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
               >
                 <ChevronLeft className="w-5 h-5 text-foreground" />
               </button>
               <button
                 onClick={handleNext}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
               >
                 <ChevronRight className="w-5 h-5 text-foreground" />
               </button>
@@ -79,14 +139,14 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name }: ProfilePhotoGalleryPro
 
           {/* Photo counter */}
           {allPhotos.length > 1 && (
-            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-body text-foreground">
+            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-body text-foreground z-10">
               {currentIndex + 1} / {allPhotos.length}
             </div>
           )}
 
           {/* Dots indicator */}
           {allPhotos.length > 1 && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
               {allPhotos.map((_, index) => (
                 <button
                   key={index}
