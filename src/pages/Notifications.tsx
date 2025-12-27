@@ -14,6 +14,7 @@ import {
 import { ArrowLeft, Bell, Check, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification, useDeleteReadNotifications } from "@/hooks/useNotificationCenter";
 import ErrorState from "@/components/ErrorState";
+import EmptyState from "@/components/EmptyState";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -182,17 +183,11 @@ const Notifications = () => {
               onRetry={() => refetch()}
             />
           ) : filteredNotifications?.length === 0 ? (
-            <div className="text-center py-16 animate-fade-up">
-              <div className="w-20 h-20 rounded-full bg-card/50 flex items-center justify-center mx-auto mb-6">
-                <Bell className="w-8 h-8 text-muted-foreground/30" />
-              </div>
-              <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-                Sin notificaciones
-              </h3>
-              <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto">
-                Cuando haya actividad, aparecerá aquí.
-              </p>
-            </div>
+            <EmptyState
+              icon={Bell}
+              title="Sin notificaciones"
+              description="Cuando haya actividad, aparecerá aquí."
+            />
           ) : (
             <div className="space-y-2">
               {filteredNotifications?.map((notification, index) => (

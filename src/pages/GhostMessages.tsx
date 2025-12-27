@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
+import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { useReceivedGhostMessages, useMarkGhostMessageRead } from "@/hooks/useReceivedGhostMessages";
 import { useHasSparkWith } from "@/hooks/useSparks";
@@ -257,25 +258,19 @@ const GhostMessages = () => {
             onRetry={() => refetch()}
           />
         ) : messages?.length === 0 ? (
-          <div className="text-center py-16 animate-fade-up">
-            <div className="relative w-20 h-20 mx-auto mb-6">
-              <div className="w-full h-full rounded-full bg-card/50 flex items-center justify-center">
-                <Ghost className="w-8 h-8 text-muted-foreground/30" />
-              </div>
-            </div>
-            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-              Sin mensajes aún
-            </h3>
-            <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed mb-6">
-              Cuando alguien te envíe un mensaje fantasma, aparecerá aquí.
-            </p>
-            <Button
-              variant="kiki-soft"
-              onClick={() => navigate("/presence")}
-            >
-              Explorar presencia
-            </Button>
-          </div>
+          <EmptyState
+            icon={Ghost}
+            title="Sin mensajes aún"
+            description="Cuando alguien te envíe un mensaje fantasma, aparecerá aquí."
+            action={
+              <Button
+                variant="kiki-soft"
+                onClick={() => navigate("/presence")}
+              >
+                Explorar presencia
+              </Button>
+            }
+          />
         ) : (
           <div className="space-y-4">
             {messages?.map((message, index) => (
