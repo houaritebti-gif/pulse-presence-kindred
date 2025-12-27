@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
+import PhotoCarousel from "@/components/PhotoCarousel";
 
 interface PresenceProfile {
   id: string;
@@ -35,9 +36,10 @@ interface PresenceCardProps {
   };
   compatibility: number;
   animationDelay: number;
+  photos?: string[];
 }
 
-const PresenceCard = ({ presence, compatibility, animationDelay }: PresenceCardProps) => {
+const PresenceCard = ({ presence, compatibility, animationDelay, photos = [] }: PresenceCardProps) => {
   const navigate = useNavigate();
   const { data: organizedCount } = useOrganizedQuedadasCount(presence.profile?.id);
   const [showModerationModal, setShowModerationModal] = useState(false);
@@ -62,32 +64,80 @@ const PresenceCard = ({ presence, compatibility, animationDelay }: PresenceCardP
   return (
     <>
       <div
-        className="w-full bg-card rounded-2xl p-6 text-left transition-all hover:scale-[1.02] animate-fade-up cursor-pointer"
+        className="w-full bg-card rounded-2xl overflow-hidden text-left transition-all hover:scale-[1.02] animate-fade-up cursor-pointer"
         style={{ animationDelay: `${animationDelay}ms` }}
         onClick={handleCardClick}
       >
-        <div className="flex items-start gap-4">
-          {/* Avatar with compatibility badge */}
-          <div className="relative">
-            <div className="w-14 h-14 rounded-full bg-card-foreground/10 flex-shrink-0 overflow-hidden">
-              {presence.profile?.avatar_url ? (
-                <img 
-                  src={presence.profile.avatar_url} 
-                  alt={presence.profile.name || "Avatar"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-card-foreground/40 font-display text-lg">
-                  {(presence.profile?.name?.[0] || "?").toUpperCase()}
-                </div>
-              )}
+        {/* Photo carousel - larger display */}
+        <div className="relative">
+          <PhotoCarousel
+            photos={photos}
+            avatarUrl={presence.profile?.avatar_url}
+            name={presence.profile?.name}
+            size="lg"
+            showArrows={true}
+            showDots={true}
+          />
+          
+          {/* Compatibility badge overlay */}
+          {compatibility > 0 && (
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/90 backdrop-blur-sm shadow-lg">
+              <Heart className="w-3 h-3 text-primary-foreground fill-primary-foreground" />
+              <span className="text-xs font-bold text-primary-foreground">
+                {compatibility} en común
+              </span>
             </div>
-            {compatibility > 0 && (
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg">
-                <Heart className="w-3 h-3 text-primary-foreground fill-primary-foreground" />
-              </div>
+          )}
+
+          {/* Options menu overlay */}
+          <div className="absolute top-3 right-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <button className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background transition-colors">
+                  <MoreVertical className="w-4 h-4 text-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={handleReport} className="gap-2 cursor-pointer">
+                  <Flag className="w-4 h-4" />
+                  Reportar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleBlock} className="gap-2 text-destructive cursor-pointer">
+                  <Ban className="w-4 h-4" />
+                  Bloquear
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Info section */}
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h3 className="font-display text-lg font-semibold text-card-foreground">
+              {presence.profile?.name || "Anónima"}
+            </h3>
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
+            {organizedCount && organizedCount > 0 && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-body text-accent bg-accent/10 px-2 py-0.5 rounded-full cursor-help animate-pulse-soft">
+                      <Calendar className="w-2.5 h-2.5" />
+                      {organizedCount}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Ha organizado {organizedCount} {organizedCount === 1 ? "quedada" : "quedadas"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
+          
+          <p className="font-body text-sm text-card-foreground/70 mb-3">
+            Vibra {presence.profile?.vibe?.toLowerCase() || "misteriosa"}
+          </p>
           
           {/* Info */}
           <div className="flex-1 min-w-0">
@@ -169,25 +219,6 @@ const PresenceCard = ({ presence, compatibility, animationDelay }: PresenceCardP
               </div>
             )}
           </div>
-
-          {/* Options menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <button className="p-2 hover:bg-card-foreground/5 rounded-full transition-colors">
-                <MoreVertical className="w-4 h-4 text-card-foreground/50" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem onClick={handleReport} className="gap-2 cursor-pointer">
-                <Flag className="w-4 h-4" />
-                Reportar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleBlock} className="gap-2 text-destructive cursor-pointer">
-                <Ban className="w-4 h-4" />
-                Bloquear
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
 

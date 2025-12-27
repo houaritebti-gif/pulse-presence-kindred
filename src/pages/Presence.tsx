@@ -12,6 +12,7 @@ import { useQuedadas } from "@/hooks/useQuedadas";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
 import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
 import { useBlockedUsers } from "@/hooks/useUserModeration";
+import { useMultipleProfilePhotos } from "@/hooks/useProfilePhotos";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 import PresenceCard from "@/components/PresenceCard";
 import { PullToRefresh } from "@/components/PullToRefresh";
@@ -69,6 +70,15 @@ const Presence = () => {
       !blockedSet.has(p.profile?.id || "")
     ) || [];
   }, [presenceList, profile?.id, blockedIds]);
+
+  // Get all profile IDs for batch photo fetch
+  const profileIds = useMemo(() => 
+    otherProfiles.map(p => p.profile?.id).filter(Boolean) as string[],
+    [otherProfiles]
+  );
+
+  // Fetch all photos in one query
+  const { data: photosMap } = useMultipleProfilePhotos(profileIds);
 
   // Calculate compatibility for each presence
   const getCompatibility = (presence: typeof otherProfiles[0]) => {
@@ -280,13 +290,17 @@ const Presence = () => {
               : "No hay personas que coincidan con tus filtros. Prueba con otros criterios."}
           />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {filteredProfiles.map((presence, index) => (
               <PresenceCard
                 key={presence.id}
                 presence={presence}
                 compatibility={getCompatibility(presence)}
                 animationDelay={(index + 1) * 100}
+                photos={presence.profile?.id 
+                  ? photosMap?.[presence.profile.id]?.map(p => p.photo_url) || []
+                  : []
+                }
               />
             ))}
           </div>
