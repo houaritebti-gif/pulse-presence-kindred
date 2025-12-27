@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage, useOtherUserReadStatus } from "@/hooks/useSparks";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { useChatImageUpload } from "@/hooks/useChatImageUpload";
+import { compressChatImage } from "@/utils/imageCompression";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -65,6 +66,7 @@ const SparkChat = () => {
   const [editingMessage, setEditingMessage] = useState<{ id: string; content: string } | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isCompressingPreview, setIsCompressingPreview] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -114,7 +116,7 @@ const SparkChat = () => {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -123,23 +125,37 @@ const SparkChat = () => {
       return;
     }
     
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 10 * 1024 * 1024; // 10MB before compression
     if (file.size > maxSize) {
-      toast.error("La imagen es demasiado grande (máx. 5MB)");
+      toast.error("La imagen es demasiado grande (máx. 10MB)");
       return;
     }
     
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    setIsCompressingPreview(true);
+    
+    try {
+      // Compress image before preview
+      const compressedFile = await compressChatImage(file);
+      setSelectedFile(compressedFile);
+      
+      // Create preview from compressed file
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setIsCompressingPreview(false);
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error("Error compressing image:", error);
+      toast.error("Error al procesar la imagen");
+      setIsCompressingPreview(false);
+    }
   };
 
   const clearImagePreview = () => {
     setSelectedFile(null);
     setImagePreview(null);
+    setIsCompressingPreview(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -587,10 +603,10 @@ const SparkChat = () => {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
+              disabled={isUploading || isCompressingPreview}
               className="h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 disabled:opacity-50"
             >
-              {isUploadingImage ? (
+              {isUploadingImage || isCompressingPreview ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <ImagePlus className="w-5 h-5" />
