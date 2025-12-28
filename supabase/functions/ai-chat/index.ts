@@ -23,16 +23,45 @@ serve(async (req) => {
     // Build context about user's quedadas
     let quedadasContext = "";
     if (context?.quedadas && context.quedadas.length > 0) {
-      quedadasContext = `\n\nInformación sobre las quedadas del usuario:
-${context.quedadas.map((q: any, i: number) => `
-${i + 1}. "${q.title}" 
+      const userQuedadas = context.quedadas.filter((q: any) => q.is_creator);
+      const attendingQuedadas = context.quedadas.filter((q: any) => !q.is_creator && q.is_attending);
+      const availableQuedadas = context.quedadas.filter((q: any) => !q.is_creator && !q.is_attending);
+      
+      quedadasContext = `\n\nINFORMACIÓN SOBRE QUEDADAS DEL USUARIO:`;
+      
+      if (userQuedadas.length > 0) {
+        quedadasContext += `\n\n📌 Quedadas que ha CREADO el usuario (${userQuedadas.length}):`;
+        quedadasContext += userQuedadas.map((q: any, i: number) => `
+${i + 1}. "${q.title}"
    - Fecha: ${q.event_date}
    - Ciudad: ${q.city}
    - Descripción: ${q.description || "Sin descripción"}
    - Lugar: ${q.location_hint || "No especificado"}
-   - Asistentes: ${q.attendee_count || 0}${q.max_attendees ? `/${q.max_attendees}` : ""}
-   - Creador: ${q.is_creator ? "Tú" : q.creator_name || "Otro usuario"}
-   - Estado: ${q.is_attending ? "Apuntado" : "No apuntado"}`).join("\n")}`;
+   - Asistentes confirmados: ${q.attendee_count || 0}${q.max_attendees ? ` de ${q.max_attendees} máximo` : ""}`).join("");
+      }
+      
+      if (attendingQuedadas.length > 0) {
+        quedadasContext += `\n\n✅ Quedadas a las que ASISTIRÁ el usuario (${attendingQuedadas.length}):`;
+        quedadasContext += attendingQuedadas.map((q: any, i: number) => `
+${i + 1}. "${q.title}" (organizada por ${q.creator_name || "otro usuario"})
+   - Fecha: ${q.event_date}
+   - Ciudad: ${q.city}
+   - Descripción: ${q.description || "Sin descripción"}
+   - Lugar: ${q.location_hint || "No especificado"}
+   - Asistentes: ${q.attendee_count || 0}${q.max_attendees ? `/${q.max_attendees}` : ""}`).join("");
+      }
+      
+      if (availableQuedadas.length > 0) {
+        quedadasContext += `\n\n🔍 Otras quedadas DISPONIBLES en su ciudad (${availableQuedadas.length}):`;
+        quedadasContext += availableQuedadas.map((q: any, i: number) => `
+${i + 1}. "${q.title}" (organizada por ${q.creator_name || "otro usuario"})
+   - Fecha: ${q.event_date}
+   - Asistentes: ${q.attendee_count || 0}${q.max_attendees ? `/${q.max_attendees}` : ""}`).join("");
+      }
+      
+      if (context.quedadas.length === 0) {
+        quedadasContext += "\nEl usuario no tiene quedadas creadas ni está apuntado a ninguna, y no hay quedadas disponibles en su ciudad.";
+      }
     }
 
     // Build context about user's sparks
