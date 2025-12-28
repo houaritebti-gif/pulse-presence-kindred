@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Heart, MessageCircle, Zap, Eye, Shield, Star } from "lucide-react";
+import { Sparkles, Heart, MessageCircle, Zap, Eye, Shield, Star, Quote } from "lucide-react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring, type Variants } from "framer-motion";
 import Footer from "@/components/Footer";
 import { useRef, useEffect, useState } from "react";
@@ -229,6 +229,37 @@ const Landing = () => {
     "Las mejores conexiones no se fuerzan.",
     "Aquí no hay matches, hay momentos.",
     "Menos ruido, más chispa."
+  ];
+
+  const testimonials = [
+    {
+      name: "Lucía M.",
+      age: 26,
+      city: "Madrid",
+      text: "Por fin una app donde puedo ser yo misma sin la presión de las fotos perfectas. Aquí las conversaciones fluyen de verdad.",
+      avatar: "🦋",
+    },
+    {
+      name: "Carlos R.",
+      age: 29,
+      city: "Barcelona",
+      text: "Llevaba años cansado de hacer swipe sin sentido. En KIKI conocí personas que realmente conectan con mi vibe.",
+      avatar: "🎸",
+    },
+    {
+      name: "Marina P.",
+      age: 24,
+      city: "Valencia",
+      text: "La función de presencia es genial. Solo aparezco cuando tengo ganas de conocer gente, sin presiones.",
+      avatar: "🌙",
+    },
+    {
+      name: "Álex G.",
+      age: 31,
+      city: "Sevilla",
+      text: "Lo que más me gusta es que aquí la gente es auténtica. Nada de filtros ni poses. Solo chispa real.",
+      avatar: "⚡",
+    },
   ];
 
   return (
@@ -666,6 +697,169 @@ const Landing = () => {
                 <p className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground/90 leading-tight">
                   "{quote}"
                 </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-card/20 to-background" />
+        
+        {/* Animated background elements */}
+        <motion.div 
+          className="absolute top-20 left-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.3, 1],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div 
+          className="absolute bottom-20 right-10 w-80 h-80 bg-accent/10 rounded-full blur-3xl"
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            opacity: [0.4, 0.7, 0.4],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+        
+        <div className="max-w-6xl mx-auto w-full relative z-10">
+          <motion.div 
+            className="text-center mb-16" 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, margin: "-100px" }} 
+            variants={fadeInUp}
+          >
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/20 mb-6"
+              whileHover={{ scale: 1.05 }}
+            >
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="font-body text-sm text-foreground/80">Historias reales</span>
+            </motion.div>
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+              Lo que dicen de <span className="gradient-text">KIKI</span>
+            </h2>
+            <p className="font-body text-lg text-muted-foreground max-w-xl mx-auto">
+              Personas reales, conexiones reales. Sin filtros, sin guiones.
+            </p>
+          </motion.div>
+
+          <motion.div 
+            className="grid md:grid-cols-2 gap-6 lg:gap-8" 
+            initial="hidden" 
+            whileInView="visible" 
+            viewport={{ once: true, margin: "-50px" }} 
+            variants={staggerContainer}
+          >
+            {testimonials.map((testimonial, index) => (
+              <motion.div 
+                key={index} 
+                variants={scaleIn}
+                className="group relative"
+                whileHover={{ y: -8 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <div className="relative p-8 rounded-3xl glass-dark border border-border/20 hover:border-primary/40 transition-all duration-500 overflow-hidden h-full">
+                  {/* Quote icon */}
+                  <motion.div 
+                    className="absolute top-6 right-6 text-primary/10"
+                    initial={{ opacity: 0, scale: 0 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 + index * 0.1 }}
+                  >
+                    <Quote className="w-12 h-12" />
+                  </motion.div>
+                  
+                  {/* Hover gradient overlay */}
+                  <motion.div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{
+                      background: "radial-gradient(circle at 50% 100%, hsl(var(--primary) / 0.1) 0%, transparent 60%)",
+                    }}
+                  />
+                  
+                  {/* Content */}
+                  <div className="relative z-10">
+                    {/* Avatar and info */}
+                    <div className="flex items-center gap-4 mb-6">
+                      <motion.div 
+                        className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center text-2xl border-2 border-primary/30"
+                        whileHover={{ scale: 1.1, rotate: [0, -10, 10, 0] }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        {testimonial.avatar}
+                      </motion.div>
+                      <div>
+                        <h4 className="font-display text-lg font-bold text-foreground">
+                          {testimonial.name}
+                        </h4>
+                        <p className="font-body text-sm text-muted-foreground">
+                          {testimonial.age} años • {testimonial.city}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Testimonial text */}
+                    <p className="font-body text-foreground/80 leading-relaxed text-lg">
+                      "{testimonial.text}"
+                    </p>
+                    
+                    {/* Stars rating */}
+                    <motion.div 
+                      className="flex gap-1 mt-6"
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ delay: 0.4 + index * 0.1 }}
+                    >
+                      {[...Array(5)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, scale: 0 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.5 + i * 0.05 }}
+                        >
+                          <Star className="w-4 h-4 text-primary fill-primary" />
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+          
+          {/* Bottom stats */}
+          <motion.div 
+            className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            {[
+              { value: "10K+", label: "Usuarios activos" },
+              { value: "50K+", label: "Chispas enviadas" },
+              { value: "98%", label: "Conexiones reales" },
+            ].map((stat, index) => (
+              <motion.div 
+                key={index}
+                variants={fadeInUp}
+                className="text-center"
+              >
+                <motion.div 
+                  className="font-display text-3xl md:text-4xl font-bold gradient-text"
+                  whileInView={{
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
+                >
+                  {stat.value}
+                </motion.div>
+                <p className="font-body text-sm text-muted-foreground mt-1">{stat.label}</p>
               </motion.div>
             ))}
           </motion.div>
