@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useQuedadas } from "./useQuedadas";
 import { useProfile } from "./useProfile";
 import { useSparkChats } from "./useSparks";
+import { playChatbotResponseSound } from "@/utils/notificationSound";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -211,10 +212,11 @@ export const useAIChat = () => {
         }
       }
 
-      // Haptic feedback when response is complete
+      // Haptic feedback and sound when response is complete
       if (navigator.vibrate) {
         navigator.vibrate([30, 20, 30]);
       }
+      playChatbotResponseSound();
     } catch (err) {
       console.error("AI Chat error:", err);
       setError(err instanceof Error ? err.message : "Error desconocido");
