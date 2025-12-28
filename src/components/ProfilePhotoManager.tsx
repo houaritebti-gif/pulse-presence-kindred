@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Plus, X, GripVertical, Image as ImageIcon, Camera, Sparkles, Crop } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { Plus, X, GripVertical, Image as ImageIcon, Camera, Sparkles, Crop, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProfilePhotos, useUploadProfilePhoto, useDeleteProfilePhoto, useReorderProfilePhotos, ProfilePhoto } from "@/hooks/useProfilePhotos";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import UploadProgress, { UploadPhase } from "./UploadProgress";
 import ImageCropModal from "./ImageCropModal";
 import { motion, AnimatePresence } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProfilePhotoManagerProps {
   profileId: string;
@@ -23,8 +24,9 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [uploadPhase, setUploadPhase] = useState<UploadPhase>("compressing");
   const [uploadProgress, setUploadProgress] = useState(0);
+  const isMobile = useIsMobile();
   
-  // Drag state
+  // Drag state (desktop only)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
@@ -36,7 +38,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   const photoCount = photos?.length || 0;
   const emptySlots = MAX_PHOTOS - photoCount;
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -62,7 +64,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
+  }, []);
 
   const handleCropComplete = async (croppedBlob: Blob) => {
     // Clean up object URL
@@ -121,15 +123,36 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
     });
   };
 
-  const handleAddClick = () => {
+  const handleAddClick = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  // Drag handlers
+  // Mobile reorder - move photo up or down
+  const handleMovePhoto = useCallback(async (index: number, direction: 'up' | 'down') => {
+    if (!photos) return;
+    
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= photos.length) return;
+
+    const newPhotos = [...photos];
+    const [movedPhoto] = newPhotos.splice(index, 1);
+    newPhotos.splice(newIndex, 0, movedPhoto);
+
+    const newPhotoIds = newPhotos.map(p => p.id);
+
+    await reorderPhotos.mutateAsync({
+      profileId,
+      photoIds: newPhotoIds,
+    });
+
+    toast.success(direction === 'up' ? "Foto movida arriba" : "Foto movida abajo");
+  }, [photos, profileId, reorderPhotos]);
+
+  // Drag handlers (desktop only)
   const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (isMobile) return;
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = "move";
-    // Add a slight delay to show the drag visual
     const target = e.target as HTMLElement;
     setTimeout(() => {
       target.style.opacity = "0.5";
@@ -146,6 +169,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
+    if (isMobile) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     if (draggedIndex !== null && draggedIndex !== index) {
@@ -158,6 +182,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   };
 
   const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
+    if (isMobile) return;
     e.preventDefault();
     
     if (draggedIndex === null || draggedIndex === dropIndex || !photos) {
@@ -166,18 +191,15 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
       return;
     }
 
-    // Reorder the photos array
     const newPhotos = [...photos];
     const [draggedPhoto] = newPhotos.splice(draggedIndex, 1);
     newPhotos.splice(dropIndex, 0, draggedPhoto);
 
-    // Get the new order of IDs
     const newPhotoIds = newPhotos.map(p => p.id);
 
     setDraggedIndex(null);
     setDragOverIndex(null);
 
-    // Update in database
     await reorderPhotos.mutateAsync({
       profileId,
       photoIds: newPhotoIds,
@@ -211,7 +233,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 <Sparkles className="w-4 h-4 text-primary" />
               </h3>
               <p className="text-xs font-body text-muted-foreground">
-                {photoCount}/{MAX_PHOTOS} fotos • Arrastra para reordenar
+                {photoCount}/{MAX_PHOTOS} fotos • {isMobile ? "Usa las flechas para reordenar" : "Arrastra para reordenar"}
               </p>
             </div>
           </div>
@@ -234,6 +256,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        capture={isMobile ? "environment" : undefined}
         onChange={handleFileSelect}
         className="hidden"
       />
@@ -256,14 +279,15 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 damping: 25
               }}
               layout
-              draggable
+              draggable={!isMobile}
               onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, index)}
               onDragEnd={() => handleDragEnd()}
               onDragOver={(e) => handleDragOver(e as unknown as React.DragEvent, index)}
               onDragLeave={() => handleDragLeave()}
               onDrop={(e) => handleDrop(e as unknown as React.DragEvent, index)}
               className={cn(
-                "relative aspect-[3/4] rounded-xl overflow-hidden group cursor-grab active:cursor-grabbing transition-all shadow-md",
+                "relative aspect-[3/4] rounded-xl overflow-hidden group transition-all shadow-md",
+                !isMobile && "cursor-grab active:cursor-grabbing",
                 draggedIndex === index && "opacity-50 scale-95",
                 dragOverIndex === index && "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105"
               )}
@@ -274,23 +298,60 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 className="w-full h-full object-cover pointer-events-none"
               />
               
-              {/* Delete button */}
+              {/* Delete button - always visible on mobile */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(photo.id, photo.photo_url);
                 }}
-                className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg"
+                className={cn(
+                  "absolute top-1.5 right-1.5 w-8 h-8 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center z-10 shadow-lg transition-opacity",
+                  isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                )}
                 disabled={deletePhoto.isPending}
               >
-                <X className="w-3.5 h-3.5 text-destructive-foreground" />
+                <X className="w-4 h-4 text-destructive-foreground" />
               </button>
 
-              {/* Drag handle indicator */}
-              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-1 rounded-full bg-background/90 backdrop-blur-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
-                <GripVertical className="w-3 h-3 text-foreground" />
-                <span className="text-[10px] font-body font-medium text-foreground">Arrastra</span>
-              </div>
+              {/* Mobile reorder buttons */}
+              {isMobile && photos && photos.length > 1 && (
+                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 z-10">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMovePhoto(index, 'up');
+                    }}
+                    disabled={index === 0 || reorderPhotos.isPending}
+                    className={cn(
+                      "w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center shadow-md transition-all active:scale-95",
+                      index === 0 && "opacity-40"
+                    )}
+                  >
+                    <ArrowUp className="w-4 h-4 text-foreground" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMovePhoto(index, 'down');
+                    }}
+                    disabled={index === photos.length - 1 || reorderPhotos.isPending}
+                    className={cn(
+                      "w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center shadow-md transition-all active:scale-95",
+                      index === photos.length - 1 && "opacity-40"
+                    )}
+                  >
+                    <ArrowDown className="w-4 h-4 text-foreground" />
+                  </button>
+                </div>
+              )}
+
+              {/* Desktop drag handle indicator */}
+              {!isMobile && (
+                <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-2 py-1 rounded-full bg-background/90 backdrop-blur-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                  <GripVertical className="w-3 h-3 text-foreground" />
+                  <span className="text-[10px] font-body font-medium text-foreground">Arrastra</span>
+                </div>
+              )}
 
               {/* Order badge */}
               {index === 0 && (
@@ -320,29 +381,32 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
             onClick={handleAddClick}
             className={cn(
               "aspect-[3/4] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all duration-200",
-              "hover:border-primary hover:bg-primary/10 hover:scale-[1.02] active:scale-[0.98]",
+              "hover:border-primary hover:bg-primary/10 active:scale-[0.98]",
+              isMobile && "active:bg-primary/20",
               photoCount === 0 && i === 0 
                 ? "border-primary bg-primary/10" 
                 : "border-muted-foreground/30 bg-muted/30"
             )}
           >
             <div className={cn(
-              "w-12 h-12 rounded-full flex items-center justify-center transition-colors",
+              "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
+              isMobile && "w-16 h-16",
               photoCount === 0 && i === 0 
                 ? "bg-primary/20" 
                 : "bg-muted-foreground/10"
             )}>
               {photoCount === 0 && i === 0 ? (
-                <Camera className="w-6 h-6 text-primary" />
+                <Camera className={cn("w-7 h-7 text-primary", isMobile && "w-8 h-8")} />
               ) : (
-                <Plus className="w-6 h-6 text-muted-foreground" />
+                <Plus className={cn("w-7 h-7 text-muted-foreground", isMobile && "w-8 h-8")} />
               )}
             </div>
             <span className={cn(
-              "text-sm font-body font-medium",
+              "text-sm font-body font-medium text-center px-2",
+              isMobile && "text-base",
               photoCount === 0 && i === 0 ? "text-primary" : "text-muted-foreground"
             )}>
-              {photoCount === 0 && i === 0 ? "Añade tu primera foto" : "Añadir foto"}
+              {photoCount === 0 && i === 0 ? (isMobile ? "Toca para añadir foto" : "Añade tu primera foto") : "Añadir foto"}
             </span>
           </button>
         ))}
