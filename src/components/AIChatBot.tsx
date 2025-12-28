@@ -8,7 +8,7 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { TypingIndicator } from "./TypingIndicator";
-import { useCreateQuedada } from "@/hooks/useQuedadas";
+import { useCreateQuedada, useDeleteQuedada } from "@/hooks/useQuedadas";
 import { useProfile } from "@/hooks/useProfile";
 
 const SUGGESTED_QUESTIONS = [
@@ -34,6 +34,12 @@ interface QuedadaCreationData {
   location_hint: string;
 }
 
+// Quedada deletion data extracted from AI
+interface QuedadaDeletionData {
+  id: string;
+  title: string;
+}
+
 const ACTION_ICONS = {
   sparks: Sparkles,
   quedadas: Calendar,
@@ -42,15 +48,17 @@ const ACTION_ICONS = {
   create: Users,
 };
 
-// Detect action patterns and quedada creation in text
+// Detect action patterns, quedada creation and deletion in text
 const extractActions = (text: string): { 
   cleanText: string; 
   actions: QuickAction[]; 
   quedadaCreation: QuedadaCreationData | null;
+  quedadaDeletion: QuedadaDeletionData | null;
 } => {
   const actions: QuickAction[] = [];
   let cleanText = text;
   let quedadaCreation: QuedadaCreationData | null = null;
+  let quedadaDeletion: QuedadaDeletionData | null = null;
 
   // Pattern: [[action:label|route|icon]]
   const actionPattern = /\[\[action:([^|]+)\|([^|]+)\|([^\]]+)\]\]/g;
@@ -77,10 +85,25 @@ const extractActions = (text: string): {
     };
   }
 
-  // Remove action patterns from text
-  cleanText = text.replace(actionPattern, "").replace(quedadaPattern, "").trim();
+  // Pattern: [[delete_quedada:quedada_id|title]]
+  const deletePattern = /\[\[delete_quedada:([^|]+)\|([^\]]+)\]\]/;
+  const deleteMatch = text.match(deletePattern);
+  
+  if (deleteMatch) {
+    quedadaDeletion = {
+      id: deleteMatch[1].trim(),
+      title: deleteMatch[2].trim(),
+    };
+  }
 
-  return { cleanText, actions, quedadaCreation };
+  // Remove action patterns from text
+  cleanText = text
+    .replace(actionPattern, "")
+    .replace(quedadaPattern, "")
+    .replace(deletePattern, "")
+    .trim();
+
+  return { cleanText, actions, quedadaCreation, quedadaDeletion };
 };
 
 // Simple markdown parser for chat messages
@@ -254,15 +277,17 @@ interface FormattedMessageProps {
   isUser: boolean;
   onNavigate: (route: string) => void;
   onCreateQuedada: (data: QuedadaCreationData) => void;
+  onDeleteQuedada: (data: QuedadaDeletionData) => void;
   showCopyButton?: boolean;
 }
 
-const FormattedMessage = ({ content, isUser, onNavigate, onCreateQuedada, showCopyButton = false }: FormattedMessageProps) => {
+const FormattedMessage = ({ content, isUser, onNavigate, onCreateQuedada, onDeleteQuedada, showCopyButton = false }: FormattedMessageProps) => {
   const [copied, setCopied] = useState(false);
   const [quedadaCreated, setQuedadaCreated] = useState(false);
+  const [quedadaDeleted, setQuedadaDeleted] = useState(false);
   
-  const { cleanText, actions, quedadaCreation, parsed } = useMemo(() => {
-    if (isUser || !content) return { cleanText: content, actions: [], quedadaCreation: null, parsed: null };
+  const { cleanText, actions, quedadaCreation, quedadaDeletion, parsed } = useMemo(() => {
+    if (isUser || !content) return { cleanText: content, actions: [], quedadaCreation: null, quedadaDeletion: null, parsed: null };
     const extracted = extractActions(content);
     return {
       ...extracted,
@@ -290,6 +315,13 @@ const FormattedMessage = ({ content, isUser, onNavigate, onCreateQuedada, showCo
     if (quedadaCreation && !quedadaCreated) {
       onCreateQuedada(quedadaCreation);
       setQuedadaCreated(true);
+    }
+  };
+
+  const handleDeleteQuedada = () => {
+    if (quedadaDeletion && !quedadaDeleted) {
+      onDeleteQuedada(quedadaDeletion);
+      setQuedadaDeleted(true);
     }
   };
 
@@ -374,6 +406,44 @@ const FormattedMessage = ({ content, isUser, onNavigate, onCreateQuedada, showCo
           </div>
         </div>
       )}
+
+      {/* Quedada deletion card */}
+      {quedadaDeletion && (
+        <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20 space-y-2">
+          <div className="flex items-center gap-2 text-xs font-medium text-destructive">
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Eliminar quedada</span>
+          </div>
+          <div className="space-y-1 text-xs">
+            <p><strong>Quedada:</strong> {quedadaDeletion.title}</p>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={handleDeleteQuedada}
+              disabled={quedadaDeleted}
+              className={cn(
+                "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full",
+                quedadaDeleted 
+                  ? "bg-muted text-muted-foreground cursor-default"
+                  : "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+                "transition-colors duration-200"
+              )}
+            >
+              {quedadaDeleted ? (
+                <>
+                  <Check className="h-3 w-3" />
+                  Eliminada
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-3 w-3" />
+                  Confirmar eliminación
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
       
       {actions.length > 0 && (
         <div className="flex flex-wrap gap-2 pt-2">
@@ -431,6 +501,7 @@ export const AIChatBot = () => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const createQuedada = useCreateQuedada();
+  const deleteQuedada = useDeleteQuedada();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -495,6 +566,38 @@ export const AIChatBot = () => {
       toast({
         title: "Error",
         description: "No se pudo crear la quedada",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteQuedada = async (data: QuedadaDeletionData) => {
+    if (!profile) {
+      toast({
+        title: "Error",
+        description: "Necesitas iniciar sesión para eliminar quedadas",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await deleteQuedada.mutateAsync(data.id);
+      
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate([50, 30, 50]);
+      }
+      
+      toast({
+        title: "Quedada eliminada",
+        description: `"${data.title}" ha sido eliminada correctamente`,
+      });
+    } catch (err) {
+      console.error("Error deleting quedada:", err);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la quedada. Asegúrate de que eres el creador.",
         variant: "destructive",
       });
     }
@@ -604,6 +707,7 @@ export const AIChatBot = () => {
                         isUser={msg.role === "user"} 
                         onNavigate={handleNavigate}
                         onCreateQuedada={handleCreateQuedada}
+                        onDeleteQuedada={handleDeleteQuedada}
                         showCopyButton={msg.role === "assistant" && msg.content !== ""}
                       />
                     </div>
