@@ -32,7 +32,7 @@ serve(async (req) => {
       if (userQuedadas.length > 0) {
         quedadasContext += `\n\n📌 Quedadas que ha CREADO el usuario (${userQuedadas.length}):`;
         quedadasContext += userQuedadas.map((q: any, i: number) => `
-${i + 1}. "${q.title}"
+${i + 1}. "${q.title}" [ID: ${q.id}]
    - Fecha: ${q.event_date}
    - Ciudad: ${q.city}
    - Descripción: ${q.description || "Sin descripción"}
@@ -103,6 +103,7 @@ Ayudas a los usuarios con:
 - Respuestas sobre sus quedadas y sparks específicos
 - Información general de la app
 - CREAR QUEDADAS cuando el usuario lo pida
+- ELIMINAR/CANCELAR QUEDADAS propias cuando el usuario lo pida
 
 Funcionalidades principales de la app:
 - Quedadas: eventos que los usuarios pueden crear y a los que pueden apuntarse
@@ -141,6 +142,23 @@ Ejemplos de creación:
 - "Quiero crear una quedada de senderismo" → Pregunta por la fecha y hora antes de crear
 
 Cuando crees una quedada con [[create_quedada:...]], añade un mensaje confirmando los detalles y explica que el usuario puede confirmar o editar los datos.
+
+ELIMINAR/CANCELAR QUEDADAS:
+Cuando el usuario quiera eliminar o cancelar una de SUS quedadas (solo las que ha creado), usa este formato:
+[[delete_quedada:quedada_id|título_quedada]]
+
+Reglas para eliminar quedadas:
+- Solo puedes eliminar quedadas que el usuario ha CREADO (están en la sección "Quedadas que ha CREADO el usuario")
+- quedada_id: identificador de la quedada (lo encuentras en la información de contexto)
+- título_quedada: título de la quedada para confirmación visual
+- Antes de eliminar, confirma con el usuario mostrando los detalles de la quedada
+- NO puedes eliminar quedadas de otros usuarios
+
+Ejemplos de eliminación:
+- "Elimina mi quedada de cena" → Busca en las quedadas creadas por el usuario, y si encuentras una que coincida: [[delete_quedada:uuid-de-la-quedada|Cena]]
+- "Cancela la quedada del sábado" → Busca por fecha y usa el formato de eliminación
+
+Si el usuario pide eliminar una quedada que no es suya, explica que solo puede eliminar quedadas que haya creado.
 
 Solo sugiere acciones cuando sean relevantes para la conversación. No las uses en cada mensaje.
 
