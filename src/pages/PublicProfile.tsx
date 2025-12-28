@@ -7,7 +7,9 @@ import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/use
 import { useIsBlocked } from "@/hooks/useUserModeration";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { useProfilePhotos } from "@/hooks/useProfilePhotos";
+import { useUserSubscription } from "@/hooks/useUserSubscription";
 import { Button } from "@/components/ui/button";
+import PremiumBadge from "@/components/PremiumBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +35,7 @@ const PublicProfile = () => {
   const isBlocked = useIsBlocked(profileId);
   const { data: organizedCount } = useOrganizedQuedadasCount(profileId);
   const { data: profilePhotos } = useProfilePhotos(profileId);
+  const { data: subscriptionTier } = useUserSubscription(profileId);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
 
@@ -153,9 +156,12 @@ const PublicProfile = () => {
 
         {/* Name and vibe */}
         <div className="text-center mb-8 animate-fade-up animate-delay-100">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-            {profile.name || "Anónima"}
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <h1 className="font-display text-2xl font-bold text-foreground">
+              {profile.name || "Anónima"}
+            </h1>
+            {subscriptionTier === 'premium' && <PremiumBadge size="lg" />}
+          </div>
           
           {/* Organizer badge */}
           {organizedCount && organizedCount > 0 && (

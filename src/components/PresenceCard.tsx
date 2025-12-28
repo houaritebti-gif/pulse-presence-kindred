@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar } from "lucide-react";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
+import { useUserSubscription } from "@/hooks/useUserSubscription";
+import PremiumBadge from "@/components/PremiumBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +44,7 @@ interface PresenceCardProps {
 const PresenceCard = ({ presence, compatibility, animationDelay, photos = [] }: PresenceCardProps) => {
   const navigate = useNavigate();
   const { data: organizedCount } = useOrganizedQuedadasCount(presence.profile?.id);
+  const { data: subscriptionTier } = useUserSubscription(presence.profile?.id);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
 
@@ -117,6 +120,7 @@ const PresenceCard = ({ presence, compatibility, animationDelay, photos = [] }: 
             <h3 className="font-display text-lg font-semibold text-card-foreground">
               {presence.profile?.name || "Anónima"}
             </h3>
+            {subscriptionTier === 'premium' && <PremiumBadge size="sm" />}
             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
             {organizedCount && organizedCount > 0 && (
               <TooltipProvider>
