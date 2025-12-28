@@ -4,6 +4,7 @@ import { Sparkles, Heart, MessageCircle, Zap, Eye, Shield, Star, Quote } from "l
 import { motion, useScroll, useTransform, useMotionValue, useSpring, type Variants } from "framer-motion";
 import Footer from "@/components/Footer";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
+import FAQSection from "@/components/FAQSection";
 import { useRef, useEffect, useState } from "react";
 
 const fadeInUp: Variants = {
@@ -706,6 +707,9 @@ const Landing = () => {
 
       {/* Testimonials Section with Auto Carousel */}
       <TestimonialsCarousel testimonials={testimonials} />
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       {/* Final CTA Section */}
       <section className="min-h-[70vh] flex items-center justify-center py-24 px-6 relative overflow-hidden">
