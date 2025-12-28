@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Heart, MessageCircle, Users, Zap, Eye, Shield } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import Footer from "@/components/Footer";
 import { useRef } from "react";
 const fadeInUp = {
   hidden: {
@@ -366,6 +367,9 @@ const Landing = () => {
         {/* Bottom decorative line */}
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>;
 };
 export default Landing;

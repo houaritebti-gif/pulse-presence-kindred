@@ -1,0 +1,102 @@
+import { Instagram, Twitter, MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+
+const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="bg-background border-t border-border/20">
+      <div className="container mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Brand */}
+          <div className="md:col-span-2">
+            <h3 className="font-display text-2xl font-bold text-primary mb-3">
+              KIKI
+            </h3>
+            <p className="text-muted-foreground text-sm max-w-sm">
+              Conecta con personas afines en tu ciudad. Presencia en tiempo real, 
+              chispas mutuas y quedadas grupales.
+            </p>
+          </div>
+
+          {/* Legal Links */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link 
+                  to="/privacidad" 
+                  className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                >
+                  Política de Privacidad
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/terminos" 
+                  className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                >
+                  Términos de Servicio
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/cookies" 
+                  className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                >
+                  Política de Cookies
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Social Links */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-4">Síguenos</h4>
+            <div className="flex gap-4">
+              <a 
+                href="https://instagram.com/kiki" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://twitter.com/kiki" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                aria-label="Twitter"
+              >
+                <Twitter className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://discord.gg/kiki" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                aria-label="Discord"
+              >
+                <MessageCircle className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="mt-12 pt-8 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-muted-foreground text-sm">
+            © {currentYear} KIKI. Todos los derechos reservados.
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Hecho con 💜 para la comunidad alternativa
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
