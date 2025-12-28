@@ -2,17 +2,19 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, UserCircle, Radio, Copy, Check } from "lucide-react";
+import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, UserCircle, Radio, Copy, Check, Plus, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { TypingIndicator } from "./TypingIndicator";
+import { useCreateQuedada } from "@/hooks/useQuedadas";
+import { useProfile } from "@/hooks/useProfile";
 
 const SUGGESTED_QUESTIONS = [
   "¿Cuáles son mis quedadas?",
   "¿Con quién tengo sparks?",
-  "¿Cómo creo una quedada?",
+  "Crear quedada para mañana a las 20h",
   "¿Qué son los sparks?",
   "¿Cómo conecto con otros usuarios?",
 ];
@@ -24,6 +26,14 @@ interface QuickAction {
   icon: "sparks" | "quedadas" | "presence" | "profile" | "create";
 }
 
+// Quedada creation data extracted from AI
+interface QuedadaCreationData {
+  title: string;
+  event_date: string;
+  description: string;
+  location_hint: string;
+}
+
 const ACTION_ICONS = {
   sparks: Sparkles,
   quedadas: Calendar,
@@ -32,10 +42,15 @@ const ACTION_ICONS = {
   create: Users,
 };
 
-// Detect action patterns in text and extract them
-const extractActions = (text: string): { cleanText: string; actions: QuickAction[] } => {
+// Detect action patterns and quedada creation in text
+const extractActions = (text: string): { 
+  cleanText: string; 
+  actions: QuickAction[]; 
+  quedadaCreation: QuedadaCreationData | null;
+} => {
   const actions: QuickAction[] = [];
   let cleanText = text;
+  let quedadaCreation: QuedadaCreationData | null = null;
 
   // Pattern: [[action:label|route|icon]]
   const actionPattern = /\[\[action:([^|]+)\|([^|]+)\|([^\]]+)\]\]/g;
@@ -49,10 +64,23 @@ const extractActions = (text: string): { cleanText: string; actions: QuickAction
     });
   }
 
-  // Remove action patterns from text
-  cleanText = text.replace(actionPattern, "").trim();
+  // Pattern: [[create_quedada:title|date_iso|description|location]]
+  const quedadaPattern = /\[\[create_quedada:([^|]*)\|([^|]*)\|([^|]*)\|([^\]]*)\]\]/;
+  const quedadaMatch = text.match(quedadaPattern);
+  
+  if (quedadaMatch) {
+    quedadaCreation = {
+      title: quedadaMatch[1].trim(),
+      event_date: quedadaMatch[2].trim(),
+      description: quedadaMatch[3].trim(),
+      location_hint: quedadaMatch[4].trim(),
+    };
+  }
 
-  return { cleanText, actions };
+  // Remove action patterns from text
+  cleanText = text.replace(actionPattern, "").replace(quedadaPattern, "").trim();
+
+  return { cleanText, actions, quedadaCreation };
 };
 
 // Simple markdown parser for chat messages
@@ -225,14 +253,16 @@ interface FormattedMessageProps {
   content: string;
   isUser: boolean;
   onNavigate: (route: string) => void;
+  onCreateQuedada: (data: QuedadaCreationData) => void;
   showCopyButton?: boolean;
 }
 
-const FormattedMessage = ({ content, isUser, onNavigate, showCopyButton = false }: FormattedMessageProps) => {
+const FormattedMessage = ({ content, isUser, onNavigate, onCreateQuedada, showCopyButton = false }: FormattedMessageProps) => {
   const [copied, setCopied] = useState(false);
+  const [quedadaCreated, setQuedadaCreated] = useState(false);
   
-  const { cleanText, actions, parsed } = useMemo(() => {
-    if (isUser || !content) return { cleanText: content, actions: [], parsed: null };
+  const { cleanText, actions, quedadaCreation, parsed } = useMemo(() => {
+    if (isUser || !content) return { cleanText: content, actions: [], quedadaCreation: null, parsed: null };
     const extracted = extractActions(content);
     return {
       ...extracted,
@@ -256,6 +286,13 @@ const FormattedMessage = ({ content, isUser, onNavigate, showCopyButton = false 
     }
   };
 
+  const handleCreateQuedada = () => {
+    if (quedadaCreation && !quedadaCreated) {
+      onCreateQuedada(quedadaCreation);
+      setQuedadaCreated(true);
+    }
+  };
+
   if (isUser) {
     return <>{content}</>;
   }
@@ -264,9 +301,80 @@ const FormattedMessage = ({ content, isUser, onNavigate, showCopyButton = false 
     return <TypingIndicator />;
   }
 
+  // Format date for display
+  const formatQuedadaDate = (isoDate: string) => {
+    try {
+      const date = new Date(isoDate);
+      return date.toLocaleString("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return isoDate;
+    }
+  };
+
   return (
     <div className="space-y-2">
       <div className="space-y-1">{parsed}</div>
+      
+      {/* Quedada creation card */}
+      {quedadaCreation && (
+        <div className="mt-3 p-3 rounded-lg bg-primary/10 border border-primary/20 space-y-2">
+          <div className="flex items-center gap-2 text-xs font-medium text-primary">
+            <Calendar className="h-3.5 w-3.5" />
+            <span>Nueva quedada</span>
+          </div>
+          <div className="space-y-1 text-xs">
+            <p><strong>Título:</strong> {quedadaCreation.title}</p>
+            <p><strong>Fecha:</strong> {formatQuedadaDate(quedadaCreation.event_date)}</p>
+            {quedadaCreation.description && <p><strong>Descripción:</strong> {quedadaCreation.description}</p>}
+            {quedadaCreation.location_hint && <p><strong>Lugar:</strong> {quedadaCreation.location_hint}</p>}
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={handleCreateQuedada}
+              disabled={quedadaCreated}
+              className={cn(
+                "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full",
+                quedadaCreated 
+                  ? "bg-green-500 text-white cursor-default"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90",
+                "transition-colors duration-200"
+              )}
+            >
+              {quedadaCreated ? (
+                <>
+                  <Check className="h-3 w-3" />
+                  Creada
+                </>
+              ) : (
+                <>
+                  <Plus className="h-3 w-3" />
+                  Crear quedada
+                </>
+              )}
+            </button>
+            {!quedadaCreated && (
+              <button
+                onClick={() => onNavigate("/quedadas")}
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full",
+                  "bg-muted text-muted-foreground hover:bg-muted/80",
+                  "transition-colors duration-200"
+                )}
+              >
+                <Pencil className="h-3 w-3" />
+                Editar manualmente
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      
       {actions.length > 0 && (
         <div className="flex flex-wrap gap-2 pt-2">
           {actions.map((action, i) => {
@@ -321,6 +429,8 @@ export const AIChatBot = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const { data: profile } = useProfile();
+  const createQuedada = useCreateQuedada();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -351,6 +461,43 @@ export const AIChatBot = () => {
   const handleNavigate = (route: string) => {
     setIsOpen(false);
     navigate(route);
+  };
+
+  const handleCreateQuedada = async (data: QuedadaCreationData) => {
+    if (!profile) {
+      toast({
+        title: "Error",
+        description: "Necesitas iniciar sesión para crear quedadas",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await createQuedada.mutateAsync({
+        title: data.title,
+        event_date: data.event_date,
+        description: data.description || undefined,
+        location_hint: data.location_hint || undefined,
+      });
+      
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate([50, 30, 50]);
+      }
+      
+      toast({
+        title: "¡Quedada creada! 🎉",
+        description: `"${data.title}" ha sido creada correctamente`,
+      });
+    } catch (err) {
+      console.error("Error creating quedada:", err);
+      toast({
+        title: "Error",
+        description: "No se pudo crear la quedada",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -456,6 +603,7 @@ export const AIChatBot = () => {
                         content={msg.content} 
                         isUser={msg.role === "user"} 
                         onNavigate={handleNavigate}
+                        onCreateQuedada={handleCreateQuedada}
                         showCopyButton={msg.role === "assistant" && msg.content !== ""}
                       />
                     </div>
