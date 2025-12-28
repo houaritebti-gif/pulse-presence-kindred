@@ -58,6 +58,52 @@ const faqs = [
     question: "¿Puedo usar KIKI si no vivo en una gran ciudad?",
     answer: "¡Por supuesto! KIKI funciona en toda España. Aunque hay más usuarios en grandes ciudades, nuestra comunidad está creciendo en todas partes. La autenticidad no tiene código postal."
   },
+  // Preguntas sobre seguridad
+  {
+    question: "¿Cómo verifican que los perfiles son reales?",
+    answer: "Utilizamos verificación por email y ofrecemos verificación opcional por foto. Además, nuestro sistema detecta comportamientos sospechosos y nuestra comunidad puede reportar perfiles falsos, que revisamos manualmente."
+  },
+  {
+    question: "¿Qué pasa si alguien me acosa o me hace sentir incómodo/a?",
+    answer: "Puedes bloquear a cualquier usuario instantáneamente. También puedes reportar comportamientos inapropiados de forma anónima. Nuestro equipo revisa cada reporte en menos de 24 horas y toma medidas según la gravedad."
+  },
+  {
+    question: "¿Pueden ver mi ubicación exacta otros usuarios?",
+    answer: "Nunca. Solo mostramos la ciudad que tú elijas indicar en tu perfil. No compartimos coordenadas GPS ni ubicación en tiempo real. Tu seguridad física es fundamental."
+  },
+  {
+    question: "¿Mis conversaciones están cifradas?",
+    answer: "Sí, todas las conversaciones en KIKI están cifradas en tránsito y en reposo. Nadie, ni siquiera nosotros, puede leer tus mensajes privados. Tu intimidad está protegida."
+  },
+  {
+    question: "¿Qué datos míos almacenan y por cuánto tiempo?",
+    answer: "Solo almacenamos los datos necesarios para el funcionamiento de la app. Puedes solicitar una copia de tus datos o su eliminación completa en cualquier momento desde la configuración de tu cuenta, cumpliendo con el RGPD."
+  },
+  // Preguntas sobre pagos
+  {
+    question: "¿Qué incluyen los planes de pago?",
+    answer: "El plan Basic incluye chispas ilimitadas y mensajes fantasma. El plan Premium añade quedadas exclusivas, perfil destacado, sin anuncios y atención prioritaria. Puedes ver todos los detalles en nuestra página de suscripción."
+  },
+  {
+    question: "¿Qué métodos de pago aceptan?",
+    answer: "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express), así como Apple Pay y Google Pay. Todos los pagos se procesan de forma segura a través de Stripe."
+  },
+  {
+    question: "¿Puedo cancelar mi suscripción en cualquier momento?",
+    answer: "Absolutamente. No hay permanencia ni compromisos. Puedes cancelar tu suscripción desde la app cuando quieras y seguirás teniendo acceso premium hasta el final del período pagado."
+  },
+  {
+    question: "¿Hay período de prueba gratuito?",
+    answer: "Sí, ofrecemos 7 días de prueba gratuita para el plan Premium. Puedes cancelar antes de que termine sin que te cobremos nada. Es nuestra forma de dejarte probar antes de decidir."
+  },
+  {
+    question: "¿Qué pasa si no estoy satisfecho/a con mi compra?",
+    answer: "Si no estás contento/a con tu suscripción, contacta con nosotros en los primeros 14 días y te haremos un reembolso completo, sin preguntas. Tu satisfacción es nuestra prioridad."
+  },
+  {
+    question: "¿Mis datos de pago están seguros?",
+    answer: "Totalmente. No almacenamos datos de tarjetas en nuestros servidores. Todo el procesamiento de pagos lo gestiona Stripe, líder mundial en seguridad de pagos con certificación PCI DSS nivel 1."
+  },
 ];
 
 const FAQSection = () => {
