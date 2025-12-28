@@ -29,6 +29,9 @@ import Quedadas from "./pages/Quedadas";
 import QuedadaChat from "./pages/QuedadaChat";
 import Notifications from "./pages/Notifications";
 import Subscription from "./pages/Subscription";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
 import NotFound from "./pages/NotFound";
 
 // Exponential backoff retry function
@@ -208,6 +211,9 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/privacidad" element={<Privacy />} />
+              <Route path="/terminos" element={<Terms />} />
+              <Route path="/cookies" element={<Cookies />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
               </div>
