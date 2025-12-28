@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, UserCircle, Radio, Copy, Check, Plus, Pencil } from "lucide-react";
+import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, UserCircle, Radio, Copy, Check, Plus, Pencil, Lock, Crown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { TypingIndicator } from "./TypingIndicator";
 import { useCreateQuedada, useDeleteQuedada } from "@/hooks/useQuedadas";
 import { useProfile } from "@/hooks/useProfile";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const SUGGESTED_QUESTIONS = [
   "¿Cuáles son mis quedadas?",
@@ -19,14 +20,12 @@ const SUGGESTED_QUESTIONS = [
   "¿Cómo conecto con otros usuarios?",
 ];
 
-// Action buttons that can be suggested by the AI
 interface QuickAction {
   label: string;
   route: string;
   icon: "sparks" | "quedadas" | "presence" | "profile" | "create";
 }
 
-// Quedada creation data extracted from AI
 interface QuedadaCreationData {
   title: string;
   event_date: string;
@@ -34,7 +33,6 @@ interface QuedadaCreationData {
   location_hint: string;
 }
 
-// Quedada deletion data extracted from AI
 interface QuedadaDeletionData {
   id: string;
   title: string;
@@ -48,36 +46,21 @@ const ACTION_ICONS = {
   create: Users,
 };
 
-// Detect action patterns, quedada creation and deletion in text
+// Extract actions and quedada data from AI response
 const extractActions = (text: string): { 
   cleanText: string; 
   actions: QuickAction[]; 
-  quedadaCreation: QuedadaCreationData | null;
+  quedadaData: QuedadaCreationData | null;
   quedadaDeletion: QuedadaDeletionData | null;
 } => {
   const actions: QuickAction[] = [];
-  let cleanText = text;
-  let quedadaCreation: QuedadaCreationData | null = null;
+  let quedadaData: QuedadaCreationData | null = null;
   let quedadaDeletion: QuedadaDeletionData | null = null;
-
-  // Pattern: [[action:label|route|icon]]
-  const actionPattern = /\[\[action:([^|]+)\|([^|]+)\|([^\]]+)\]\]/g;
-  let match;
-
-  while ((match = actionPattern.exec(text)) !== null) {
-    actions.push({
-      label: match[1].trim(),
-      route: match[2].trim(),
-      icon: match[3].trim() as QuickAction["icon"],
-    });
-  }
-
-  // Pattern: [[create_quedada:title|date_iso|description|location]]
-  const quedadaPattern = /\[\[create_quedada:([^|]*)\|([^|]*)\|([^|]*)\|([^\]]*)\]\]/;
-  const quedadaMatch = text.match(quedadaPattern);
   
+  // Extract quedada creation data
+  const quedadaMatch = text.match(/\[\[create_quedada:([^|]+)\|([^|]+)\|([^|]*)\|([^\]]*)\]\]/);
   if (quedadaMatch) {
-    quedadaCreation = {
+    quedadaData = {
       title: quedadaMatch[1].trim(),
       event_date: quedadaMatch[2].trim(),
       description: quedadaMatch[3].trim(),
@@ -85,191 +68,165 @@ const extractActions = (text: string): {
     };
   }
 
-  // Pattern: [[delete_quedada:quedada_id|title]]
-  const deletePattern = /\[\[delete_quedada:([^|]+)\|([^\]]+)\]\]/;
-  const deleteMatch = text.match(deletePattern);
-  
+  // Extract quedada deletion data
+  const deleteMatch = text.match(/\[\[delete_quedada:([^|]+)\|([^\]]+)\]\]/);
   if (deleteMatch) {
     quedadaDeletion = {
       id: deleteMatch[1].trim(),
       title: deleteMatch[2].trim(),
     };
   }
-
-  // Remove action patterns from text
-  cleanText = text
-    .replace(actionPattern, "")
-    .replace(quedadaPattern, "")
-    .replace(deletePattern, "")
+  
+  // Extract action buttons
+  const actionRegex = /\[\[action:([^|]+)\|([^|]+)\|([^\]]+)\]\]/g;
+  let match;
+  while ((match = actionRegex.exec(text)) !== null) {
+    const iconType = match[3].trim() as QuickAction["icon"];
+    if (ACTION_ICONS[iconType]) {
+      actions.push({
+        label: match[1].trim(),
+        route: match[2].trim(),
+        icon: iconType,
+      });
+    }
+  }
+  
+  // Clean the text
+  let cleanText = text
+    .replace(/\[\[create_quedada:[^\]]+\]\]/g, "")
+    .replace(/\[\[delete_quedada:[^\]]+\]\]/g, "")
+    .replace(/\[\[action:[^\]]+\]\]/g, "")
     .trim();
-
-  return { cleanText, actions, quedadaCreation, quedadaDeletion };
+  
+  return { cleanText, actions, quedadaData, quedadaDeletion };
 };
 
-// Simple markdown parser for chat messages
+// Parse markdown-like formatting
 const parseMarkdown = (text: string): React.ReactNode[] => {
-  const elements: React.ReactNode[] = [];
+  const parts: React.ReactNode[] = [];
   const lines = text.split("\n");
-  let listItems: string[] = [];
-  let listType: "ul" | "ol" | null = null;
-
-  const flushList = () => {
-    if (listItems.length > 0 && listType) {
-      const ListTag = listType === "ul" ? "ul" : "ol";
-      elements.push(
-        <ListTag key={elements.length} className={cn("my-1 ml-4", listType === "ul" ? "list-disc" : "list-decimal")}>
-          {listItems.map((item, i) => (
-            <li key={i} className="text-sm">{parseInline(item)}</li>
-          ))}
-        </ListTag>
+  
+  lines.forEach((line, lineIndex) => {
+    if (lineIndex > 0) {
+      parts.push(<br key={`br-${lineIndex}`} />);
+    }
+    
+    // Handle lists
+    if (line.match(/^[-•]\s/)) {
+      const listContent = line.replace(/^[-•]\s/, "");
+      parts.push(
+        <span key={`list-${lineIndex}`} className="flex gap-1">
+          <span>•</span>
+          <span>{parseInlineMarkdown(listContent)}</span>
+        </span>
       );
-      listItems = [];
-      listType = null;
+      return;
     }
-  };
-
-  const parseInline = (line: string): React.ReactNode => {
-    const parts: React.ReactNode[] = [];
-    let remaining = line;
-    let key = 0;
-
-    while (remaining.length > 0) {
-      const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
-      if (linkMatch && linkMatch.index !== undefined) {
-        if (linkMatch.index > 0) {
-          parts.push(<span key={key++}>{parseTextStyles(remaining.slice(0, linkMatch.index))}</span>);
-        }
-        const url = linkMatch[2];
-        const isInternal = url.startsWith("/");
+    
+    // Handle numbered lists
+    if (line.match(/^\d+\.\s/)) {
+      const match = line.match(/^(\d+)\.\s(.*)$/);
+      if (match) {
         parts.push(
-          <a
-            key={key++}
-            href={url}
-            target={isInternal ? undefined : "_blank"}
-            rel={isInternal ? undefined : "noopener noreferrer"}
-            className="text-primary underline hover:text-primary/80 cursor-pointer"
-            onClick={(e) => {
-              if (isInternal) {
-                e.preventDefault();
-                window.location.href = url;
-              }
-            }}
-          >
-            {linkMatch[1]}
-          </a>
+          <span key={`numlist-${lineIndex}`} className="flex gap-1">
+            <span>{match[1]}.</span>
+            <span>{parseInlineMarkdown(match[2])}</span>
+          </span>
         );
-        remaining = remaining.slice(linkMatch.index + linkMatch[0].length);
-        continue;
+        return;
       }
-
-      parts.push(<span key={key++}>{parseTextStyles(remaining)}</span>);
-      break;
     }
-
-    return parts;
-  };
-
-  const parseTextStyles = (text: string): React.ReactNode => {
-    const parts: React.ReactNode[] = [];
-    let remaining = text;
-    let key = 0;
-
-    while (remaining.length > 0) {
-      const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
-      if (boldMatch && boldMatch.index !== undefined) {
-        if (boldMatch.index > 0) {
-          parts.push(remaining.slice(0, boldMatch.index));
-        }
-        parts.push(<strong key={key++}>{boldMatch[1]}</strong>);
-        remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
-        continue;
-      }
-
-      const italicMatch = remaining.match(/\*([^*]+)\*/);
-      if (italicMatch && italicMatch.index !== undefined) {
-        if (italicMatch.index > 0) {
-          parts.push(remaining.slice(0, italicMatch.index));
-        }
-        parts.push(<em key={key++}>{italicMatch[1]}</em>);
-        remaining = remaining.slice(italicMatch.index + italicMatch[0].length);
-        continue;
-      }
-
-      const codeMatch = remaining.match(/`([^`]+)`/);
-      if (codeMatch && codeMatch.index !== undefined) {
-        if (codeMatch.index > 0) {
-          parts.push(remaining.slice(0, codeMatch.index));
-        }
+    
+    // Handle headings
+    if (line.match(/^#{1,3}\s/)) {
+      const headingMatch = line.match(/^(#{1,3})\s(.*)$/);
+      if (headingMatch) {
+        const level = headingMatch[1].length;
+        const fontSize = level === 1 ? "text-base font-bold" : level === 2 ? "text-sm font-semibold" : "text-sm font-medium";
         parts.push(
-          <code key={key++} className="bg-muted-foreground/20 px-1 rounded text-xs">
-            {codeMatch[1]}
-          </code>
+          <span key={`heading-${lineIndex}`} className={fontSize}>
+            {parseInlineMarkdown(headingMatch[2])}
+          </span>
         );
-        remaining = remaining.slice(codeMatch.index + codeMatch[0].length);
-        continue;
+        return;
       }
-
-      parts.push(remaining);
-      break;
     }
+    
+    parts.push(<span key={`text-${lineIndex}`}>{parseInlineMarkdown(line)}</span>);
+  });
+  
+  return parts;
+};
 
-    return parts.length === 1 && typeof parts[0] === "string" ? parts[0] : <>{parts}</>;
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    const ulMatch = line.match(/^[\s]*[-*]\s+(.+)/);
-    if (ulMatch) {
-      if (listType !== "ul") {
-        flushList();
-        listType = "ul";
+const parseInlineMarkdown = (text: string): React.ReactNode => {
+  const parts: React.ReactNode[] = [];
+  let remaining = text;
+  let keyIndex = 0;
+  
+  while (remaining.length > 0) {
+    // Links [text](url)
+    const linkMatch = remaining.match(/\[([^\]]+)\]\(([^)]+)\)/);
+    if (linkMatch && linkMatch.index !== undefined) {
+      if (linkMatch.index > 0) {
+        parts.push(remaining.slice(0, linkMatch.index));
       }
-      listItems.push(ulMatch[1]);
+      parts.push(
+        <a
+          key={`link-${keyIndex++}`}
+          href={linkMatch[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline hover:text-primary/80"
+        >
+          {linkMatch[1]}
+        </a>
+      );
+      remaining = remaining.slice(linkMatch.index + linkMatch[0].length);
       continue;
     }
-
-    const olMatch = line.match(/^[\s]*\d+\.\s+(.+)/);
-    if (olMatch) {
-      if (listType !== "ol") {
-        flushList();
-        listType = "ol";
+    
+    // Bold **text**
+    const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
+    if (boldMatch && boldMatch.index !== undefined) {
+      if (boldMatch.index > 0) {
+        parts.push(remaining.slice(0, boldMatch.index));
       }
-      listItems.push(olMatch[1]);
+      parts.push(<strong key={`bold-${keyIndex++}`}>{boldMatch[1]}</strong>);
+      remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
       continue;
     }
-
-    flushList();
-
-    if (line.trim() === "") {
-      elements.push(<br key={elements.length} />);
+    
+    // Italic *text*
+    const italicMatch = remaining.match(/\*([^*]+)\*/);
+    if (italicMatch && italicMatch.index !== undefined) {
+      if (italicMatch.index > 0) {
+        parts.push(remaining.slice(0, italicMatch.index));
+      }
+      parts.push(<em key={`italic-${keyIndex++}`}>{italicMatch[1]}</em>);
+      remaining = remaining.slice(italicMatch.index + italicMatch[0].length);
       continue;
     }
-
-    const h3Match = line.match(/^###\s+(.+)/);
-    if (h3Match) {
-      elements.push(<h4 key={elements.length} className="font-semibold mt-2 mb-1">{parseInline(h3Match[1])}</h4>);
+    
+    // Code `text`
+    const codeMatch = remaining.match(/`([^`]+)`/);
+    if (codeMatch && codeMatch.index !== undefined) {
+      if (codeMatch.index > 0) {
+        parts.push(remaining.slice(0, codeMatch.index));
+      }
+      parts.push(
+        <code key={`code-${keyIndex++}`} className="bg-muted px-1 py-0.5 rounded text-xs">
+          {codeMatch[1]}
+        </code>
+      );
+      remaining = remaining.slice(codeMatch.index + codeMatch[0].length);
       continue;
     }
-
-    const h2Match = line.match(/^##\s+(.+)/);
-    if (h2Match) {
-      elements.push(<h3 key={elements.length} className="font-semibold text-base mt-2 mb-1">{parseInline(h2Match[1])}</h3>);
-      continue;
-    }
-
-    const h1Match = line.match(/^#\s+(.+)/);
-    if (h1Match) {
-      elements.push(<h2 key={elements.length} className="font-bold text-base mt-2 mb-1">{parseInline(h1Match[1])}</h2>);
-      continue;
-    }
-
-    elements.push(<p key={elements.length} className="text-sm">{parseInline(line)}</p>);
+    
+    parts.push(remaining);
+    break;
   }
-
-  flushList();
-
-  return elements;
+  
+  return parts.length === 1 ? parts[0] : parts;
 };
 
 interface FormattedMessageProps {
@@ -279,160 +236,149 @@ interface FormattedMessageProps {
   onCreateQuedada: (data: QuedadaCreationData) => void;
   onDeleteQuedada: (data: QuedadaDeletionData) => void;
   showCopyButton?: boolean;
+  canCreateQuedadas?: boolean;
+  canDeleteQuedadas?: boolean;
 }
 
-const FormattedMessage = ({ content, isUser, onNavigate, onCreateQuedada, onDeleteQuedada, showCopyButton = false }: FormattedMessageProps) => {
+const FormattedMessage = ({ 
+  content, 
+  isUser, 
+  onNavigate, 
+  onCreateQuedada, 
+  onDeleteQuedada,
+  showCopyButton,
+  canCreateQuedadas = true,
+  canDeleteQuedadas = true,
+}: FormattedMessageProps) => {
   const [copied, setCopied] = useState(false);
   const [quedadaCreated, setQuedadaCreated] = useState(false);
   const [quedadaDeleted, setQuedadaDeleted] = useState(false);
   
-  const { cleanText, actions, quedadaCreation, quedadaDeletion, parsed } = useMemo(() => {
-    if (isUser || !content) return { cleanText: content, actions: [], quedadaCreation: null, quedadaDeletion: null, parsed: null };
-    const extracted = extractActions(content);
-    return {
-      ...extracted,
-      parsed: parseMarkdown(extracted.cleanText),
-    };
-  }, [content, isUser]);
+  const { cleanText, actions, quedadaData, quedadaDeletion } = useMemo(() => 
+    extractActions(content), [content]
+  );
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(cleanText || content);
+      await navigator.clipboard.writeText(cleanText);
       setCopied(true);
-      toast({
-        description: "Copiado al portapapeles",
-      });
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast({
-        description: "No se pudo copiar",
-        variant: "destructive",
-      });
+    } catch (err) {
+      console.error("Failed to copy:", err);
     }
   };
 
   const handleCreateQuedada = () => {
-    if (quedadaCreation && !quedadaCreated) {
-      onCreateQuedada(quedadaCreation);
+    if (quedadaData && !quedadaCreated && canCreateQuedadas) {
       setQuedadaCreated(true);
+      onCreateQuedada(quedadaData);
     }
   };
 
   const handleDeleteQuedada = () => {
-    if (quedadaDeletion && !quedadaDeleted) {
-      onDeleteQuedada(quedadaDeletion);
+    if (quedadaDeletion && !quedadaDeleted && canDeleteQuedadas) {
       setQuedadaDeleted(true);
+      onDeleteQuedada(quedadaDeletion);
     }
   };
-
+  
   if (isUser) {
-    return <>{content}</>;
+    return <span>{content}</span>;
   }
 
+  // Show typing indicator for empty assistant messages
   if (!content) {
     return <TypingIndicator />;
   }
-
-  // Format date for display
-  const formatQuedadaDate = (isoDate: string) => {
-    try {
-      const date = new Date(isoDate);
-      return date.toLocaleString("es-ES", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return isoDate;
-    }
-  };
-
+  
   return (
     <div className="space-y-2">
-      <div className="space-y-1">{parsed}</div>
+      <div className="relative group">
+        <div className="whitespace-pre-wrap">{parseMarkdown(cleanText)}</div>
+        {showCopyButton && cleanText && (
+          <button
+            onClick={handleCopy}
+            className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded bg-background/80 hover:bg-muted"
+            title="Copiar mensaje"
+          >
+            {copied ? (
+              <Check className="h-3 w-3 text-green-500" />
+            ) : (
+              <Copy className="h-3 w-3 text-muted-foreground" />
+            )}
+          </button>
+        )}
+      </div>
       
       {/* Quedada creation card */}
-      {quedadaCreation && (
-        <div className="mt-3 p-3 rounded-lg bg-primary/10 border border-primary/20 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-medium text-primary">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>Nueva quedada</span>
+      {quedadaData && (
+        <div className="mt-3 p-3 rounded-lg bg-primary/10 border border-primary/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="h-4 w-4 text-primary" />
+            <span className="font-medium text-sm">Crear quedada</span>
           </div>
-          <div className="space-y-1 text-xs">
-            <p><strong>Título:</strong> {quedadaCreation.title}</p>
-            <p><strong>Fecha:</strong> {formatQuedadaDate(quedadaCreation.event_date)}</p>
-            {quedadaCreation.description && <p><strong>Descripción:</strong> {quedadaCreation.description}</p>}
-            {quedadaCreation.location_hint && <p><strong>Lugar:</strong> {quedadaCreation.location_hint}</p>}
+          <div className="text-xs space-y-1 mb-3">
+            <p><strong>Título:</strong> {quedadaData.title}</p>
+            <p><strong>Fecha:</strong> {new Date(quedadaData.event_date).toLocaleString("es-ES", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}</p>
+            {quedadaData.description && <p><strong>Descripción:</strong> {quedadaData.description}</p>}
+            {quedadaData.location_hint && <p><strong>Lugar:</strong> {quedadaData.location_hint}</p>}
           </div>
-          <div className="flex gap-2 pt-1">
-            <button
+          {canCreateQuedadas ? (
+            <Button
+              size="sm"
               onClick={handleCreateQuedada}
               disabled={quedadaCreated}
-              className={cn(
-                "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full",
-                quedadaCreated 
-                  ? "bg-green-500 text-white cursor-default"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90",
-                "transition-colors duration-200"
-              )}
+              className="w-full gap-2"
             >
               {quedadaCreated ? (
                 <>
                   <Check className="h-3 w-3" />
-                  Creada
+                  ¡Quedada creada!
                 </>
               ) : (
                 <>
                   <Plus className="h-3 w-3" />
-                  Crear quedada
+                  Confirmar y crear
                 </>
               )}
-            </button>
-            {!quedadaCreated && (
-              <button
-                onClick={() => onNavigate("/quedadas")}
-                className={cn(
-                  "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full",
-                  "bg-muted text-muted-foreground hover:bg-muted/80",
-                  "transition-colors duration-200"
-                )}
-              >
-                <Pencil className="h-3 w-3" />
-                Editar manualmente
-              </button>
-            )}
-          </div>
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 p-2 rounded bg-muted/50 text-xs text-muted-foreground">
+              <Crown className="h-4 w-4 text-yellow-500" />
+              <span>Necesitas Premium para crear quedadas desde el chat</span>
+            </div>
+          )}
         </div>
       )}
 
       {/* Quedada deletion card */}
       {quedadaDeletion && (
-        <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-medium text-destructive">
-            <Trash2 className="h-3.5 w-3.5" />
-            <span>Eliminar quedada</span>
+        <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+          <div className="flex items-center gap-2 mb-2">
+            <Trash2 className="h-4 w-4 text-destructive" />
+            <span className="font-medium text-sm">Eliminar quedada</span>
           </div>
-          <div className="space-y-1 text-xs">
-            <p><strong>Quedada:</strong> {quedadaDeletion.title}</p>
+          <div className="text-xs space-y-1 mb-3">
+            <p><strong>Título:</strong> {quedadaDeletion.title}</p>
           </div>
-          <div className="flex gap-2 pt-1">
-            <button
+          {canDeleteQuedadas ? (
+            <Button
+              size="sm"
+              variant="destructive"
               onClick={handleDeleteQuedada}
               disabled={quedadaDeleted}
-              className={cn(
-                "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full",
-                quedadaDeleted 
-                  ? "bg-muted text-muted-foreground cursor-default"
-                  : "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-                "transition-colors duration-200"
-              )}
+              className="w-full gap-2"
             >
               {quedadaDeleted ? (
                 <>
                   <Check className="h-3 w-3" />
-                  Eliminada
+                  ¡Quedada eliminada!
                 </>
               ) : (
                 <>
@@ -440,54 +386,104 @@ const FormattedMessage = ({ content, isUser, onNavigate, onCreateQuedada, onDele
                   Confirmar eliminación
                 </>
               )}
-            </button>
-          </div>
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 p-2 rounded bg-muted/50 text-xs text-muted-foreground">
+              <Crown className="h-4 w-4 text-yellow-500" />
+              <span>Necesitas Premium para eliminar quedadas desde el chat</span>
+            </div>
+          )}
         </div>
       )}
       
+      {/* Action buttons */}
       {actions.length > 0 && (
-        <div className="flex flex-wrap gap-2 pt-2">
-          {actions.map((action, i) => {
-            const Icon = ACTION_ICONS[action.icon] || Sparkles;
+        <div className="flex flex-wrap gap-2 mt-2">
+          {actions.map((action, index) => {
+            const Icon = ACTION_ICONS[action.icon];
             return (
-              <button
-                key={i}
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
                 onClick={() => onNavigate(action.route)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full",
-                  "bg-primary text-primary-foreground",
-                  "hover:bg-primary/90 transition-colors duration-200"
-                )}
+                className="gap-1.5 text-xs h-7"
               >
                 <Icon className="h-3 w-3" />
                 {action.label}
-              </button>
+              </Button>
             );
           })}
         </div>
       )}
-      {showCopyButton && (
-        <button
-          onClick={handleCopy}
-          className={cn(
-            "inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground",
-            "transition-colors duration-200 mt-1"
-          )}
-          title="Copiar respuesta"
-        >
-          {copied ? (
-            <>
-              <Check className="h-3 w-3" />
-              <span>Copiado</span>
-            </>
-          ) : (
-            <>
-              <Copy className="h-3 w-3" />
-              <span>Copiar</span>
-            </>
-          )}
-        </button>
-      )}
+    </div>
+  );
+};
+
+// Subscription paywall component
+const SubscriptionPaywall = ({ onClose }: { onClose: () => void }) => {
+  const navigate = useNavigate();
+  
+  return (
+    <div className="flex flex-col items-center justify-center h-full text-center p-6">
+      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mb-4">
+        <Crown className="h-8 w-8 text-white" />
+      </div>
+      <h3 className="font-bold text-lg mb-2">Desbloquea el Asistente IA</h3>
+      <p className="text-sm text-muted-foreground mb-6">
+        El chatbot inteligente está disponible para usuarios con suscripción.
+      </p>
+      
+      <div className="w-full space-y-3 mb-4">
+        <div className="p-4 rounded-lg border-2 border-primary bg-primary/5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-semibold">Básico</span>
+            <span className="text-lg font-bold">4,99€<span className="text-xs font-normal text-muted-foreground">/mes</span></span>
+          </div>
+          <ul className="text-xs text-left space-y-1 text-muted-foreground">
+            <li className="flex items-center gap-2">
+              <Check className="h-3 w-3 text-green-500" />
+              Acceso al chatbot IA
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="h-3 w-3 text-green-500" />
+              Consultas ilimitadas
+            </li>
+          </ul>
+        </div>
+        
+        <div className="p-4 rounded-lg border-2 border-yellow-500 bg-yellow-500/5 relative">
+          <div className="absolute -top-2 right-2 bg-yellow-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
+            POPULAR
+          </div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-semibold">Premium</span>
+            <span className="text-lg font-bold">9,99€<span className="text-xs font-normal text-muted-foreground">/mes</span></span>
+          </div>
+          <ul className="text-xs text-left space-y-1 text-muted-foreground">
+            <li className="flex items-center gap-2">
+              <Check className="h-3 w-3 text-green-500" />
+              Todo lo del plan Básico
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="h-3 w-3 text-green-500" />
+              Crear quedadas desde el chat
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="h-3 w-3 text-green-500" />
+              Eliminar quedadas desde el chat
+            </li>
+            <li className="flex items-center gap-2">
+              <Check className="h-3 w-3 text-green-500" />
+              Próximamente: más funciones
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <p className="text-xs text-muted-foreground">
+        Próximamente podrás suscribirte directamente
+      </p>
     </div>
   );
 };
@@ -502,6 +498,7 @@ export const AIChatBot = () => {
   const { data: profile } = useProfile();
   const createQuedada = useCreateQuedada();
   const deleteQuedada = useDeleteQuedada();
+  const { canAccessChatbot, canCreateQuedadas, canDeleteQuedadas, tier } = useSubscription();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -510,10 +507,10 @@ export const AIChatBot = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen && inputRef.current) {
+    if (isOpen && inputRef.current && canAccessChatbot) {
       inputRef.current.focus();
     }
-  }, [isOpen]);
+  }, [isOpen, canAccessChatbot]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -544,6 +541,15 @@ export const AIChatBot = () => {
       return;
     }
 
+    if (!canCreateQuedadas) {
+      toast({
+        title: "Función Premium",
+        description: "Necesitas Premium para crear quedadas desde el chat",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await createQuedada.mutateAsync({
         title: data.title,
@@ -552,7 +558,6 @@ export const AIChatBot = () => {
         location_hint: data.location_hint || undefined,
       });
       
-      // Haptic feedback
       if (navigator.vibrate) {
         navigator.vibrate([50, 30, 50]);
       }
@@ -581,10 +586,18 @@ export const AIChatBot = () => {
       return;
     }
 
+    if (!canDeleteQuedadas) {
+      toast({
+        title: "Función Premium",
+        description: "Necesitas Premium para eliminar quedadas desde el chat",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await deleteQuedada.mutateAsync(data.id);
       
-      // Haptic feedback
       if (navigator.vibrate) {
         navigator.vibrate([50, 30, 50]);
       }
@@ -616,7 +629,14 @@ export const AIChatBot = () => {
         )}
         size="icon"
       >
-        <MessageCircle className="h-6 w-6" />
+        {canAccessChatbot ? (
+          <MessageCircle className="h-6 w-6" />
+        ) : (
+          <div className="relative">
+            <MessageCircle className="h-6 w-6" />
+            <Lock className="h-3 w-3 absolute -bottom-1 -right-1" />
+          </div>
+        )}
       </Button>
 
       {/* Chat Window */}
@@ -629,20 +649,32 @@ export const AIChatBot = () => {
                 <Bot className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm">Asistente IA</h3>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-semibold text-sm">Asistente IA</h3>
+                  {tier !== 'free' && (
+                    <span className={cn(
+                      "text-[10px] px-1.5 py-0.5 rounded-full font-medium",
+                      tier === 'premium' ? "bg-yellow-500/20 text-yellow-600" : "bg-primary/20 text-primary"
+                    )}>
+                      {tier === 'premium' ? 'PREMIUM' : 'BÁSICO'}
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">Siempre disponible</p>
               </div>
             </div>
             <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={clearChat}
-                title="Limpiar chat"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {canAccessChatbot && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={clearChat}
+                  title="Limpiar chat"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -654,100 +686,111 @@ export const AIChatBot = () => {
             </div>
           </div>
 
-          {/* Messages */}
-          <ScrollArea className="h-[350px] p-3" ref={scrollRef}>
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <Bot className="h-10 w-10 mb-2 text-muted-foreground opacity-50" />
-                <p className="text-sm font-medium">¡Hola! 👋</p>
-                <p className="text-xs text-muted-foreground mt-1 mb-4">¿En qué puedo ayudarte?</p>
-                <div className="flex flex-wrap gap-2 justify-center px-2">
-                  {SUGGESTED_QUESTIONS.map((question, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleSuggestionClick(question)}
-                      disabled={isLoading}
-                      className={cn(
-                        "text-xs px-3 py-1.5 rounded-full border",
-                        "bg-muted/50 hover:bg-muted text-foreground",
-                        "transition-colors duration-200",
-                        "disabled:opacity-50 disabled:cursor-not-allowed"
-                      )}
-                    >
-                      {question}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {messages.map((msg, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      "flex gap-2",
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    )}
-                  >
-                    {msg.role === "assistant" && (
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <Bot className="h-3 w-3" />
-                      </div>
-                    )}
-                    <div
-                      className={cn(
-                        "rounded-lg px-3 py-2 text-sm max-w-[80%]",
-                        msg.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      )}
-                    >
-                      <FormattedMessage 
-                        content={msg.content} 
-                        isUser={msg.role === "user"} 
-                        onNavigate={handleNavigate}
-                        onCreateQuedada={handleCreateQuedada}
-                        onDeleteQuedada={handleDeleteQuedada}
-                        showCopyButton={msg.role === "assistant" && msg.content !== ""}
-                      />
-                    </div>
-                    {msg.role === "user" && (
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
-                        <User className="h-3 w-3" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-            {error && (
-              <div className="mt-2 rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
-                {error}
-              </div>
-            )}
-          </ScrollArea>
-
-          {/* Input */}
-          <form onSubmit={handleSubmit} className="border-t p-3">
-            <div className="flex gap-2">
-              <Input
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Escribe tu mensaje..."
-                disabled={isLoading}
-                className="flex-1 text-sm"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                disabled={!input.trim() || isLoading}
-                className="shrink-0"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+          {/* Content - Paywall or Chat */}
+          {!canAccessChatbot ? (
+            <div className="h-[400px]">
+              <SubscriptionPaywall onClose={() => setIsOpen(false)} />
             </div>
-          </form>
+          ) : (
+            <>
+              {/* Messages */}
+              <ScrollArea className="h-[350px] p-3" ref={scrollRef}>
+                {messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <Bot className="h-10 w-10 mb-2 text-muted-foreground opacity-50" />
+                    <p className="text-sm font-medium">¡Hola! 👋</p>
+                    <p className="text-xs text-muted-foreground mt-1 mb-4">¿En qué puedo ayudarte?</p>
+                    <div className="flex flex-wrap gap-2 justify-center px-2">
+                      {SUGGESTED_QUESTIONS.map((question, i) => (
+                        <button
+                          key={i}
+                          onClick={() => handleSuggestionClick(question)}
+                          disabled={isLoading}
+                          className={cn(
+                            "text-xs px-3 py-1.5 rounded-full border",
+                            "bg-muted/50 hover:bg-muted text-foreground",
+                            "transition-colors duration-200",
+                            "disabled:opacity-50 disabled:cursor-not-allowed"
+                          )}
+                        >
+                          {question}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {messages.map((msg, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "flex gap-2",
+                          msg.role === "user" ? "justify-end" : "justify-start"
+                        )}
+                      >
+                        {msg.role === "assistant" && (
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                            <Bot className="h-3 w-3" />
+                          </div>
+                        )}
+                        <div
+                          className={cn(
+                            "rounded-lg px-3 py-2 text-sm max-w-[80%]",
+                            msg.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          )}
+                        >
+                          <FormattedMessage 
+                            content={msg.content} 
+                            isUser={msg.role === "user"} 
+                            onNavigate={handleNavigate}
+                            onCreateQuedada={handleCreateQuedada}
+                            onDeleteQuedada={handleDeleteQuedada}
+                            showCopyButton={msg.role === "assistant" && msg.content !== ""}
+                            canCreateQuedadas={canCreateQuedadas}
+                            canDeleteQuedadas={canDeleteQuedadas}
+                          />
+                        </div>
+                        {msg.role === "user" && (
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+                            <User className="h-3 w-3" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {error && (
+                  <div className="mt-2 rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
+                    {error}
+                  </div>
+                )}
+              </ScrollArea>
+
+              {/* Input */}
+              <form onSubmit={handleSubmit} className="border-t p-3">
+                <div className="flex gap-2">
+                  <Input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Escribe tu mensaje..."
+                    disabled={isLoading}
+                    className="flex-1 text-sm"
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={!input.trim() || isLoading}
+                    className="shrink-0"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </form>
+            </>
+          )}
         </div>
       )}
     </>
