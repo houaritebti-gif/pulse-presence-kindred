@@ -66,6 +66,13 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
     }
   }, []);
 
+  // Haptic feedback utility
+  const triggerHapticFeedback = (pattern: number | number[] = 50) => {
+    if (isMobile && navigator.vibrate) {
+      navigator.vibrate(pattern);
+    }
+  };
+
   const handleCropComplete = async (croppedBlob: Blob) => {
     // Clean up object URL
     if (imageToCrop) {
@@ -98,6 +105,9 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
       setUploadPhase("complete");
       setUploadProgress(100);
       await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Haptic feedback on successful upload
+      triggerHapticFeedback([50, 30, 50]);
       toast.success("Foto añadida correctamente");
     } finally {
       setUploadingIndex(null);
@@ -134,6 +144,11 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= photos.length) return;
 
+    // Haptic feedback when starting reorder
+    if (isMobile && navigator.vibrate) {
+      navigator.vibrate(30);
+    }
+
     const newPhotos = [...photos];
     const [movedPhoto] = newPhotos.splice(index, 1);
     newPhotos.splice(newIndex, 0, movedPhoto);
@@ -145,8 +160,13 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
       photoIds: newPhotoIds,
     });
 
+    // Haptic feedback on successful reorder
+    if (isMobile && navigator.vibrate) {
+      navigator.vibrate([20, 10, 20]);
+    }
+
     toast.success(direction === 'up' ? "Foto movida arriba" : "Foto movida abajo");
-  }, [photos, profileId, reorderPhotos]);
+  }, [photos, profileId, reorderPhotos, isMobile]);
 
   // Drag handlers (desktop only)
   const handleDragStart = (e: React.DragEvent, index: number) => {
