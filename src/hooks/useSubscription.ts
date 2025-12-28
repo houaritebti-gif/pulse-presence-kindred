@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
+import { useToast } from "@/hooks/use-toast";
 
 export type SubscriptionTier = 'free' | 'basic' | 'premium';
 
@@ -12,10 +13,16 @@ interface Subscription {
   expires_at: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
+  trial_started_at: string | null;
+  trial_used: boolean;
 }
+
+const TRIAL_DURATION_DAYS = 7;
 
 export const useSubscription = () => {
   const { data: profile } = useProfile();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: subscription, isLoading, error, refetch } = useQuery({
     queryKey: ['subscription', profile?.id],
@@ -34,6 +41,69 @@ export const useSubscription = () => {
     enabled: !!profile?.id,
   });
 
+  // Start trial mutation
+  const startTrialMutation = useMutation({
+    mutationFn: async () => {
+      if (!profile?.id) throw new Error("No profile found");
+
+      // Check if user already has a subscription record
+      const { data: existing } = await supabase
+        .from('user_subscriptions')
+        .select('id, trial_used')
+        .eq('profile_id', profile.id)
+        .maybeSingle();
+
+      if (existing?.trial_used) {
+        throw new Error("Ya has usado tu periodo de prueba");
+      }
+
+      const trialStartedAt = new Date().toISOString();
+      const expiresAt = new Date(Date.now() + TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+      if (existing) {
+        // Update existing record
+        const { error } = await supabase
+          .from('user_subscriptions')
+          .update({
+            tier: 'basic' as SubscriptionTier,
+            trial_started_at: trialStartedAt,
+            trial_used: true,
+            expires_at: expiresAt,
+          })
+          .eq('id', existing.id);
+
+        if (error) throw error;
+      } else {
+        // Create new subscription with trial
+        const { error } = await supabase
+          .from('user_subscriptions')
+          .insert({
+            profile_id: profile.id,
+            tier: 'basic' as SubscriptionTier,
+            trial_started_at: trialStartedAt,
+            trial_used: true,
+            expires_at: expiresAt,
+          });
+
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription', profile?.id] });
+      toast({
+        title: "¡Prueba activada!",
+        description: "Disfruta de 7 días gratis del plan Básico",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const tier: SubscriptionTier = subscription?.tier || 'free';
   
   // Check if subscription is expired
@@ -42,6 +112,16 @@ export const useSubscription = () => {
     : false;
   
   const effectiveTier: SubscriptionTier = isExpired ? 'free' : tier;
+
+  // Trial status calculations
+  const isOnTrial = subscription?.trial_started_at && !isExpired && effectiveTier === 'basic' && !subscription?.stripe_subscription_id;
+  const trialUsed = subscription?.trial_used || false;
+  
+  const trialDaysRemaining = subscription?.expires_at && isOnTrial
+    ? Math.max(0, Math.ceil((new Date(subscription.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : 0;
+
+  const canStartTrial = !trialUsed && effectiveTier === 'free';
 
   // Feature access helpers
   const canAccessChatbot = effectiveTier === 'basic' || effectiveTier === 'premium';
@@ -54,6 +134,13 @@ export const useSubscription = () => {
     isLoading,
     error,
     refetch,
+    // Trial
+    isOnTrial,
+    trialDaysRemaining,
+    trialUsed,
+    canStartTrial,
+    startTrial: startTrialMutation.mutate,
+    isStartingTrial: startTrialMutation.isPending,
     // Feature flags
     canAccessChatbot,
     canCreateQuedadas,

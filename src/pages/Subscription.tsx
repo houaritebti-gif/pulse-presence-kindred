@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Crown, Sparkles, Star, Zap } from "lucide-react";
+import { ArrowLeft, Check, Clock, Crown, Gift, Sparkles, Star, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +62,20 @@ const tierConfig: Record<SubscriptionTier, {
 
 const Subscription = () => {
   const navigate = useNavigate();
-  const { tier, subscription, isLoading, isFree, isBasic, isPremium } = useSubscription();
+  const { 
+    tier, 
+    subscription, 
+    isLoading, 
+    isFree, 
+    isBasic, 
+    isPremium,
+    isOnTrial,
+    trialDaysRemaining,
+    canStartTrial,
+    startTrial,
+    isStartingTrial,
+    trialUsed,
+  } = useSubscription();
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null;
@@ -113,6 +126,23 @@ const Subscription = () => {
       </div>
 
       <div className="p-4 pb-24 space-y-6">
+        {/* Trial Banner */}
+        {isOnTrial && (
+          <Card className="p-4 border-primary bg-gradient-to-r from-primary/20 to-primary/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-foreground">Periodo de prueba activo</h3>
+                <p className="text-sm text-muted-foreground">
+                  Te quedan <span className="font-bold text-primary">{trialDaysRemaining} días</span> de prueba gratuita
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Current Plan Card */}
         <Card className={cn(
           "p-6 border-2 bg-gradient-to-br",
@@ -135,9 +165,10 @@ const Subscription = () => {
                     Plan {currentTierConfig.name}
                   </h2>
                   <Badge variant={tier === "premium" ? "default" : "secondary"} className={cn(
-                    tier === "premium" && "bg-amber-500 hover:bg-amber-600"
+                    tier === "premium" && "bg-amber-500 hover:bg-amber-600",
+                    isOnTrial && "bg-primary hover:bg-primary/90"
                   )}>
-                    Activo
+                    {isOnTrial ? "Prueba" : "Activo"}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -151,20 +182,24 @@ const Subscription = () => {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Precio</span>
               <span className="font-semibold text-foreground">
-                {currentTierConfig.price}/mes
+                {isOnTrial ? "Gratis (prueba)" : `${currentTierConfig.price}/mes`}
               </span>
             </div>
             {subscription?.started_at && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Miembro desde</span>
+                <span className="text-muted-foreground">
+                  {isOnTrial ? "Prueba iniciada" : "Miembro desde"}
+                </span>
                 <span className="text-foreground">
-                  {formatDate(subscription.started_at)}
+                  {formatDate(isOnTrial ? subscription.trial_started_at : subscription.started_at)}
                 </span>
               </div>
             )}
             {subscription?.expires_at && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Próxima renovación</span>
+                <span className="text-muted-foreground">
+                  {isOnTrial ? "Prueba termina" : "Próxima renovación"}
+                </span>
                 <span className="text-foreground">
                   {formatDate(subscription.expires_at)}
                 </span>
@@ -187,15 +222,61 @@ const Subscription = () => {
           </div>
         </Card>
 
+        {/* Free Trial CTA for Free Users */}
+        {canStartTrial && (
+          <Card className="p-6 border-2 border-dashed border-primary/50 bg-gradient-to-br from-primary/10 to-primary/5">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <Gift className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="font-display text-lg font-bold text-foreground mb-2">
+                ¡Prueba gratis 7 días!
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Accede al chatbot IA y todas las funciones del plan Básico sin compromiso
+              </p>
+              <Button 
+                onClick={() => startTrial()}
+                disabled={isStartingTrial}
+                className="w-full"
+              >
+                {isStartingTrial ? (
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Empezar prueba gratuita
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">
+                Sin tarjeta de crédito · Se cancela automáticamente
+              </p>
+            </div>
+          </Card>
+        )}
+
+        {/* Trial Used Notice */}
+        {trialUsed && isFree && (
+          <Card className="p-4 border-muted bg-muted/30">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Ya has usado tu periodo de prueba gratuito
+              </p>
+            </div>
+          </Card>
+        )}
+
         {/* Upgrade Options */}
         {!isPremium && (
           <div className="space-y-4">
             <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              Mejora tu experiencia
+              {isOnTrial ? "Continúa con un plan" : "Mejora tu experiencia"}
             </h2>
 
-            {isFree && (
+            {(isFree || isOnTrial) && (
               <Card 
                 className="p-4 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 cursor-pointer hover:border-primary/50 transition-colors"
                 onClick={() => handleUpgrade("basic")}
@@ -232,7 +313,7 @@ const Subscription = () => {
                   <div>
                     <h3 className="font-semibold text-foreground">Plan Premium</h3>
                     <p className="text-sm text-muted-foreground">
-                      {isBasic ? "Crea quedadas ilimitadas" : "Chatbot IA + Crear quedadas"}
+                      {isBasic || isOnTrial ? "Crea quedadas ilimitadas" : "Chatbot IA + Crear quedadas"}
                     </p>
                   </div>
                 </div>
