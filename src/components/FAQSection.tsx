@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { HelpCircle, Plus, Minus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { HelpCircle, Plus, Minus, Sparkles, Shield, CreditCard } from "lucide-react";
 import { useState } from "react";
 import {
   Accordion,
@@ -25,89 +25,134 @@ const staggerContainer = {
   }
 };
 
-const faqs = [
+type FAQCategory = "all" | "general" | "security" | "payments";
+
+interface FAQ {
+  question: string;
+  answer: string;
+  category: "general" | "security" | "payments";
+}
+
+const faqs: FAQ[] = [
+  // General
   {
     question: "¿Qué hace diferente a KIKI de otras apps de citas?",
-    answer: "KIKI se centra en conexiones auténticas, no en swipes vacíos. Aquí no hay algoritmos decidiendo por ti, ni presión por tener la foto perfecta. Puedes controlar tu visibilidad y solo aparecer cuando realmente quieras conocer gente."
+    answer: "KIKI se centra en conexiones auténticas, no en swipes vacíos. Aquí no hay algoritmos decidiendo por ti, ni presión por tener la foto perfecta. Puedes controlar tu visibilidad y solo aparecer cuando realmente quieras conocer gente.",
+    category: "general"
   },
   {
     question: "¿Cómo funciona el sistema de chispas?",
-    answer: "Cuando alguien te interesa, le envías una chispa. Si esa persona también siente curiosidad por ti y te devuelve la chispa, se abre la conversación. Es mutuo, sin presiones ni mensajes no deseados."
+    answer: "Cuando alguien te interesa, le envías una chispa. Si esa persona también siente curiosidad por ti y te devuelve la chispa, se abre la conversación. Es mutuo, sin presiones ni mensajes no deseados.",
+    category: "general"
   },
   {
     question: "¿Tengo que subir fotos obligatoriamente?",
-    answer: "No. En KIKI creemos que las conexiones van más allá de lo visual. Puedes elegir si quieres compartir fotos o no. Lo importante es la conversación y la vibra que transmites."
+    answer: "No. En KIKI creemos que las conexiones van más allá de lo visual. Puedes elegir si quieres compartir fotos o no. Lo importante es la conversación y la vibra que transmites.",
+    category: "general"
   },
   {
     question: "¿Qué es la función de presencia?",
-    answer: "La presencia te permite indicar cuándo estás disponible para conectar. Puedes encenderla cuando tengas ganas de conocer gente y apagarla cuando prefieras descansar. Tú controlas tu tiempo."
+    answer: "La presencia te permite indicar cuándo estás disponible para conectar. Puedes encenderla cuando tengas ganas de conocer gente y apagarla cuando prefieras descansar. Tú controlas tu tiempo.",
+    category: "general"
   },
   {
     question: "¿Es gratis usar KIKI?",
-    answer: "KIKI ofrece un plan gratuito con todas las funciones básicas. También tenemos planes premium que desbloquean características adicionales como mensajes fantasma, quedadas exclusivas y más."
+    answer: "KIKI ofrece un plan gratuito con todas las funciones básicas. También tenemos planes premium que desbloquean características adicionales como mensajes fantasma, quedadas exclusivas y más.",
+    category: "general"
   },
   {
     question: "¿Cómo protegen mi privacidad?",
-    answer: "Tu privacidad es nuestra prioridad. No vendemos datos, no compartimos información con terceros y tú decides quién puede ver tu perfil. Además, puedes bloquear y reportar usuarios de forma anónima."
+    answer: "Tu privacidad es nuestra prioridad. No vendemos datos, no compartimos información con terceros y tú decides quién puede ver tu perfil. Además, puedes bloquear y reportar usuarios de forma anónima.",
+    category: "general"
   },
   {
     question: "¿Qué son las quedadas?",
-    answer: "Las quedadas son eventos creados por la comunidad para conocerse en persona. Pueden ser desde un café tranquilo hasta un concierto. Es una forma segura de dar el salto del chat a la vida real."
+    answer: "Las quedadas son eventos creados por la comunidad para conocerse en persona. Pueden ser desde un café tranquilo hasta un concierto. Es una forma segura de dar el salto del chat a la vida real.",
+    category: "general"
   },
   {
     question: "¿Puedo usar KIKI si no vivo en una gran ciudad?",
-    answer: "¡Por supuesto! KIKI funciona en toda España. Aunque hay más usuarios en grandes ciudades, nuestra comunidad está creciendo en todas partes. La autenticidad no tiene código postal."
+    answer: "¡Por supuesto! KIKI funciona en toda España. Aunque hay más usuarios en grandes ciudades, nuestra comunidad está creciendo en todas partes. La autenticidad no tiene código postal.",
+    category: "general"
   },
-  // Preguntas sobre seguridad
+  // Security
   {
     question: "¿Cómo verifican que los perfiles son reales?",
-    answer: "Utilizamos verificación por email y ofrecemos verificación opcional por foto. Además, nuestro sistema detecta comportamientos sospechosos y nuestra comunidad puede reportar perfiles falsos, que revisamos manualmente."
+    answer: "Utilizamos verificación por email y ofrecemos verificación opcional por foto. Además, nuestro sistema detecta comportamientos sospechosos y nuestra comunidad puede reportar perfiles falsos, que revisamos manualmente.",
+    category: "security"
   },
   {
     question: "¿Qué pasa si alguien me acosa o me hace sentir incómodo/a?",
-    answer: "Puedes bloquear a cualquier usuario instantáneamente. También puedes reportar comportamientos inapropiados de forma anónima. Nuestro equipo revisa cada reporte en menos de 24 horas y toma medidas según la gravedad."
+    answer: "Puedes bloquear a cualquier usuario instantáneamente. También puedes reportar comportamientos inapropiados de forma anónima. Nuestro equipo revisa cada reporte en menos de 24 horas y toma medidas según la gravedad.",
+    category: "security"
   },
   {
     question: "¿Pueden ver mi ubicación exacta otros usuarios?",
-    answer: "Nunca. Solo mostramos la ciudad que tú elijas indicar en tu perfil. No compartimos coordenadas GPS ni ubicación en tiempo real. Tu seguridad física es fundamental."
+    answer: "Nunca. Solo mostramos la ciudad que tú elijas indicar en tu perfil. No compartimos coordenadas GPS ni ubicación en tiempo real. Tu seguridad física es fundamental.",
+    category: "security"
   },
   {
     question: "¿Mis conversaciones están cifradas?",
-    answer: "Sí, todas las conversaciones en KIKI están cifradas en tránsito y en reposo. Nadie, ni siquiera nosotros, puede leer tus mensajes privados. Tu intimidad está protegida."
+    answer: "Sí, todas las conversaciones en KIKI están cifradas en tránsito y en reposo. Nadie, ni siquiera nosotros, puede leer tus mensajes privados. Tu intimidad está protegida.",
+    category: "security"
   },
   {
     question: "¿Qué datos míos almacenan y por cuánto tiempo?",
-    answer: "Solo almacenamos los datos necesarios para el funcionamiento de la app. Puedes solicitar una copia de tus datos o su eliminación completa en cualquier momento desde la configuración de tu cuenta, cumpliendo con el RGPD."
+    answer: "Solo almacenamos los datos necesarios para el funcionamiento de la app. Puedes solicitar una copia de tus datos o su eliminación completa en cualquier momento desde la configuración de tu cuenta, cumpliendo con el RGPD.",
+    category: "security"
   },
-  // Preguntas sobre pagos
+  // Payments
   {
     question: "¿Qué incluyen los planes de pago?",
-    answer: "El plan Basic incluye chispas ilimitadas y mensajes fantasma. El plan Premium añade quedadas exclusivas, perfil destacado, sin anuncios y atención prioritaria. Puedes ver todos los detalles en nuestra página de suscripción."
+    answer: "El plan Basic incluye chispas ilimitadas y mensajes fantasma. El plan Premium añade quedadas exclusivas, perfil destacado, sin anuncios y atención prioritaria. Puedes ver todos los detalles en nuestra página de suscripción.",
+    category: "payments"
   },
   {
     question: "¿Qué métodos de pago aceptan?",
-    answer: "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express), así como Apple Pay y Google Pay. Todos los pagos se procesan de forma segura a través de Stripe."
+    answer: "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express), así como Apple Pay y Google Pay. Todos los pagos se procesan de forma segura a través de Stripe.",
+    category: "payments"
   },
   {
     question: "¿Puedo cancelar mi suscripción en cualquier momento?",
-    answer: "Absolutamente. No hay permanencia ni compromisos. Puedes cancelar tu suscripción desde la app cuando quieras y seguirás teniendo acceso premium hasta el final del período pagado."
+    answer: "Absolutamente. No hay permanencia ni compromisos. Puedes cancelar tu suscripción desde la app cuando quieras y seguirás teniendo acceso premium hasta el final del período pagado.",
+    category: "payments"
   },
   {
     question: "¿Hay período de prueba gratuito?",
-    answer: "Sí, ofrecemos 7 días de prueba gratuita para el plan Premium. Puedes cancelar antes de que termine sin que te cobremos nada. Es nuestra forma de dejarte probar antes de decidir."
+    answer: "Sí, ofrecemos 7 días de prueba gratuita para el plan Premium. Puedes cancelar antes de que termine sin que te cobremos nada. Es nuestra forma de dejarte probar antes de decidir.",
+    category: "payments"
   },
   {
     question: "¿Qué pasa si no estoy satisfecho/a con mi compra?",
-    answer: "Si no estás contento/a con tu suscripción, contacta con nosotros en los primeros 14 días y te haremos un reembolso completo, sin preguntas. Tu satisfacción es nuestra prioridad."
+    answer: "Si no estás contento/a con tu suscripción, contacta con nosotros en los primeros 14 días y te haremos un reembolso completo, sin preguntas. Tu satisfacción es nuestra prioridad.",
+    category: "payments"
   },
   {
     question: "¿Mis datos de pago están seguros?",
-    answer: "Totalmente. No almacenamos datos de tarjetas en nuestros servidores. Todo el procesamiento de pagos lo gestiona Stripe, líder mundial en seguridad de pagos con certificación PCI DSS nivel 1."
+    answer: "Totalmente. No almacenamos datos de tarjetas en nuestros servidores. Todo el procesamiento de pagos lo gestiona Stripe, líder mundial en seguridad de pagos con certificación PCI DSS nivel 1.",
+    category: "payments"
   },
+];
+
+const categories = [
+  { id: "all" as FAQCategory, label: "Todas", icon: HelpCircle },
+  { id: "general" as FAQCategory, label: "General", icon: Sparkles },
+  { id: "security" as FAQCategory, label: "Seguridad", icon: Shield },
+  { id: "payments" as FAQCategory, label: "Pagos", icon: CreditCard },
 ];
 
 const FAQSection = () => {
   const [openItems, setOpenItems] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState<FAQCategory>("all");
+
+  const filteredFaqs = activeCategory === "all" 
+    ? faqs 
+    : faqs.filter(faq => faq.category === activeCategory);
+
+  const handleCategoryChange = (category: FAQCategory) => {
+    setActiveCategory(category);
+    setOpenItems([]); // Reset open items when changing category
+  };
 
   return (
     <section className="py-24 px-6 relative overflow-hidden">
@@ -135,7 +180,7 @@ const FAQSection = () => {
       <div className="max-w-3xl mx-auto w-full relative z-10">
         {/* Header */}
         <motion.div 
-          className="text-center mb-16" 
+          className="text-center mb-12" 
           initial="hidden" 
           whileInView="visible" 
           viewport={{ once: true, margin: "-100px" }} 
@@ -156,82 +201,155 @@ const FAQSection = () => {
           </p>
         </motion.div>
 
-        {/* FAQ Accordion */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={staggerContainer}
+        {/* Category Tabs */}
+        <motion.div 
+          className="flex flex-wrap justify-center gap-3 mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
         >
-          <Accordion 
-            type="multiple" 
-            value={openItems}
-            onValueChange={setOpenItems}
-            className="space-y-4"
-          >
-            {faqs.map((faq, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                custom={index}
+          {categories.map((category) => {
+            const Icon = category.icon;
+            const isActive = activeCategory === category.id;
+            const count = category.id === "all" 
+              ? faqs.length 
+              : faqs.filter(f => f.category === category.id).length;
+            
+            return (
+              <motion.button
+                key={category.id}
+                onClick={() => handleCategoryChange(category.id)}
+                className={`
+                  relative flex items-center gap-2 px-5 py-2.5 rounded-full font-body text-sm font-medium
+                  transition-all duration-300 border
+                  ${isActive 
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25" 
+                    : "glass-dark border-border/30 text-foreground/70 hover:border-primary/40 hover:text-foreground"
+                  }
+                `}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <AccordionItem 
-                  value={`item-${index}`}
-                  className="border-none"
-                >
+                <Icon className="w-4 h-4" />
+                <span>{category.label}</span>
+                <span className={`
+                  text-xs px-2 py-0.5 rounded-full
+                  ${isActive 
+                    ? "bg-primary-foreground/20 text-primary-foreground" 
+                    : "bg-muted text-muted-foreground"
+                  }
+                `}>
+                  {count}
+                </span>
+                {isActive && (
                   <motion.div
-                    className="rounded-2xl glass-dark border border-border/20 overflow-hidden transition-all duration-300 hover:border-primary/30"
-                    whileHover={{ scale: 1.01 }}
-                    animate={{
-                      borderColor: openItems.includes(`item-${index}`) 
-                        ? "hsl(var(--primary) / 0.4)" 
-                        : "hsl(var(--border) / 0.2)"
-                    }}
-                  >
-                    <AccordionTrigger className="px-6 py-5 hover:no-underline group">
-                      <div className="flex items-center gap-4 text-left w-full">
-                        <motion.div
-                          className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0"
-                          animate={{
-                            backgroundColor: openItems.includes(`item-${index}`) 
-                              ? "hsl(var(--primary) / 0.2)" 
-                              : "hsl(var(--primary) / 0.1)"
-                          }}
-                        >
-                          <motion.div
-                            animate={{ rotate: openItems.includes(`item-${index}`) ? 180 : 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            {openItems.includes(`item-${index}`) ? (
-                              <Minus className="w-5 h-5 text-primary" />
-                            ) : (
-                              <Plus className="w-5 h-5 text-primary" />
-                            )}
-                          </motion.div>
-                        </motion.div>
-                        <span className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {faq.question}
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-6 pb-5">
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="pl-14"
-                      >
-                        <p className="font-body text-foreground/70 leading-relaxed">
-                          {faq.answer}
-                        </p>
-                      </motion.div>
-                    </AccordionContent>
-                  </motion.div>
-                </AccordionItem>
-              </motion.div>
-            ))}
-          </Accordion>
+                    layoutId="activeTabIndicator"
+                    className="absolute inset-0 bg-primary rounded-full -z-10"
+                    transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
         </motion.div>
+
+        {/* FAQ Accordion */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeCategory}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={staggerContainer}
+            >
+              <Accordion 
+                type="multiple" 
+                value={openItems}
+                onValueChange={setOpenItems}
+                className="space-y-4"
+              >
+                {filteredFaqs.map((faq, index) => (
+                  <motion.div
+                    key={`${activeCategory}-${index}`}
+                    variants={fadeInUp}
+                    custom={index}
+                  >
+                    <AccordionItem 
+                      value={`item-${index}`}
+                      className="border-none"
+                    >
+                      <motion.div
+                        className="rounded-2xl glass-dark border border-border/20 overflow-hidden transition-all duration-300 hover:border-primary/30"
+                        whileHover={{ scale: 1.01 }}
+                        animate={{
+                          borderColor: openItems.includes(`item-${index}`) 
+                            ? "hsl(var(--primary) / 0.4)" 
+                            : "hsl(var(--border) / 0.2)"
+                        }}
+                      >
+                        <AccordionTrigger className="px-6 py-5 hover:no-underline group">
+                          <div className="flex items-center gap-4 text-left w-full">
+                            <motion.div
+                              className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0"
+                              animate={{
+                                backgroundColor: openItems.includes(`item-${index}`) 
+                                  ? "hsl(var(--primary) / 0.2)" 
+                                  : "hsl(var(--primary) / 0.1)"
+                              }}
+                            >
+                              <motion.div
+                                animate={{ rotate: openItems.includes(`item-${index}`) ? 180 : 0 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                {openItems.includes(`item-${index}`) ? (
+                                  <Minus className="w-5 h-5 text-primary" />
+                                ) : (
+                                  <Plus className="w-5 h-5 text-primary" />
+                                )}
+                              </motion.div>
+                            </motion.div>
+                            <span className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                              {faq.question}
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-5">
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="pl-14"
+                          >
+                            <p className="font-body text-foreground/70 leading-relaxed">
+                              {faq.answer}
+                            </p>
+                          </motion.div>
+                        </AccordionContent>
+                      </motion.div>
+                    </AccordionItem>
+                  </motion.div>
+                ))}
+              </Accordion>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Empty state */}
+        {filteredFaqs.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
+            <p className="text-muted-foreground">No hay preguntas en esta categoría.</p>
+          </motion.div>
+        )}
 
         {/* Bottom CTA */}
         <motion.div
