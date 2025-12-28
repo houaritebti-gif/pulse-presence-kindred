@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, UserCircle, Radio } from "lucide-react";
+import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, UserCircle, Radio, Copy, Check } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -224,9 +225,12 @@ interface FormattedMessageProps {
   content: string;
   isUser: boolean;
   onNavigate: (route: string) => void;
+  showCopyButton?: boolean;
 }
 
-const FormattedMessage = ({ content, isUser, onNavigate }: FormattedMessageProps) => {
+const FormattedMessage = ({ content, isUser, onNavigate, showCopyButton = false }: FormattedMessageProps) => {
+  const [copied, setCopied] = useState(false);
+  
   const { cleanText, actions, parsed } = useMemo(() => {
     if (isUser || !content) return { cleanText: content, actions: [], parsed: null };
     const extracted = extractActions(content);
@@ -235,6 +239,22 @@ const FormattedMessage = ({ content, isUser, onNavigate }: FormattedMessageProps
       parsed: parseMarkdown(extracted.cleanText),
     };
   }, [content, isUser]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(cleanText || content);
+      setCopied(true);
+      toast({
+        description: "Copiado al portapapeles",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({
+        description: "No se pudo copiar",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isUser) {
     return <>{content}</>;
@@ -267,6 +287,28 @@ const FormattedMessage = ({ content, isUser, onNavigate }: FormattedMessageProps
             );
           })}
         </div>
+      )}
+      {showCopyButton && (
+        <button
+          onClick={handleCopy}
+          className={cn(
+            "inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground",
+            "transition-colors duration-200 mt-1"
+          )}
+          title="Copiar respuesta"
+        >
+          {copied ? (
+            <>
+              <Check className="h-3 w-3" />
+              <span>Copiado</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3 w-3" />
+              <span>Copiar</span>
+            </>
+          )}
+        </button>
       )}
     </div>
   );
@@ -414,6 +456,7 @@ export const AIChatBot = () => {
                         content={msg.content} 
                         isUser={msg.role === "user"} 
                         onNavigate={handleNavigate}
+                        showCopyButton={msg.role === "assistant" && msg.content !== ""}
                       />
                     </div>
                     {msg.role === "user" && (
