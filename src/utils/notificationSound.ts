@@ -301,6 +301,41 @@ export const playCelebrationSound = () => {
   }
 };
 
+// Subtle AI chatbot response sound - soft, friendly "blip"
+export const playChatbotResponseSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Soft ascending "blip" - friendly AI response
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.type = "sine";
+    
+    // Gentle ascending tone
+    osc.frequency.setValueAtTime(440, ctx.currentTime); // A4
+    osc.frequency.exponentialRampToValueAtTime(587, ctx.currentTime + 0.08); // D5
+    
+    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+    
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.15);
+  } catch (error) {
+    console.log("Could not play chatbot response sound:", error);
+  }
+};
+
 // Subtle success sound for retry success toasts
 export const playSuccessSound = () => {
   if (isSoundMuted()) return;
