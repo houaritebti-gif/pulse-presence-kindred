@@ -132,6 +132,11 @@ export const useAIChat = () => {
   const sendMessage = useCallback(async (input: string) => {
     if (!input.trim() || isLoading) return;
 
+    // Haptic feedback when sending message
+    if (navigator.vibrate) {
+      navigator.vibrate(30);
+    }
+
     const userMsg: Message = { role: "user", content: input.trim() };
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
@@ -204,6 +209,11 @@ export const useAIChat = () => {
             break;
           }
         }
+      }
+
+      // Haptic feedback when response is complete
+      if (navigator.vibrate) {
+        navigator.vibrate([30, 20, 30]);
       }
     } catch (err) {
       console.error("AI Chat error:", err);
