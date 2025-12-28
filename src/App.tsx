@@ -28,6 +28,7 @@ import GhostMessages from "./pages/GhostMessages";
 import Quedadas from "./pages/Quedadas";
 import QuedadaChat from "./pages/QuedadaChat";
 import Notifications from "./pages/Notifications";
+import Subscription from "./pages/Subscription";
 import NotFound from "./pages/NotFound";
 
 // Exponential backoff retry function
@@ -196,6 +197,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <GhostMessages />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/subscription"
+                element={
+                  <ProtectedRoute>
+                    <Subscription />
                   </ProtectedRoute>
                 }
               />

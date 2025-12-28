@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
@@ -570,6 +570,32 @@ const Profile = () => {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Subscription Section */}
+        <div className="mb-6 animate-fade-up animate-delay-500">
+          <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+            Suscripción
+          </h2>
+          <button
+            onClick={() => navigate("/subscription")}
+            className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-amber-500/10 rounded-xl border border-primary/20 hover:border-primary/40 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-primary" />
+              </div>
+              <div className="text-left">
+                <span className="font-body text-sm font-medium text-foreground block">
+                  Gestionar mi plan
+                </span>
+                <span className="font-body text-xs text-muted-foreground">
+                  Ver beneficios y opciones de mejora
+                </span>
+              </div>
+            </div>
+            <ChevronDown className="w-5 h-5 text-muted-foreground -rotate-90" />
+          </button>
         </div>
 
         {/* Blocked Users Section */}
