@@ -312,6 +312,14 @@ const ImageCropModal = ({
     }
   }, []);
 
+  // Handle mouse wheel zoom for desktop
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = -e.deltaY * 0.002; // Invert for natural scrolling direction
+    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom + delta));
+    setEditState({ ...editState, zoom: newZoom });
+  }, [zoom, editState, setEditState]);
+
   // Update transformed image when transform changes
   useEffect(() => {
     if (!hasTransform) {
@@ -525,6 +533,7 @@ const ImageCropModal = ({
             onTouchStart={isMobile ? handleTouchStart : undefined}
             onTouchMove={isMobile ? handleTouchMove : undefined}
             onTouchEnd={isMobile ? handleTouchEnd : undefined}
+            onWheel={!isMobile ? handleWheel : undefined}
           >
             {/* Floating zoom indicator */}
             <div
