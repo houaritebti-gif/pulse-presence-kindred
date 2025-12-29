@@ -104,7 +104,7 @@ const faqs: FAQ[] = [
   // Payments
   {
     question: "¿Qué incluyen los planes de pago?",
-    answer: "El plan Basic incluye chispas ilimitadas y mensajes fantasma. El plan Premium añade quedadas exclusivas, perfil destacado, sin anuncios y atención prioritaria. Puedes ver todos los detalles en nuestra página de suscripción.",
+    answer: "El plan Plus incluye acceso al chatbot IA y sugerencias personalizadas. El plan Premium añade la posibilidad de crear quedadas, badge exclusivo y acceso anticipado a novedades. Puedes ver todos los detalles en nuestra página de suscripción.",
     category: "payments"
   },
   {
