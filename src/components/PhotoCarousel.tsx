@@ -463,14 +463,59 @@ const PhotoCarousel = memo(({
     };
   }, [emblaApi, onSelect]);
 
+  // Image preloading cache
+  const preloadedImagesRef = useRef<Set<string>>(new Set());
+  
+  // Preload an image
+  const preloadImage = useCallback((src: string) => {
+    if (preloadedImagesRef.current.has(src)) return;
+    
+    const img = new Image();
+    img.src = src;
+    preloadedImagesRef.current.add(src);
+  }, []);
+
+  // Preload adjacent images on mount and index change
+  useEffect(() => {
+    if (allPhotos.length <= 1) return;
+    
+    // Preload current, next, and previous
+    const prevIndex = (currentIndex - 1 + allPhotos.length) % allPhotos.length;
+    const nextIndex = (currentIndex + 1) % allPhotos.length;
+    
+    preloadImage(allPhotos[currentIndex]);
+    preloadImage(allPhotos[prevIndex]);
+    preloadImage(allPhotos[nextIndex]);
+  }, [currentIndex, allPhotos, preloadImage]);
+
+  // Preload based on swipe direction during drag
+  const preloadInDirection = useCallback((direction: "prev" | "next") => {
+    if (allPhotos.length <= 1) return;
+    
+    // Preload 2 images ahead in the direction of swipe
+    for (let i = 1; i <= 2; i++) {
+      const targetIndex = direction === "next" 
+        ? (currentIndex + i) % allPhotos.length
+        : (currentIndex - i + allPhotos.length) % allPhotos.length;
+      preloadImage(allPhotos[targetIndex]);
+    }
+  }, [currentIndex, allPhotos, preloadImage]);
+
   // Handle pan gesture for enhanced swipe
   const handlePanStart = useCallback(() => {
     if (!isZoomed) setIsDragging(true);
   }, [isZoomed]);
 
   const handlePan = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (!isZoomed) dragX.set(info.offset.x);
-  }, [dragX, isZoomed]);
+    if (isZoomed) return;
+    
+    dragX.set(info.offset.x);
+    
+    // Preload in the direction of swipe when threshold is approached
+    if (Math.abs(info.offset.x) > SWIPE_THRESHOLD * 0.5) {
+      preloadInDirection(info.offset.x > 0 ? "prev" : "next");
+    }
+  }, [dragX, isZoomed, preloadInDirection]);
 
   const handlePanEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     setIsDragging(false);
