@@ -5,6 +5,12 @@ import { useToast } from "@/hooks/use-toast";
 
 export type SubscriptionTier = 'free' | 'basic' | 'premium';
 
+// Stripe price IDs
+export const STRIPE_PRICES = {
+  basic: "price_1SjTnJ6W6Rrd2z1D9rNwFtwH",
+  premium: "price_1SjUEr6W6Rrd2z1D95RIlVEf",
+} as const;
+
 interface Subscription {
   id: string;
   profile_id: string;
@@ -39,6 +45,20 @@ export const useSubscription = () => {
       return data as Subscription | null;
     },
     enabled: !!profile?.id,
+  });
+
+  // Check subscription with Stripe
+  const checkStripeSubscription = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data?.subscribed) {
+        queryClient.invalidateQueries({ queryKey: ['subscription', profile?.id] });
+      }
+    },
   });
 
   // Start trial mutation
@@ -104,6 +124,51 @@ export const useSubscription = () => {
     },
   });
 
+  // Create checkout session
+  const createCheckoutMutation = useMutation({
+    mutationFn: async (tier: 'basic' | 'premium') => {
+      const priceId = STRIPE_PRICES[tier];
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId, tier },
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error al crear checkout",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Open customer portal
+  const openPortalMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error al abrir portal",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const tier: SubscriptionTier = subscription?.tier || 'free';
   
   // Check if subscription is expired
@@ -134,6 +199,12 @@ export const useSubscription = () => {
     isLoading,
     error,
     refetch,
+    // Stripe
+    createCheckout: createCheckoutMutation.mutate,
+    isCreatingCheckout: createCheckoutMutation.isPending,
+    openPortal: openPortalMutation.mutate,
+    isOpeningPortal: openPortalMutation.isPending,
+    checkStripeSubscription: checkStripeSubscription.mutate,
     // Trial
     isOnTrial,
     trialDaysRemaining,
