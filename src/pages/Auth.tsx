@@ -21,6 +21,17 @@ const passwordRequirements = [
   { label: "Un símbolo", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ];
 
+const getPasswordStrength = (password: string) => {
+  const passed = passwordRequirements.filter(req => req.test(password)).length;
+  const percentage = (passed / passwordRequirements.length) * 100;
+  
+  if (passed === 0) return { level: "none", label: "", color: "bg-muted", percentage: 0 };
+  if (passed === 1) return { level: "weak", label: "Débil", color: "bg-destructive", percentage };
+  if (passed === 2) return { level: "fair", label: "Regular", color: "bg-orange-500", percentage };
+  if (passed === 3) return { level: "good", label: "Buena", color: "bg-yellow-500", percentage };
+  return { level: "strong", label: "Fuerte", color: "bg-green-500", percentage };
+};
+
 const Auth = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -147,27 +158,51 @@ const Auth = () => {
               className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
             />
             
-            {/* Password requirements indicator - only show on signup */}
+            {/* Password strength indicator - only show on signup */}
             {!isLogin && password.length > 0 && (
-              <div className="grid grid-cols-2 gap-2 p-3 rounded-lg bg-secondary/30 animate-fade-in">
-                {passwordRequirements.map((req) => {
-                  const passed = req.test(password);
-                  return (
+              <div className="space-y-3 animate-fade-in">
+                {/* Strength bar */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-body text-muted-foreground">Seguridad</span>
+                    <span className={`text-xs font-body font-medium ${
+                      getPasswordStrength(password).level === "strong" ? "text-green-500" :
+                      getPasswordStrength(password).level === "good" ? "text-yellow-500" :
+                      getPasswordStrength(password).level === "fair" ? "text-orange-500" :
+                      getPasswordStrength(password).level === "weak" ? "text-destructive" : "text-muted-foreground"
+                    }`}>
+                      {getPasswordStrength(password).label}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <div 
-                      key={req.label}
-                      className={`flex items-center gap-2 text-xs font-body transition-colors ${
-                        passed ? "text-green-500" : "text-muted-foreground"
-                      }`}
-                    >
-                      {passed ? (
-                        <Check className="w-3 h-3" />
-                      ) : (
-                        <X className="w-3 h-3" />
-                      )}
-                      {req.label}
-                    </div>
-                  );
-                })}
+                      className={`h-full rounded-full transition-all duration-300 ease-out ${getPasswordStrength(password).color}`}
+                      style={{ width: `${getPasswordStrength(password).percentage}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Requirements checklist */}
+                <div className="grid grid-cols-2 gap-2 p-3 rounded-lg bg-secondary/30">
+                  {passwordRequirements.map((req) => {
+                    const passed = req.test(password);
+                    return (
+                      <div 
+                        key={req.label}
+                        className={`flex items-center gap-2 text-xs font-body transition-colors ${
+                          passed ? "text-green-500" : "text-muted-foreground"
+                        }`}
+                      >
+                        {passed ? (
+                          <Check className="w-3 h-3" />
+                        ) : (
+                          <X className="w-3 h-3" />
+                        )}
+                        {req.label}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
             
