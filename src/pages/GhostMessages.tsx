@@ -11,6 +11,8 @@ import { es } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
+import PremiumBadge from "@/components/PremiumBadge";
+import { useUserSubscription } from "@/hooks/useUserSubscription";
 
 // Component to show a single ghost message card
 const GhostMessageCard = ({ 
@@ -28,6 +30,7 @@ const GhostMessageCard = ({
   const markAsRead = useMarkGhostMessageRead();
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"block" | "report">("block");
+  const { data: senderTier } = useUserSubscription(message.from_profile?.id);
   
   // Mark as read when viewed
   useEffect(() => {
@@ -117,6 +120,7 @@ const GhostMessageCard = ({
             <h3 className="font-display font-semibold text-card-foreground">
               {isRevealed ? (message.from_profile?.name || "Anónima") : "Alguien misterioso"}
             </h3>
+            {isRevealed && senderTier === 'premium' && <PremiumBadge size="sm" />}
             {!message.read_at && (
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse-soft" />
             )}
