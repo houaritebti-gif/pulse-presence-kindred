@@ -182,6 +182,8 @@ const ImageCropModal = ({
   const [isPinching, setIsPinching] = useState(false);
   const initialPinchDistance = useRef<number | null>(null);
   const initialZoom = useRef<number>(1);
+  const lastTapTime = useRef<number>(0);
+  const DOUBLE_TAP_DELAY = 300; // ms
 
   // History management for edits
   const {
@@ -198,6 +200,7 @@ const ImageCropModal = ({
 
   const MIN_ZOOM = 1;
   const MAX_ZOOM = 3;
+  const DOUBLE_TAP_ZOOM = 2;
 
   // Check if any transform is applied
   const hasTransform = transform.rotation !== 0 || transform.flipH || transform.flipV;
@@ -209,15 +212,35 @@ const ImageCropModal = ({
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  // Handle touch start for pinch gesture
+  // Handle double tap to toggle zoom
+  const handleDoubleTap = useCallback(() => {
+    const newZoom = zoom === MIN_ZOOM ? DOUBLE_TAP_ZOOM : MIN_ZOOM;
+    setEditState({ ...editState, zoom: newZoom });
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(15);
+    }
+  }, [zoom, editState, setEditState]);
+
+  // Handle touch start for pinch gesture and double-tap detection
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       e.preventDefault();
       setIsPinching(true);
       initialPinchDistance.current = getTouchDistance(e.touches[0], e.touches[1]);
       initialZoom.current = zoom;
+    } else if (e.touches.length === 1) {
+      // Double-tap detection
+      const now = Date.now();
+      if (now - lastTapTime.current < DOUBLE_TAP_DELAY) {
+        e.preventDefault();
+        handleDoubleTap();
+        lastTapTime.current = 0; // Reset to prevent triple-tap
+      } else {
+        lastTapTime.current = now;
+      }
     }
-  }, [zoom]);
+  }, [zoom, handleDoubleTap]);
 
   // Handle touch move for pinch gesture
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
