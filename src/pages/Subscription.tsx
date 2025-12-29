@@ -1,9 +1,11 @@
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Clock, Crown, Gift, Sparkles, Star, Zap } from "lucide-react";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Check, Clock, Crown, ExternalLink, Gift, Loader2, Sparkles, Star, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSubscription, SubscriptionTier } from "@/hooks/useSubscription";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const tierConfig: Record<SubscriptionTier, {
@@ -62,6 +64,8 @@ const tierConfig: Record<SubscriptionTier, {
 
 const Subscription = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
   const { 
     tier, 
     subscription, 
@@ -75,7 +79,37 @@ const Subscription = () => {
     startTrial,
     isStartingTrial,
     trialUsed,
+    createCheckout,
+    isCreatingCheckout,
+    openPortal,
+    isOpeningPortal,
+    checkStripeSubscription,
+    refetch,
   } = useSubscription();
+
+  // Handle success/cancel from Stripe checkout
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+    
+    if (success === 'true') {
+      toast({
+        title: "¡Pago completado!",
+        description: "Tu suscripción se ha activado correctamente",
+      });
+      checkStripeSubscription();
+      refetch();
+      // Clean URL
+      window.history.replaceState({}, '', '/subscription');
+    } else if (canceled === 'true') {
+      toast({
+        title: "Pago cancelado",
+        description: "No se ha realizado ningún cargo",
+        variant: "destructive",
+      });
+      window.history.replaceState({}, '', '/subscription');
+    }
+  }, [searchParams, toast, checkStripeSubscription, refetch]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null;
@@ -86,9 +120,8 @@ const Subscription = () => {
     });
   };
 
-  const handleUpgrade = (targetTier: SubscriptionTier) => {
-    // TODO: Implement Stripe checkout when connected
-    console.log("Upgrade to:", targetTier);
+  const handleUpgrade = (targetTier: 'basic' | 'premium') => {
+    createCheckout(targetTier);
   };
 
   if (isLoading) {
@@ -278,13 +311,20 @@ const Subscription = () => {
 
             {(isFree || isOnTrial) && (
               <Card 
-                className="p-4 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => handleUpgrade("basic")}
+                className={cn(
+                  "p-4 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 transition-colors",
+                  !isCreatingCheckout && "cursor-pointer hover:border-primary/50"
+                )}
+                onClick={() => !isCreatingCheckout && handleUpgrade("basic")}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                      <Zap className="w-5 h-5 text-primary" />
+                      {isCreatingCheckout ? (
+                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                      ) : (
+                        <Zap className="w-5 h-5 text-primary" />
+                      )}
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Plan Básico</h3>
@@ -302,13 +342,20 @@ const Subscription = () => {
             )}
 
             <Card 
-              className="p-4 border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-amber-500/5 cursor-pointer hover:border-amber-500/50 transition-colors"
-              onClick={() => handleUpgrade("premium")}
+              className={cn(
+                "p-4 border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-amber-500/5 transition-colors",
+                !isCreatingCheckout && "cursor-pointer hover:border-amber-500/50"
+              )}
+              onClick={() => !isCreatingCheckout && handleUpgrade("premium")}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                    <Crown className="w-5 h-5 text-amber-500" />
+                    {isCreatingCheckout ? (
+                      <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+                    ) : (
+                      <Crown className="w-5 h-5 text-amber-500" />
+                    )}
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">Plan Premium</h3>
@@ -349,12 +396,22 @@ const Subscription = () => {
             <h2 className="font-display text-lg font-semibold text-foreground">
               Gestionar suscripción
             </h2>
-            <Button variant="outline" className="w-full">
-              Actualizar método de pago
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => openPortal()}
+              disabled={isOpeningPortal}
+            >
+              {isOpeningPortal ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <ExternalLink className="w-4 h-4 mr-2" />
+              )}
+              Gestionar en Stripe
             </Button>
-            <Button variant="ghost" className="w-full text-destructive hover:text-destructive">
-              Cancelar suscripción
-            </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Actualiza tu método de pago, cambia de plan o cancela tu suscripción
+            </p>
           </div>
         )}
       </div>
