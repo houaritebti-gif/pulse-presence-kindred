@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect, memo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { motion, useMotionValue, useTransform, animate, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -113,7 +114,7 @@ const NavButton = memo(({
 
 NavButton.displayName = "NavButton";
 
-// Memoized dots indicator
+// Memoized dots indicator with animation
 const DotsIndicator = memo(({ 
   total, 
   currentIndex 
@@ -123,14 +124,14 @@ const DotsIndicator = memo(({
 }) => (
   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
     {Array.from({ length: total }).map((_, index) => (
-      <div
+      <motion.div
         key={index}
-        className={cn(
-          "w-1.5 h-1.5 rounded-full transition-all",
-          index === currentIndex
-            ? "bg-primary w-3"
-            : "bg-background/60"
-        )}
+        className="h-1.5 rounded-full bg-background/60"
+        animate={{
+          width: index === currentIndex ? 12 : 6,
+          backgroundColor: index === currentIndex ? "hsl(var(--primary))" : "hsl(var(--background) / 0.6)",
+        }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
       />
     ))}
   </div>
@@ -159,6 +160,10 @@ const SIZE_TEXT_CLASSES = {
   lg: "text-5xl",
 } as const;
 
+// Swipe threshold for navigation (in pixels)
+const SWIPE_THRESHOLD = 50;
+const SWIPE_VELOCITY_THRESHOLD = 500;
+
 const PhotoCarousel = memo(({
   photos,
   avatarUrl,
@@ -170,10 +175,20 @@ const PhotoCarousel = memo(({
   onClick,
   lazy = true,
 }: PhotoCarouselProps) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: true,
+    dragFree: false,
+    skipSnaps: false,
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isInView, setIsInView] = useState(!lazy);
+  const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Motion values for gesture feedback
+  const dragX = useMotionValue(0);
+  const dragOpacity = useTransform(dragX, [-100, 0, 100], [0.7, 1, 0.7]);
+  const dragScale = useTransform(dragX, [-100, 0, 100], [0.98, 1, 0.98]);
 
   // Memoize allPhotos to prevent recalculation
   const allPhotos = photos.length > 0 ? photos : avatarUrl ? [avatarUrl] : [];
@@ -203,14 +218,22 @@ const PhotoCarousel = memo(({
     return () => observer.disconnect();
   }, [lazy]);
 
-  const scrollPrev = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
+  const scrollPrev = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
     emblaApi?.scrollPrev();
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
   }, [emblaApi]);
 
-  const scrollNext = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
+  const scrollNext = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
     emblaApi?.scrollNext();
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
   }, [emblaApi]);
 
   const onSelect = useCallback(() => {
@@ -221,16 +244,43 @@ const PhotoCarousel = memo(({
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.on("select", onSelect);
-    onSelect(); // Initialize current index
+    onSelect();
     return () => {
       emblaApi.off("select", onSelect);
     };
   }, [emblaApi, onSelect]);
 
+  // Handle pan gesture for enhanced swipe
+  const handlePanStart = useCallback(() => {
+    setIsDragging(true);
+  }, []);
+
+  const handlePan = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    dragX.set(info.offset.x);
+  }, [dragX]);
+
+  const handlePanEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    setIsDragging(false);
+    
+    const { offset, velocity } = info;
+    const swipe = Math.abs(offset.x) > SWIPE_THRESHOLD || Math.abs(velocity.x) > SWIPE_VELOCITY_THRESHOLD;
+    
+    if (swipe) {
+      if (offset.x > 0 || velocity.x > SWIPE_VELOCITY_THRESHOLD) {
+        scrollPrev();
+      } else {
+        scrollNext();
+      }
+    }
+    
+    // Animate back to center
+    animate(dragX, 0, { type: "spring", stiffness: 500, damping: 30 });
+  }, [dragX, scrollPrev, scrollNext]);
+
   // Check if slide should be loaded (current + adjacent for performance)
   const shouldLoadSlide = useCallback((index: number) => {
     const photoCount = allPhotos.length;
-    if (photoCount <= 3) return true; // Load all if few photos
+    if (photoCount <= 3) return true;
     
     const diff = Math.abs(index - currentIndex);
     const wrappedDiff = Math.min(diff, photoCount - diff);
@@ -289,25 +339,34 @@ const PhotoCarousel = memo(({
     );
   }
 
-  // Multiple photos - show carousel
+  // Multiple photos - show carousel with enhanced gestures
   return (
-    <div 
+    <motion.div 
       ref={containerRef}
       className={cn(
-        "relative rounded-xl overflow-hidden group",
+        "relative rounded-xl overflow-hidden group touch-pan-y",
         SIZE_CLASSES[size],
         className
       )}
-      onClick={onClick}
+      onClick={!isDragging ? onClick : undefined}
+      style={{ opacity: dragOpacity, scale: dragScale }}
+      onPanStart={handlePanStart}
+      onPan={handlePan}
+      onPanEnd={handlePanEnd}
     >
       {isInView ? (
         <>
           <div className="overflow-hidden h-full" ref={emblaRef}>
             <div className="flex h-full">
               {allPhotos.map((photo, index) => (
-                <div 
+                <motion.div 
                   key={photo} 
                   className="flex-[0_0_100%] min-w-0 h-full"
+                  animate={{
+                    scale: index === currentIndex ? 1 : 0.95,
+                    opacity: index === currentIndex ? 1 : 0.8,
+                  }}
+                  transition={{ duration: 0.2 }}
                 >
                   {shouldLoadSlide(index) ? (
                     <LazyImage
@@ -318,10 +377,36 @@ const PhotoCarousel = memo(({
                   ) : (
                     <div className="w-full h-full bg-card-foreground/10" />
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
+
+          {/* Swipe hint indicator - shows briefly on first view */}
+          {currentIndex === 0 && allPhotos.length > 1 && (
+            <motion.div
+              className="absolute inset-0 pointer-events-none flex items-center justify-center"
+              initial={{ opacity: 0.8 }}
+              animate={{ opacity: 0 }}
+              transition={{ delay: 1.5, duration: 0.5 }}
+            >
+              <motion.div
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-background/60 backdrop-blur-sm"
+                initial={{ x: 0 }}
+                animate={{ x: [0, -10, 10, 0] }}
+                transition={{ 
+                  duration: 1, 
+                  delay: 0.5,
+                  times: [0, 0.33, 0.66, 1],
+                  ease: "easeInOut"
+                }}
+              >
+                <ChevronLeft className="w-3 h-3 text-foreground/70" />
+                <span className="text-xs font-body text-foreground/70">Desliza</span>
+                <ChevronRight className="w-3 h-3 text-foreground/70" />
+              </motion.div>
+            </motion.div>
+          )}
 
           {showArrows && (
             <>
@@ -337,7 +422,7 @@ const PhotoCarousel = memo(({
       ) : (
         Placeholder
       )}
-    </div>
+    </motion.div>
   );
 });
 
