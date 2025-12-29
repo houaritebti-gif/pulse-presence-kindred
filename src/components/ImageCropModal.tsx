@@ -10,11 +10,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Crop as CropIcon, RotateCcw, RotateCw, Check, X, FlipHorizontal, FlipVertical, ZoomIn, ZoomOut, Undo2, Redo2 } from "lucide-react";
+import { Crop as CropIcon, RotateCcw, RotateCw, Check, X, FlipHorizontal, FlipVertical, ZoomIn, ZoomOut, Undo2, Redo2, Hand, MousePointerClick } from "lucide-react";
 import ImageFilters, { ImageFilterValues, getFilterStyle } from "./ImageFilters";
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+
+const GESTURE_GUIDE_SHOWN_KEY = "kiki_crop_gesture_guide_shown";
 interface ImageCropModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -189,6 +191,24 @@ const ImageCropModal = ({
   const [showZoomIndicator, setShowZoomIndicator] = useState(false);
   const zoomIndicatorTimeout = useRef<NodeJS.Timeout | null>(null);
   const previousZoom = useRef<number>(1);
+  
+  // Gesture guide state (only show once per device)
+  const [showGestureGuide, setShowGestureGuide] = useState(false);
+  
+  // Check if gesture guide should be shown on mount
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      const hasSeenGuide = localStorage.getItem(GESTURE_GUIDE_SHOWN_KEY);
+      if (!hasSeenGuide) {
+        setShowGestureGuide(true);
+      }
+    }
+  }, [isMobile, isOpen]);
+  
+  const dismissGestureGuide = useCallback(() => {
+    setShowGestureGuide(false);
+    localStorage.setItem(GESTURE_GUIDE_SHOWN_KEY, "true");
+  }, []);
 
   // History management for edits
   const {
@@ -554,6 +574,50 @@ const ImageCropModal = ({
                     crossOrigin="anonymous"
                   />
                 </ReactCrop>
+              </div>
+            )}
+            
+            {/* Gesture guide overlay - shown only first time on mobile */}
+            {showGestureGuide && isMobile && (
+              <div 
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-6 animate-fade-in"
+                onClick={dismissGestureGuide}
+              >
+                <div className="text-center space-y-8 max-w-xs">
+                  <h3 className="text-white text-xl font-semibold">Gestos táctiles</h3>
+                  
+                  <div className="space-y-6">
+                    {/* Pinch to zoom */}
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                        <Hand className="w-8 h-8 text-white" />
+                      </div>
+                      <div className="text-white/90">
+                        <p className="font-medium">Pellizca con dos dedos</p>
+                        <p className="text-sm text-white/70">para hacer zoom</p>
+                      </div>
+                    </div>
+                    
+                    {/* Double tap */}
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                        <MousePointerClick className="w-8 h-8 text-white" />
+                      </div>
+                      <div className="text-white/90">
+                        <p className="font-medium">Doble toque</p>
+                        <p className="text-sm text-white/70">zoom rápido 1x ↔ 2x</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="mt-4 bg-white/10 border-white/30 text-white hover:bg-white/20"
+                    onClick={dismissGestureGuide}
+                  >
+                    Entendido
+                  </Button>
+                </div>
               </div>
             )}
           </div>
