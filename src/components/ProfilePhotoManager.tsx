@@ -258,15 +258,18 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
             </div>
           </div>
           
-          {/* Prominent add button */}
+          {/* Prominent add button - larger on mobile */}
           {emptySlots > 0 && (
             <Button
               onClick={handleAddClick}
-              size="sm"
-              className="gap-2 shadow-lg shadow-primary/25"
+              size={isMobile ? "lg" : "sm"}
+              className={cn(
+                "gap-2 shadow-lg shadow-primary/25 font-semibold",
+                isMobile && "px-6 py-3 text-base animate-pulse-soft"
+              )}
             >
-              <Plus className="w-4 h-4" />
-              Añadir
+              <Plus className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
+              {isMobile ? "Añadir foto" : "Añadir"}
             </Button>
           )}
         </div>
@@ -394,7 +397,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
           </div>
         )}
 
-        {/* Empty slots - show as clickable cards */}
+        {/* Empty slots - show as clickable cards, more prominent on mobile */}
         {uploadingIndex === null && [...Array(Math.min(emptySlots, photoCount === 0 ? 3 : Math.max(1, 3 - (photoCount % 3))))].map((_, i) => (
           <button
             key={`empty-${i}`}
@@ -402,31 +405,33 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
             className={cn(
               "aspect-[3/4] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all duration-200",
               "hover:border-primary hover:bg-primary/10 active:scale-[0.98]",
-              isMobile && "active:bg-primary/20",
+              isMobile && "active:bg-primary/20 border-[3px]",
               photoCount === 0 && i === 0 
-                ? "border-primary bg-primary/10" 
+                ? "border-primary bg-primary/10 shadow-lg shadow-primary/20" 
                 : "border-muted-foreground/30 bg-muted/30"
             )}
           >
             <div className={cn(
               "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
-              isMobile && "w-16 h-16",
+              isMobile && "w-20 h-20",
               photoCount === 0 && i === 0 
-                ? "bg-primary/20" 
+                ? "bg-primary/30 animate-pulse-soft" 
                 : "bg-muted-foreground/10"
             )}>
               {photoCount === 0 && i === 0 ? (
-                <Camera className={cn("w-7 h-7 text-primary", isMobile && "w-8 h-8")} />
+                <Camera className={cn("w-7 h-7 text-primary", isMobile && "w-10 h-10")} />
               ) : (
-                <Plus className={cn("w-7 h-7 text-muted-foreground", isMobile && "w-8 h-8")} />
+                <Plus className={cn("w-7 h-7 text-muted-foreground", isMobile && "w-9 h-9")} />
               )}
             </div>
             <span className={cn(
-              "text-sm font-body font-medium text-center px-2",
+              "text-sm font-body font-semibold text-center px-2",
               isMobile && "text-base",
               photoCount === 0 && i === 0 ? "text-primary" : "text-muted-foreground"
             )}>
-              {photoCount === 0 && i === 0 ? (isMobile ? "Toca para añadir foto" : "Añade tu primera foto") : "Añadir foto"}
+              {photoCount === 0 && i === 0 
+                ? (isMobile ? "📸 Toca para añadir" : "Añade tu primera foto") 
+                : (isMobile ? "➕ Añadir" : "Añadir foto")}
             </span>
           </button>
         ))}
