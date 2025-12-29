@@ -61,6 +61,7 @@ export type Database = {
           created_at: string
           from_profile_id: string
           id: string
+          message: string | null
           responded_at: string | null
           status: string
           to_profile_id: string
@@ -69,6 +70,7 @@ export type Database = {
           created_at?: string
           from_profile_id: string
           id?: string
+          message?: string | null
           responded_at?: string | null
           status?: string
           to_profile_id: string
@@ -77,6 +79,7 @@ export type Database = {
           created_at?: string
           from_profile_id?: string
           id?: string
+          message?: string | null
           responded_at?: string | null
           status?: string
           to_profile_id?: string
