@@ -28,6 +28,8 @@ import QuedadaAttendeeItem from "@/components/QuedadaAttendeeItem";
 import QuedadaMessageSender from "@/components/QuedadaMessageSender";
 import ImageCropModal from "@/components/ImageCropModal";
 import { useGroupTypingIndicator } from "@/hooks/useGroupTypingIndicator";
+import { useQuedadaReactions } from "@/hooks/useQuedadaReactions";
+import { MessageReactions } from "@/components/MessageReactions";
 
 const QuedadaChat = () => {
   const navigate = useNavigate();
@@ -46,6 +48,9 @@ const QuedadaChat = () => {
   
   // Typing indicator
   const { typingUsers, isAnyoneTyping, typingText, handleTyping, stopTyping } = useGroupTypingIndicator(quedadaId);
+  
+  // Reactions
+  const { getMessageReactions, toggleReaction, availableEmojis, isToggling } = useQuedadaReactions(quedadaId);
   
   // Image upload
   const { uploadImage, isUploading: isUploadingImage, uploadPhase, uploadProgress } = useChatImageUpload();
@@ -607,6 +612,15 @@ const QuedadaChat = () => {
                       )}
                     </div>
                   )}
+                  
+                  {/* Reactions */}
+                  <MessageReactions
+                    reactions={getMessageReactions(msg.id)}
+                    availableEmojis={availableEmojis}
+                    onToggle={(emoji) => toggleReaction(msg.id, emoji)}
+                    isOwn={isOwn}
+                    disabled={isToggling}
+                  />
                 </div>
               </div>
             );

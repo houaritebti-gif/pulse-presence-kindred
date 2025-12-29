@@ -377,6 +377,45 @@ export type Database = {
           },
         ]
       }
+      quedada_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quedada_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "quedada_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quedada_message_reactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quedada_messages: {
         Row: {
           content: string
