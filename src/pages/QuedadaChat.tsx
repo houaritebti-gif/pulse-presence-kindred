@@ -27,6 +27,7 @@ import { useUserSubscription } from "@/hooks/useUserSubscription";
 import QuedadaAttendeeItem from "@/components/QuedadaAttendeeItem";
 import QuedadaMessageSender from "@/components/QuedadaMessageSender";
 import ImageCropModal from "@/components/ImageCropModal";
+import { useGroupTypingIndicator } from "@/hooks/useGroupTypingIndicator";
 
 const QuedadaChat = () => {
   const navigate = useNavigate();
@@ -42,6 +43,9 @@ const QuedadaChat = () => {
   
   // Subscription check for creator
   const { data: creatorTier } = useUserSubscription(quedada?.creator?.id);
+  
+  // Typing indicator
+  const { typingUsers, isAnyoneTyping, typingText, handleTyping, stopTyping } = useGroupTypingIndicator(quedadaId);
   
   // Image upload
   const { uploadImage, isUploading: isUploadingImage, uploadPhase, uploadProgress } = useChatImageUpload();
@@ -202,6 +206,8 @@ const QuedadaChat = () => {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!newMessage.trim() && !selectedFile) || !quedadaId || !quedada) return;
+    
+    stopTyping(); // Stop typing indicator on send
 
     const recipientIds = getRecipientIds();
     const messageContent = newMessage.trim();
@@ -620,6 +626,36 @@ const QuedadaChat = () => {
           />
         ))}
         
+        {/* Typing indicator */}
+        {isAnyoneTyping && (
+          <div className="flex items-center gap-2 animate-fade-up">
+            <div className="flex -space-x-2">
+              {typingUsers.slice(0, 3).map((user) => (
+                <div 
+                  key={user.profileId} 
+                  className="w-6 h-6 rounded-full overflow-hidden border-2 border-background"
+                >
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-card flex items-center justify-center text-card-foreground font-display text-[10px]">
+                      {(user.name?.[0] || "?").toUpperCase()}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="px-4 py-2 bg-card rounded-2xl rounded-bl-md flex items-center gap-2">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+              <span className="text-xs text-muted-foreground">{typingText}</span>
+            </div>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
@@ -716,7 +752,10 @@ const QuedadaChat = () => {
               <div className="flex-1 relative">
                 <Input
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={(e) => {
+                    setNewMessage(e.target.value);
+                    handleTyping();
+                  }}
                   placeholder={selectedFile ? "Añade un mensaje..." : "Escribe algo..."}
                   className="h-12 font-body bg-card/50 text-foreground border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
                 />
