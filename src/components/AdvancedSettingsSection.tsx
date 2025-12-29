@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { useAdvancedSettings, Theme, TextSize } from "@/hooks/useAdvancedSettings";
-import { isThemeSoundEnabled, setThemeSoundEnabled } from "@/utils/notificationSound";
+import { isThemeSoundEnabled, setThemeSoundEnabled, notifyUser } from "@/utils/notificationSound";
 
 const AdvancedSettingsSection = () => {
   const [expanded, setExpanded] = useState(false);
@@ -196,6 +197,77 @@ const AdvancedSettingsSection = () => {
               checked={themeSoundOn}
               onCheckedChange={handleThemeSoundChange}
             />
+          </div>
+
+          {/* Sound Test Section */}
+          <div className="p-4 bg-secondary/50 rounded-xl space-y-3">
+            <div className="flex items-center gap-3 mb-2">
+              <Bell className="w-5 h-5 text-foreground" />
+              <div>
+                <span className="font-body text-sm text-foreground block">
+                  Probar sonidos de notificación
+                </span>
+                <span className="font-body text-xs text-muted-foreground">
+                  Escucha cada sonido antes de recibir una notificación real
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => notifyUser("spark")}
+                className="flex items-center gap-2 text-xs"
+              >
+                <Sparkles className="w-4 h-4 text-accent" />
+                Chispa
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => notifyUser("message")}
+                className="flex items-center gap-2 text-xs"
+              >
+                <MessageCircle className="w-4 h-4 text-primary" />
+                Mensaje
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => notifyUser("quedada")}
+                className="flex items-center gap-2 text-xs"
+              >
+                <Calendar className="w-4 h-4 text-accent" />
+                Quedada
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => notifyUser("ghost")}
+                className="flex items-center gap-2 text-xs"
+              >
+                <Ghost className="w-4 h-4 text-muted-foreground" />
+                Ghost
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => notifyUser("connection")}
+                className="flex items-center gap-2 text-xs"
+              >
+                <UserPlus className="w-4 h-4 text-primary" />
+                Conexión
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => notifyUser("default")}
+                className="flex items-center gap-2 text-xs"
+              >
+                <Play className="w-4 h-4 text-muted-foreground" />
+                General
+              </Button>
+            </div>
           </div>
 
           {/* Reset Gesture Guide */}
