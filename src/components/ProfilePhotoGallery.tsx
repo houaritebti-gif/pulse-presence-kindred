@@ -36,8 +36,31 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, isOwnProfile = false }: 
           <div 
             className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
           />
+          
+          {/* Preview thumbnails showing how it could look */}
           <motion.div 
-            className="relative z-10 flex flex-col items-center gap-4"
+            className="absolute top-4 left-4 right-4 flex gap-2 justify-center"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                className="w-12 h-14 rounded-lg bg-card-foreground/10 border border-card-foreground/20 overflow-hidden"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 0.7, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.8 + i * 0.1 }}
+              >
+                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                  <Images className="w-4 h-4 text-card-foreground/30" />
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div 
+            className="relative z-10 flex flex-col items-center gap-4 mt-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
@@ -99,6 +122,28 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, isOwnProfile = false }: 
                 Subir fotos
               </span>
             </motion.div>
+          </motion.div>
+
+          {/* Bottom hint showing gallery preview */}
+          <motion.div
+            className="absolute bottom-4 left-4 right-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 1 }}
+          >
+            <div className="flex items-center justify-center gap-1.5">
+              <div className="flex -space-x-1">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-1.5 h-1.5 rounded-full bg-card-foreground/30"
+                  />
+                ))}
+              </div>
+              <span className="font-body text-xs text-card-foreground/40">
+                Sube hasta 5 fotos
+              </span>
+            </div>
           </motion.div>
         </motion.button>
       );
