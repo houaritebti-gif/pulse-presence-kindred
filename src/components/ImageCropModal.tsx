@@ -184,6 +184,11 @@ const ImageCropModal = ({
   const initialZoom = useRef<number>(1);
   const lastTapTime = useRef<number>(0);
   const DOUBLE_TAP_DELAY = 300; // ms
+  
+  // Zoom indicator state
+  const [showZoomIndicator, setShowZoomIndicator] = useState(false);
+  const zoomIndicatorTimeout = useRef<NodeJS.Timeout | null>(null);
+  const previousZoom = useRef<number>(1);
 
   // History management for edits
   const {
@@ -204,6 +209,31 @@ const ImageCropModal = ({
 
   // Check if any transform is applied
   const hasTransform = transform.rotation !== 0 || transform.flipH || transform.flipV;
+
+  // Show zoom indicator when zoom changes
+  useEffect(() => {
+    if (previousZoom.current !== zoom) {
+      setShowZoomIndicator(true);
+      
+      // Clear existing timeout
+      if (zoomIndicatorTimeout.current) {
+        clearTimeout(zoomIndicatorTimeout.current);
+      }
+      
+      // Hide after 1.5 seconds
+      zoomIndicatorTimeout.current = setTimeout(() => {
+        setShowZoomIndicator(false);
+      }, 1500);
+      
+      previousZoom.current = zoom;
+    }
+    
+    return () => {
+      if (zoomIndicatorTimeout.current) {
+        clearTimeout(zoomIndicatorTimeout.current);
+      }
+    };
+  }, [zoom]);
 
   // Calculate distance between two touch points
   const getTouchDistance = (touch1: React.Touch, touch2: React.Touch): number => {
@@ -469,13 +499,26 @@ const ImageCropModal = ({
           <div 
             ref={containerRef}
             className={cn(
-              "flex items-center justify-center bg-muted/50 overflow-auto touch-none",
+              "flex items-center justify-center bg-muted/50 overflow-auto touch-none relative",
               isMobile ? "p-2 min-h-[45vh]" : "p-4 min-h-[200px]"
             )}
             onTouchStart={isMobile ? handleTouchStart : undefined}
             onTouchMove={isMobile ? handleTouchMove : undefined}
             onTouchEnd={isMobile ? handleTouchEnd : undefined}
           >
+            {/* Floating zoom indicator */}
+            <div
+              className={cn(
+                "absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 rounded-full bg-black/70 text-white text-sm font-medium backdrop-blur-sm transition-all duration-300 flex items-center gap-1.5",
+                showZoomIndicator 
+                  ? "opacity-100 translate-y-0" 
+                  : "opacity-0 -translate-y-2 pointer-events-none"
+              )}
+            >
+              <ZoomIn className="w-4 h-4" />
+              {Math.round(zoom * 100)}%
+            </div>
+
             {isTransforming ? (
               <div className={cn(
                 "flex items-center justify-center",
