@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check, CheckCheck, ImagePlus, Loader2 } from "lucide-react";
+import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check, CheckCheck, ImagePlus, Loader2, Crop } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useProfile } from "@/hooks/useProfile";
 import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage, useOtherUserReadStatus } from "@/hooks/useSparks";
@@ -22,6 +22,7 @@ import VoiceRecordButton from "@/components/VoiceRecordButton";
 import OfflineMessageIndicator from "@/components/OfflineMessageIndicator";
 import PendingMessage from "@/components/PendingMessage";
 import PremiumBadge from "@/components/PremiumBadge";
+import ImageCropModal from "@/components/ImageCropModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 
@@ -102,6 +103,12 @@ const SparkChat = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isCompressingPreview, setIsCompressingPreview] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  
+  // Crop modal state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [pendingCropFile, setPendingCropFile] = useState<File | null>(null);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Get pending messages for this chat
@@ -254,7 +261,7 @@ const SparkChat = () => {
     }
   };
 
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -269,11 +276,37 @@ const SparkChat = () => {
       return;
     }
     
+    // Store file and open crop modal
+    setPendingCropFile(file);
+    const imageUrl = URL.createObjectURL(file);
+    setImageToCrop(imageUrl);
+    setCropModalOpen(true);
+    
+    // Reset input for future selections
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
+
+  const handleCropComplete = useCallback(async (croppedBlob: Blob) => {
+    // Clean up object URL
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setPendingCropFile(null);
+    setCropModalOpen(false);
+    
     setIsCompressingPreview(true);
     
     try {
-      // Compress image before preview
-      const compressedFile = await compressChatImage(file);
+      // Create file from blob
+      const croppedFile = new File([croppedBlob], "chat-image.jpg", {
+        type: "image/jpeg",
+      });
+      
+      // Compress image for upload
+      const compressedFile = await compressChatImage(croppedFile);
       setSelectedFile(compressedFile);
       
       // Create preview from compressed file
@@ -283,12 +316,24 @@ const SparkChat = () => {
         setIsCompressingPreview(false);
       };
       reader.readAsDataURL(compressedFile);
+      
+      // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate(15);
     } catch (error) {
-      console.error("Error compressing image:", error);
+      console.error("Error processing cropped image:", error);
       toast.error("Error al procesar la imagen");
       setIsCompressingPreview(false);
     }
-  };
+  }, [imageToCrop]);
+
+  const handleCropClose = useCallback(() => {
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setPendingCropFile(null);
+    setCropModalOpen(false);
+  }, [imageToCrop]);
 
   const clearImagePreview = () => {
     setSelectedFile(null);
@@ -919,6 +964,15 @@ const SparkChat = () => {
       <ImageLightbox 
         imageUrl={lightboxImage} 
         onClose={() => setLightboxImage(null)} 
+      />
+
+      {/* Image Crop Modal */}
+      <ImageCropModal
+        isOpen={cropModalOpen && !!imageToCrop}
+        onClose={handleCropClose}
+        imageSrc={imageToCrop || ""}
+        onCropComplete={handleCropComplete}
+        aspectRatio={4 / 5}
       />
     </main>
   );
