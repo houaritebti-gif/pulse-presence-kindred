@@ -2,10 +2,24 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const passwordSchema = z.string()
+  .min(8, "Mínimo 8 caracteres")
+  .regex(/[A-Z]/, "Al menos una mayúscula")
+  .regex(/[0-9]/, "Al menos un número")
+  .regex(/[^A-Za-z0-9]/, "Al menos un símbolo (!@#$%...)");
+
+const passwordRequirements = [
+  { label: "8+ caracteres", test: (p: string) => p.length >= 8 },
+  { label: "Una mayúscula", test: (p: string) => /[A-Z]/.test(p) },
+  { label: "Un número", test: (p: string) => /[0-9]/.test(p) },
+  { label: "Un símbolo", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -14,6 +28,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -22,8 +37,24 @@ const Auth = () => {
     }
   }, [user, navigate]);
 
+  const validatePassword = (pwd: string): boolean => {
+    const result = passwordSchema.safeParse(pwd);
+    if (!result.success) {
+      setPasswordError(result.error.errors[0].message);
+      return false;
+    }
+    setPasswordError(null);
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Only validate password strength on signup
+    if (!isLogin && !validatePassword(password)) {
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -47,7 +78,6 @@ const Auth = () => {
       }
       navigate("/profile");
     } catch (error: any) {
-      console.error("Auth error:", error);
       if (error.message.includes("Invalid login credentials")) {
         toast.error("Email o contraseña incorrectos");
       } else if (error.message.includes("already registered")) {
@@ -109,11 +139,43 @@ const Auth = () => {
               type="password"
               placeholder="contraseña"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (!isLogin) setPasswordError(null);
+              }}
               required
-              minLength={6}
               className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
             />
+            
+            {/* Password requirements indicator - only show on signup */}
+            {!isLogin && password.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 p-3 rounded-lg bg-secondary/30 animate-fade-in">
+                {passwordRequirements.map((req) => {
+                  const passed = req.test(password);
+                  return (
+                    <div 
+                      key={req.label}
+                      className={`flex items-center gap-2 text-xs font-body transition-colors ${
+                        passed ? "text-green-500" : "text-muted-foreground"
+                      }`}
+                    >
+                      {passed ? (
+                        <Check className="w-3 h-3" />
+                      ) : (
+                        <X className="w-3 h-3" />
+                      )}
+                      {req.label}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {passwordError && !isLogin && (
+              <p className="text-xs text-destructive font-body animate-fade-in">
+                {passwordError}
+              </p>
+            )}
           </div>
 
           <Button 
