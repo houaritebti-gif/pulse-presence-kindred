@@ -22,6 +22,9 @@ import VoiceRecordButton from "@/components/VoiceRecordButton";
 import OfflineMessageIndicator from "@/components/OfflineMessageIndicator";
 import PendingMessage from "@/components/PendingMessage";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import PremiumBadge from "@/components/PremiumBadge";
+import { useUserSubscription } from "@/hooks/useUserSubscription";
+import QuedadaAttendeeItem from "@/components/QuedadaAttendeeItem";
 
 const QuedadaChat = () => {
   const navigate = useNavigate();
@@ -34,6 +37,9 @@ const QuedadaChat = () => {
   const sendMessage = useSendQuedadaMessage();
   const markRead = useMarkQuedadaRead();
   const expelAttendee = useExpelAttendee();
+  
+  // Subscription check for creator
+  const { data: creatorTier } = useUserSubscription(quedada?.creator?.id);
   
   // Image upload
   const { uploadImage, isUploading: isUploadingImage, uploadPhase, uploadProgress } = useChatImageUpload();
@@ -748,9 +754,12 @@ const QuedadaChat = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="font-body text-sm text-card-foreground truncate">
-                        {quedada.creator.name || "Anónima"}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-body text-sm text-card-foreground truncate">
+                          {quedada.creator.name || "Anónima"}
+                        </p>
+                        {creatorTier === 'premium' && <PremiumBadge size="sm" />}
+                      </div>
                       <p className="font-body text-xs text-accent">Organizadora</p>
                     </div>
                     <Sparkles className="w-4 h-4 text-accent" />
@@ -759,54 +768,38 @@ const QuedadaChat = () => {
                 
                 {/* Attendees */}
                 {attendees?.map((attendee) => (
-                  <div
+                  <QuedadaAttendeeItem
                     key={attendee.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors"
-                  >
-                    <button
-                      onClick={() => {
-                        setShowAttendees(false);
-                        navigate(`/user/${attendee.profile?.id}`);
-                      }}
-                      className="flex items-center gap-3 flex-1 min-w-0 text-left"
-                    >
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={attendee.profile?.avatar_url || undefined} />
-                        <AvatarFallback className="bg-card text-card-foreground font-display">
-                          {(attendee.profile?.name?.[0] || "?").toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-body text-sm text-card-foreground truncate">
-                          {attendee.profile?.name || "Anónima"}
-                        </p>
-                      </div>
-                    </button>
-                    
-                    {/* Expel button - only visible to creator */}
-                    {quedada?.is_creator && attendee.profile?.id && (
-                      <button
-                        onClick={async () => {
-                          if (!confirm(`¿Seguro que quieres expulsar a ${attendee.profile?.name || "esta persona"} de la quedada?`)) return;
-                          try {
-                            await expelAttendee.mutateAsync({
-                              quedadaId: quedadaId!,
-                              attendeeProfileId: attendee.profile!.id,
-                              quedadaTitle: quedada.title,
-                            });
-                            toast.success("Asistente expulsado");
-                          } catch (error: any) {
-                            toast.error("Error: " + error.message);
-                          }
-                        }}
-                        disabled={expelAttendee.isPending}
-                        className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all disabled:opacity-50"
-                        title="Expulsar asistente"
-                      >
-                        <UserX className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
+                    profile={attendee.profile}
+                    onNavigate={() => {
+                      setShowAttendees(false);
+                      navigate(`/user/${attendee.profile?.id}`);
+                    }}
+                    expelButton={
+                      quedada?.is_creator && attendee.profile?.id ? (
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`¿Seguro que quieres expulsar a ${attendee.profile?.name || "esta persona"} de la quedada?`)) return;
+                            try {
+                              await expelAttendee.mutateAsync({
+                                quedadaId: quedadaId!,
+                                attendeeProfileId: attendee.profile!.id,
+                                quedadaTitle: quedada.title,
+                              });
+                              toast.success("Asistente expulsado");
+                            } catch (error: any) {
+                              toast.error("Error: " + error.message);
+                            }
+                          }}
+                          disabled={expelAttendee.isPending}
+                          className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all disabled:opacity-50"
+                          title="Expulsar asistente"
+                        >
+                          <UserX className="w-4 h-4" />
+                        </button>
+                      ) : undefined
+                    }
+                  />
                 ))}
                 
                 {!attendees?.length && !quedada?.creator && (
