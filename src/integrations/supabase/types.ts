@@ -56,6 +56,48 @@ export type Database = {
           },
         ]
       }
+      connection_requests: {
+        Row: {
+          created_at: string
+          from_profile_id: string
+          id: string
+          responded_at: string | null
+          status: string
+          to_profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_profile_id: string
+          id?: string
+          responded_at?: string | null
+          status?: string
+          to_profile_id: string
+        }
+        Update: {
+          created_at?: string
+          from_profile_id?: string
+          id?: string
+          responded_at?: string | null
+          status?: string
+          to_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connection_requests_from_profile_id_fkey"
+            columns: ["from_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connection_requests_to_profile_id_fkey"
+            columns: ["to_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ghost_messages: {
         Row: {
           content: string
@@ -776,6 +818,10 @@ export type Database = {
       can_view_profile: {
         Args: { target_profile_id: string; viewer_user_id: string }
         Returns: boolean
+      }
+      get_connection_status: {
+        Args: { target_profile_id: string; viewer_user_id: string }
+        Returns: string
       }
       get_user_subscription_tier: {
         Args: { p_profile_id: string }
