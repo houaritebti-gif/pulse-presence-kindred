@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import confetti from "canvas-confetti";
 import { playCelebrationSound } from "@/utils/notificationSound";
+import QuedadaCreatorHeader from "@/components/QuedadaCreatorHeader";
 
 const Quedadas = () => {
   const navigate = useNavigate();
@@ -291,27 +292,7 @@ const Quedadas = () => {
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   {/* Header */}
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-accent/20">
-                      {quedada.creator?.avatar_url ? (
-                        <img src={quedada.creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
-                          <span className="font-display text-sm text-card-foreground">
-                            {(quedada.creator?.name?.[0] || "?").toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display font-semibold text-card-foreground text-lg leading-tight">
-                        {quedada.title}
-                      </h3>
-                      <p className="font-body text-xs text-card-foreground/50">
-                        por {quedada.creator?.name || "Anónima"}
-                      </p>
-                    </div>
-                  </div>
+                  <QuedadaCreatorHeader creator={quedada.creator} title={quedada.title} />
 
                   {/* Description */}
                   {quedada.description && (
