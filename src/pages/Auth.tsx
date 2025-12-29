@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { ArrowLeft, Check, X, AlertTriangle, Shield, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { z } from "zod";
+import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
 
 const passwordSchema = z.string()
   .min(8, "Mínimo 8 caracteres")
@@ -40,6 +41,15 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [breachChecked, setBreachChecked] = useState(false);
+  
+  const { 
+    checkPassword, 
+    isChecking: isCheckingBreach, 
+    breachCount, 
+    isBreached,
+    reset: resetBreachCheck 
+  } = usePasswordBreachCheck();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -47,6 +57,22 @@ const Auth = () => {
       navigate("/profile");
     }
   }, [user, navigate]);
+
+  // Debounced breach check when password changes
+  useEffect(() => {
+    if (isLogin || password.length < 8) {
+      resetBreachCheck();
+      setBreachChecked(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      await checkPassword(password);
+      setBreachChecked(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [password, isLogin, checkPassword, resetBreachCheck]);
 
   const validatePassword = (pwd: string): boolean => {
     const result = passwordSchema.safeParse(pwd);
@@ -63,6 +89,12 @@ const Auth = () => {
     
     // Only validate password strength on signup
     if (!isLogin && !validatePassword(password)) {
+      return;
+    }
+
+    // Block signup with breached passwords
+    if (!isLogin && isBreached) {
+      toast.error("Esta contraseña ha sido filtrada. Por favor, elige otra.");
       return;
     }
     
@@ -203,6 +235,34 @@ const Auth = () => {
                     );
                   })}
                 </div>
+
+                {/* Breach check indicator */}
+                {password.length >= 8 && (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30">
+                    {isCheckingBreach ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                        <span className="text-xs font-body text-muted-foreground">
+                          Verificando filtraciones...
+                        </span>
+                      </>
+                    ) : isBreached ? (
+                      <>
+                        <AlertTriangle className="w-4 h-4 text-destructive" />
+                        <span className="text-xs font-body text-destructive">
+                          ⚠️ Filtrada {breachCount?.toLocaleString()} veces. Elige otra.
+                        </span>
+                      </>
+                    ) : breachChecked ? (
+                      <>
+                        <Shield className="w-4 h-4 text-green-500" />
+                        <span className="text-xs font-body text-green-500">
+                          No encontrada en filtraciones conocidas
+                        </span>
+                      </>
+                    ) : null}
+                  </div>
+                )}
               </div>
             )}
             
