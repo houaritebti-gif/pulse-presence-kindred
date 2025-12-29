@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { playCelebrationSound } from "@/utils/notificationSound";
 import UploadProgress from "@/components/UploadProgress";
+import ImageCropModal from "@/components/ImageCropModal";
 
 const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
@@ -98,14 +99,64 @@ const Onboarding = () => {
     }),
   };
 
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Avatar crop state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+
+  const handleAvatarChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    const url = await uploadAvatar(file);
-    if (url) {
-      setAvatarUrl(url);
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Solo se permiten imágenes");
+      return;
     }
+
+    // Validate file size (max 10MB before crop)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("La imagen no puede superar 10MB");
+      return;
+    }
+
+    // Open crop modal
+    const imageUrl = URL.createObjectURL(file);
+    setImageToCrop(imageUrl);
+    setCropModalOpen(true);
+
+    // Reset input for future selections
+    e.target.value = "";
+  }, []);
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    // Clean up object URL
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setCropModalOpen(false);
+
+    // Create file from blob
+    const croppedFile = new File([croppedBlob], "avatar.jpg", {
+      type: "image/jpeg",
+    });
+
+    try {
+      const url = await uploadAvatar(croppedFile);
+      if (url) {
+        setAvatarUrl(url);
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Error al subir la foto");
+    }
+  };
+
+  const handleCropClose = () => {
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setCropModalOpen(false);
   };
 
   const toggleTribe = (tribe: string) => {
@@ -646,6 +697,15 @@ const Onboarding = () => {
           Saltar este paso
         </button>
       )}
+
+      {/* Avatar Crop Modal */}
+      <ImageCropModal
+        isOpen={cropModalOpen && !!imageToCrop}
+        onClose={handleCropClose}
+        imageSrc={imageToCrop || ""}
+        onCropComplete={handleCropComplete}
+        aspectRatio={1}
+      />
     </main>
   );
 };

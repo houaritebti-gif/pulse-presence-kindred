@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ import OfflineQueueManager from "@/components/OfflineQueueManager";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfilePhotoManager from "@/components/ProfilePhotoManager";
 import UploadProgress from "@/components/UploadProgress";
+import ImageCropModal from "@/components/ImageCropModal";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -177,24 +178,67 @@ const Profile = () => {
     }
   }, [profile]);
 
+  // Avatar crop state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Solo se permiten imágenes");
+      return;
+    }
+
+    // Validate file size (max 10MB before crop)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("La imagen no puede superar 10MB");
+      return;
+    }
+
+    // Open crop modal
+    const imageUrl = URL.createObjectURL(file);
+    setImageToCrop(imageUrl);
+    setCropModalOpen(true);
+
+    // Reset input so same file can be selected again
+    e.target.value = "";
+  }, []);
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    // Clean up object URL
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setCropModalOpen(false);
+
+    // Create file from blob
+    const croppedFile = new File([croppedBlob], "avatar.jpg", {
+      type: "image/jpeg",
+    });
+
     try {
-      const newUrl = await uploadAvatar(file);
+      const newUrl = await uploadAvatar(croppedFile);
       setAvatarUrl(newUrl);
       toast.success("Foto actualizada");
     } catch (error: any) {
       toast.error(error.message || "Error al subir la foto");
     }
+  };
 
-    // Reset input so same file can be selected again
-    e.target.value = "";
+  const handleCropClose = () => {
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setCropModalOpen(false);
   };
 
   useEffect(() => {
@@ -861,6 +905,15 @@ const Profile = () => {
           </Button>
         </div>
       </div>
+
+      {/* Avatar Crop Modal */}
+      <ImageCropModal
+        isOpen={cropModalOpen && !!imageToCrop}
+        onClose={handleCropClose}
+        imageSrc={imageToCrop || ""}
+        onCropComplete={handleCropComplete}
+        aspectRatio={1}
+      />
     </main>
   );
 };
@@ -948,6 +1001,7 @@ const BlockedUsersSection = () => {
           )}
         </div>
       )}
+
     </div>
   );
 };
