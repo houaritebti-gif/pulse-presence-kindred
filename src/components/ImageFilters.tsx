@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Sun, Contrast, Palette, RotateCcw, Sparkles, Plus, X, Save, Heart } from "lucide-react";
 import { useCustomPresets, CustomPreset } from "@/hooks/useCustomPresets";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 export interface ImageFilterValues {
   brightness: number;
@@ -68,6 +70,7 @@ export const getFilterStyle = (values: ImageFilterValues): string => {
 };
 
 const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
+  const isMobile = useIsMobile();
   const [isAddingPreset, setIsAddingPreset] = useState(false);
   const [newPresetName, setNewPresetName] = useState("");
   const { presets: customPresets, addPreset, deletePreset } = useCustomPresets();
@@ -78,6 +81,10 @@ const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
 
   const handlePresetClick = (preset: FilterPreset | CustomPreset) => {
     onChange(preset.values);
+    // Haptic feedback on mobile
+    if (isMobile && navigator.vibrate) {
+      navigator.vibrate(10);
+    }
   };
 
   const isPresetActive = (preset: FilterPreset | CustomPreset) => {
@@ -118,40 +125,63 @@ const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
   };
 
   return (
-    <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
+    <div className={cn(
+      "space-y-4 bg-muted/30 rounded-lg",
+      isMobile ? "p-3 space-y-3" : "p-4"
+    )}>
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-foreground">Ajustes de imagen</h4>
+        <h4 className={cn(
+          "font-medium text-foreground",
+          isMobile ? "text-base" : "text-sm"
+        )}>
+          Ajustes de imagen
+        </h4>
         {hasChanges && (
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={handleReset}
-            className="h-7 text-xs gap-1"
+            className={cn(
+              "gap-1",
+              isMobile ? "h-9 text-sm px-3" : "h-7 text-xs"
+            )}
           >
-            <RotateCcw className="w-3 h-3" />
+            <RotateCcw className={cn(isMobile ? "w-4 h-4" : "w-3 h-3")} />
             Restablecer
           </Button>
         )}
       </div>
 
-      {/* Filter Presets */}
+      {/* Filter Presets - larger touch targets on mobile */}
       <div className="space-y-2">
-        <Label className="text-xs flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
+        <Label className={cn(
+          "flex items-center gap-1.5",
+          isMobile ? "text-sm" : "text-xs"
+        )}>
+          <Sparkles className={cn(
+            "text-yellow-500",
+            isMobile ? "w-4 h-4" : "w-3.5 h-3.5"
+          )} />
           Presets rápidos
         </Label>
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className={cn(
+          "flex gap-2 overflow-x-auto pb-1 scrollbar-hide",
+          isMobile && "gap-2.5 pb-2 -mx-1 px-1"
+        )}>
           {FILTER_PRESETS.map((preset) => (
             <button
               key={preset.name}
               type="button"
               onClick={() => handlePresetClick(preset)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 bg-gradient-to-r ${preset.gradient} text-white ${
+              className={cn(
+                "flex-shrink-0 rounded-full font-medium transition-all duration-200 bg-gradient-to-r text-white",
+                preset.gradient,
+                isMobile ? "px-4 py-2.5 text-sm min-w-[72px]" : "px-3 py-1.5 text-xs",
                 isPresetActive(preset)
                   ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105"
-                  : "opacity-80 hover:opacity-100 hover:scale-105"
-              }`}
+                  : "opacity-80 hover:opacity-100 hover:scale-105 active:scale-95"
+              )}
             >
               {preset.name}
             </button>
@@ -162,31 +192,46 @@ const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
       {/* Custom Presets */}
       {(customPresets.length > 0 || isAddingPreset) && (
         <div className="space-y-2">
-          <Label className="text-xs flex items-center gap-1.5">
-            <Heart className="w-3.5 h-3.5 text-rose-500" />
+          <Label className={cn(
+            "flex items-center gap-1.5",
+            isMobile ? "text-sm" : "text-xs"
+          )}>
+            <Heart className={cn(
+              "text-rose-500",
+              isMobile ? "w-4 h-4" : "w-3.5 h-3.5"
+            )} />
             Mis presets
           </Label>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className={cn(
+            "flex gap-2 overflow-x-auto pb-1 scrollbar-hide",
+            isMobile && "gap-2.5 pb-2 -mx-1 px-1"
+          )}>
             {customPresets.map((preset) => (
               <div key={preset.id} className="relative group flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => handlePresetClick(preset)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 bg-gradient-to-r ${preset.gradient} text-white pr-7 ${
+                  className={cn(
+                    "rounded-full font-medium transition-all duration-200 bg-gradient-to-r text-white",
+                    preset.gradient,
+                    isMobile ? "px-4 py-2.5 text-sm pr-8" : "px-3 py-1.5 text-xs pr-7",
                     isPresetActive(preset)
                       ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105"
-                      : "opacity-80 hover:opacity-100 hover:scale-105"
-                  }`}
+                      : "opacity-80 hover:opacity-100 hover:scale-105 active:scale-95"
+                  )}
                 >
                   {preset.name}
                 </button>
                 <button
                   type="button"
                   onClick={(e) => handleDeletePreset(e, preset)}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center transition-colors"
+                  className={cn(
+                    "absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center transition-colors",
+                    isMobile ? "w-6 h-6" : "w-5 h-5"
+                  )}
                   title="Eliminar preset"
                 >
-                  <X className="w-3 h-3 text-white" />
+                  <X className={cn(isMobile ? "w-3.5 h-3.5" : "w-3 h-3", "text-white")} />
                 </button>
               </div>
             ))}
@@ -196,13 +241,19 @@ const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
 
       {/* Add Preset UI */}
       {isAddingPreset ? (
-        <div className="flex items-center gap-2 p-2 bg-background/50 rounded-lg border border-border/50">
+        <div className={cn(
+          "flex items-center gap-2 bg-background/50 rounded-lg border border-border/50",
+          isMobile ? "p-3 flex-wrap" : "p-2"
+        )}>
           <Input
             type="text"
             value={newPresetName}
             onChange={(e) => setNewPresetName(e.target.value)}
             placeholder="Nombre del preset..."
-            className="h-8 text-xs flex-1"
+            className={cn(
+              "flex-1",
+              isMobile ? "h-11 text-base min-w-[150px]" : "h-8 text-xs"
+            )}
             autoFocus
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSavePreset();
@@ -211,21 +262,21 @@ const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
           />
           <Button
             type="button"
-            size="sm"
-            className="h-8 gap-1"
+            size={isMobile ? "default" : "sm"}
+            className={cn("gap-1", isMobile && "h-11 px-4")}
             onClick={handleSavePreset}
           >
-            <Save className="w-3.5 h-3.5" />
+            <Save className={cn(isMobile ? "w-4 h-4" : "w-3.5 h-3.5")} />
             Guardar
           </Button>
           <Button
             type="button"
             variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
+            size={isMobile ? "default" : "sm"}
+            className={cn(isMobile ? "h-11 w-11 p-0" : "h-8 w-8 p-0")}
             onClick={handleCancelAddPreset}
           >
-            <X className="w-4 h-4" />
+            <X className={cn(isMobile ? "w-5 h-5" : "w-4 h-4")} />
           </Button>
         </div>
       ) : (
@@ -233,25 +284,38 @@ const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="w-full gap-1.5 text-xs h-8"
+            size={isMobile ? "default" : "sm"}
+            className={cn(
+              "w-full gap-1.5",
+              isMobile ? "h-11 text-sm" : "h-8 text-xs"
+            )}
             onClick={() => setIsAddingPreset(true)}
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className={cn(isMobile ? "w-4 h-4" : "w-3.5 h-3.5")} />
             Guardar como preset personalizado
           </Button>
         )
       )}
 
-      <div className="space-y-4">
+      {/* Sliders - larger touch area on mobile */}
+      <div className={cn("space-y-4", isMobile && "space-y-5")}>
         {/* Brightness */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs flex items-center gap-1.5">
-              <Sun className="w-3.5 h-3.5 text-amber-500" />
+            <Label className={cn(
+              "flex items-center gap-1.5",
+              isMobile ? "text-sm" : "text-xs"
+            )}>
+              <Sun className={cn(
+                "text-amber-500",
+                isMobile ? "w-4 h-4" : "w-3.5 h-3.5"
+              )} />
               Brillo
             </Label>
-            <span className="text-xs text-muted-foreground w-10 text-right">
+            <span className={cn(
+              "text-muted-foreground text-right",
+              isMobile ? "text-sm w-12" : "text-xs w-10"
+            )}>
               {values.brightness}%
             </span>
           </div>
@@ -261,18 +325,27 @@ const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
             min={50}
             max={150}
             step={1}
-            className="w-full"
+            className={cn("w-full", isMobile && "[&_[role=slider]]:h-5 [&_[role=slider]]:w-5")}
           />
         </div>
 
         {/* Contrast */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs flex items-center gap-1.5">
-              <Contrast className="w-3.5 h-3.5 text-blue-500" />
+            <Label className={cn(
+              "flex items-center gap-1.5",
+              isMobile ? "text-sm" : "text-xs"
+            )}>
+              <Contrast className={cn(
+                "text-blue-500",
+                isMobile ? "w-4 h-4" : "w-3.5 h-3.5"
+              )} />
               Contraste
             </Label>
-            <span className="text-xs text-muted-foreground w-10 text-right">
+            <span className={cn(
+              "text-muted-foreground text-right",
+              isMobile ? "text-sm w-12" : "text-xs w-10"
+            )}>
               {values.contrast}%
             </span>
           </div>
@@ -282,18 +355,27 @@ const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
             min={50}
             max={150}
             step={1}
-            className="w-full"
+            className={cn("w-full", isMobile && "[&_[role=slider]]:h-5 [&_[role=slider]]:w-5")}
           />
         </div>
 
         {/* Saturation */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs flex items-center gap-1.5">
-              <Palette className="w-3.5 h-3.5 text-pink-500" />
+            <Label className={cn(
+              "flex items-center gap-1.5",
+              isMobile ? "text-sm" : "text-xs"
+            )}>
+              <Palette className={cn(
+                "text-pink-500",
+                isMobile ? "w-4 h-4" : "w-3.5 h-3.5"
+              )} />
               Saturación
             </Label>
-            <span className="text-xs text-muted-foreground w-10 text-right">
+            <span className={cn(
+              "text-muted-foreground text-right",
+              isMobile ? "text-sm w-12" : "text-xs w-10"
+            )}>
               {values.saturation}%
             </span>
           </div>
@@ -303,7 +385,7 @@ const ImageFilters = ({ values, onChange }: ImageFiltersProps) => {
             min={0}
             max={200}
             step={1}
-            className="w-full"
+            className={cn("w-full", isMobile && "[&_[role=slider]]:h-5 [&_[role=slider]]:w-5")}
           />
         </div>
       </div>
