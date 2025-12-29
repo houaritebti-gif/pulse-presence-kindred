@@ -14,7 +14,7 @@ const logStep = (step: string, details?: any) => {
 
 // Product ID to tier mapping
 const PRODUCT_TIERS: Record<string, string> = {
-  "prod_TgrWGHXV0OmYYs": "basic",    // KIKI Plan Básico
+  "prod_TgrWGHXV0OmYYs": "plus",     // KIKI Plan Plus
   "prod_TgryLoQqEUPl9z": "premium",  // KIKI Plan Premium
 };
 
@@ -93,7 +93,7 @@ serve(async (req) => {
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       stripeSubscriptionId = subscription.id;
       const productId = subscription.items.data[0].price.product as string;
-      tier = PRODUCT_TIERS[productId] || "basic";
+      tier = PRODUCT_TIERS[productId] || "plus";
       logStep("Active subscription found", { 
         subscriptionId: subscription.id, 
         endDate: subscriptionEnd,

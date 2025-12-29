@@ -3,11 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { useToast } from "@/hooks/use-toast";
 
-export type SubscriptionTier = 'free' | 'basic' | 'premium';
+export type SubscriptionTier = 'free' | 'plus' | 'premium';
 
 // Stripe price IDs
 export const STRIPE_PRICES = {
-  basic: "price_1SjTnJ6W6Rrd2z1D9rNwFtwH",
+  plus: "price_1SjTnJ6W6Rrd2z1D9rNwFtwH",
   premium: "price_1SjUEr6W6Rrd2z1D95RIlVEf",
 } as const;
 
@@ -85,7 +85,7 @@ export const useSubscription = () => {
         const { error } = await supabase
           .from('user_subscriptions')
           .update({
-            tier: 'basic' as SubscriptionTier,
+            tier: 'plus' as SubscriptionTier,
             trial_started_at: trialStartedAt,
             trial_used: true,
             expires_at: expiresAt,
@@ -99,7 +99,7 @@ export const useSubscription = () => {
           .from('user_subscriptions')
           .insert({
             profile_id: profile.id,
-            tier: 'basic' as SubscriptionTier,
+            tier: 'plus' as SubscriptionTier,
             trial_started_at: trialStartedAt,
             trial_used: true,
             expires_at: expiresAt,
@@ -112,7 +112,7 @@ export const useSubscription = () => {
       queryClient.invalidateQueries({ queryKey: ['subscription', profile?.id] });
       toast({
         title: "¡Prueba activada!",
-        description: "Disfruta de 7 días gratis del plan Básico",
+        description: "Disfruta de 7 días gratis del plan Plus",
       });
     },
     onError: (error: Error) => {
@@ -126,7 +126,7 @@ export const useSubscription = () => {
 
   // Create checkout session
   const createCheckoutMutation = useMutation({
-    mutationFn: async (tier: 'basic' | 'premium') => {
+    mutationFn: async (tier: 'plus' | 'premium') => {
       const priceId = STRIPE_PRICES[tier];
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { priceId, tier },
@@ -179,7 +179,7 @@ export const useSubscription = () => {
   const effectiveTier: SubscriptionTier = isExpired ? 'free' : tier;
 
   // Trial status calculations
-  const isOnTrial = subscription?.trial_started_at && !isExpired && effectiveTier === 'basic' && !subscription?.stripe_subscription_id;
+  const isOnTrial = subscription?.trial_started_at && !isExpired && effectiveTier === 'plus' && !subscription?.stripe_subscription_id;
   const trialUsed = subscription?.trial_used || false;
   
   const trialDaysRemaining = subscription?.expires_at && isOnTrial
@@ -189,7 +189,7 @@ export const useSubscription = () => {
   const canStartTrial = !trialUsed && effectiveTier === 'free';
 
   // Feature access helpers
-  const canAccessChatbot = effectiveTier === 'basic' || effectiveTier === 'premium';
+  const canAccessChatbot = effectiveTier === 'plus' || effectiveTier === 'premium';
   const canCreateQuedadas = effectiveTier === 'premium';
   const canDeleteQuedadas = effectiveTier === 'premium';
 
@@ -218,7 +218,7 @@ export const useSubscription = () => {
     canDeleteQuedadas,
     // Tier checks
     isFree: effectiveTier === 'free',
-    isBasic: effectiveTier === 'basic',
+    isPlus: effectiveTier === 'plus',
     isPremium: effectiveTier === 'premium',
   };
 };

@@ -31,8 +31,8 @@ const tierConfig: Record<SubscriptionTier, {
     color: "text-muted-foreground",
     gradient: "from-muted/50 to-muted/30",
   },
-  basic: {
-    name: "Básico",
+  plus: {
+    name: "Plus",
     price: "€4.99",
     description: "Para usuarios activos",
     icon: <Zap className="w-6 h-6" />,
@@ -51,7 +51,7 @@ const tierConfig: Record<SubscriptionTier, {
     description: "La experiencia completa",
     icon: <Crown className="w-6 h-6" />,
     features: [
-      "Todo lo del plan Básico",
+      "Todo lo del plan Plus",
       "Crear quedadas ilimitadas",
       "Eliminar quedadas propias",
       "Badge exclusivo de Premium",
@@ -71,7 +71,7 @@ const Subscription = () => {
     subscription, 
     isLoading, 
     isFree, 
-    isBasic, 
+    isPlus, 
     isPremium,
     isOnTrial,
     trialDaysRemaining,
@@ -120,7 +120,7 @@ const Subscription = () => {
     });
   };
 
-  const handleUpgrade = (targetTier: 'basic' | 'premium') => {
+  const handleUpgrade = (targetTier: 'plus' | 'premium') => {
     createCheckout(targetTier);
   };
 
@@ -180,13 +180,13 @@ const Subscription = () => {
         <Card className={cn(
           "p-6 border-2 bg-gradient-to-br",
           currentTierConfig.gradient,
-          tier === "premium" ? "border-amber-500/50" : tier === "basic" ? "border-primary/50" : "border-border"
+          tier === "premium" ? "border-amber-500/50" : tier === "plus" ? "border-primary/50" : "border-border"
         )}>
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className={cn(
                 "w-12 h-12 rounded-xl flex items-center justify-center",
-                tier === "premium" ? "bg-amber-500/20" : tier === "basic" ? "bg-primary/20" : "bg-muted"
+                tier === "premium" ? "bg-amber-500/20" : tier === "plus" ? "bg-primary/20" : "bg-muted"
               )}>
                 <span className={currentTierConfig.color}>
                   {currentTierConfig.icon}
@@ -266,7 +266,7 @@ const Subscription = () => {
                 ¡Prueba gratis 7 días!
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Accede al chatbot IA y todas las funciones del plan Básico sin compromiso
+                Accede al chatbot IA y todas las funciones del plan Plus sin compromiso
               </p>
               <Button 
                 onClick={() => startTrial()}
@@ -315,7 +315,7 @@ const Subscription = () => {
                   "p-4 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 transition-colors",
                   !isCreatingCheckout && "cursor-pointer hover:border-primary/50"
                 )}
-                onClick={() => !isCreatingCheckout && handleUpgrade("basic")}
+                onClick={() => !isCreatingCheckout && handleUpgrade("plus")}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -327,7 +327,7 @@ const Subscription = () => {
                       )}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground">Plan Básico</h3>
+                      <h3 className="font-semibold text-foreground">Plan Plus</h3>
                       <p className="text-sm text-muted-foreground">
                         Acceso al chatbot IA
                       </p>
@@ -360,7 +360,7 @@ const Subscription = () => {
                   <div>
                     <h3 className="font-semibold text-foreground">Plan Premium</h3>
                     <p className="text-sm text-muted-foreground">
-                      {isBasic || isOnTrial ? "Crea quedadas ilimitadas" : "Chatbot IA + Crear quedadas"}
+                      {isPlus || isOnTrial ? "Crea quedadas ilimitadas" : "Chatbot IA + Crear quedadas"}
                     </p>
                   </div>
                 </div>

@@ -30,7 +30,7 @@ serve(async (req) => {
       .select('profile_id, expires_at')
       .not('trial_started_at', 'is', null)
       .is('stripe_subscription_id', null)
-      .eq('tier', 'basic')
+      .eq('tier', 'plus')
       .gte('expires_at', twoDaysFromNowStart.toISOString())
       .lte('expires_at', twoDaysFromNowEnd.toISOString());
     
