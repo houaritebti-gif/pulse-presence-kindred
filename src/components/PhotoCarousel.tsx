@@ -167,13 +167,16 @@ const PhotoCarousel = ({
       <div 
         ref={containerRef}
         className={cn(
-          "rounded-xl bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center",
+          "rounded-xl flex items-center justify-center overflow-hidden relative",
           sizeClasses[size],
           className
         )}
         onClick={onClick}
       >
-        <span className={cn("text-card-foreground/60 font-display font-semibold", sizeTextClasses[size])}>
+        <div 
+          className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
+        />
+        <span className={cn("text-card-foreground/70 font-display font-semibold relative z-10 drop-shadow-sm", sizeTextClasses[size])}>
           {(name?.[0] || "?").toUpperCase()}
         </span>
       </div>
@@ -283,9 +286,12 @@ const PhotoCarousel = ({
           </div>
         </>
       ) : (
-        // Placeholder while not in view - show initial
-        <div className="w-full h-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
-          <span className="text-card-foreground/50 font-display text-3xl">
+        // Placeholder while not in view - show initial with animated gradient
+        <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
+          <div 
+            className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
+          />
+          <span className="text-card-foreground/70 font-display text-3xl font-semibold relative z-10 drop-shadow-sm">
             {(name?.[0] || "?").toUpperCase()}
           </span>
         </div>
