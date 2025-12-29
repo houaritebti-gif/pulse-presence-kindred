@@ -151,6 +151,7 @@ const PublicProfile = () => {
             photos={profilePhotos?.map(p => p.photo_url) || []}
             avatarUrl={profile.avatar_url}
             name={profile.name}
+            isOwnProfile={myProfile?.id === profileId}
           />
         </div>
 
