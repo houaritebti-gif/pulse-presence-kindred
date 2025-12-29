@@ -18,6 +18,7 @@ export const useAppNotifications = () => {
   const previousMessagesRef = useRef<Set<string>>(new Set());
   const previousAttendeesRef = useRef<Set<string>>(new Set());
   const previousQuedadaMessagesRef = useRef<Set<string>>(new Set());
+  const previousConnectionNotificationsRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
 
   // Spark notifications
@@ -344,6 +345,10 @@ export const useAppNotifications = () => {
           if (newNotification.type !== 'connection_request' && newNotification.type !== 'connection_accepted') {
             return;
           }
+          
+          // Skip if already processed
+          if (previousConnectionNotificationsRef.current.has(newNotification.id)) return;
+          previousConnectionNotificationsRef.current.add(newNotification.id);
           
           // Skip if on connections page
           if (location.pathname === "/connections") return;
