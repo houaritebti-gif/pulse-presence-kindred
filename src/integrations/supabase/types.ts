@@ -773,6 +773,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_view_profile: {
+        Args: { target_profile_id: string; viewer_user_id: string }
+        Returns: boolean
+      }
       get_user_subscription_tier: {
         Args: { p_profile_id: string }
         Returns: Database["public"]["Enums"]["subscription_tier"]
