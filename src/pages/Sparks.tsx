@@ -5,8 +5,7 @@ import { useSparkChats } from "@/hooks/useSparks";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
-import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
+import SparkChatItem from "@/components/SparkChatItem";
 
 const Sparks = () => {
   const navigate = useNavigate();
@@ -78,71 +77,11 @@ const Sparks = () => {
         ) : (
           <div className="space-y-4">
             {chats?.map((chat, index) => (
-              <button
-                key={chat.id}
-                onClick={() => navigate(`/spark/${chat.id}`)}
-                className="w-full bg-card rounded-2xl p-5 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 animate-fade-up flex items-center gap-4 group border border-transparent hover:border-primary/20"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                {/* Avatar with spark indicator */}
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300 group-hover:ring-primary/40">
-                    {chat.other_profile?.avatar_url ? (
-                      <img 
-                        src={chat.other_profile.avatar_url} 
-                        alt={chat.other_profile.name || "Avatar"}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
-                        <span className="font-display text-lg text-card-foreground">
-                          {(chat.other_profile?.name?.[0] || "?").toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  {/* Flame badge */}
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-card flex items-center justify-center shadow-md">
-                    <Flame className="w-3.5 h-3.5 text-primary animate-spark-flame" />
-                  </div>
-                </div>
-                
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-display font-semibold text-card-foreground text-lg">
-                      {chat.other_profile?.name || "Anónima"}
-                    </h3>
-                    {chat.last_message_at && (
-                      <span className="font-body text-xs text-muted-foreground/50">
-                        · {formatDistanceToNow(new Date(chat.last_message_at), { addSuffix: false, locale: es })}
-                      </span>
-                    )}
-                  </div>
-                  {chat.last_message_content ? (
-                    <p className="font-body text-sm text-card-foreground/60 truncate">
-                      {chat.last_message_content}
-                    </p>
-                  ) : (
-                    <p className="font-body text-sm text-card-foreground/50">
-                      Vibra {chat.other_profile?.vibe?.toLowerCase() || "misteriosa"}
-                    </p>
-                  )}
-                </div>
-
-                {/* Unread indicator or active dot */}
-                <div className="flex items-center gap-2">
-                  {chat.unread_count && chat.unread_count > 0 ? (
-                    <div className="min-w-6 h-6 px-2 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/50 animate-pulse-soft">
-                      <span className="text-xs font-bold text-primary-foreground">
-                        {chat.unread_count > 9 ? "9+" : chat.unread_count}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="w-2.5 h-2.5 rounded-full bg-primary/30" />
-                  )}
-                </div>
-              </button>
+              <SparkChatItem 
+                key={chat.id} 
+                chat={chat} 
+                animationDelay={index * 100} 
+              />
             ))}
           </div>
         )}
