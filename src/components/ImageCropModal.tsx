@@ -13,7 +13,8 @@ import { Slider } from "@/components/ui/slider";
 import { Crop as CropIcon, RotateCcw, RotateCw, Check, X, FlipHorizontal, FlipVertical, ZoomIn, ZoomOut, Undo2, Redo2 } from "lucide-react";
 import ImageFilters, { ImageFilterValues, getFilterStyle } from "./ImageFilters";
 import { useEditHistory } from "@/hooks/useEditHistory";
-
+import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 interface ImageCropModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -168,6 +169,7 @@ const ImageCropModal = ({
   onCropComplete,
   aspectRatio = 3 / 4,
 }: ImageCropModalProps) => {
+  const isMobile = useIsMobile();
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -306,37 +308,46 @@ const ImageCropModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden max-h-[90vh] flex flex-col">
-        <DialogHeader className="p-4 pb-2">
+      <DialogContent className={cn(
+        "p-0 overflow-hidden flex flex-col",
+        isMobile 
+          ? "max-w-[100vw] w-full h-[100dvh] max-h-[100dvh] rounded-none m-0" 
+          : "max-w-lg max-h-[90vh]"
+      )}>
+        <DialogHeader className={cn("p-4 pb-2", isMobile && "pt-6")}>
           <DialogTitle className="flex items-center gap-2">
-            <CropIcon className="w-5 h-5 text-primary" />
-            Editar imagen
+            <CropIcon className={cn("w-5 h-5 text-primary", isMobile && "w-6 h-6")} />
+            <span className={cn(isMobile && "text-lg")}>Editar imagen</span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="px-4 pb-2 flex items-center justify-between gap-2">
+        {/* Transform controls - larger touch targets on mobile */}
+        <div className={cn(
+          "px-4 pb-2 flex items-center justify-between gap-2",
+          isMobile && "px-3 gap-1"
+        )}>
           <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className={cn("h-8 w-8", isMobile && "h-11 w-11")}
               onClick={undo}
               disabled={!canUndo || isTransforming}
-              title="Deshacer (Ctrl+Z)"
+              title="Deshacer"
             >
-              <Undo2 className="w-4 h-4" />
+              <Undo2 className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             </Button>
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className={cn("h-8 w-8", isMobile && "h-11 w-11")}
               onClick={redo}
               disabled={!canRedo || isTransforming}
-              title="Rehacer (Ctrl+Y)"
+              title="Rehacer"
             >
-              <Redo2 className="w-4 h-4" />
+              <Redo2 className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             </Button>
           </div>
           <div className="flex items-center gap-1">
@@ -344,57 +355,64 @@ const ImageCropModal = ({
               type="button"
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className={cn("h-8 w-8", isMobile && "h-11 w-11")}
               onClick={handleRotateLeft}
               disabled={isTransforming}
-              title="Rotar a la izquierda"
+              title="Rotar izquierda"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             </Button>
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-8 w-8"
+              className={cn("h-8 w-8", isMobile && "h-11 w-11")}
               onClick={handleRotateRight}
               disabled={isTransforming}
-              title="Rotar a la derecha"
+              title="Rotar derecha"
             >
-              <RotateCw className="w-4 h-4" />
+              <RotateCw className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             </Button>
-            <div className="w-px h-6 bg-border mx-1" />
+            <div className={cn("w-px h-6 bg-border mx-1", isMobile && "mx-0.5")} />
             <Button
               type="button"
               variant={transform.flipH ? "default" : "outline"}
               size="icon"
-              className="h-8 w-8"
+              className={cn("h-8 w-8", isMobile && "h-11 w-11")}
               onClick={handleFlipHorizontal}
               disabled={isTransforming}
-              title="Voltear horizontalmente"
+              title="Voltear horizontal"
             >
-              <FlipHorizontal className="w-4 h-4" />
+              <FlipHorizontal className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             </Button>
             <Button
               type="button"
               variant={transform.flipV ? "default" : "outline"}
               size="icon"
-              className="h-8 w-8"
+              className={cn("h-8 w-8", isMobile && "h-11 w-11")}
               onClick={handleFlipVertical}
               disabled={isTransforming}
-              title="Voltear verticalmente"
+              title="Voltear vertical"
             >
-              <FlipVertical className="w-4 h-4" />
+              <FlipVertical className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             </Button>
           </div>
         </div>
 
         <div className="flex-1 overflow-auto">
+          {/* Image crop area - larger on mobile */}
           <div 
             ref={containerRef}
-            className="flex items-center justify-center bg-muted/50 p-4 min-h-[200px] overflow-auto"
+            className={cn(
+              "flex items-center justify-center bg-muted/50 overflow-auto",
+              isMobile ? "p-2 min-h-[45vh]" : "p-4 min-h-[200px]"
+            )}
           >
             {isTransforming ? (
-              <div className="flex items-center justify-center h-[35vh]">
+              <div className={cn(
+                "flex items-center justify-center",
+                isMobile ? "h-[45vh]" : "h-[35vh]"
+              )}>
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             ) : (
@@ -411,7 +429,10 @@ const ImageCropModal = ({
                     src={transformedImageSrc}
                     alt="Imagen a recortar"
                     onLoad={onImageLoad}
-                    className="max-h-[35vh] max-w-full object-contain"
+                    className={cn(
+                      "max-w-full object-contain",
+                      isMobile ? "max-h-[45vh]" : "max-h-[35vh]"
+                    )}
                     style={{ filter: getFilterStyle(filters) }}
                     crossOrigin="anonymous"
                   />
@@ -420,18 +441,21 @@ const ImageCropModal = ({
             )}
           </div>
 
-          {/* Zoom Controls */}
-          <div className="px-4 py-2 flex items-center gap-3 border-t border-border/50">
+          {/* Zoom Controls - larger on mobile */}
+          <div className={cn(
+            "px-4 py-2 flex items-center gap-3 border-t border-border/50",
+            isMobile && "px-3 py-3 gap-2"
+          )}>
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="h-8 w-8 flex-shrink-0"
+              className={cn("h-8 w-8 flex-shrink-0", isMobile && "h-11 w-11")}
               onClick={handleZoomOut}
               disabled={zoom <= MIN_ZOOM || isTransforming}
               title="Alejar"
             >
-              <ZoomOut className="w-4 h-4" />
+              <ZoomOut className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             </Button>
             <div className="flex-1 flex items-center gap-2">
               <Slider
@@ -441,9 +465,12 @@ const ImageCropModal = ({
                 step={0.1}
                 onValueChange={handleZoomChange}
                 disabled={isTransforming}
-                className="flex-1"
+                className={cn("flex-1", isMobile && "[&_[role=slider]]:h-5 [&_[role=slider]]:w-5")}
               />
-              <span className="text-xs text-muted-foreground w-12 text-right">
+              <span className={cn(
+                "text-xs text-muted-foreground w-12 text-right",
+                isMobile && "text-sm w-14"
+              )}>
                 {Math.round(zoom * 100)}%
               </span>
             </div>
@@ -451,51 +478,55 @@ const ImageCropModal = ({
               type="button"
               variant="outline"
               size="icon"
-              className="h-8 w-8 flex-shrink-0"
+              className={cn("h-8 w-8 flex-shrink-0", isMobile && "h-11 w-11")}
               onClick={handleZoomIn}
               disabled={zoom >= MAX_ZOOM || isTransforming}
               title="Acercar"
             >
-              <ZoomIn className="w-4 h-4" />
+              <ZoomIn className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             </Button>
           </div>
 
-          <div className="px-4 py-2">
+          <div className={cn("px-4 py-2", isMobile && "px-3 py-3")}>
             <ImageFilters values={filters} onChange={handleFiltersChange} />
           </div>
         </div>
 
-        <DialogFooter className="p-4 pt-2 flex gap-2 sm:gap-2">
+        {/* Footer - sticky bottom on mobile with larger buttons */}
+        <DialogFooter className={cn(
+          "p-4 pt-2 flex gap-2 sm:gap-2 border-t border-border/50",
+          isMobile && "p-3 gap-2 sticky bottom-0 bg-background safe-area-pb"
+        )}>
           <Button
             type="button"
             variant="outline"
-            size="sm"
+            size={isMobile ? "default" : "sm"}
             onClick={handleReset}
-            className="gap-1"
+            className={cn("gap-1", isMobile && "h-12 px-4")}
           >
-            <RotateCcw className="w-4 h-4" />
-            Restablecer
+            <RotateCcw className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
+            {!isMobile && "Restablecer"}
           </Button>
           <div className="flex-1" />
           <Button
             type="button"
             variant="ghost"
-            size="sm"
+            size={isMobile ? "default" : "sm"}
             onClick={handleCancel}
-            className="gap-1"
+            className={cn("gap-1", isMobile && "h-12 px-5")}
           >
-            <X className="w-4 h-4" />
+            <X className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             Cancelar
           </Button>
           <Button
             type="button"
-            size="sm"
+            size={isMobile ? "default" : "sm"}
             onClick={handleConfirm}
             disabled={!completedCrop || isProcessing || isTransforming}
-            className="gap-1"
+            className={cn("gap-1", isMobile && "h-12 px-6 text-base font-semibold")}
           >
-            <Check className="w-4 h-4" />
-            {isProcessing ? "Procesando..." : "Aplicar"}
+            <Check className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
+            {isProcessing ? "..." : "Aplicar"}
           </Button>
         </DialogFooter>
       </DialogContent>
