@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Images } from "lucide-react";
+import { ChevronLeft, ChevronRight, Images, Camera, Plus } from "lucide-react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ImageLightbox from "@/components/ImageLightbox";
+import { useNavigate } from "react-router-dom";
 
 interface ProfilePhotoGalleryProps {
   photos: string[];
   avatarUrl?: string | null;
   name?: string | null;
+  isOwnProfile?: boolean;
 }
 
-const ProfilePhotoGallery = ({ photos, avatarUrl, name }: ProfilePhotoGalleryProps) => {
+const ProfilePhotoGallery = ({ photos, avatarUrl, name, isOwnProfile = false }: ProfilePhotoGalleryProps) => {
+  const navigate = useNavigate();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -20,6 +23,40 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name }: ProfilePhotoGalleryPro
 
   // Show placeholder with initial if no photos
   if (allPhotos.length === 0) {
+    // If it's own profile, show CTA to add photos
+    if (isOwnProfile) {
+      return (
+        <button
+          onClick={() => navigate('/profile')}
+          className="w-full aspect-[4/5] rounded-2xl overflow-hidden relative flex flex-col items-center justify-center ring-2 ring-primary/30 animate-glow group transition-all hover:ring-primary/50"
+        >
+          <div 
+            className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
+          />
+          <div className="relative z-10 flex flex-col items-center gap-4">
+            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+              <Camera className="w-10 h-10 text-primary" />
+            </div>
+            <div className="text-center px-4">
+              <p className="font-display font-semibold text-lg text-card-foreground">
+                Añade tus fotos
+              </p>
+              <p className="font-body text-sm text-card-foreground/60 mt-1">
+                Muestra tu mejor versión
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
+              <Plus className="w-4 h-4 text-primary" />
+              <span className="font-body text-sm font-medium text-primary">
+                Subir fotos
+              </span>
+            </div>
+          </div>
+        </button>
+      );
+    }
+    
+    // Regular placeholder for other users
     return (
       <div className="aspect-[4/5] rounded-2xl overflow-hidden relative flex items-center justify-center ring-2 ring-primary/30 animate-glow">
         <div 
