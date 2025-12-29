@@ -681,7 +681,10 @@ const ImageCropModal = ({
               variant={zoom === MIN_ZOOM ? "default" : "outline"}
               size="icon"
               className={cn("h-8 w-8 flex-shrink-0 text-xs font-semibold", isMobile && "h-11 w-11 text-sm")}
-              onClick={() => setEditState({ ...editState, zoom: MIN_ZOOM })}
+              onClick={() => {
+                setEditState({ ...editState, zoom: MIN_ZOOM });
+                if (navigator.vibrate) navigator.vibrate(10);
+              }}
               disabled={isTransforming}
               title="Zoom 1x"
             >
@@ -692,7 +695,10 @@ const ImageCropModal = ({
               variant={zoom === DOUBLE_TAP_ZOOM ? "default" : "outline"}
               size="icon"
               className={cn("h-8 w-8 flex-shrink-0 text-xs font-semibold", isMobile && "h-11 w-11 text-sm")}
-              onClick={() => setEditState({ ...editState, zoom: DOUBLE_TAP_ZOOM })}
+              onClick={() => {
+                setEditState({ ...editState, zoom: DOUBLE_TAP_ZOOM });
+                if (navigator.vibrate) navigator.vibrate(10);
+              }}
               disabled={isTransforming}
               title="Zoom 2x"
             >
