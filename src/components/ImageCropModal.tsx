@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Crop as CropIcon, RotateCcw, RotateCw, Check, X, FlipHorizontal, FlipVertical, ZoomIn, ZoomOut, Undo2, Redo2, Hand, MousePointerClick } from "lucide-react";
+import { Crop as CropIcon, RotateCcw, RotateCw, Check, X, FlipHorizontal, FlipVertical, ZoomIn, ZoomOut, Undo2, Redo2, Hand, MousePointerClick, Locate } from "lucide-react";
 import ImageFilters, { ImageFilterValues, getFilterStyle } from "./ImageFilters";
 import { useEditHistory } from "@/hooks/useEditHistory";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -674,6 +674,17 @@ const ImageCropModal = ({
               title="Acercar"
             >
               <ZoomIn className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className={cn("h-8 w-8 flex-shrink-0", isMobile && "h-11 w-11", zoom === MIN_ZOOM && "opacity-50")}
+              onClick={() => setEditState({ ...editState, zoom: MIN_ZOOM })}
+              disabled={zoom === MIN_ZOOM || isTransforming}
+              title="Centrar zoom (1x)"
+            >
+              <Locate className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
             </Button>
           </div>
 
