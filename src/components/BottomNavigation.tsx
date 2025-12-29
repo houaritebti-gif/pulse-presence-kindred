@@ -1,9 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Bell, Calendar, Flame, Users, User, Ghost, CloudOff } from "lucide-react";
+import { Bell, Calendar, Flame, Users, User, Ghost, CloudOff, UserPlus } from "lucide-react";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
 import { useUnreadSparkCount } from "@/hooks/useSparks";
 import { useUnreadQuedadaCount } from "@/hooks/useQuedadas";
 import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
+import { usePendingConnectionRequestCount } from "@/hooks/useConnectionRequests";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -76,10 +77,11 @@ export const BottomNavigation = () => {
   const unreadSparkCount = useUnreadSparkCount();
   const unreadQuedadaCount = useUnreadQuedadaCount();
   const unreadGhostCount = useUnreadGhostMessageCount();
+  const pendingConnectionCount = usePendingConnectionRequestCount();
   const { pendingCount } = useOfflineQueue();
 
-  // Combine ghost messages with notifications count
-  const totalAlertCount = unreadNotificationCount + unreadGhostCount;
+  // Combine ghost messages, notifications, and pending connection requests count
+  const totalAlertCount = unreadNotificationCount + unreadGhostCount + pendingConnectionCount;
 
   const navItems = [
     {
@@ -100,7 +102,7 @@ export const BottomNavigation = () => {
       badge: unreadQuedadaCount > 0 ? unreadQuedadaCount : undefined,
     },
     {
-      icon: unreadGhostCount > 0 ? <Ghost className="w-5 h-5" /> : <Bell className="w-5 h-5" />,
+      icon: pendingConnectionCount > 0 ? <UserPlus className="w-5 h-5" /> : unreadGhostCount > 0 ? <Ghost className="w-5 h-5" /> : <Bell className="w-5 h-5" />,
       label: "Alertas",
       path: "/notifications",
       badge: totalAlertCount > 0 ? totalAlertCount : undefined,
