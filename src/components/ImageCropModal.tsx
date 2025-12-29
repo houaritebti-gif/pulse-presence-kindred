@@ -177,6 +177,11 @@ const ImageCropModal = ({
   const [isTransforming, setIsTransforming] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Touch gesture state
+  const [isPinching, setIsPinching] = useState(false);
+  const initialPinchDistance = useRef<number | null>(null);
+  const initialZoom = useRef<number>(1);
 
   // History management for edits
   const {
@@ -196,6 +201,43 @@ const ImageCropModal = ({
 
   // Check if any transform is applied
   const hasTransform = transform.rotation !== 0 || transform.flipH || transform.flipV;
+
+  // Calculate distance between two touch points
+  const getTouchDistance = (touch1: React.Touch, touch2: React.Touch): number => {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Handle touch start for pinch gesture
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      setIsPinching(true);
+      initialPinchDistance.current = getTouchDistance(e.touches[0], e.touches[1]);
+      initialZoom.current = zoom;
+    }
+  }, [zoom]);
+
+  // Handle touch move for pinch gesture
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPinching || e.touches.length !== 2 || initialPinchDistance.current === null) return;
+    
+    e.preventDefault();
+    const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
+    const scale = currentDistance / initialPinchDistance.current;
+    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, initialZoom.current * scale));
+    
+    setEditState({ ...editState, zoom: newZoom });
+  }, [isPinching, editState, setEditState]);
+
+  // Handle touch end for pinch gesture
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      setIsPinching(false);
+      initialPinchDistance.current = null;
+    }
+  }, []);
 
   // Update transformed image when transform changes
   useEffect(() => {
@@ -400,13 +442,16 @@ const ImageCropModal = ({
         </div>
 
         <div className="flex-1 overflow-auto">
-          {/* Image crop area - larger on mobile */}
+          {/* Image crop area - larger on mobile with pinch-to-zoom */}
           <div 
             ref={containerRef}
             className={cn(
-              "flex items-center justify-center bg-muted/50 overflow-auto",
+              "flex items-center justify-center bg-muted/50 overflow-auto touch-none",
               isMobile ? "p-2 min-h-[45vh]" : "p-4 min-h-[200px]"
             )}
+            onTouchStart={isMobile ? handleTouchStart : undefined}
+            onTouchMove={isMobile ? handleTouchMove : undefined}
+            onTouchEnd={isMobile ? handleTouchEnd : undefined}
           >
             {isTransforming ? (
               <div className={cn(
@@ -416,7 +461,13 @@ const ImageCropModal = ({
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             ) : (
-              <div style={{ transform: `scale(${zoom})`, transformOrigin: 'center center', transition: 'transform 0.2s ease-out' }}>
+              <div 
+                style={{ 
+                  transform: `scale(${zoom})`, 
+                  transformOrigin: 'center center', 
+                  transition: isPinching ? 'none' : 'transform 0.2s ease-out' 
+                }}
+              >
                 <ReactCrop
                   crop={crop}
                   onChange={(_, percentCrop) => setCrop(percentCrop)}
