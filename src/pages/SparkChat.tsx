@@ -21,7 +21,9 @@ import VoiceMessagePlayer from "@/components/VoiceMessagePlayer";
 import VoiceRecordButton from "@/components/VoiceRecordButton";
 import OfflineMessageIndicator from "@/components/OfflineMessageIndicator";
 import PendingMessage from "@/components/PendingMessage";
+import PremiumBadge from "@/components/PremiumBadge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserSubscription } from "@/hooks/useUserSubscription";
 
 const SparkChat = () => {
   const navigate = useNavigate();
@@ -38,6 +40,9 @@ const SparkChat = () => {
   
   // Find current chat
   const chat = chats?.find(c => c.id === chatId);
+  
+  // Get other user's subscription tier
+  const { data: otherUserTier } = useUserSubscription(chat?.other_profile?.id);
   
   // Get the other user's read status
   const { data: otherUserLastRead } = useOtherUserReadStatus(chatId, chat?.other_profile?.id);
@@ -446,9 +451,12 @@ const SparkChat = () => {
           </div>
           
           <div className="text-left">
-            <span className="font-display font-semibold text-foreground block">
-              {chat.other_profile?.name || "Anónima"}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-display font-semibold text-foreground">
+                {chat.other_profile?.name || "Anónima"}
+              </span>
+              {otherUserTier === 'premium' && <PremiumBadge size="sm" />}
+            </div>
             <span className="font-body text-xs text-primary/80 flex items-center gap-1">
               <User className="w-3 h-3" />
               Ver perfil
