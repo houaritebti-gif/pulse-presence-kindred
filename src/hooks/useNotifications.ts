@@ -315,6 +315,62 @@ export const useAppNotifications = () => {
     };
   }, [profile?.id, location.pathname, navigate]);
 
+  // Connection request/accepted notifications (triggered by database)
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const channel = supabase
+      .channel("connection-notifications")
+      .on(
+        "postgres_changes",
+        { 
+          event: "INSERT", 
+          schema: "public", 
+          table: "notifications",
+          filter: `profile_id=eq.${profile.id}`
+        },
+        (payload) => {
+          if (isInitialLoadRef.current) return;
+
+          const newNotification = payload.new as { 
+            id: string; 
+            type: string;
+            title: string;
+            description: string | null;
+            link: string | null;
+          };
+          
+          // Only handle connection-related notifications here
+          if (newNotification.type !== 'connection_request' && newNotification.type !== 'connection_accepted') {
+            return;
+          }
+          
+          // Skip if on connections page
+          if (location.pathname === "/connections") return;
+          
+          // Play connection sound and show notification
+          notifyUser("connection");
+          toast(newNotification.title, {
+            description: newNotification.description || undefined,
+            action: newNotification.link ? {
+              label: "Ver",
+              onClick: () => navigate(newNotification.link!),
+            } : undefined,
+          });
+          showBrowserNotification(newNotification.title, {
+            body: newNotification.description || undefined,
+            tag: `connection-${newNotification.id}`,
+            onClick: () => newNotification.link && navigate(newNotification.link),
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, location.pathname, navigate]);
+
   // Mark initial load as complete
   useEffect(() => {
     const timeout = setTimeout(() => {
