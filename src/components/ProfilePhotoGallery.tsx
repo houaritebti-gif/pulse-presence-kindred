@@ -18,8 +18,15 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name }: ProfilePhotoGalleryPro
   // Combine photos with avatar as fallback
   const allPhotos = photos.length > 0 ? photos : avatarUrl ? [avatarUrl] : [];
 
+  // Show placeholder with initial if no photos
   if (allPhotos.length === 0) {
-    return null;
+    return (
+      <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
+        <span className="text-card-foreground/60 font-display font-semibold text-6xl">
+          {(name?.[0] || "?").toUpperCase()}
+        </span>
+      </div>
+    );
   }
 
   const handlePrev = (e?: React.MouseEvent) => {
