@@ -155,19 +155,25 @@ const PhotoCarousel = ({
     lg: "w-full aspect-[4/5]",
   };
 
-  // If no photos at all, show placeholder
+  // If no photos at all, show placeholder with initial
   if (allPhotos.length === 0) {
+    const sizeTextClasses = {
+      sm: "text-xl",
+      md: "text-3xl",
+      lg: "text-5xl",
+    };
+    
     return (
       <div 
         ref={containerRef}
         className={cn(
-          "rounded-xl bg-card-foreground/10 flex items-center justify-center",
+          "rounded-xl bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center",
           sizeClasses[size],
           className
         )}
         onClick={onClick}
       >
-        <span className="text-card-foreground/40 font-display text-2xl">
+        <span className={cn("text-card-foreground/60 font-display font-semibold", sizeTextClasses[size])}>
           {(name?.[0] || "?").toUpperCase()}
         </span>
       </div>
@@ -277,9 +283,11 @@ const PhotoCarousel = ({
           </div>
         </>
       ) : (
-        // Placeholder while not in view
-        <div className="w-full h-full bg-card-foreground/10 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full bg-card-foreground/20 animate-pulse" />
+        // Placeholder while not in view - show initial
+        <div className="w-full h-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
+          <span className="text-card-foreground/50 font-display text-3xl">
+            {(name?.[0] || "?").toUpperCase()}
+          </span>
         </div>
       )}
     </div>
