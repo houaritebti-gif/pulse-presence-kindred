@@ -1,8 +1,9 @@
 import { useState, useCallback, useRef, useEffect, memo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion, useMotionValue, useTransform, animate, PanInfo } from "framer-motion";
-import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, ZoomIn, Grid3X3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PhotoGalleryGrid from "./PhotoGalleryGrid";
 
 interface LazyImageProps {
   src: string;
@@ -293,6 +294,7 @@ interface PhotoCarouselProps {
   onClick?: () => void;
   lazy?: boolean;
   enableZoom?: boolean;
+  enableGallery?: boolean;
 }
 
 // Memoized navigation button component
@@ -345,11 +347,34 @@ const DotsIndicator = memo(({
 
 DotsIndicator.displayName = "DotsIndicator";
 
-// Memoized photo counter badge
-const PhotoCounter = memo(({ current, total }: { current: number; total: number }) => (
-  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm text-xs font-body text-foreground z-10">
-    {current}/{total}
-  </div>
+// Memoized photo counter badge - now clickable for gallery
+const PhotoCounter = memo(({ 
+  current, 
+  total,
+  onClick,
+  showGalleryHint 
+}: { 
+  current: number; 
+  total: number;
+  onClick?: () => void;
+  showGalleryHint?: boolean;
+}) => (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick?.();
+    }}
+    className={cn(
+      "absolute top-2 right-2 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm text-xs font-body text-foreground z-10 transition-all",
+      onClick && "hover:bg-background hover:scale-105 active:scale-95 cursor-pointer",
+      showGalleryHint && "ring-1 ring-primary/50"
+    )}
+  >
+    <span className="flex items-center gap-1">
+      {showGalleryHint && <Grid3X3 className="w-3 h-3" />}
+      {current}/{total}
+    </span>
+  </button>
 ));
 
 PhotoCounter.displayName = "PhotoCounter";
@@ -381,6 +406,7 @@ const PhotoCarousel = memo(({
   onClick,
   lazy = true,
   enableZoom = true,
+  enableGallery = true,
 }: PhotoCarouselProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true,
@@ -391,6 +417,7 @@ const PhotoCarousel = memo(({
   const [isInView, setIsInView] = useState(!lazy);
   const [isDragging, setIsDragging] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
   // Motion values for gesture feedback
@@ -715,10 +742,32 @@ const PhotoCarousel = memo(({
 
           {showDots && !isZoomed && <DotsIndicator total={allPhotos.length} currentIndex={currentIndex} />}
 
-          {!isZoomed && <PhotoCounter current={currentIndex + 1} total={allPhotos.length} />}
+          {!isZoomed && (
+            <PhotoCounter 
+              current={currentIndex + 1} 
+              total={allPhotos.length}
+              onClick={enableGallery && allPhotos.length > 1 ? () => setIsGalleryOpen(true) : undefined}
+              showGalleryHint={enableGallery && allPhotos.length > 1}
+            />
+          )}
         </>
       ) : (
         Placeholder
+      )}
+
+      {/* Gallery Grid Modal */}
+      {enableGallery && (
+        <PhotoGalleryGrid
+          photos={allPhotos}
+          name={name}
+          isOpen={isGalleryOpen}
+          onClose={() => setIsGalleryOpen(false)}
+          initialIndex={currentIndex}
+          onSelectPhoto={(index) => {
+            emblaApi?.scrollTo(index);
+            setCurrentIndex(index);
+          }}
+        />
       )}
     </motion.div>
   );
