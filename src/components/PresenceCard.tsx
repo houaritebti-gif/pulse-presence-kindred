@@ -143,86 +143,54 @@ const PresenceCard = ({ presence, compatibility, animationDelay, photos = [] }: 
             Vibra {presence.profile?.vibe?.toLowerCase() || "misteriosa"}
           </p>
           
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h3 className="font-display text-lg font-semibold text-card-foreground">
-                {presence.profile?.name || "Anónima"}
-              </h3>
-              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
-              {organizedCount && organizedCount > 0 && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-body text-accent bg-accent/10 px-2 py-0.5 rounded-full cursor-help animate-pulse-soft">
-                        <Calendar className="w-2.5 h-2.5" />
-                        {organizedCount}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Ha organizado {organizedCount} {organizedCount === 1 ? "quedada" : "quedadas"}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              {compatibility > 0 && (
-                <span className="text-xs font-body text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                  {compatibility} en común
+          {/* Tribes */}
+          {presence.tribes.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {presence.tribes.map(tribe => (
+                <span 
+                  key={tribe}
+                  className="px-2.5 py-1 rounded-full bg-card-foreground/10 font-body text-xs text-card-foreground/80"
+                >
+                  {tribe}
                 </span>
-              )}
+              ))}
             </div>
-            <p className="font-body text-sm text-card-foreground/70 mb-3">
-              Vibra {presence.profile?.vibe?.toLowerCase() || "misteriosa"}
-            </p>
-            {/* Tribes */}
-            {presence.tribes.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {presence.tribes.map(tribe => (
-                  <span 
-                    key={tribe}
-                    className="px-2.5 py-1 rounded-full bg-card-foreground/10 font-body text-xs text-card-foreground/80"
-                  >
-                    {tribe}
+          )}
+
+          {/* Music styles */}
+          {presence.musicStyles.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-2">
+              <Music className="w-3 h-3 text-primary/70 flex-shrink-0" />
+              <p className="font-body text-xs text-card-foreground/60 truncate">
+                {presence.musicStyles.slice(0, 3).join(" · ")}
+                {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
+              </p>
+            </div>
+          )}
+
+          {/* Optional details */}
+          {(presence.profile?.has_tattoos || presence.profile?.has_piercings || presence.profile?.alternative_aesthetic) && (
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3 h-3 text-accent/70 flex-shrink-0" />
+              <div className="flex flex-wrap gap-1">
+                {presence.profile?.has_tattoos && (
+                  <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
+                    Tatuajes
                   </span>
-                ))}
+                )}
+                {presence.profile?.has_piercings && (
+                  <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
+                    Piercings
+                  </span>
+                )}
+                {presence.profile?.alternative_aesthetic && (
+                  <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
+                    Estética alt
+                  </span>
+                )}
               </div>
-            )}
-
-            {/* Music styles */}
-            {presence.musicStyles.length > 0 && (
-              <div className="flex items-center gap-1.5 mb-2">
-                <Music className="w-3 h-3 text-primary/70 flex-shrink-0" />
-                <p className="font-body text-xs text-card-foreground/60 truncate">
-                  {presence.musicStyles.slice(0, 3).join(" · ")}
-                  {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
-                </p>
-              </div>
-            )}
-
-            {/* Optional details */}
-            {(presence.profile?.has_tattoos || presence.profile?.has_piercings || presence.profile?.alternative_aesthetic) && (
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-3 h-3 text-accent/70 flex-shrink-0" />
-                <div className="flex flex-wrap gap-1">
-                  {presence.profile?.has_tattoos && (
-                    <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
-                      Tatuajes
-                    </span>
-                  )}
-                  {presence.profile?.has_piercings && (
-                    <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
-                      Piercings
-                    </span>
-                  )}
-                  {presence.profile?.alternative_aesthetic && (
-                    <span className="px-2 py-0.5 rounded-full bg-accent/10 font-body text-[10px] text-accent">
-                      Estética alt
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
