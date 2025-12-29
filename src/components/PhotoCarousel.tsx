@@ -167,7 +167,7 @@ const PhotoCarousel = ({
       <div 
         ref={containerRef}
         className={cn(
-          "rounded-xl flex items-center justify-center overflow-hidden relative",
+          "rounded-xl flex items-center justify-center overflow-hidden relative ring-2 ring-primary/30 animate-glow",
           sizeClasses[size],
           className
         )}

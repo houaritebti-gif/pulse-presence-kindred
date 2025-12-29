@@ -21,7 +21,7 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name }: ProfilePhotoGalleryPro
   // Show placeholder with initial if no photos
   if (allPhotos.length === 0) {
     return (
-      <div className="aspect-[4/5] rounded-2xl overflow-hidden relative flex items-center justify-center">
+      <div className="aspect-[4/5] rounded-2xl overflow-hidden relative flex items-center justify-center ring-2 ring-primary/30 animate-glow">
         <div 
           className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
         />
