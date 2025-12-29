@@ -18,7 +18,6 @@ export const useAppNotifications = () => {
   const previousMessagesRef = useRef<Set<string>>(new Set());
   const previousAttendeesRef = useRef<Set<string>>(new Set());
   const previousQuedadaMessagesRef = useRef<Set<string>>(new Set());
-  const previousConnectionNotificationsRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
 
   // Spark notifications
@@ -85,6 +84,55 @@ export const useAppNotifications = () => {
               });
             }
           }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `profile_id=eq.${profile.id}`,
+        },
+        (payload) => {
+          if (isInitialLoadRef.current) return;
+
+          const newNotification = payload.new as {
+            id: string;
+            type: string;
+            title: string;
+            description: string | null;
+            link: string | null;
+          };
+
+          if (
+            newNotification.type !== "connection_request" &&
+            newNotification.type !== "connection_accepted"
+          ) {
+            return;
+          }
+
+          const key = `connection:${newNotification.id}`;
+          if (previousChatsRef.current.has(key)) return;
+          previousChatsRef.current.add(key);
+
+          if (location.pathname === "/connections") return;
+
+          notifyUser("connection");
+          toast(newNotification.title, {
+            description: newNotification.description || undefined,
+            action: newNotification.link
+              ? {
+                  label: "Ver",
+                  onClick: () => navigate(newNotification.link!),
+                }
+              : undefined,
+          });
+          showBrowserNotification(newNotification.title, {
+            body: newNotification.description || undefined,
+            tag: `connection-${newNotification.id}`,
+            onClick: () => newNotification.link && navigate(newNotification.link),
+          });
         }
       )
       .subscribe();
@@ -306,66 +354,6 @@ export const useAppNotifications = () => {
             body: description,
             tag: "quedada-msg-" + newMessage.id,
             onClick: () => navigate(currentChatPath),
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [profile?.id, location.pathname, navigate]);
-
-  // Connection request/accepted notifications (triggered by database)
-  useEffect(() => {
-    if (!profile?.id) return;
-
-    const channel = supabase
-      .channel("connection-notifications")
-      .on(
-        "postgres_changes",
-        { 
-          event: "INSERT", 
-          schema: "public", 
-          table: "notifications",
-          filter: `profile_id=eq.${profile.id}`
-        },
-        (payload) => {
-          if (isInitialLoadRef.current) return;
-
-          const newNotification = payload.new as { 
-            id: string; 
-            type: string;
-            title: string;
-            description: string | null;
-            link: string | null;
-          };
-          
-          // Only handle connection-related notifications here
-          if (newNotification.type !== 'connection_request' && newNotification.type !== 'connection_accepted') {
-            return;
-          }
-          
-          // Skip if already processed
-          if (previousConnectionNotificationsRef.current.has(newNotification.id)) return;
-          previousConnectionNotificationsRef.current.add(newNotification.id);
-          
-          // Skip if on connections page
-          if (location.pathname === "/connections") return;
-          
-          // Play connection sound and show notification
-          notifyUser("connection");
-          toast(newNotification.title, {
-            description: newNotification.description || undefined,
-            action: newNotification.link ? {
-              label: "Ver",
-              onClick: () => navigate(newNotification.link!),
-            } : undefined,
-          });
-          showBrowserNotification(newNotification.title, {
-            body: newNotification.description || undefined,
-            tag: `connection-${newNotification.id}`,
-            onClick: () => newNotification.link && navigate(newNotification.link),
           });
         }
       )
