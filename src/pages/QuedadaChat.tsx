@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X, EyeOff, UserX } from "lucide-react";
+import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X, EyeOff, UserX, Crop } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead, useQuedadaAttendees, useExpelAttendee } from "@/hooks/useQuedadas";
@@ -26,6 +26,7 @@ import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import QuedadaAttendeeItem from "@/components/QuedadaAttendeeItem";
 import QuedadaMessageSender from "@/components/QuedadaMessageSender";
+import ImageCropModal from "@/components/ImageCropModal";
 
 const QuedadaChat = () => {
   const navigate = useNavigate();
@@ -91,6 +92,11 @@ const QuedadaChat = () => {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showAttendees, setShowAttendees] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Crop modal state
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
+  const [pendingCropFile, setPendingCropFile] = useState<File | null>(null);
   
   // Get pending messages for this chat
   const pendingMessages = quedadaId ? getMessagesForChat(quedadaId, 'quedada') : [];
@@ -261,7 +267,7 @@ const QuedadaChat = () => {
     }
   };
 
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
@@ -276,11 +282,37 @@ const QuedadaChat = () => {
       return;
     }
     
+    // Store file and open crop modal
+    setPendingCropFile(file);
+    const imageUrl = URL.createObjectURL(file);
+    setImageToCrop(imageUrl);
+    setCropModalOpen(true);
+    
+    // Reset input for future selections
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
+
+  const handleCropComplete = useCallback(async (croppedBlob: Blob) => {
+    // Clean up object URL
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setPendingCropFile(null);
+    setCropModalOpen(false);
+    
     setIsCompressingPreview(true);
     
     try {
-      // Compress image before preview
-      const compressedFile = await compressChatImage(file);
+      // Create file from blob
+      const croppedFile = new File([croppedBlob], "chat-image.jpg", {
+        type: "image/jpeg",
+      });
+      
+      // Compress image for upload
+      const compressedFile = await compressChatImage(croppedFile);
       setSelectedFile(compressedFile);
       
       // Create preview from compressed file
@@ -290,12 +322,24 @@ const QuedadaChat = () => {
         setIsCompressingPreview(false);
       };
       reader.readAsDataURL(compressedFile);
+      
+      // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate(15);
     } catch (error) {
-      console.error("Error compressing image:", error);
+      console.error("Error processing cropped image:", error);
       toast.error("Error al procesar la imagen");
       setIsCompressingPreview(false);
     }
-  };
+  }, [imageToCrop]);
+
+  const handleCropClose = useCallback(() => {
+    if (imageToCrop) {
+      URL.revokeObjectURL(imageToCrop);
+    }
+    setImageToCrop(null);
+    setPendingCropFile(null);
+    setCropModalOpen(false);
+  }, [imageToCrop]);
 
   const clearImagePreview = () => {
     setSelectedFile(null);
@@ -811,6 +855,15 @@ const QuedadaChat = () => {
           </div>
         </div>
       )}
+
+      {/* Image Crop Modal */}
+      <ImageCropModal
+        isOpen={cropModalOpen && !!imageToCrop}
+        onClose={handleCropClose}
+        imageSrc={imageToCrop || ""}
+        onCropComplete={handleCropComplete}
+        aspectRatio={4 / 5}
+      />
     </main>
   );
 };
