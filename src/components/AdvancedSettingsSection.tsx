@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand } from "lucide-react";
+import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { useAdvancedSettings, Theme, TextSize } from "@/hooks/useAdvancedSettings";
 import { isThemeSoundEnabled, setThemeSoundEnabled } from "@/utils/notificationSound";
@@ -195,6 +196,32 @@ const AdvancedSettingsSection = () => {
               checked={themeSoundOn}
               onCheckedChange={handleThemeSoundChange}
             />
+          </div>
+
+          {/* Reset Gesture Guide */}
+          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Hand className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <span className="font-body text-sm text-foreground block">
+                  Guía de gestos táctiles
+                </span>
+                <span className="font-body text-xs text-muted-foreground">
+                  Resetea para ver la guía otra vez
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem("kiki_crop_gesture_guide_shown");
+                toast.success("Guía reseteada", {
+                  description: "Verás la guía la próxima vez que edites una imagen"
+                });
+              }}
+              className="px-3 py-1.5 text-xs font-medium bg-muted hover:bg-muted/80 text-foreground rounded-lg transition-colors"
+            >
+              Resetear
+            </button>
           </div>
         </div>
       )}
