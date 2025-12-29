@@ -25,6 +25,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import QuedadaAttendeeItem from "@/components/QuedadaAttendeeItem";
+import QuedadaMessageSender from "@/components/QuedadaMessageSender";
 
 const QuedadaChat = () => {
   const navigate = useNavigate();
@@ -522,12 +523,10 @@ const QuedadaChat = () => {
                 
                 <div className={`max-w-[75%] ${isOwn ? "" : ""}`}>
                   {showName && (
-                    <button 
-                      onClick={() => msg.sender?.id && navigate(`/user/${msg.sender.id}`)}
-                      className="font-body text-[10px] text-muted-foreground mb-1 ml-1 hover:text-accent transition-colors"
-                    >
-                      {msg.sender?.name || "Anónima"}
-                    </button>
+                    <QuedadaMessageSender
+                      sender={msg.sender}
+                      onNavigate={() => msg.sender?.id && navigate(`/user/${msg.sender.id}`)}
+                    />
                   )}
                   {isVoiceMessage(msg.content) ? (
                     <VoiceMessagePlayer audioUrl={msg.content} isOwn={isOwn} />
