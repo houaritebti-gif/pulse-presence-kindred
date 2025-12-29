@@ -283,6 +283,8 @@ const ZoomableImage = memo(({ src, alt, className, isActive, onZoomChange }: Zoo
 
 ZoomableImage.displayName = "ZoomableImage";
 
+type SlideshowTransition = "fade" | "slide" | "zoom" | "crossfade";
+
 interface PhotoCarouselProps {
   photos: string[];
   avatarUrl?: string | null;
@@ -297,6 +299,7 @@ interface PhotoCarouselProps {
   enableGallery?: boolean;
   enableSlideshow?: boolean;
   slideshowInterval?: number;
+  slideshowTransition?: SlideshowTransition;
 }
 
 // Slideshow progress bar component
@@ -480,6 +483,7 @@ const PhotoCarousel = memo(({
   enableGallery = true,
   enableSlideshow = true,
   slideshowInterval = 4000,
+  slideshowTransition = "crossfade",
 }: PhotoCarouselProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true,
@@ -821,37 +825,98 @@ const PhotoCarousel = memo(({
         <>
           <div className="overflow-hidden h-full" ref={emblaRef}>
             <div className="flex h-full">
-              {allPhotos.map((photo, index) => (
-                <motion.div 
-                  key={photo} 
-                  className="flex-[0_0_100%] min-w-0 h-full"
-                  animate={{
-                    scale: index === currentIndex ? 1 : 0.95,
-                    opacity: index === currentIndex ? 1 : 0.8,
-                  }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {shouldLoadSlide(index) ? (
-                    enableZoom && size === "lg" ? (
-                      <ZoomableImage
-                        src={photo}
-                        alt={`${name || "Foto"} ${index + 1}`}
-                        className="w-full h-full"
-                        isActive={index === currentIndex}
-                        onZoomChange={handleZoomChange}
-                      />
+              {allPhotos.map((photo, index) => {
+                const isActive = index === currentIndex;
+                
+                // Transition variants based on slideshowTransition prop
+                const getTransitionVariants = () => {
+                  if (!isSlideshowPlaying) {
+                    // Default embla transition when not in slideshow mode
+                    return {
+                      scale: isActive ? 1 : 0.95,
+                      opacity: isActive ? 1 : 0.8,
+                    };
+                  }
+                  
+                  switch (slideshowTransition) {
+                    case "fade":
+                      return {
+                        opacity: isActive ? 1 : 0,
+                        scale: 1,
+                      };
+                    case "zoom":
+                      return {
+                        opacity: isActive ? 1 : 0,
+                        scale: isActive ? 1 : 1.15,
+                      };
+                    case "slide":
+                      return {
+                        opacity: isActive ? 1 : 0.5,
+                        x: isActive ? 0 : index < currentIndex ? -20 : 20,
+                        scale: isActive ? 1 : 0.9,
+                      };
+                    case "crossfade":
+                    default:
+                      return {
+                        opacity: isActive ? 1 : 0,
+                        scale: isActive ? 1 : 1.05,
+                        filter: isActive ? "blur(0px)" : "blur(2px)",
+                      };
+                  }
+                };
+
+                const getTransitionConfig = () => {
+                  if (!isSlideshowPlaying) {
+                    return { duration: 0.2 };
+                  }
+                  
+                  switch (slideshowTransition) {
+                    case "fade":
+                      return { duration: 0.6 };
+                    case "zoom":
+                      return { duration: 0.8, type: "tween" as const };
+                    case "slide":
+                      return { duration: 0.5, type: "tween" as const };
+                    case "crossfade":
+                    default:
+                      return { duration: 0.7 };
+                  }
+                };
+
+                return (
+                  <motion.div 
+                    key={photo} 
+                    className="flex-[0_0_100%] min-w-0 h-full"
+                    animate={getTransitionVariants()}
+                    transition={getTransitionConfig()}
+                    style={{
+                      position: isSlideshowPlaying && slideshowTransition !== "slide" ? "absolute" : "relative",
+                      inset: isSlideshowPlaying && slideshowTransition !== "slide" ? 0 : undefined,
+                      zIndex: isActive ? 10 : 0,
+                    }}
+                  >
+                    {shouldLoadSlide(index) ? (
+                      enableZoom && size === "lg" ? (
+                        <ZoomableImage
+                          src={photo}
+                          alt={`${name || "Foto"} ${index + 1}`}
+                          className="w-full h-full"
+                          isActive={isActive}
+                          onZoomChange={handleZoomChange}
+                        />
+                      ) : (
+                        <LazyImage
+                          src={photo}
+                          alt={`${name || "Foto"} ${index + 1}`}
+                          className="w-full h-full"
+                        />
+                      )
                     ) : (
-                      <LazyImage
-                        src={photo}
-                        alt={`${name || "Foto"} ${index + 1}`}
-                        className="w-full h-full"
-                      />
-                    )
-                  ) : (
-                    <div className="w-full h-full bg-card-foreground/10" />
-                  )}
-                </motion.div>
-              ))}
+                      <div className="w-full h-full bg-card-foreground/10" />
+                    )}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
 
