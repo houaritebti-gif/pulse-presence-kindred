@@ -1,7 +1,8 @@
 import { useState, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ZoomIn, ChevronLeft, ChevronRight, Share2, Download, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface PhotoGalleryGridProps {
   photos: string[];
@@ -11,6 +12,64 @@ interface PhotoGalleryGridProps {
   initialIndex?: number;
   onSelectPhoto?: (index: number) => void;
 }
+
+// Share photo utility
+const sharePhoto = async (photoUrl: string, name?: string | null): Promise<boolean> => {
+  try {
+    // Try Web Share API first
+    if (navigator.share) {
+      // For blob URLs or data URLs, we need to fetch and create a file
+      const response = await fetch(photoUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `${name || "foto"}.jpg`, { type: blob.type || "image/jpeg" });
+      
+      await navigator.share({
+        title: name ? `Foto de ${name}` : "Foto",
+        files: [file],
+      });
+      return true;
+    }
+    
+    // Fallback: copy URL to clipboard
+    await navigator.clipboard.writeText(photoUrl);
+    toast.success("Enlace copiado al portapapeles");
+    return true;
+  } catch (error) {
+    // User cancelled or error
+    if ((error as Error).name !== "AbortError") {
+      console.error("Error sharing photo:", error);
+      // Try clipboard as last resort
+      try {
+        await navigator.clipboard.writeText(photoUrl);
+        toast.success("Enlace copiado al portapapeles");
+        return true;
+      } catch {
+        toast.error("No se pudo compartir la foto");
+      }
+    }
+    return false;
+  }
+};
+
+// Download photo utility
+const downloadPhoto = async (photoUrl: string, name?: string | null, index?: number) => {
+  try {
+    const response = await fetch(photoUrl);
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${name || "foto"}_${(index ?? 0) + 1}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Foto descargada");
+  } catch (error) {
+    console.error("Error downloading photo:", error);
+    toast.error("No se pudo descargar la foto");
+  }
+};
 
 // Memoized grid thumbnail
 const GridThumbnail = memo(({ 
@@ -57,7 +116,7 @@ const GridThumbnail = memo(({
       )}
       
       {/* Hover overlay */}
-      <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors flex items-center justify-center">
+      <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors flex items-center justify-center gap-2">
         <ZoomIn className="w-6 h-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
       
@@ -65,6 +124,19 @@ const GridThumbnail = memo(({
       <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center">
         <span className="text-xs font-body text-foreground">{index + 1}</span>
       </div>
+
+      {/* Quick share button on hover */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (navigator.vibrate) navigator.vibrate(10);
+          sharePhoto(src, alt);
+        }}
+        className="absolute top-1 right-1 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary hover:text-primary-foreground"
+        title="Compartir"
+      >
+        <Share2 className="w-4 h-4" />
+      </button>
     </motion.button>
   );
 });
@@ -88,6 +160,22 @@ const FullScreenViewer = memo(({
   name?: string | null;
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleShare = useCallback(async () => {
+    setIsSharing(true);
+    if (navigator.vibrate) navigator.vibrate(10);
+    await sharePhoto(photos[currentIndex], name);
+    setIsSharing(false);
+  }, [photos, currentIndex, name]);
+
+  const handleDownload = useCallback(async () => {
+    setIsDownloading(true);
+    if (navigator.vibrate) navigator.vibrate(10);
+    await downloadPhoto(photos[currentIndex], name, currentIndex);
+    setIsDownloading(false);
+  }, [photos, currentIndex, name]);
 
   return (
     <motion.div
@@ -101,12 +189,46 @@ const FullScreenViewer = memo(({
         <span className="font-body text-sm text-muted-foreground">
           {currentIndex + 1} / {photos.length}
         </span>
-        <button
-          onClick={onClose}
-          className="w-10 h-10 rounded-full bg-card hover:bg-card/80 flex items-center justify-center transition-colors"
-        >
-          <X className="w-5 h-5 text-foreground" />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Share button */}
+          <button
+            onClick={handleShare}
+            disabled={isSharing}
+            className="w-10 h-10 rounded-full bg-card hover:bg-card/80 flex items-center justify-center transition-colors disabled:opacity-50"
+            title="Compartir"
+          >
+            {isSharing ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <Share2 className="w-5 h-5 text-foreground" />
+              </motion.div>
+            ) : (
+              <Share2 className="w-5 h-5 text-foreground" />
+            )}
+          </button>
+          {/* Download button */}
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="w-10 h-10 rounded-full bg-card hover:bg-card/80 flex items-center justify-center transition-colors disabled:opacity-50"
+            title="Descargar"
+          >
+            {isDownloading ? (
+              <Check className="w-5 h-5 text-primary" />
+            ) : (
+              <Download className="w-5 h-5 text-foreground" />
+            )}
+          </button>
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-card hover:bg-card/80 flex items-center justify-center transition-colors"
+          >
+            <X className="w-5 h-5 text-foreground" />
+          </button>
+        </div>
       </div>
 
       {/* Photo */}
