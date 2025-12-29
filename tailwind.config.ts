@@ -110,6 +110,11 @@ export default {
           "0%, 100%": { boxShadow: "0 0 20px hsl(var(--kiki-pink) / 0.3)" },
           "50%": { boxShadow: "0 0 40px hsl(var(--kiki-pink) / 0.5)" },
         },
+        "gradient-shift": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -120,6 +125,7 @@ export default {
         "float": "float 6s ease-in-out infinite",
         "fade-up": "fade-up 0.6s ease-out forwards",
         "glow": "glow 2s ease-in-out infinite",
+        "gradient-shift": "gradient-shift 4s ease infinite",
       },
     },
   },

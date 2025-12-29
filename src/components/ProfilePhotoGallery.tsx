@@ -21,8 +21,11 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name }: ProfilePhotoGalleryPro
   // Show placeholder with initial if no photos
   if (allPhotos.length === 0) {
     return (
-      <div className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
-        <span className="text-card-foreground/60 font-display font-semibold text-6xl">
+      <div className="aspect-[4/5] rounded-2xl overflow-hidden relative flex items-center justify-center">
+        <div 
+          className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
+        />
+        <span className="text-card-foreground/70 font-display font-semibold text-6xl relative z-10 drop-shadow-sm">
           {(name?.[0] || "?").toUpperCase()}
         </span>
       </div>
