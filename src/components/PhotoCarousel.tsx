@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, memo } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { motion, useMotionValue, useTransform, animate, PanInfo } from "framer-motion";
-import { ChevronLeft, ChevronRight, ZoomIn, Grid3X3 } from "lucide-react";
+import { motion, useMotionValue, useTransform, animate, PanInfo, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight, ZoomIn, Grid3X3, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PhotoGalleryGrid from "./PhotoGalleryGrid";
 
@@ -295,7 +295,78 @@ interface PhotoCarouselProps {
   lazy?: boolean;
   enableZoom?: boolean;
   enableGallery?: boolean;
+  enableSlideshow?: boolean;
+  slideshowInterval?: number;
 }
+
+// Slideshow progress bar component
+const SlideshowProgress = memo(({ 
+  isPlaying, 
+  progress,
+  onToggle 
+}: { 
+  isPlaying: boolean; 
+  progress: number;
+  onToggle: () => void;
+}) => (
+  <div className="absolute bottom-0 left-0 right-0 z-20">
+    {/* Progress bar */}
+    <div className="h-0.5 bg-background/30">
+      <motion.div
+        className="h-full bg-primary"
+        initial={{ width: "0%" }}
+        animate={{ width: `${progress}%` }}
+        transition={{ duration: 0.1, ease: "linear" }}
+      />
+    </div>
+  </div>
+));
+
+SlideshowProgress.displayName = "SlideshowProgress";
+
+// Play/Pause button component
+const SlideshowButton = memo(({ 
+  isPlaying, 
+  onToggle 
+}: { 
+  isPlaying: boolean; 
+  onToggle: () => void;
+}) => (
+  <motion.button
+    onClick={(e) => {
+      e.stopPropagation();
+      onToggle();
+    }}
+    className="absolute top-2 left-2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center z-20 hover:bg-background transition-colors"
+    whileTap={{ scale: 0.9 }}
+  >
+    <AnimatePresence mode="wait">
+      {isPlaying ? (
+        <motion.div
+          key="pause"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <Pause className="w-4 h-4 text-foreground" />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="play"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          transition={{ duration: 0.15 }}
+        >
+          <Play className="w-4 h-4 text-foreground ml-0.5" />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </motion.button>
+));
+
+SlideshowButton.displayName = "SlideshowButton";
 
 // Memoized navigation button component
 const NavButton = memo(({ 
@@ -407,6 +478,8 @@ const PhotoCarousel = memo(({
   lazy = true,
   enableZoom = true,
   enableGallery = true,
+  enableSlideshow = true,
+  slideshowInterval = 4000,
 }: PhotoCarouselProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true,
@@ -418,7 +491,11 @@ const PhotoCarousel = memo(({
   const [isDragging, setIsDragging] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(false);
+  const [slideshowProgress, setSlideshowProgress] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const slideshowTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Motion values for gesture feedback
   const dragX = useMotionValue(0);
@@ -427,6 +504,92 @@ const PhotoCarousel = memo(({
 
   // Memoize allPhotos to prevent recalculation
   const allPhotos = photos.length > 0 ? photos : avatarUrl ? [avatarUrl] : [];
+
+  // Slideshow logic
+  const startSlideshow = useCallback(() => {
+    if (allPhotos.length <= 1) return;
+    
+    setIsSlideshowPlaying(true);
+    setSlideshowProgress(0);
+    
+    // Progress update interval (update every 50ms for smooth progress)
+    const progressStep = (50 / slideshowInterval) * 100;
+    progressIntervalRef.current = setInterval(() => {
+      setSlideshowProgress((prev) => {
+        if (prev >= 100) return 0;
+        return prev + progressStep;
+      });
+    }, 50);
+    
+    // Auto-advance timer
+    slideshowTimerRef.current = setInterval(() => {
+      emblaApi?.scrollNext();
+      setSlideshowProgress(0);
+    }, slideshowInterval);
+    
+    if (navigator.vibrate) navigator.vibrate(15);
+  }, [allPhotos.length, slideshowInterval, emblaApi]);
+
+  const stopSlideshow = useCallback(() => {
+    setIsSlideshowPlaying(false);
+    setSlideshowProgress(0);
+    
+    if (slideshowTimerRef.current) {
+      clearInterval(slideshowTimerRef.current);
+      slideshowTimerRef.current = null;
+    }
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  }, []);
+
+  const toggleSlideshow = useCallback(() => {
+    if (isSlideshowPlaying) {
+      stopSlideshow();
+    } else {
+      startSlideshow();
+    }
+  }, [isSlideshowPlaying, startSlideshow, stopSlideshow]);
+
+  // Pause slideshow on interaction
+  useEffect(() => {
+    if (isZoomed || isGalleryOpen || isDragging) {
+      stopSlideshow();
+    }
+  }, [isZoomed, isGalleryOpen, isDragging, stopSlideshow]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (slideshowTimerRef.current) clearInterval(slideshowTimerRef.current);
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+    };
+  }, []);
+
+  // Reset progress on manual slide change
+  useEffect(() => {
+    if (isSlideshowPlaying) {
+      setSlideshowProgress(0);
+      
+      // Reset timers
+      if (slideshowTimerRef.current) clearInterval(slideshowTimerRef.current);
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      
+      const progressStep = (50 / slideshowInterval) * 100;
+      progressIntervalRef.current = setInterval(() => {
+        setSlideshowProgress((prev) => {
+          if (prev >= 100) return 0;
+          return prev + progressStep;
+        });
+      }, 50);
+      
+      slideshowTimerRef.current = setInterval(() => {
+        emblaApi?.scrollNext();
+        setSlideshowProgress(0);
+      }, slideshowInterval);
+    }
+  }, [currentIndex, isSlideshowPlaying, slideshowInterval, emblaApi]);
 
   // Disable embla dragging when zoomed
   useEffect(() => {
@@ -733,22 +896,46 @@ const PhotoCarousel = memo(({
             </motion.div>
           )}
 
-          {showArrows && !isZoomed && (
+          {showArrows && !isZoomed && !isSlideshowPlaying && (
             <>
               <NavButton direction="prev" onClick={scrollPrev} />
               <NavButton direction="next" onClick={scrollNext} />
             </>
           )}
 
-          {showDots && !isZoomed && <DotsIndicator total={allPhotos.length} currentIndex={currentIndex} />}
+          {showDots && !isZoomed && !isSlideshowPlaying && <DotsIndicator total={allPhotos.length} currentIndex={currentIndex} />}
 
-          {!isZoomed && (
+          {!isZoomed && !isSlideshowPlaying && (
             <PhotoCounter 
               current={currentIndex + 1} 
               total={allPhotos.length}
               onClick={enableGallery && allPhotos.length > 1 ? () => setIsGalleryOpen(true) : undefined}
               showGalleryHint={enableGallery && allPhotos.length > 1}
             />
+          )}
+
+          {/* Slideshow controls */}
+          {enableSlideshow && allPhotos.length > 1 && !isZoomed && (
+            <>
+              <SlideshowButton isPlaying={isSlideshowPlaying} onToggle={toggleSlideshow} />
+              {isSlideshowPlaying && (
+                <SlideshowProgress 
+                  isPlaying={isSlideshowPlaying} 
+                  progress={slideshowProgress}
+                  onToggle={toggleSlideshow}
+                />
+              )}
+              {/* Photo counter during slideshow */}
+              {isSlideshowPlaying && (
+                <motion.div 
+                  className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm text-xs font-body text-foreground z-10"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  {currentIndex + 1}/{allPhotos.length}
+                </motion.div>
+              )}
+            </>
           )}
         </>
       ) : (
