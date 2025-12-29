@@ -1,7 +1,16 @@
 import { useState } from "react";
-import { UserPlus, Check, Clock, MoreVertical, Flag, Ban } from "lucide-react";
+import { UserPlus, Check, Clock, MoreVertical, Flag, Ban, Send, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
-import { useSendConnectionRequest, useConnectionStatus, useCancelConnectionRequest } from "@/hooks/useConnectionRequests";
+import { useSendConnectionRequest, useConnectionStatus } from "@/hooks/useConnectionRequests";
 
 interface AnonymousPresenceCardProps {
   presence: {
@@ -27,17 +36,32 @@ interface AnonymousPresenceCardProps {
   animationDelay: number;
 }
 
+const MAX_MESSAGE_LENGTH = 200;
+
 const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCardProps) => {
   const sendRequest = useSendConnectionRequest();
-  const cancelRequest = useCancelConnectionRequest();
   const { data: connectionStatus } = useConnectionStatus(presence.profile?.id);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
+  const [showMessageDialog, setShowMessageDialog] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const handleSendRequest = (e: React.MouseEvent) => {
+  const handleOpenDialog = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setShowMessageDialog(true);
+  };
+
+  const handleSendRequest = () => {
     if (presence.profile?.id) {
-      sendRequest.mutate(presence.profile.id);
+      sendRequest.mutate(
+        { toProfileId: presence.profile.id, message: message.trim() || undefined },
+        {
+          onSuccess: () => {
+            setShowMessageDialog(false);
+            setMessage("");
+          },
+        }
+      );
     }
   };
 
@@ -158,7 +182,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
           <div className="mt-2">
             {connectionStatus === "none" && (
               <Button
-                onClick={handleSendRequest}
+                onClick={handleOpenDialog}
                 disabled={sendRequest.isPending}
                 className="w-full gap-2"
                 variant="default"
@@ -192,6 +216,55 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
           </div>
         </div>
       </div>
+
+      {/* Connection Request Dialog */}
+      <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
+        <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle className="font-display">Solicitar conexión</DialogTitle>
+            <DialogDescription className="font-body">
+              Añade un mensaje opcional para presentarte. El destinatario verá tu ciudad y tribes.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3">
+            <Textarea
+              placeholder="Hola, me gustaría conectar contigo..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value.slice(0, MAX_MESSAGE_LENGTH))}
+              className="min-h-[100px] resize-none font-body"
+              maxLength={MAX_MESSAGE_LENGTH}
+            />
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground font-body">
+                Opcional
+              </span>
+              <span className={`text-xs font-body ${message.length >= MAX_MESSAGE_LENGTH ? "text-destructive" : "text-muted-foreground"}`}>
+                {message.length}/{MAX_MESSAGE_LENGTH}
+              </span>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => setShowMessageDialog(false)}
+              className="gap-2"
+            >
+              <X className="w-4 h-4" />
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSendRequest}
+              disabled={sendRequest.isPending}
+              className="gap-2"
+            >
+              <Send className="w-4 h-4" />
+              {sendRequest.isPending ? "Enviando..." : "Enviar solicitud"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Moderation Modal */}
       {showModerationModal && presence.profile?.id && (

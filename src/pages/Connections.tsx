@@ -66,6 +66,15 @@ const Connections = () => {
             </span>
           </div>
           
+          {/* Message if present */}
+          {request.message && (
+            <div className="mb-3 p-2.5 rounded-lg bg-secondary/50 border border-border/30">
+              <p className="font-body text-sm text-card-foreground italic">
+                "{request.message}"
+              </p>
+            </div>
+          )}
+
           {/* Tribes */}
           {request.from_tribes && request.from_tribes.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-3">

@@ -9,6 +9,7 @@ export interface ConnectionRequest {
   from_profile_id: string;
   to_profile_id: string;
   status: "pending" | "accepted" | "rejected";
+  message: string | null;
   created_at: string;
   responded_at: string | null;
 }
@@ -143,7 +144,7 @@ export const useSendConnectionRequest = () => {
   const { data: profile } = useProfile();
 
   return useMutation({
-    mutationFn: async (toProfileId: string) => {
+    mutationFn: async ({ toProfileId, message }: { toProfileId: string; message?: string }) => {
       if (!profile?.id) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
@@ -151,6 +152,7 @@ export const useSendConnectionRequest = () => {
         .insert({
           from_profile_id: profile.id,
           to_profile_id: toProfileId,
+          message: message?.trim() || null,
         })
         .select()
         .single();
@@ -158,7 +160,7 @@ export const useSendConnectionRequest = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, toProfileId) => {
+    onSuccess: (_, { toProfileId }) => {
       queryClient.invalidateQueries({ queryKey: ["connection_requests"] });
       queryClient.invalidateQueries({ queryKey: ["connection_status", profile?.id, toProfileId] });
       toast.success("Solicitud enviada");
