@@ -106,11 +106,12 @@ const VIBRATION_PATTERNS = {
   message: [80, 80, 80], // Two quick taps
   quedada: [150, 100, 150], // Friendly pattern
   ghost: [50, 30, 50, 30, 50], // Mysterious light pattern
+  connection: [120, 60, 120], // Warm invitation pattern
   default: [100], // Single short buzz
 };
 
 // Vibrate device if supported
-export const vibrateDevice = (type: "spark" | "message" | "quedada" | "ghost" | "default" = "default") => {
+export const vibrateDevice = (type: "spark" | "message" | "quedada" | "ghost" | "connection" | "default" = "default") => {
   if (!isVibrationEnabled()) return;
   if (isInDndPeriod()) return;
   
@@ -124,7 +125,7 @@ export const vibrateDevice = (type: "spark" | "message" | "quedada" | "ghost" | 
 };
 
 // Play a simple "ding" notification sound
-export const playNotificationSound = (type: "spark" | "message" | "quedada" | "ghost" | "default" = "default") => {
+export const playNotificationSound = (type: "spark" | "message" | "quedada" | "ghost" | "connection" | "default" = "default") => {
   // Check if sound is muted or in DND period
   if (isSoundMuted()) return;
   if (isInDndPeriod()) return;
@@ -212,6 +213,45 @@ export const playNotificationSound = (type: "spark" | "message" | "quedada" | "g
         lfo.stop(ctx.currentTime + 0.6);
         oscillator.stop(ctx.currentTime + 0.6);
         break;
+      
+      case "connection":
+        // Warm invitation sound - friendly knock-like pattern with harmonic
+        const connOsc1 = ctx.createOscillator();
+        const connOsc2 = ctx.createOscillator();
+        const connGain1 = ctx.createGain();
+        const connGain2 = ctx.createGain();
+        
+        connOsc1.connect(connGain1);
+        connOsc2.connect(connGain2);
+        connGain1.connect(ctx.destination);
+        connGain2.connect(ctx.destination);
+        
+        connOsc1.type = "sine";
+        connOsc2.type = "triangle";
+        
+        // First "knock" - warm tone
+        connOsc1.frequency.setValueAtTime(440, ctx.currentTime); // A4
+        connGain1.gain.setValueAtTime(0.12, ctx.currentTime);
+        connGain1.gain.exponentialRampToValueAtTime(0.02, ctx.currentTime + 0.12);
+        
+        // Second "knock" - slightly higher, confirmation feel
+        connOsc1.frequency.setValueAtTime(554, ctx.currentTime + 0.15); // C#5
+        connGain1.gain.setValueAtTime(0.14, ctx.currentTime + 0.15);
+        connGain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+        
+        // Harmonic undertone for warmth
+        connOsc2.frequency.setValueAtTime(220, ctx.currentTime); // A3
+        connGain2.gain.setValueAtTime(0.06, ctx.currentTime);
+        connGain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        
+        connOsc1.start(ctx.currentTime);
+        connOsc2.start(ctx.currentTime);
+        connOsc1.stop(ctx.currentTime + 0.4);
+        connOsc2.stop(ctx.currentTime + 0.45);
+        
+        // Don't use the main oscillator
+        oscillator.stop(ctx.currentTime);
+        break;
         
       default:
         // Simple notification ping
@@ -229,7 +269,7 @@ export const playNotificationSound = (type: "spark" | "message" | "quedada" | "g
 };
 
 // Combined function to play sound and vibrate
-export const notifyUser = (type: "spark" | "message" | "quedada" | "ghost" | "default" = "default") => {
+export const notifyUser = (type: "spark" | "message" | "quedada" | "ghost" | "connection" | "default" = "default") => {
   playNotificationSound(type);
   vibrateDevice(type);
 };
