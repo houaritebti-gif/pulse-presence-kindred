@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
@@ -13,8 +13,10 @@ import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
 import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
 import { useBlockedUsers } from "@/hooks/useUserModeration";
 import { useMultipleProfilePhotos } from "@/hooks/useProfilePhotos";
+import { useSentConnectionRequests, usePendingConnectionRequestCount } from "@/hooks/useConnectionRequests";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 import PresenceCard from "@/components/PresenceCard";
+import AnonymousPresenceCard from "@/components/AnonymousPresenceCard";
 import { PullToRefresh } from "@/components/PullToRefresh";
 
 const Presence = () => {
@@ -31,8 +33,21 @@ const Presence = () => {
   const unreadCount = useUnreadNotificationCount();
   const unreadGhostCount = useUnreadGhostMessageCount();
   const { data: blockedIds } = useBlockedUsers();
+  const { data: sentRequests } = useSentConnectionRequests();
+  const pendingConnectionCount = usePendingConnectionRequestCount();
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: presenceList });
+
+  // Get profile IDs of accepted connections (can see full profile)
+  const connectedProfileIds = useMemo(() => {
+    const connected = new Set<string>();
+    sentRequests?.forEach(req => {
+      if (req.status === "accepted") {
+        connected.add(req.to_profile_id);
+      }
+    });
+    return connected;
+  }, [sentRequests]);
 
   // My tribes and music for compatibility calculation
   const myTribeNames = useMemo(() => myTribes?.map(t => t.tribe) || [], [myTribes]);
@@ -137,6 +152,19 @@ const Presence = () => {
         <span className="font-display text-xl font-bold text-foreground">KIKI</span>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          {/* Connection requests button */}
+          <button
+            onClick={() => navigate("/connections")}
+            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            title="Solicitudes de conexión"
+          >
+            <UserPlus className={`w-5 h-5 ${pendingConnectionCount > 0 ? "text-primary" : ""}`} />
+            {pendingConnectionCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
+                {pendingConnectionCount > 9 ? "9+" : pendingConnectionCount}
+              </span>
+            )}
+          </button>
           {/* Ghost messages button */}
           <button
             onClick={() => navigate("/ghost-messages")}
@@ -291,18 +319,40 @@ const Presence = () => {
           />
         ) : (
           <div className="space-y-6">
-            {filteredProfiles.map((presence, index) => (
-              <PresenceCard
-                key={presence.id}
-                presence={presence}
-                compatibility={getCompatibility(presence)}
-                animationDelay={(index + 1) * 100}
-                photos={presence.profile?.id 
-                  ? photosMap?.[presence.profile.id]?.map(p => p.photo_url) || []
-                  : []
-                }
-              />
-            ))}
+            {filteredProfiles.map((presence, index) => {
+              const profileId = presence.profile?.id;
+              const isConnected = profileId && connectedProfileIds.has(profileId);
+              
+              // Show full card for connected users, anonymous card for others
+              return isConnected ? (
+                <PresenceCard
+                  key={presence.id}
+                  presence={presence}
+                  compatibility={getCompatibility(presence)}
+                  animationDelay={(index + 1) * 100}
+                  photos={profileId 
+                    ? photosMap?.[profileId]?.map(p => p.photo_url) || []
+                    : []
+                  }
+                />
+              ) : (
+                <AnonymousPresenceCard
+                  key={presence.id}
+                  presence={{
+                    id: presence.id,
+                    profile: presence.profile ? {
+                      id: presence.profile.id,
+                      name: presence.profile.name,
+                      avatar_url: presence.profile.avatar_url,
+                      city: presence.profile.city,
+                    } : null,
+                    tribes: presence.tribes,
+                    musicStyles: presence.musicStyles,
+                  }}
+                  animationDelay={(index + 1) * 100}
+                />
+              );
+            })}
           </div>
         )}
 

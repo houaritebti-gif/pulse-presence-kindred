@@ -26,6 +26,7 @@ import Chat from "./pages/Chat";
 import Sparks from "./pages/Sparks";
 import SparkChat from "./pages/SparkChat";
 import GhostMessages from "./pages/GhostMessages";
+import Connections from "./pages/Connections";
 import Quedadas from "./pages/Quedadas";
 import QuedadaChat from "./pages/QuedadaChat";
 import Notifications from "./pages/Notifications";
@@ -202,6 +203,14 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <GhostMessages />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/connections"
+                element={
+                  <ProtectedRoute>
+                    <Connections />
                   </ProtectedRoute>
                 }
               />
