@@ -26,33 +26,81 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, isOwnProfile = false }: 
     // If it's own profile, show CTA to add photos
     if (isOwnProfile) {
       return (
-        <button
+        <motion.button
           onClick={() => navigate('/profile')}
           className="w-full aspect-[4/5] rounded-2xl overflow-hidden relative flex flex-col items-center justify-center ring-2 ring-primary/30 animate-glow group transition-all hover:ring-primary/50"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         >
           <div 
             className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
           />
-          <div className="relative z-10 flex flex-col items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-              <Camera className="w-10 h-10 text-primary" />
-            </div>
-            <div className="text-center px-4">
+          <motion.div 
+            className="relative z-10 flex flex-col items-center gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+          >
+            <motion.div 
+              className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ 
+                duration: 0.5, 
+                delay: 0.3, 
+                type: "spring",
+                stiffness: 200,
+                damping: 15
+              }}
+            >
+              <motion.div
+                animate={{ 
+                  y: [0, -4, 0],
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <Camera className="w-10 h-10 text-primary" />
+              </motion.div>
+            </motion.div>
+            <motion.div 
+              className="text-center px-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+            >
               <p className="font-display font-semibold text-lg text-card-foreground">
                 Añade tus fotos
               </p>
               <p className="font-body text-sm text-card-foreground/60 mt-1">
                 Muestra tu mejor versión
               </p>
-            </div>
-            <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
+            </motion.div>
+            <motion.div 
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                duration: 0.4, 
+                delay: 0.6,
+                type: "spring",
+                stiffness: 300,
+                damping: 20
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Plus className="w-4 h-4 text-primary" />
               <span className="font-body text-sm font-medium text-primary">
                 Subir fotos
               </span>
-            </div>
-          </div>
-        </button>
+            </motion.div>
+          </motion.div>
+        </motion.button>
       );
     }
     
