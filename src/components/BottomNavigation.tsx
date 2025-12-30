@@ -1,10 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Bell, Calendar, Flame, Users, User, Ghost, CloudOff, UserPlus } from "lucide-react";
-import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
-import { useUnreadSparkCount } from "@/hooks/useSparks";
-import { useUnreadQuedadaCount } from "@/hooks/useQuedadas";
-import { useUnreadGhostMessageCount } from "@/hooks/useReceivedGhostMessages";
-import { usePendingConnectionRequestCount } from "@/hooks/useConnectionRequests";
+import { useNavBadgeCounts } from "@/hooks/useNavBadgeCounts";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -73,15 +69,15 @@ const NavItem = ({ icon, label, badge, isActive, onClick, isOfflineBadge }: NavI
 export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const unreadNotificationCount = useUnreadNotificationCount();
-  const unreadSparkCount = useUnreadSparkCount();
-  const unreadQuedadaCount = useUnreadQuedadaCount();
-  const unreadGhostCount = useUnreadGhostMessageCount();
-  const pendingConnectionCount = usePendingConnectionRequestCount();
+  const { data: counts } = useNavBadgeCounts();
   const { pendingCount } = useOfflineQueue();
 
-  // Combine ghost messages, notifications, and pending connection requests count
-  const totalAlertCount = unreadNotificationCount + unreadGhostCount + pendingConnectionCount;
+  // Extract counts with defaults
+  const unreadSparkCount = counts?.unreadSparks || 0;
+  const unreadQuedadaCount = counts?.unreadQuedadas || 0;
+  const unreadGhostCount = counts?.unreadGhostMessages || 0;
+  const pendingConnectionCount = counts?.pendingConnections || 0;
+  const totalAlertCount = counts?.totalAlerts || 0;
 
   const navItems = [
     {
