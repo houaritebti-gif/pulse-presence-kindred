@@ -3,6 +3,7 @@ import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertic
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
+import GhostMessagesListSkeleton from "@/components/GhostMessagesListSkeleton";
 import { Button } from "@/components/ui/button";
 import { useReceivedGhostMessages, useMarkGhostMessageRead } from "@/hooks/useReceivedGhostMessages";
 import { useHasSparkWith } from "@/hooks/useSparks";
@@ -252,12 +253,7 @@ const GhostMessages = () => {
 
         {/* Messages list */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="relative">
-              <Ghost className="w-10 h-10 text-primary/50 animate-pulse" />
-              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-            </div>
-          </div>
+          <GhostMessagesListSkeleton count={3} />
         ) : isError ? (
           <ErrorState
             icon={Ghost}
