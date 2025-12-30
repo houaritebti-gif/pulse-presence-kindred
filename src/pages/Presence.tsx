@@ -24,7 +24,7 @@ const Presence = () => {
   const { data: profile } = useProfile();
   const { data: myTribes } = useProfileTribes(profile?.id);
   const { data: myMusicStyles } = useProfileMusicStyles(profile?.id);
-  const { data: presenceList, isLoading, isError, refetch, isFetching } = usePresenceList();
+  const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList();
   const { data: myPresence } = useMyPresence();
   const setPresence = useSetPresence();
   const { newSparkCount, hasNewSparks, totalSparkCount, markAllAsSeen, newSparks } = useNewSparks();
@@ -316,12 +316,25 @@ const Presence = () => {
               : "No hay personas que coincidan con tus filtros. Prueba con otros criterios."}
           />
         ) : (
-          <VirtualizedPresenceList
-            profiles={filteredProfiles}
-            connectedProfileIds={connectedProfileIds}
-            photosMap={photosMap}
-            getCompatibility={getCompatibility}
-          />
+          <>
+            <VirtualizedPresenceList
+              profiles={filteredProfiles}
+              connectedProfileIds={connectedProfileIds}
+              photosMap={photosMap}
+              getCompatibility={getCompatibility}
+            />
+            {hasNextPage && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                  className="px-6 py-2 rounded-full bg-card border border-border/20 text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all font-body text-sm disabled:opacity-50"
+                >
+                  {isFetchingNextPage ? "Cargando..." : "Cargar más"}
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Footer note */}

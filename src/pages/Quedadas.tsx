@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
@@ -22,7 +22,7 @@ import QuedadaCreatorHeader from "@/components/QuedadaCreatorHeader";
 const Quedadas = () => {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const { data: quedadas, isLoading, isError, refetch, isFetching } = useQuedadas();
+  const { data: quedadas, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useQuedadas();
   const createQuedada = useCreateQuedada();
   const joinQuedada = useJoinQuedada();
   const leaveQuedada = useLeaveQuedada();
@@ -279,126 +279,146 @@ const Quedadas = () => {
             }
           />
         ) : (
-          <div className="space-y-4">
-            {quedadas?.map((quedada, index) => {
-              const isFull = quedada.max_attendees && quedada.attendee_count >= quedada.max_attendees;
-              const isCreator = quedada.creator_profile_id === profile?.id;
-              
-              return (
-                <div
-                  key={quedada.id}
-                  className="bg-card rounded-2xl p-5 animate-fade-up border border-transparent hover:border-accent/20 transition-all duration-300"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  {/* Header */}
-                  <QuedadaCreatorHeader creator={quedada.creator} title={quedada.title} />
+          <>
+            <div className="space-y-4">
+              {quedadas?.map((quedada, index) => {
+                const isFull = quedada.max_attendees && quedada.attendee_count >= quedada.max_attendees;
+                const isCreator = quedada.creator_profile_id === profile?.id;
+                
+                return (
+                  <div
+                    key={quedada.id}
+                    className="bg-card rounded-2xl p-5 animate-fade-up border border-transparent hover:border-accent/20 transition-all duration-300"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Header */}
+                    <QuedadaCreatorHeader creator={quedada.creator} title={quedada.title} />
 
-                  {/* Description */}
-                  {quedada.description && (
-                    <p className="font-body text-sm text-card-foreground/70 mb-4 leading-relaxed">
-                      {quedada.description}
-                    </p>
-                  )}
+                    {/* Description */}
+                    {quedada.description && (
+                      <p className="font-body text-sm text-card-foreground/70 mb-4 leading-relaxed">
+                        {quedada.description}
+                      </p>
+                    )}
 
-                  {/* Details */}
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    <div className="flex items-center gap-1.5 text-card-foreground/60">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span className="font-body text-xs capitalize">{formatEventDate(quedada.event_date)}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-card-foreground/60">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span className="font-body text-xs">{formatEventTime(quedada.event_date)}h</span>
-                    </div>
-                    {quedada.location_hint && (
+                    {/* Details */}
+                    <div className="flex flex-wrap gap-3 mb-4">
                       <div className="flex items-center gap-1.5 text-card-foreground/60">
-                        <MapPin className="w-3.5 h-3.5" />
-                        <span className="font-body text-xs">{quedada.location_hint}</span>
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span className="font-body text-xs capitalize">{formatEventDate(quedada.event_date)}</span>
                       </div>
-                    )}
-                    <div className="flex items-center gap-1.5 text-card-foreground/60">
-                      {quedada.private_attendees ? (
-                        <EyeOff className="w-3.5 h-3.5" />
-                      ) : (
-                        <Users className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-1.5 text-card-foreground/60">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span className="font-body text-xs">{formatEventTime(quedada.event_date)}h</span>
+                      </div>
+                      {quedada.location_hint && (
+                        <div className="flex items-center gap-1.5 text-card-foreground/60">
+                          <MapPin className="w-3.5 h-3.5" />
+                          <span className="font-body text-xs">{quedada.location_hint}</span>
+                        </div>
                       )}
-                      <span className="font-body text-xs">
-                        {quedada.attendee_count}{quedada.max_attendees ? `/${quedada.max_attendees}` : ""} {quedada.private_attendees ? "(privada)" : "asistentes"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    {/* Chat button - visible if attending or creator */}
-                    {(isCreator || quedada.is_attending) && (
-                      <Button
-                        variant="kiki-soft"
-                        size="sm"
-                        className="flex-1 relative"
-                        onClick={() => navigate(`/quedada/${quedada.id}`)}
-                      >
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        Chat
-                        {quedada.has_unread && (
-                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full ring-2 ring-card animate-pulse" />
+                      <div className="flex items-center gap-1.5 text-card-foreground/60">
+                        {quedada.private_attendees ? (
+                          <EyeOff className="w-3.5 h-3.5" />
+                        ) : (
+                          <Users className="w-3.5 h-3.5" />
                         )}
-                      </Button>
-                    )}
-                    
-                    {/* Join/Leave button */}
-                    {!isCreator && (
-                      quedada.is_attending ? (
+                        <span className="font-body text-xs">
+                          {quedada.attendee_count}{quedada.max_attendees ? `/${quedada.max_attendees}` : ""} {quedada.private_attendees ? "(privada)" : "asistentes"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      {/* Chat button - visible if attending or creator */}
+                      {(isCreator || quedada.is_attending) && (
                         <Button
                           variant="kiki-soft"
                           size="sm"
-                          className={isCreator || quedada.is_attending ? "flex-1" : "w-full"}
-                          onClick={() => handleLeave(quedada.id)}
+                          className="flex-1 relative"
+                          onClick={() => navigate(`/quedada/${quedada.id}`)}
                         >
-                          Salir
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Chat
+                          {quedada.has_unread && (
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full ring-2 ring-card animate-pulse" />
+                          )}
                         </Button>
-                      ) : (
-                        <Button
-                          variant="kiki"
-                          size="sm"
-                          className="w-full"
-                          onClick={() => handleJoin(quedada)}
-                          disabled={isFull}
-                        >
-                          {isFull ? "Completa" : "Unirse"}
-                        </Button>
-                      )
+                      )}
+                      
+                      {/* Join/Leave button */}
+                      {!isCreator && (
+                        quedada.is_attending ? (
+                          <Button
+                            variant="kiki-soft"
+                            size="sm"
+                            className={isCreator || quedada.is_attending ? "flex-1" : "w-full"}
+                            onClick={() => handleLeave(quedada.id)}
+                          >
+                            Salir
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="kiki"
+                            size="sm"
+                            className="w-full"
+                            onClick={() => handleJoin(quedada)}
+                            disabled={isFull}
+                          >
+                            {isFull ? "Completa" : "Unirse"}
+                          </Button>
+                        )
+                      )}
+                    </div>
+                    
+                    {isCreator && (
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-3.5 h-3.5 text-accent" />
+                          <span className="font-body text-xs text-card-foreground/50">Tu quedada</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => openEditModal(quedada)}
+                            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors font-body text-xs"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDelete(quedada.id)}
+                            className="flex items-center gap-1.5 text-destructive/70 hover:text-destructive transition-colors font-body text-xs"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  
-                  {isCreator && (
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-3.5 h-3.5 text-accent" />
-                        <span className="font-body text-xs text-card-foreground/50">Tu quedada</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => openEditModal(quedada)}
-                          className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors font-body text-xs"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDelete(quedada.id)}
-                          className="flex items-center gap-1.5 text-destructive/70 hover:text-destructive transition-colors font-body text-xs"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
+                );
+              })}
+            </div>
+            {hasNextPage && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                  className="px-6 py-2.5 rounded-full bg-card/50 border border-border/20 text-muted-foreground hover:text-foreground hover:border-accent/30 transition-all font-body text-sm disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isFetchingNextPage ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Cargando...
+                    </>
+                  ) : (
+                    "Cargar más"
                   )}
-                </div>
-              );
-            })}
-          </div>
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

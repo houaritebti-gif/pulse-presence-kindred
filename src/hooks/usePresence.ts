@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "./useProfile";
@@ -24,12 +24,14 @@ export interface PresenceWithProfile {
   musicStyles: string[];
 }
 
+const PRESENCE_PAGE_SIZE = 20;
+
 export const usePresenceList = () => {
   const queryClient = useQueryClient();
 
-  const query = useQuery({
+  const query = useInfiniteQuery({
     queryKey: ["presence_list"],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 0 }) => {
       // Get presence entries that are visible and active (pulsed in last 5 min)
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
@@ -41,7 +43,9 @@ export const usePresenceList = () => {
         `)
         .eq("is_present", true)
         .eq("visible_to_others", true)
-        .gte("last_pulse", fiveMinutesAgo);
+        .gte("last_pulse", fiveMinutesAgo)
+        .order("last_pulse", { ascending: false })
+        .range(pageParam * PRESENCE_PAGE_SIZE, (pageParam + 1) * PRESENCE_PAGE_SIZE - 1);
 
       if (presenceError) throw presenceError;
 
@@ -76,14 +80,27 @@ export const usePresenceList = () => {
         }, {} as Record<string, string[]>);
       }
 
-      return (presenceData || []).map(p => ({
+      const items = (presenceData || []).map(p => ({
         ...p,
         tribes: tribesMap[p.profile?.id] || [],
         musicStyles: musicMap[p.profile?.id] || [],
       })) as PresenceWithProfile[];
+
+      return {
+        items,
+        nextPage: items.length === PRESENCE_PAGE_SIZE ? pageParam + 1 : undefined,
+      };
     },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
     staleTime: 1000 * 60 * 2, // 2 minutes - has realtime updates
   });
+
+  // Flatten pages for easy consumption
+  const data = useMemo(() => 
+    query.data?.pages.flatMap(page => page.items) || [],
+    [query.data?.pages]
+  );
 
   // Subscribe to realtime updates
   useEffect(() => {
@@ -103,7 +120,13 @@ export const usePresenceList = () => {
     };
   }, [queryClient]);
 
-  return query;
+  return {
+    ...query,
+    data,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+  };
 };
 
 export const useMyPresence = () => {

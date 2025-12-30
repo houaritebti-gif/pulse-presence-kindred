@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { sendPushNotification } from "@/utils/pushNotifications";
@@ -37,15 +37,17 @@ export interface QuedadaAttendee {
   };
 }
 
-// Get all quedadas for current user's city
+const QUEDADAS_PAGE_SIZE = 10;
+
+// Get all quedadas for current user's city with pagination
 export const useQuedadas = () => {
   const { data: profile } = useProfile();
   const queryClient = useQueryClient();
 
-  const query = useQuery({
+  const query = useInfiniteQuery({
     queryKey: ["quedadas", profile?.city],
-    queryFn: async () => {
-      if (!profile) return [];
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!profile) return { items: [], nextPage: undefined };
 
       // Get quedadas with attendees
       const { data, error } = await supabase
@@ -55,7 +57,8 @@ export const useQuedadas = () => {
           creator:profiles!quedadas_creator_profile_id_fkey(id, name, avatar_url),
           quedada_attendees(id, profile_id)
         `)
-        .order("event_date", { ascending: true });
+        .order("event_date", { ascending: true })
+        .range(pageParam * QUEDADAS_PAGE_SIZE, (pageParam + 1) * QUEDADAS_PAGE_SIZE - 1);
 
       if (error) throw error;
 
@@ -92,7 +95,7 @@ export const useQuedadas = () => {
         }
       });
 
-      return (data || []).map(q => {
+      const items = (data || []).map(q => {
         const isCreator = q.creator_profile_id === profile.id;
         const isAttending = q.quedada_attendees?.some((a: { profile_id: string }) => a.profile_id === profile.id) || false;
         const canAccessChat = isCreator || isAttending;
@@ -111,10 +114,23 @@ export const useQuedadas = () => {
           has_unread: hasUnread,
         };
       }) as Quedada[];
+
+      return {
+        items,
+        nextPage: items.length === QUEDADAS_PAGE_SIZE ? pageParam + 1 : undefined,
+      };
     },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
     enabled: !!profile?.id,
     staleTime: 60 * 1000, // 1 minute - quedadas update via realtime anyway
   });
+
+  // Flatten pages for easy consumption
+  const data = useMemo(() => 
+    query.data?.pages.flatMap(page => page.items) || [],
+    [query.data?.pages]
+  );
 
   // Subscribe to realtime updates
   useEffect(() => {
@@ -143,7 +159,13 @@ export const useQuedadas = () => {
     };
   }, [profile?.city, queryClient]);
 
-  return query;
+  return {
+    ...query,
+    data,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+  };
 };
 
 // Get attendees for a specific quedada

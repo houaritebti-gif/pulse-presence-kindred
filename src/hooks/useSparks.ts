@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { sendPushNotification } from "@/utils/pushNotifications";
@@ -32,15 +32,17 @@ export interface ChatMessage {
   updated_at: string | null;
 }
 
-// Get all active spark chats for current user
+const SPARKS_PAGE_SIZE = 15;
+
+// Get all active spark chats for current user with pagination
 export const useSparkChats = () => {
   const { data: profile } = useProfile();
   const queryClient = useQueryClient();
 
-  const query = useQuery({
+  const query = useInfiniteQuery({
     queryKey: ["spark_chats", profile?.id],
-    queryFn: async () => {
-      if (!profile) return [];
+    queryFn: async ({ pageParam = 0 }) => {
+      if (!profile) return { items: [], nextPage: undefined };
 
       // Fetch blocked users directly in queryFn to avoid nested hooks
       const { data: blockedData } = await supabase
@@ -67,7 +69,9 @@ export const useSparkChats = () => {
           profile_a:profiles!spark_chats_profile_a_id_fkey(id, name, avatar_url, vibe),
           profile_b:profiles!spark_chats_profile_b_id_fkey(id, name, avatar_url, vibe)
         `)
-        .or(`profile_a_id.eq.${profile.id},profile_b_id.eq.${profile.id}`);
+        .or(`profile_a_id.eq.${profile.id},profile_b_id.eq.${profile.id}`)
+        .order("created_at", { ascending: false })
+        .range(pageParam * SPARKS_PAGE_SIZE, (pageParam + 1) * SPARKS_PAGE_SIZE - 1);
 
       if (error) throw error;
 
@@ -139,15 +143,28 @@ export const useSparkChats = () => {
         });
 
       // Sort by last message (most recent first)
-      return chats.sort((a, b) => {
+      const sortedChats = chats.sort((a, b) => {
         const timeA = new Date(a.last_message_at || a.created_at).getTime();
         const timeB = new Date(b.last_message_at || b.created_at).getTime();
         return timeB - timeA;
       });
+
+      return {
+        items: sortedChats,
+        nextPage: sortedChats.length === SPARKS_PAGE_SIZE ? pageParam + 1 : undefined,
+      };
     },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
     enabled: !!profile?.id,
     staleTime: 60 * 1000, // 1 minute - chats update frequently but not instantly needed
   });
+
+  // Flatten pages for easy consumption
+  const data = useMemo(() => 
+    query.data?.pages.flatMap(page => page.items) || [],
+    [query.data?.pages]
+  );
 
   // Subscribe to realtime updates
   useEffect(() => {
@@ -169,7 +186,13 @@ export const useSparkChats = () => {
     };
   }, [profile?.id, queryClient]);
 
-  return query;
+  return {
+    ...query,
+    data,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+  };
 };
 
 // Get spark count for notification badge
