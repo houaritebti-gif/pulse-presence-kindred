@@ -3,7 +3,19 @@ import { Bell, Calendar, Flame, Users, User, Ghost, CloudOff, UserPlus } from "l
 import { useNavBadgeCounts } from "@/hooks/useNavBadgeCounts";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { cn } from "@/lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+
+// Route prefetch map - lazy imports for prefetching
+const routePrefetchMap: Record<string, () => Promise<unknown>> = {
+  "/presence": () => import("@/pages/Presence"),
+  "/sparks": () => import("@/pages/Sparks"),
+  "/quedadas": () => import("@/pages/Quedadas"),
+  "/notifications": () => import("@/pages/Notifications"),
+  "/profile": () => import("@/pages/Profile"),
+};
+
+// Track which routes have been prefetched
+const prefetchedRoutes = new Set<string>();
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -12,10 +24,11 @@ interface NavItemProps {
   badge?: number;
   isActive: boolean;
   onClick: () => void;
+  onPrefetch: () => void;
   isOfflineBadge?: boolean;
 }
 
-const NavItem = ({ icon, label, badge, isActive, onClick, isOfflineBadge }: NavItemProps) => {
+const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineBadge }: NavItemProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const prevBadgeRef = useRef(badge);
 
@@ -34,6 +47,9 @@ const NavItem = ({ icon, label, badge, isActive, onClick, isOfflineBadge }: NavI
   return (
     <button
       onClick={onClick}
+      onMouseEnter={onPrefetch}
+      onTouchStart={onPrefetch}
+      onFocus={onPrefetch}
       className={cn(
         "flex flex-col items-center gap-1 px-4 py-2 relative transition-all",
         isActive 
@@ -71,6 +87,36 @@ export const BottomNavigation = () => {
   const location = useLocation();
   const { data: counts } = useNavBadgeCounts();
   const { pendingCount } = useOfflineQueue();
+
+  // Prefetch a route's component
+  const prefetchRoute = useCallback((path: string) => {
+    if (prefetchedRoutes.has(path)) return;
+    
+    const prefetchFn = routePrefetchMap[path];
+    if (prefetchFn) {
+      prefetchedRoutes.add(path);
+      // Use requestIdleCallback for non-blocking prefetch
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => prefetchFn(), { timeout: 2000 });
+      } else {
+        setTimeout(() => prefetchFn(), 100);
+      }
+    }
+  }, []);
+
+  // Prefetch adjacent routes on mount (after a small delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Prefetch all nav routes after initial render
+      Object.keys(routePrefetchMap).forEach(path => {
+        if (path !== location.pathname) {
+          prefetchRoute(path);
+        }
+      });
+    }, 2000); // Wait 2 seconds after mount
+
+    return () => clearTimeout(timer);
+  }, [location.pathname, prefetchRoute]);
 
   // Extract counts with defaults
   const unreadSparkCount = counts?.unreadSparks || 0;
@@ -133,6 +179,7 @@ export const BottomNavigation = () => {
             badge={item.badge}
             isActive={location.pathname === item.path}
             onClick={() => navigate(item.path)}
+            onPrefetch={() => prefetchRoute(item.path)}
             isOfflineBadge={item.isOfflineBadge}
           />
         ))}
