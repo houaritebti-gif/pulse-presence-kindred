@@ -32,6 +32,7 @@ export const useBlockedUsers = () => {
       return data?.map(b => b.blocked_profile_id) || [];
     },
     enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes - blocks rarely change
   });
 };
 
@@ -167,5 +168,6 @@ export const useBlockedUsersList = () => {
       return data || [];
     },
     enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 5, // 5 minutes - blocks rarely change
   });
 };

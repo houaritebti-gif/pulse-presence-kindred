@@ -82,6 +82,7 @@ export const usePresenceList = () => {
         musicStyles: musicMap[p.profile?.id] || [],
       })) as PresenceWithProfile[];
     },
+    staleTime: 1000 * 60 * 2, // 2 minutes - has realtime updates
   });
 
   // Subscribe to realtime updates
@@ -123,6 +124,7 @@ export const useMyPresence = () => {
       return data;
     },
     enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 3, // 3 minutes
   });
 };
 

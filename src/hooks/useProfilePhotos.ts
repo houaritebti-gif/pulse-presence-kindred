@@ -32,6 +32,7 @@ export const useProfilePhotos = (profileId: string | undefined) => {
       return data as ProfilePhoto[];
     },
     enabled: !!profileId,
+    staleTime: 1000 * 60 * 5, // 5 minutes - photos rarely change
   });
 };
 
@@ -62,6 +63,7 @@ export const useMultipleProfilePhotos = (profileIds: string[]) => {
       return grouped;
     },
     enabled: profileIds.length > 0,
+    staleTime: 1000 * 60 * 5, // 5 minutes - photos rarely change
   });
 };
 

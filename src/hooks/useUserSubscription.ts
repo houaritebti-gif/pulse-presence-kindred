@@ -27,5 +27,6 @@ export const useUserSubscription = (profileId: string | undefined) => {
       return isExpired ? 'free' as SubscriptionTier : data.tier as SubscriptionTier;
     },
     enabled: !!profileId,
+    staleTime: 1000 * 60 * 10, // 10 minutes - subscriptions rarely change
   });
 };

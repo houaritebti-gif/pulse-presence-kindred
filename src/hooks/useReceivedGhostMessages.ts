@@ -72,6 +72,7 @@ export const useReceivedGhostMessages = () => {
         })) as ReceivedGhostMessage[];
     },
     enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 2, // 2 minutes - has realtime updates
   });
 
   // Track if this is initial load to avoid playing sound on mount
