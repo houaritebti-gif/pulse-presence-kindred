@@ -47,6 +47,7 @@ export const useProfile = () => {
       return data as Profile | null;
     },
     enabled: !!user,
+    staleTime: 2 * 60 * 1000, // 2 minutes - profile doesn't change often
   });
 };
 

@@ -113,6 +113,7 @@ export const useQuedadas = () => {
       }) as Quedada[];
     },
     enabled: !!profile?.id,
+    staleTime: 60 * 1000, // 1 minute - quedadas update via realtime anyway
   });
 
   // Subscribe to realtime updates

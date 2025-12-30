@@ -146,6 +146,7 @@ export const useSparkChats = () => {
       });
     },
     enabled: !!profile?.id,
+    staleTime: 60 * 1000, // 1 minute - chats update frequently but not instantly needed
   });
 
   // Subscribe to realtime updates

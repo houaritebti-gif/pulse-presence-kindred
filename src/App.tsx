@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,27 +14,33 @@ import { SkipLink } from "@/components/SkipLink";
 import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import OfflineIndicator from "@/components/OfflineIndicator";
-import { AIChatBot } from "@/components/AIChatBot";
 import { CookieConsent } from "@/components/CookieConsent";
+
+// Eager load critical paths
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
-import Profile from "./pages/Profile";
-import Presence from "./pages/Presence";
-import PublicProfile from "./pages/PublicProfile";
-import Chat from "./pages/Chat";
-import Sparks from "./pages/Sparks";
-import SparkChat from "./pages/SparkChat";
-import GhostMessages from "./pages/GhostMessages";
-import Connections from "./pages/Connections";
-import Quedadas from "./pages/Quedadas";
-import QuedadaChat from "./pages/QuedadaChat";
-import Notifications from "./pages/Notifications";
-import Subscription from "./pages/Subscription";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
-import Cookies from "./pages/Cookies";
-import NotFound from "./pages/NotFound";
+
+// Lazy load non-critical pages for better initial load
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Presence = lazy(() => import("./pages/Presence"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile"));
+const Chat = lazy(() => import("./pages/Chat"));
+const Sparks = lazy(() => import("./pages/Sparks"));
+const SparkChat = lazy(() => import("./pages/SparkChat"));
+const GhostMessages = lazy(() => import("./pages/GhostMessages"));
+const Connections = lazy(() => import("./pages/Connections"));
+const Quedadas = lazy(() => import("./pages/Quedadas"));
+const QuedadaChat = lazy(() => import("./pages/QuedadaChat"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Subscription = lazy(() => import("./pages/Subscription"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Cookies = lazy(() => import("./pages/Cookies"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Lazy load heavy components
+const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
 
 // Exponential backoff retry function
 const exponentialBackoff = (attemptIndex: number): number => {
@@ -111,9 +117,12 @@ const App = () => {
             <KeyboardNavigationWrapper>
               <OfflineIndicator />
               <PWAInstallPrompt />
-              <AIChatBot />
+              <Suspense fallback={null}>
+                <AIChatBot />
+              </Suspense>
               <CookieConsent />
               <BottomNavigation />
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-pulse w-8 h-8 rounded-full bg-primary/20" /></div>}>
               <div id="main-content" tabIndex={-1} className="outline-none">
                 <Routes>
               <Route path="/" element={<Index />} />
@@ -228,6 +237,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
               </div>
+              </Suspense>
             </KeyboardNavigationWrapper>
           </NotificationProvider>
         </BrowserRouter>
