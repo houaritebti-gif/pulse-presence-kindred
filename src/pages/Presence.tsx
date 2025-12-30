@@ -1,10 +1,11 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useLocalStorage, STORAGE_KEYS } from "@/hooks/useLocalStorage";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
@@ -54,12 +55,11 @@ const Presence = () => {
   const myTribeNames = useMemo(() => myTribes?.map(t => t.tribe) || [], [myTribes]);
   const myStyleNames = useMemo(() => myMusicStyles?.map(m => m.style) || [], [myMusicStyles]);
 
-  // Filters state
-  const [filters, setFilters] = useState<PresenceFilters>({
-    tribes: [],
-    musicStyles: [],
-    details: [],
-  });
+  // Filters state persisted to localStorage
+  const [filters, setFilters] = useLocalStorage<PresenceFilters>(
+    STORAGE_KEYS.PRESENCE_FILTERS,
+    { tribes: [], musicStyles: [], details: [] }
+  );
 
   // Enable heartbeat
   usePresenceHeartbeat();
