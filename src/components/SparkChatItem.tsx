@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import PremiumBadge from "@/components/PremiumBadge";
+import LazyImage from "@/components/LazyImage";
 
 interface SparkChatItemProps {
   chat: {
@@ -35,10 +36,11 @@ const SparkChatItem = ({ chat, animationDelay }: SparkChatItemProps) => {
       <div className="relative">
         <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300 group-hover:ring-primary/40">
           {chat.other_profile?.avatar_url ? (
-            <img 
+            <LazyImage 
               src={chat.other_profile.avatar_url} 
               alt={chat.other_profile.name || "Avatar"}
               className="w-full h-full object-cover"
+              placeholderClassName="w-full h-full"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">

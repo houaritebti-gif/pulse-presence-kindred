@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
 import { useSendConnectionRequest, useConnectionStatus } from "@/hooks/useConnectionRequests";
+import LazyImage from "@/components/LazyImage";
 
 interface AnonymousPresenceCardProps {
   presence: {
@@ -96,10 +97,11 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
               className="absolute inset-0"
               style={blurredAvatarStyle}
             >
-              <img 
+              <LazyImage 
                 src={presence.profile.avatar_url} 
                 alt=""
                 className="w-full h-full object-cover"
+                placeholderClassName="w-full h-full"
               />
             </div>
           ) : (
