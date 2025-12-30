@@ -676,11 +676,28 @@ const PhotoCarousel = memo(({
     // Preload current, next, and previous
     const prevIndex = (currentIndex - 1 + allPhotos.length) % allPhotos.length;
     const nextIndex = (currentIndex + 1) % allPhotos.length;
+    const nextNextIndex = (currentIndex + 2) % allPhotos.length;
     
     preloadImage(allPhotos[currentIndex]);
     preloadImage(allPhotos[prevIndex]);
     preloadImage(allPhotos[nextIndex]);
+    
+    // Preload one more ahead for smoother experience
+    if (allPhotos.length > 3) {
+      preloadImage(allPhotos[nextNextIndex]);
+    }
   }, [currentIndex, allPhotos, preloadImage]);
+  
+  // Preload all images on initial mount after a short delay (for better UX)
+  useEffect(() => {
+    if (!isInView || allPhotos.length <= 1) return;
+    
+    const timer = setTimeout(() => {
+      allPhotos.forEach(photo => preloadImage(photo));
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [isInView, allPhotos, preloadImage]);
 
   // Preload based on swipe direction during drag
   const preloadInDirection = useCallback((direction: "prev" | "next") => {
