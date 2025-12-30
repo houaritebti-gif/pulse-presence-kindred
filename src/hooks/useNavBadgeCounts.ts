@@ -80,8 +80,8 @@ export const useNavBadgeCounts = () => {
       };
     },
     enabled: !!profile?.id,
-    staleTime: 30 * 1000, // 30 seconds - badges don't need to be super fresh
-    refetchInterval: 60 * 1000, // Refetch every minute in background
+    staleTime: 1000 * 60 * 2, // 2 minutes - badges update via invalidation
+    refetchInterval: 1000 * 60 * 3, // Refetch every 3 minutes in background
   });
 };
 

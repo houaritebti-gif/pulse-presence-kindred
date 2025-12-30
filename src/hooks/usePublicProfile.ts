@@ -44,5 +44,6 @@ export const usePublicProfile = (profileId: string | undefined) => {
       };
     },
     enabled: !!profileId,
+    staleTime: 1000 * 60 * 5, // 5 minutes - profiles don't change often
   });
 };

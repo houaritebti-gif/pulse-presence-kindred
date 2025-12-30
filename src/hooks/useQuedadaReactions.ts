@@ -53,6 +53,7 @@ export const useQuedadaReactions = (quedadaId: string | undefined) => {
       return data as Reaction[];
     },
     enabled: !!quedadaId,
+    staleTime: 1000 * 60 * 2, // 2 minutes - has realtime updates
   });
 
   // Subscribe to realtime updates

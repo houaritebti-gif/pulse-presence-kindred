@@ -78,7 +78,7 @@ const queryClient = new QueryClient({
         return isNetworkError(error);
       },
       retryDelay: exponentialBackoff,
-      staleTime: 1000 * 60, // 1 minute
+      staleTime: 1000 * 60 * 3, // 3 minutes - reduce backend calls
       refetchOnWindowFocus: false,
     },
   },

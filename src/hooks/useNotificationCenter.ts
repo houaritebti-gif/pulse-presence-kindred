@@ -35,6 +35,7 @@ export const useNotifications = () => {
       return data as Notification[];
     },
     enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 2, // 2 minutes - has realtime updates
   });
 
   // Subscribe to realtime updates

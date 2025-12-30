@@ -45,6 +45,7 @@ export const useSubscription = () => {
       return data as Subscription | null;
     },
     enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 10, // 10 minutes - subscriptions rarely change
   });
 
   // Check subscription with Stripe

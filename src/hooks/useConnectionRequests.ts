@@ -56,6 +56,7 @@ export const useSentConnectionRequests = () => {
       return data as ConnectionRequestWithProfile[];
     },
     enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 3, // 3 minutes - has realtime updates
   });
 };
 
@@ -102,6 +103,7 @@ export const useReceivedConnectionRequests = () => {
       return requestsWithTribes as ConnectionRequestWithProfile[];
     },
     enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 2, // 2 minutes - has realtime updates
   });
 };
 
@@ -135,6 +137,7 @@ export const useConnectionStatus = (targetProfileId: string | undefined) => {
       return "pending_received";
     },
     enabled: !!profile?.id && !!targetProfileId,
+    staleTime: 1000 * 60 * 3, // 3 minutes
   });
 };
 
