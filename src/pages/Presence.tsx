@@ -17,6 +17,7 @@ import { useSentConnectionRequests, usePendingConnectionRequestCount } from "@/h
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import VirtualizedPresenceList from "@/components/VirtualizedPresenceList";
+import PresenceListSkeleton from "@/components/PresenceListSkeleton";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -298,9 +299,7 @@ const Presence = () => {
 
         {/* Profile cards */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
+          <PresenceListSkeleton count={3} />
         ) : isError ? (
           <ErrorState
             icon={Sparkles}
