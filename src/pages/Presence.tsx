@@ -15,9 +15,8 @@ import { useBlockedUsers } from "@/hooks/useUserModeration";
 import { useMultipleProfilePhotos } from "@/hooks/useProfilePhotos";
 import { useSentConnectionRequests, usePendingConnectionRequestCount } from "@/hooks/useConnectionRequests";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
-import PresenceCard from "@/components/PresenceCard";
-import AnonymousPresenceCard from "@/components/AnonymousPresenceCard";
 import { PullToRefresh } from "@/components/PullToRefresh";
+import VirtualizedPresenceList from "@/components/VirtualizedPresenceList";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -318,42 +317,12 @@ const Presence = () => {
               : "No hay personas que coincidan con tus filtros. Prueba con otros criterios."}
           />
         ) : (
-          <div className="space-y-6">
-            {filteredProfiles.map((presence, index) => {
-              const profileId = presence.profile?.id;
-              const isConnected = profileId && connectedProfileIds.has(profileId);
-              
-              // Show full card for connected users, anonymous card for others
-              return isConnected ? (
-                <PresenceCard
-                  key={presence.id}
-                  presence={presence}
-                  compatibility={getCompatibility(presence)}
-                  animationDelay={(index + 1) * 100}
-                  photos={profileId 
-                    ? photosMap?.[profileId]?.map(p => p.photo_url) || []
-                    : []
-                  }
-                />
-              ) : (
-                <AnonymousPresenceCard
-                  key={presence.id}
-                  presence={{
-                    id: presence.id,
-                    profile: presence.profile ? {
-                      id: presence.profile.id,
-                      name: presence.profile.name,
-                      avatar_url: presence.profile.avatar_url,
-                      city: presence.profile.city,
-                    } : null,
-                    tribes: presence.tribes,
-                    musicStyles: presence.musicStyles,
-                  }}
-                  animationDelay={(index + 1) * 100}
-                />
-              );
-            })}
-          </div>
+          <VirtualizedPresenceList
+            profiles={filteredProfiles}
+            connectedProfileIds={connectedProfileIds}
+            photosMap={photosMap}
+            getCompatibility={getCompatibility}
+          />
         )}
 
         {/* Footer note */}
