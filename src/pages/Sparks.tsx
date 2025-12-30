@@ -6,6 +6,7 @@ import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import SparkChatItem from "@/components/SparkChatItem";
+import SparksListSkeleton from "@/components/SparksListSkeleton";
 
 const Sparks = () => {
   const navigate = useNavigate();
@@ -55,12 +56,7 @@ const Sparks = () => {
 
         {/* Chats list */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="relative">
-              <Flame className="w-10 h-10 text-primary animate-spark-flame" />
-              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-            </div>
-          </div>
+          <SparksListSkeleton count={4} />
         ) : isError ? (
           <ErrorState
             icon={Flame}

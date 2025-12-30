@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
+import QuedadasListSkeleton from "@/components/QuedadasListSkeleton";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada, useUpdateQuedada, Quedada } from "@/hooks/useQuedadas";
 import { toast } from "sonner";
@@ -257,9 +258,7 @@ const Quedadas = () => {
 
         {/* List */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Calendar className="w-10 h-10 text-accent animate-pulse-soft" />
-          </div>
+          <QuedadasListSkeleton count={3} />
         ) : isError ? (
           <ErrorState
             icon={Calendar}
