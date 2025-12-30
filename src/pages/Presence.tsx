@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
@@ -136,6 +137,12 @@ const Presence = () => {
   const handleRefresh = async () => {
     await refetch();
   };
+
+  const { loadMoreRef } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
@@ -323,15 +330,11 @@ const Presence = () => {
               photosMap={photosMap}
               getCompatibility={getCompatibility}
             />
-            {hasNextPage && (
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={() => fetchNextPage()}
-                  disabled={isFetchingNextPage}
-                  className="px-6 py-2 rounded-full bg-card border border-border/20 text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all font-body text-sm disabled:opacity-50"
-                >
-                  {isFetchingNextPage ? "Cargando..." : "Cargar más"}
-                </button>
+            {/* Infinite scroll trigger */}
+            <div ref={loadMoreRef} className="h-4" />
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
               </div>
             )}
           </>

@@ -3,6 +3,7 @@ import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2 } from "lucide-react
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSparkChats } from "@/hooks/useSparks";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import SparkChatItem from "@/components/SparkChatItem";
@@ -13,6 +14,12 @@ const Sparks = () => {
   const { data: chats, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useSparkChats();
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: chats });
+
+  const { loadMoreRef } = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24 relative overflow-hidden">
@@ -81,22 +88,11 @@ const Sparks = () => {
                 />
               ))}
             </div>
-            {hasNextPage && (
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={() => fetchNextPage()}
-                  disabled={isFetchingNextPage}
-                  className="px-6 py-2.5 rounded-full bg-card/50 border border-border/20 text-muted-foreground hover:text-foreground hover:border-primary/30 transition-all font-body text-sm disabled:opacity-50 flex items-center gap-2"
-                >
-                  {isFetchingNextPage ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Cargando...
-                    </>
-                  ) : (
-                    "Cargar más"
-                  )}
-                </button>
+            {/* Infinite scroll trigger */}
+            <div ref={loadMoreRef} className="h-4" />
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
               </div>
             )}
           </>
