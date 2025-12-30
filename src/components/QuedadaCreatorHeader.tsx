@@ -1,5 +1,6 @@
 import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
+import LazyImage from "@/components/LazyImage";
 
 interface QuedadaCreatorHeaderProps {
   creator: {
@@ -17,7 +18,7 @@ const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => 
     <div className="flex items-start gap-3 mb-4">
       <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-accent/20">
         {creator?.avatar_url ? (
-          <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+          <LazyImage src={creator.avatar_url} alt="" className="w-full h-full object-cover" placeholderClassName="w-full h-full" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center">
             <span className="font-display text-sm text-card-foreground">

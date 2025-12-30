@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import UserModerationModal from "@/components/UserModerationModal";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
+import LazyImage from "@/components/LazyImage";
 
 // Component to show a single ghost message card
 const GhostMessageCard = ({ 
@@ -88,10 +89,11 @@ const GhostMessageCard = ({
         <div className="relative flex-shrink-0">
           <div className={`w-14 h-14 rounded-full overflow-hidden ${!isRevealed ? "blur-md" : ""}`}>
             {message.from_profile?.avatar_url ? (
-              <img 
+              <LazyImage 
                 src={message.from_profile.avatar_url} 
                 alt="Avatar"
                 className="w-full h-full object-cover"
+                placeholderClassName="w-full h-full"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
