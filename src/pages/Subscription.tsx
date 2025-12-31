@@ -1,6 +1,20 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Check, Clock, Crown, ExternalLink, Gift, Loader2, Sparkles, Star, Zap } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Check, 
+  Clock, 
+  Crown, 
+  ExternalLink, 
+  Ghost, 
+  Gift, 
+  Infinity, 
+  Loader2, 
+  MessageCircle, 
+  Sparkles, 
+  Star, 
+  Zap 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,57 +22,83 @@ import { useSubscription, SubscriptionTier } from "@/hooks/useSubscription";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
+interface TierFeature {
+  text: string;
+  highlight?: boolean;
+  icon?: React.ReactNode;
+}
+
 const tierConfig: Record<SubscriptionTier, {
   name: string;
   price: string;
+  priceSubtext?: string;
   description: string;
   icon: React.ReactNode;
-  features: string[];
+  features: TierFeature[];
+  ghostLimit: string;
   color: string;
-  gradient: string;
+  borderColor: string;
+  bgGradient: string;
+  iconBg: string;
 }> = {
   free: {
     name: "Gratis",
     price: "€0",
-    description: "Perfecto para empezar",
-    icon: <Star className="w-6 h-6" />,
+    description: "Perfecto para empezar a explorar",
+    icon: <Star className="w-7 h-7" />,
+    ghostLimit: "5",
     features: [
-      "Ver perfiles en Presencia",
-      "Enviar mensajes fantasma",
-      "Unirse a quedadas",
-      "Chat en quedadas",
+      { text: "5 mensajes fantasma al día", icon: <Ghost className="w-4 h-4" /> },
+      { text: "Ver perfiles en Presencia" },
+      { text: "Unirse a quedadas públicas" },
+      { text: "Chat en quedadas" },
     ],
     color: "text-muted-foreground",
-    gradient: "from-muted/50 to-muted/30",
+    borderColor: "border-border",
+    bgGradient: "from-card to-card",
+    iconBg: "bg-muted",
   },
   plus: {
     name: "Plus",
     price: "€4.99",
-    description: "Para usuarios activos",
-    icon: <Zap className="w-6 h-6" />,
+    priceSubtext: "/mes",
+    description: "Para quienes quieren más conexiones",
+    icon: <Zap className="w-7 h-7" />,
+    ghostLimit: "15",
     features: [
-      "Todo lo del plan Gratis",
-      "Acceso al chatbot IA",
-      "Sugerencias personalizadas",
-      "Soporte prioritario",
+      { text: "15 mensajes fantasma al día", icon: <Ghost className="w-4 h-4" />, highlight: true },
+      { text: "Chatbot IA personalizado", icon: <Sparkles className="w-4 h-4" />, highlight: true },
+      { text: "Ver perfiles en Presencia" },
+      { text: "Unirse a quedadas públicas" },
+      { text: "Chat en quedadas" },
+      { text: "Soporte prioritario" },
     ],
     color: "text-primary",
-    gradient: "from-primary/20 to-primary/5",
+    borderColor: "border-primary/50",
+    bgGradient: "from-primary/10 via-primary/5 to-transparent",
+    iconBg: "bg-primary/20",
   },
   premium: {
     name: "Premium",
     price: "€9.99",
-    description: "La experiencia completa",
-    icon: <Crown className="w-6 h-6" />,
+    priceSubtext: "/mes",
+    description: "La experiencia KIKI completa",
+    icon: <Crown className="w-7 h-7" />,
+    ghostLimit: "∞",
     features: [
-      "Todo lo del plan Plus",
-      "Crear quedadas ilimitadas",
-      "Eliminar quedadas propias",
-      "Badge exclusivo de Premium",
-      "Acceso anticipado a novedades",
+      { text: "Mensajes fantasma ilimitados", icon: <Infinity className="w-4 h-4" />, highlight: true },
+      { text: "Mensajes premium con ✨", icon: <Sparkles className="w-4 h-4" />, highlight: true },
+      { text: "Segunda oportunidad de mensaje", icon: <MessageCircle className="w-4 h-4" />, highlight: true },
+      { text: "Chatbot IA personalizado" },
+      { text: "Crear quedadas ilimitadas" },
+      { text: "Eliminar tus quedadas" },
+      { text: "Badge dorado exclusivo" },
+      { text: "Acceso anticipado a novedades" },
     ],
     color: "text-amber-500",
-    gradient: "from-amber-500/20 to-amber-500/5",
+    borderColor: "border-amber-500/50",
+    bgGradient: "from-amber-500/15 via-amber-500/5 to-transparent",
+    iconBg: "bg-amber-500/20",
   },
 };
 
@@ -87,7 +127,6 @@ const Subscription = () => {
     refetch,
   } = useSubscription();
 
-  // Handle success/cancel from Stripe checkout
   useEffect(() => {
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
@@ -99,7 +138,6 @@ const Subscription = () => {
       });
       checkStripeSubscription();
       refetch();
-      // Clean URL
       window.history.replaceState({}, '', '/subscription');
     } else if (canceled === 'true') {
       toast({
@@ -127,7 +165,7 @@ const Subscription = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -138,7 +176,7 @@ const Subscription = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center gap-4 p-4">
+        <div className="flex items-center gap-4 p-4 max-w-2xl mx-auto">
           <Button
             variant="ghost"
             size="icon"
@@ -149,141 +187,171 @@ const Subscription = () => {
           </Button>
           <div>
             <h1 className="font-display text-xl font-bold text-foreground">
-              Mi Suscripción
+              Planes KIKI
             </h1>
             <p className="text-sm text-muted-foreground">
-              Gestiona tu plan y beneficios
+              Elige cómo quieres conectar
             </p>
           </div>
         </div>
       </div>
 
-      <div className="p-4 pb-24 space-y-6">
+      <div className="p-4 pb-32 max-w-2xl mx-auto space-y-8">
         {/* Trial Banner */}
         {isOnTrial && (
-          <Card className="p-4 border-primary bg-gradient-to-r from-primary/20 to-primary/5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-primary" />
+          <Card className="p-5 border-2 border-primary bg-gradient-to-br from-primary/20 via-primary/10 to-transparent animate-pulse-soft">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-primary/30 flex items-center justify-center shrink-0">
+                <Clock className="w-7 h-7 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-foreground">Periodo de prueba activo</h3>
+                <h3 className="font-display font-bold text-lg text-foreground">Prueba activa</h3>
                 <p className="text-sm text-muted-foreground">
-                  Te quedan <span className="font-bold text-primary">{trialDaysRemaining} días</span> de prueba gratuita
+                  Disfruta <span className="font-bold text-primary">{trialDaysRemaining} días</span> gratis del plan Plus
                 </p>
               </div>
             </div>
           </Card>
         )}
 
-        {/* Current Plan Card */}
-        <Card className={cn(
-          "p-6 border-2 bg-gradient-to-br",
-          currentTierConfig.gradient,
-          tier === "premium" ? "border-amber-500/50" : tier === "plus" ? "border-primary/50" : "border-border"
-        )}>
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "w-12 h-12 rounded-xl flex items-center justify-center",
-                tier === "premium" ? "bg-amber-500/20" : tier === "plus" ? "bg-primary/20" : "bg-muted"
-              )}>
-                <span className={currentTierConfig.color}>
-                  {currentTierConfig.icon}
-                </span>
+        {/* Ghost Messages Comparison */}
+        <div className="space-y-4">
+          <div className="text-center">
+            <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+              Mensajes Fantasma por Plan
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Envía mensajes anónimos y crea conexiones auténticas
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {(["free", "plus", "premium"] as SubscriptionTier[]).map((t) => {
+              const config = tierConfig[t];
+              const isCurrentTier = tier === t;
+              
+              return (
+                <div
+                  key={t}
+                  className={cn(
+                    "relative rounded-2xl p-4 text-center transition-all duration-300",
+                    "border-2",
+                    isCurrentTier ? config.borderColor : "border-border/50",
+                    isCurrentTier && "ring-2 ring-offset-2 ring-offset-background",
+                    t === "premium" && isCurrentTier && "ring-amber-500/50",
+                    t === "plus" && isCurrentTier && "ring-primary/50",
+                    t === "free" && isCurrentTier && "ring-muted-foreground/30"
+                  )}
+                >
+                  {isCurrentTier && (
+                    <Badge 
+                      className={cn(
+                        "absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] px-2",
+                        t === "premium" && "bg-amber-500 hover:bg-amber-500",
+                        t === "plus" && "bg-primary hover:bg-primary",
+                        t === "free" && "bg-muted-foreground hover:bg-muted-foreground"
+                      )}
+                    >
+                      Tu plan
+                    </Badge>
+                  )}
+                  
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center",
+                    config.iconBg
+                  )}>
+                    <Ghost className={cn("w-5 h-5", config.color)} />
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground mb-1">{config.name}</p>
+                  <p className={cn(
+                    "font-display text-3xl font-bold",
+                    config.color
+                  )}>
+                    {config.ghostLimit}
+                  </p>
+                  <p className="text-xs text-muted-foreground">/día</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Premium Features Highlight */}
+        <Card className="overflow-hidden border-2 border-amber-500/30">
+          <div className="bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-transparent p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/30 flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-amber-500" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="font-display text-xl font-bold text-foreground">
-                    Plan {currentTierConfig.name}
-                  </h2>
-                  <Badge variant={tier === "premium" ? "default" : "secondary"} className={cn(
-                    tier === "premium" && "bg-amber-500 hover:bg-amber-600",
-                    isOnTrial && "bg-primary hover:bg-primary/90"
-                  )}>
-                    {isOnTrial ? "Prueba" : "Activo"}
-                  </Badge>
-                </div>
+                <h3 className="font-display text-lg font-bold text-foreground">
+                  Funciones Premium Exclusivas
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  {currentTierConfig.description}
+                  Destaca y conecta de manera especial
                 </p>
               </div>
             </div>
-          </div>
-
-          <div className="space-y-2 mb-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Precio</span>
-              <span className="font-semibold text-foreground">
-                {isOnTrial ? "Gratis (prueba)" : `${currentTierConfig.price}/mes`}
-              </span>
+            
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 backdrop-blur-sm">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-lg">✨</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm text-foreground">Mensaje Premium</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Marca tu mensaje con ✨ para que destaque y la persona sepa que invertiste en conectar
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 backdrop-blur-sm">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <MessageCircle className="w-4 h-4 text-amber-500" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm text-foreground">Segunda Oportunidad</h4>
+                  <p className="text-xs text-muted-foreground">
+                    ¿No te respondieron? Envía un segundo mensaje después de unos días
+                  </p>
+                </div>
+              </div>
             </div>
-            {subscription?.started_at && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {isOnTrial ? "Prueba iniciada" : "Miembro desde"}
-                </span>
-                <span className="text-foreground">
-                  {formatDate(isOnTrial ? subscription.trial_started_at : subscription.started_at)}
-                </span>
-              </div>
-            )}
-            {subscription?.expires_at && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {isOnTrial ? "Prueba termina" : "Próxima renovación"}
-                </span>
-                <span className="text-foreground">
-                  {formatDate(subscription.expires_at)}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="pt-4 border-t border-border/50">
-            <h3 className="text-sm font-medium text-foreground mb-3">
-              Tus beneficios incluyen:
-            </h3>
-            <ul className="space-y-2">
-              {currentTierConfig.features.map((feature, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Check className={cn("w-4 h-4 shrink-0", currentTierConfig.color)} />
-                  {feature}
-                </li>
-              ))}
-            </ul>
           </div>
         </Card>
 
-        {/* Free Trial CTA for Free Users */}
+        {/* Free Trial CTA */}
         {canStartTrial && (
-          <Card className="p-6 border-2 border-dashed border-primary/50 bg-gradient-to-br from-primary/10 to-primary/5">
+          <Card className="p-6 border-2 border-dashed border-primary/50 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                <Gift className="w-8 h-8 text-primary" />
+              <div className="w-20 h-20 rounded-3xl bg-primary/20 flex items-center justify-center mx-auto mb-4 animate-float">
+                <Gift className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="font-display text-lg font-bold text-foreground mb-2">
-                ¡Prueba gratis 7 días!
+              <h3 className="font-display text-xl font-bold text-foreground mb-2">
+                ¡7 días gratis de Plus!
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Accede al chatbot IA y todas las funciones del plan Plus sin compromiso
+              <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
+                Prueba 15 mensajes fantasma al día y el chatbot IA sin compromiso
               </p>
               <Button 
                 onClick={() => startTrial()}
                 disabled={isStartingTrial}
-                className="w-full"
+                size="lg"
+                className="w-full max-w-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
               >
                 {isStartingTrial ? (
-                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 mr-2" />
+                    <Sparkles className="w-5 h-5 mr-2" />
                     Empezar prueba gratuita
                   </>
                 )}
               </Button>
-              <p className="text-xs text-muted-foreground mt-2">
-                Sin tarjeta de crédito · Se cancela automáticamente
+              <p className="text-xs text-muted-foreground mt-3">
+                Sin tarjeta · Se cancela sola
               </p>
             </div>
           </Card>
@@ -291,111 +359,158 @@ const Subscription = () => {
 
         {/* Trial Used Notice */}
         {trialUsed && isFree && (
-          <Card className="p-4 border-muted bg-muted/30">
+          <Card className="p-4 bg-muted/30 border-muted">
             <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-muted-foreground" />
+              <Clock className="w-5 h-5 text-muted-foreground shrink-0" />
               <p className="text-sm text-muted-foreground">
-                Ya has usado tu periodo de prueba gratuito
+                Ya usaste tu prueba gratuita. ¡Suscríbete para seguir disfrutando!
               </p>
             </div>
           </Card>
         )}
 
-        {/* Upgrade Options */}
-        {!isPremium && (
+        {/* Plan Cards */}
+        <div className="space-y-4">
+          <h2 className="font-display text-xl font-bold text-foreground text-center">
+            {isPremium ? "Tu plan actual" : "Elige tu plan"}
+          </h2>
+
           <div className="space-y-4">
-            <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-primary" />
-              {isOnTrial ? "Continúa con un plan" : "Mejora tu experiencia"}
-            </h2>
-
-            {(isFree || isOnTrial) && (
-              <Card 
-                className={cn(
-                  "p-4 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 transition-colors",
-                  !isCreatingCheckout && "cursor-pointer hover:border-primary/50"
-                )}
-                onClick={() => !isCreatingCheckout && handleUpgrade("plus")}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                      {isCreatingCheckout ? (
-                        <Loader2 className="w-5 h-5 text-primary animate-spin" />
-                      ) : (
-                        <Zap className="w-5 h-5 text-primary" />
-                      )}
+            {(["free", "plus", "premium"] as SubscriptionTier[]).map((t) => {
+              const config = tierConfig[t];
+              const isCurrentTier = tier === t;
+              const canUpgrade = (t === "plus" && isFree) || (t === "premium" && !isPremium);
+              
+              return (
+                <Card
+                  key={t}
+                  className={cn(
+                    "relative overflow-hidden transition-all duration-300",
+                    "border-2",
+                    isCurrentTier ? config.borderColor : "border-border/50 hover:border-border",
+                    isCurrentTier && t === "premium" && "shadow-lg shadow-amber-500/10",
+                    isCurrentTier && t === "plus" && "shadow-lg shadow-primary/10"
+                  )}
+                >
+                  {/* Background gradient */}
+                  <div className={cn(
+                    "absolute inset-0 bg-gradient-to-br opacity-60",
+                    config.bgGradient
+                  )} />
+                  
+                  <div className="relative p-5">
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "w-12 h-12 rounded-xl flex items-center justify-center",
+                          config.iconBg
+                        )}>
+                          <span className={config.color}>{config.icon}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-display text-lg font-bold text-foreground">
+                              {config.name}
+                            </h3>
+                            {isCurrentTier && (
+                              <Badge 
+                                variant="secondary"
+                                className={cn(
+                                  "text-[10px]",
+                                  t === "premium" && "bg-amber-500/20 text-amber-600 dark:text-amber-400",
+                                  t === "plus" && "bg-primary/20 text-primary",
+                                  isOnTrial && t === "plus" && "bg-primary text-primary-foreground"
+                                )}
+                              >
+                                {isOnTrial && t === "plus" ? "Prueba" : "Activo"}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {config.description}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-display text-2xl font-bold text-foreground">
+                          {config.price}
+                        </p>
+                        {config.priceSubtext && (
+                          <p className="text-xs text-muted-foreground">{config.priceSubtext}</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Plan Plus</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Acceso al chatbot IA
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-bold text-foreground">€4.99</span>
-                    <span className="text-sm text-muted-foreground">/mes</span>
-                  </div>
-                </div>
-              </Card>
-            )}
 
-            <Card 
-              className={cn(
-                "p-4 border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-amber-500/5 transition-colors",
-                !isCreatingCheckout && "cursor-pointer hover:border-amber-500/50"
-              )}
-              onClick={() => !isCreatingCheckout && handleUpgrade("premium")}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                    {isCreatingCheckout ? (
-                      <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
-                    ) : (
-                      <Crown className="w-5 h-5 text-amber-500" />
+                    {/* Features */}
+                    <ul className="space-y-2 mb-4">
+                      {config.features.map((feature, index) => (
+                        <li 
+                          key={index} 
+                          className={cn(
+                            "flex items-center gap-2 text-sm",
+                            feature.highlight ? "text-foreground font-medium" : "text-muted-foreground"
+                          )}
+                        >
+                          {feature.icon ? (
+                            <span className={cn(
+                              feature.highlight ? config.color : "text-muted-foreground"
+                            )}>
+                              {feature.icon}
+                            </span>
+                          ) : (
+                            <Check className={cn("w-4 h-4 shrink-0", config.color)} />
+                          )}
+                          {feature.text}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Action Button */}
+                    {canUpgrade && (
+                      <Button
+                        onClick={() => handleUpgrade(t as 'plus' | 'premium')}
+                        disabled={isCreatingCheckout}
+                        className={cn(
+                          "w-full font-semibold",
+                          t === "premium" && "bg-amber-500 hover:bg-amber-600 text-white",
+                          t === "plus" && "bg-primary hover:bg-primary/90"
+                        )}
+                      >
+                        {isCreatingCheckout ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            {t === "premium" ? <Crown className="w-4 h-4 mr-2" /> : <Zap className="w-4 h-4 mr-2" />}
+                            {isOnTrial && t === "plus" ? "Mantener Plus" : `Pasar a ${config.name}`}
+                          </>
+                        )}
+                      </Button>
+                    )}
+
+                    {/* Current Plan Info */}
+                    {isCurrentTier && subscription?.expires_at && (
+                      <div className="mt-4 pt-4 border-t border-border/50">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {isOnTrial ? "Prueba termina" : "Próxima renovación"}
+                          </span>
+                          <span className="text-foreground font-medium">
+                            {formatDate(subscription.expires_at)}
+                          </span>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">Plan Premium</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {isPlus || isOnTrial ? "Crea quedadas ilimitadas" : "Chatbot IA + Crear quedadas"}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="font-bold text-foreground">€9.99</span>
-                  <span className="text-sm text-muted-foreground">/mes</span>
-                </div>
-              </div>
-            </Card>
-
-            <p className="text-xs text-center text-muted-foreground">
-              Los pagos se procesarán de forma segura con Stripe
-            </p>
+                </Card>
+              );
+            })}
           </div>
-        )}
-
-        {/* Premium Badge */}
-        {isPremium && (
-          <Card className="p-6 text-center border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-amber-500/5">
-            <Crown className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-            <h3 className="font-display text-lg font-bold text-foreground mb-1">
-              ¡Eres Premium!
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Tienes acceso a todas las funcionalidades de KIKI
-            </p>
-          </Card>
-        )}
+        </div>
 
         {/* Manage Subscription */}
         {subscription?.stripe_subscription_id && (
           <div className="space-y-3">
-            <h2 className="font-display text-lg font-semibold text-foreground">
-              Gestionar suscripción
-            </h2>
             <Button 
               variant="outline" 
               className="w-full"
@@ -407,13 +522,20 @@ const Subscription = () => {
               ) : (
                 <ExternalLink className="w-4 h-4 mr-2" />
               )}
-              Gestionar en Stripe
+              Gestionar suscripción
             </Button>
             <p className="text-xs text-center text-muted-foreground">
-              Actualiza tu método de pago, cambia de plan o cancela tu suscripción
+              Actualiza tu método de pago, cambia de plan o cancela
             </p>
           </div>
         )}
+
+        {/* Security Note */}
+        <div className="text-center pt-4">
+          <p className="text-xs text-muted-foreground">
+            🔒 Pagos seguros con Stripe · Cancela cuando quieras
+          </p>
+        </div>
       </div>
     </div>
   );
