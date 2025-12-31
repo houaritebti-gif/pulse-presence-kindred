@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { 
   ArrowLeft, 
@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSubscription, SubscriptionTier } from "@/hooks/useSubscription";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 
 interface TierFeature {
   text: string;
@@ -127,6 +128,39 @@ const Subscription = () => {
     refetch,
   } = useSubscription();
 
+  // Celebration confetti animation
+  const triggerConfetti = useCallback(() => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        colors: ['#ff69b4', '#ff1493', '#ffd700', '#ff6b6b', '#4ecdc4'],
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        colors: ['#ff69b4', '#ff1493', '#ffd700', '#ff6b6b', '#4ecdc4'],
+      });
+    }, 250);
+  }, []);
+
+  // Handle success/cancel from Stripe checkout
   useEffect(() => {
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
@@ -136,6 +170,7 @@ const Subscription = () => {
         title: "¡Pago completado!",
         description: "Tu suscripción se ha activado correctamente",
       });
+      triggerConfetti();
       checkStripeSubscription();
       refetch();
       window.history.replaceState({}, '', '/subscription');
@@ -147,7 +182,7 @@ const Subscription = () => {
       });
       window.history.replaceState({}, '', '/subscription');
     }
-  }, [searchParams, toast, checkStripeSubscription, refetch]);
+  }, [searchParams, toast, checkStripeSubscription, refetch, triggerConfetti]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null;
@@ -157,6 +192,23 @@ const Subscription = () => {
       year: "numeric",
     });
   };
+
+  // Handle trial start with confetti
+  const handleStartTrial = () => {
+    startTrial();
+  };
+
+  // Watch for successful trial activation
+  useEffect(() => {
+    if (isOnTrial && !isLoading) {
+      // Check if we just activated (session storage flag)
+      const justActivated = sessionStorage.getItem('trial_just_activated');
+      if (justActivated === 'pending') {
+        sessionStorage.setItem('trial_just_activated', 'done');
+        triggerConfetti();
+      }
+    }
+  }, [isOnTrial, isLoading, triggerConfetti]);
 
   const handleUpgrade = (targetTier: 'plus' | 'premium') => {
     createCheckout(targetTier);
@@ -336,7 +388,10 @@ const Subscription = () => {
                 Prueba 15 mensajes fantasma al día y el chatbot IA sin compromiso
               </p>
               <Button 
-                onClick={() => startTrial()}
+                onClick={() => {
+                  sessionStorage.setItem('trial_just_activated', 'pending');
+                  handleStartTrial();
+                }}
                 disabled={isStartingTrial}
                 size="lg"
                 className="w-full max-w-xs bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
