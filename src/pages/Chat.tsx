@@ -7,6 +7,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit, useHasSparkWith, useCanSendSecondChance } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSubscription } from "@/hooks/useSubscription";
+import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { sendPushNotification } from "@/utils/pushNotifications";
 import { toast } from "sonner";
 
@@ -44,6 +45,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [sendAsPremium, setSendAsPremium] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Load target profile and check if already sent
   useEffect(() => {
@@ -104,10 +106,7 @@ const Chat = () => {
 
     // Check daily limit (not needed for second chance)
     if (!isSecondChance && !limitData?.canSend) {
-      const limitText = limitData?.limit === Infinity 
-        ? "" 
-        : ` (límite: ${limitData?.limit}/día)`;
-      toast.error(`Has alcanzado el límite de mensajes hoy${limitText}`);
+      setShowLimitModal(true);
       return;
     }
 
@@ -419,6 +418,12 @@ const Chat = () => {
           </div>
         )}
       </div>
+
+      {/* Ghost Message Limit Modal */}
+      <GhostMessageLimitModal 
+        open={showLimitModal} 
+        onOpenChange={setShowLimitModal} 
+      />
     </main>
   );
 };
