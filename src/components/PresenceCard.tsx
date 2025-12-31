@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar } from "lucide-react";
+import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar, Search } from "lucide-react";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import PremiumBadge from "@/components/PremiumBadge";
@@ -27,6 +27,7 @@ interface PresenceProfile {
   has_tattoos: boolean | null;
   has_piercings: boolean | null;
   alternative_aesthetic: boolean | null;
+  looking_for: string[] | null;
 }
 
 interface PresenceCardProps {
@@ -164,6 +165,17 @@ const PresenceCard = ({ presence, compatibility, animationDelay, photos = [] }: 
               <p className="font-body text-xs text-card-foreground/60 truncate">
                 {presence.musicStyles.slice(0, 3).join(" · ")}
                 {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
+              </p>
+            </div>
+          )}
+
+          {/* Looking for */}
+          {presence.profile?.looking_for && presence.profile.looking_for.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-2">
+              <Search className="w-3 h-3 text-secondary/70 flex-shrink-0" />
+              <p className="font-body text-xs text-card-foreground/60">
+                Busca: {presence.profile.looking_for.slice(0, 2).join(", ")}
+                {presence.profile.looking_for.length > 2 && ` +${presence.profile.looking_for.length - 2}`}
               </p>
             </div>
           )}
