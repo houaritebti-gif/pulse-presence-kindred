@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
@@ -21,6 +21,9 @@ import PresenceFiltersComponent, { PresenceFilters } from "@/components/Presence
 import { PullToRefresh } from "@/components/PullToRefresh";
 import VirtualizedPresenceList from "@/components/VirtualizedPresenceList";
 import PresenceListSkeleton from "@/components/PresenceListSkeleton";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -38,6 +41,8 @@ const Presence = () => {
   const { data: blockedIds } = useBlockedUsers();
   const { data: sentRequests } = useSentConnectionRequests();
   const pendingConnectionCount = usePendingConnectionRequestCount();
+  const { canUseInvisibleMode, isPremium } = useSubscription();
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: presenceList });
 
@@ -74,6 +79,12 @@ const Presence = () => {
   }, [profile, myPresence]);
 
   const toggleVisibility = () => {
+    // If trying to go invisible and not premium, show modal
+    if (myPresence?.visible_to_others && !canUseInvisibleMode) {
+      setShowPremiumModal(true);
+      return;
+    }
+    
     setPresence.mutate({ 
       isPresent: true, 
       visibleToOthers: !myPresence?.visible_to_others 
@@ -316,33 +327,103 @@ const Presence = () => {
               <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                 myPresence?.visible_to_others 
                   ? "bg-primary/20" 
-                  : "bg-muted"
+                  : canUseInvisibleMode ? "bg-amber-500/20" : "bg-muted"
               }`}>
                 {myPresence?.visible_to_others ? (
                   <Radio className="w-5 h-5 text-primary animate-pulse" />
                 ) : (
-                  <EyeOff className="w-5 h-5 text-muted-foreground" />
+                  <EyeOff className={`w-5 h-5 ${canUseInvisibleMode ? "text-amber-500" : "text-muted-foreground"}`} />
                 )}
               </div>
               <div>
-                <p className="font-display font-semibold text-card-foreground">
-                  {myPresence?.visible_to_others ? "Estoy por aquí" : "Modo invisible"}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="font-display font-semibold text-card-foreground">
+                    {myPresence?.visible_to_others ? "Estoy por aquí" : "Modo invisible"}
+                  </p>
+                  {!canUseInvisibleMode && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
+                      <Crown className="w-3 h-3" />
+                      Premium
+                    </span>
+                  )}
+                </div>
                 <p className="font-body text-xs text-muted-foreground">
                   {myPresence?.visible_to_others 
                     ? "Otros pueden verte en la lista" 
-                    : "Solo tú ves, nadie te ve"}
+                    : canUseInvisibleMode 
+                      ? "Solo tú ves, nadie te ve" 
+                      : "Ver sin ser visto — exclusivo Premium"}
                 </p>
               </div>
             </div>
-            <Switch
-              checked={myPresence?.visible_to_others ?? true}
-              onCheckedChange={() => toggleVisibility()}
-              disabled={setPresence.isPending}
-              className="data-[state=checked]:bg-primary"
-            />
+            <div className="flex items-center gap-2">
+              {!canUseInvisibleMode && !myPresence?.visible_to_others === false && (
+                <Lock className="w-4 h-4 text-muted-foreground" />
+              )}
+              <Switch
+                checked={myPresence?.visible_to_others ?? true}
+                onCheckedChange={() => toggleVisibility()}
+                disabled={setPresence.isPending || (!canUseInvisibleMode && !myPresence?.visible_to_others)}
+                className="data-[state=checked]:bg-primary"
+              />
+            </div>
           </div>
         </div>
+
+        {/* Premium Modal for Invisible Mode */}
+        <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader className="text-center">
+              <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-4 shadow-lg shadow-amber-500/30">
+                <EyeOff className="w-8 h-8 text-white" />
+              </div>
+              <DialogTitle className="font-display text-xl">
+                Modo Invisible es Premium
+              </DialogTitle>
+              <DialogDescription className="text-left space-y-3 pt-4">
+                <p className="font-body text-sm text-muted-foreground">
+                  <strong className="text-foreground">La privacidad se paga.</strong> El modo invisible te permite:
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <Eye className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                    <span><strong>Ver sin ser visto</strong> — Observa quién está presente sin aparecer en la lista</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Lock className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                    <span><strong>Control total</strong> — Decides cuándo revelarte y cuándo no</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                    <span><strong>Ventaja social</strong> — Quien observa tiene el poder de elegir</span>
+                  </li>
+                </ul>
+                <p className="text-xs text-muted-foreground/80 pt-2 border-t border-border mt-4">
+                  En un mundo de sobreexposición, la invisibilidad es un lujo.
+                </p>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-2 pt-2">
+              <Button 
+                onClick={() => {
+                  setShowPremiumModal(false);
+                  navigate("/subscription");
+                }}
+                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/25"
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                Desbloquear con Premium
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => setShowPremiumModal(false)}
+                className="text-muted-foreground"
+              >
+                Quizás luego
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Filters */}
         <PresenceFiltersComponent filters={filters} onChange={setFilters} />
