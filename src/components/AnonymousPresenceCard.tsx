@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { UserPlus, Check, Clock, MoreVertical, Flag, Ban, Send, X } from "lucide-react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +17,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
-import { useSendConnectionRequest, useConnectionStatus } from "@/hooks/useConnectionRequests";
 import LazyImage from "@/components/LazyImage";
+import { useProfile } from "@/hooks/useProfile";
+import { useGhostMessageLimit } from "@/hooks/useSparks";
+import { useSparkDetection } from "@/hooks/useSparkDetection";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface AnonymousPresenceCardProps {
   presence: {
@@ -37,32 +43,91 @@ interface AnonymousPresenceCardProps {
   animationDelay: number;
 }
 
-const MAX_MESSAGE_LENGTH = 200;
+// Ghost message options - same as Chat page
+const GHOST_MESSAGES = [
+  "Me gustó tu vibra.",
+  "Algo me dice que conectamos.",
+  "Curiosidad.",
+  "Ojalá coincidamos.",
+];
 
 const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCardProps) => {
-  const sendRequest = useSendConnectionRequest();
-  const { data: connectionStatus } = useConnectionStatus(presence.profile?.id);
+  const { data: myProfile } = useProfile();
+  const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
+  const { checkForNewSpark } = useSparkDetection();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
   const [showMessageDialog, setShowMessageDialog] = useState(false);
-  const [message, setMessage] = useState("");
+  const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [messageSent, setMessageSent] = useState(false);
+  const [sparkCreated, setSparkCreated] = useState(false);
 
   const handleOpenDialog = (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    if (!limitData?.canSend) {
+      toast.error("Has alcanzado el límite de 5 mensajes ghost hoy");
+      return;
+    }
+    
     setShowMessageDialog(true);
   };
 
-  const handleSendRequest = () => {
-    if (presence.profile?.id) {
-      sendRequest.mutate(
-        { toProfileId: presence.profile.id, message: message.trim() || undefined },
-        {
-          onSuccess: () => {
-            setShowMessageDialog(false);
-            setMessage("");
-          },
+  const handleSendGhostMessage = async () => {
+    if (!selectedMessage || !myProfile?.id || !presence.profile?.id) return;
+
+    if (!limitData?.canSend) {
+      toast.error("Has alcanzado el límite de 5 mensajes ghost hoy");
+      return;
+    }
+
+    setSending(true);
+    try {
+      const { error } = await supabase.from("ghost_messages").insert({
+        from_profile_id: myProfile.id,
+        to_profile_id: presence.profile.id,
+        content: selectedMessage,
+      });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("Ya enviaste un mensaje a esta persona");
+          setShowMessageDialog(false);
+        } else {
+          throw error;
         }
-      );
+      } else {
+        setMessageSent(true);
+        refetchLimit();
+        queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
+        
+        // Check for spark after a brief delay
+        setTimeout(async () => {
+          const hasNewSpark = await checkForNewSpark(presence.profile!.id);
+          
+          if (hasNewSpark) {
+            setSparkCreated(true);
+            toast.success("🔥 ¡Chispa mutua! Se ha creado un chat", {
+              action: {
+                label: "Ver chats",
+                onClick: () => navigate("/sparks"),
+              },
+            });
+          } else {
+            toast.success("Mensaje ghost enviado");
+          }
+          
+          setTimeout(() => setShowMessageDialog(false), 1500);
+        }, 500);
+      }
+    } catch (error: any) {
+      toast.error("Error al enviar: " + error.message);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -163,7 +228,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
           </div>
           
           <p className="font-body text-sm text-card-foreground/50 mb-3">
-            Conecta para ver su perfil completo
+            Envía un mensaje ghost para conectar
           </p>
           
           {/* Tribes - visible */}
@@ -180,91 +245,109 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
             </div>
           )}
 
-          {/* Connection button */}
+          {/* Ghost message button */}
           <div className="mt-2">
-            {connectionStatus === "none" && (
-              <Button
-                onClick={handleOpenDialog}
-                disabled={sendRequest.isPending}
-                className="w-full gap-2"
-                variant="default"
-              >
-                <UserPlus className="w-4 h-4" />
-                Solicitar conexión
-              </Button>
-            )}
-            
-            {connectionStatus === "pending_sent" && (
+            {messageSent ? (
               <Button
                 variant="secondary"
                 disabled
                 className="w-full gap-2"
               >
-                <Clock className="w-4 h-4" />
-                Solicitud pendiente
-              </Button>
-            )}
-            
-            {connectionStatus === "connected" && (
-              <Button
-                variant="outline"
-                disabled
-                className="w-full gap-2 text-green-600"
-              >
                 <Check className="w-4 h-4" />
-                Conectados
+                Mensaje enviado
+              </Button>
+            ) : (
+              <Button
+                onClick={handleOpenDialog}
+                disabled={sending || !limitData?.canSend}
+                className="w-full gap-2"
+                variant="default"
+              >
+                <Ghost className="w-4 h-4" />
+                Enviar mensaje ghost
+                {limitData && (
+                  <span className="text-xs opacity-70">
+                    ({limitData.remaining}/5)
+                  </span>
+                )}
               </Button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Connection Request Dialog */}
+      {/* Ghost Message Dialog */}
       <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
         <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
-            <DialogTitle className="font-display">Solicitar conexión</DialogTitle>
+            <DialogTitle className="font-display flex items-center gap-2">
+              <Ghost className="w-5 h-5 text-primary" />
+              Mensaje ghost
+            </DialogTitle>
             <DialogDescription className="font-body">
-              Añade un mensaje opcional para presentarte. El destinatario verá tu ciudad y tribes.
+              Tu mensaje será anónimo hasta que ambos os enviéis un ghost message.
+              Si hay chispa mutua, se abrirá un chat.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-3">
-            <Textarea
-              placeholder="Hola, me gustaría conectar contigo..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value.slice(0, MAX_MESSAGE_LENGTH))}
-              className="min-h-[100px] resize-none font-body"
-              maxLength={MAX_MESSAGE_LENGTH}
-            />
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground font-body">
-                Opcional
-              </span>
-              <span className={`text-xs font-body ${message.length >= MAX_MESSAGE_LENGTH ? "text-destructive" : "text-muted-foreground"}`}>
-                {message.length}/{MAX_MESSAGE_LENGTH}
-              </span>
+          {messageSent ? (
+            <div className="py-8 text-center">
+              {sparkCreated ? (
+                <div className="space-y-3">
+                  <Sparkles className="w-12 h-12 mx-auto text-primary animate-pulse" />
+                  <p className="font-display text-lg text-primary">¡Chispa mutua!</p>
+                  <p className="text-sm text-muted-foreground">Se ha creado un chat</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Check className="w-12 h-12 mx-auto text-green-500" />
+                  <p className="font-display text-lg">Mensaje enviado</p>
+                  <p className="text-sm text-muted-foreground">
+                    Si la otra persona te envía un ghost, ¡chispa!
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            <div className="space-y-3 py-2">
+              {GHOST_MESSAGES.map((msg) => (
+                <button
+                  key={msg}
+                  onClick={() => setSelectedMessage(msg)}
+                  className={cn(
+                    "w-full p-3 rounded-xl text-left font-body transition-all",
+                    "border-2",
+                    selectedMessage === msg
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-card hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {msg}
+                </button>
+              ))}
+            </div>
+          )}
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="ghost"
-              onClick={() => setShowMessageDialog(false)}
-              className="gap-2"
-            >
-              <X className="w-4 h-4" />
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSendRequest}
-              disabled={sendRequest.isPending}
-              className="gap-2"
-            >
-              <Send className="w-4 h-4" />
-              {sendRequest.isPending ? "Enviando..." : "Enviar solicitud"}
-            </Button>
-          </DialogFooter>
+          {!messageSent && (
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="ghost"
+                onClick={() => setShowMessageDialog(false)}
+                className="gap-2"
+              >
+                <X className="w-4 h-4" />
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSendGhostMessage}
+                disabled={!selectedMessage || sending}
+                className="gap-2"
+              >
+                <Send className="w-4 h-4" />
+                {sending ? "Enviando..." : "Enviar"}
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
 
