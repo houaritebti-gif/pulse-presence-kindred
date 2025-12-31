@@ -43,6 +43,7 @@ const Presence = () => {
   const pendingConnectionCount = usePendingConnectionRequestCount();
   const { canUseInvisibleMode, isPremium } = useSubscription();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [invisibleAnimating, setInvisibleAnimating] = useState(false);
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: presenceList });
 
@@ -83,6 +84,12 @@ const Presence = () => {
     if (myPresence?.visible_to_others && !canUseInvisibleMode) {
       setShowPremiumModal(true);
       return;
+    }
+    
+    // Trigger animation when going invisible (Premium user)
+    if (myPresence?.visible_to_others && canUseInvisibleMode) {
+      setInvisibleAnimating(true);
+      setTimeout(() => setInvisibleAnimating(false), 1500);
     }
     
     setPresence.mutate({ 
@@ -321,21 +328,25 @@ const Presence = () => {
         </div>
 
         {/* Presence toggle - prominent */}
-        <div className="bg-card rounded-2xl p-4 mb-8 animate-fade-up border border-border shadow-sm">
+        <div className={`bg-card rounded-2xl p-4 mb-8 animate-fade-up border border-border shadow-sm transition-all duration-300 ${
+          invisibleAnimating ? "animate-invisible-glow" : ""
+        }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                 myPresence?.visible_to_others 
                   ? "bg-primary/20" 
                   : canUseInvisibleMode ? "bg-amber-500/20" : "bg-muted"
-              }`}>
+              } ${invisibleAnimating ? "animate-invisible-activate" : ""}`}>
                 {myPresence?.visible_to_others ? (
                   <Radio className="w-5 h-5 text-primary animate-pulse" />
                 ) : (
-                  <EyeOff className={`w-5 h-5 ${canUseInvisibleMode ? "text-amber-500" : "text-muted-foreground"}`} />
+                  <EyeOff className={`w-5 h-5 transition-all duration-300 ${
+                    canUseInvisibleMode ? "text-amber-500" : "text-muted-foreground"
+                  } ${invisibleAnimating ? "animate-invisible-activate" : ""}`} />
                 )}
               </div>
-              <div>
+              <div className={invisibleAnimating ? "animate-invisible-activate" : ""}>
                 <div className="flex items-center gap-2">
                   <p className="font-display font-semibold text-card-foreground">
                     {myPresence?.visible_to_others ? "Estoy por aquí" : "Modo invisible"}
@@ -344,6 +355,11 @@ const Presence = () => {
                     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
                       <Crown className="w-3 h-3" />
                       Premium
+                    </span>
+                  )}
+                  {invisibleAnimating && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/30 text-amber-500 text-[10px] font-bold animate-pulse">
+                      ✨ Activado
                     </span>
                   )}
                 </div>
@@ -364,7 +380,11 @@ const Presence = () => {
                 checked={myPresence?.visible_to_others ?? true}
                 onCheckedChange={() => toggleVisibility()}
                 disabled={setPresence.isPending || (!canUseInvisibleMode && !myPresence?.visible_to_others)}
-                className="data-[state=checked]:bg-primary"
+                className={`data-[state=checked]:bg-primary transition-all duration-300 ${
+                  !myPresence?.visible_to_others && canUseInvisibleMode 
+                    ? "data-[state=unchecked]:bg-amber-500" 
+                    : ""
+                }`}
               />
             </div>
           </div>
