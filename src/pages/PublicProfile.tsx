@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User } from "lucide-react";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
@@ -38,6 +38,7 @@ const PublicProfile = () => {
   const { data: subscriptionTier } = useUserSubscription(profileId);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
+  const [bioExpanded, setBioExpanded] = useState(false);
 
   // Find shared tribes and music styles
   const compatibility = useMemo(() => {
@@ -196,7 +197,54 @@ const PublicProfile = () => {
           )}
         </div>
 
-        {/* Compatibility indicator */}
+        {/* Bio / Description */}
+        {(profile as any).bio && (
+          <div className="mb-8 animate-fade-up animate-delay-120">
+            <div className="p-4 rounded-2xl bg-card border border-border">
+              <p className={`font-body text-card-foreground ${!bioExpanded && (profile as any).bio.length > 150 ? "line-clamp-3" : ""}`}>
+                {(profile as any).bio}
+              </p>
+              {(profile as any).bio.length > 150 && (
+                <button
+                  onClick={() => setBioExpanded(!bioExpanded)}
+                  className="mt-2 flex items-center gap-1 text-primary font-body text-sm hover:underline"
+                >
+                  {bioExpanded ? (
+                    <>
+                      <ChevronUp className="w-3 h-3" />
+                      Ver menos
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-3 h-3" />
+                      Ver más
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Looking for */}
+        {(profile as any).looking_for && (profile as any).looking_for.length > 0 && (
+          <div className="mb-8 animate-fade-up animate-delay-130">
+            <h2 className="font-display text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              Busca en KIKI
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {((profile as any).looking_for as string[]).map((item: string) => (
+                <span 
+                  key={item}
+                  className="px-3 py-1.5 rounded-full bg-secondary font-body text-sm text-secondary-foreground"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         {compatibility.totalShared > 0 && (
           <div className="mb-8 p-4 rounded-2xl bg-primary/10 border border-primary/20 animate-fade-up animate-delay-150">
             <div className="flex items-center gap-2 mb-3">

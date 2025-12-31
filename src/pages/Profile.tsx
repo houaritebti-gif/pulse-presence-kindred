@@ -16,7 +16,8 @@ import { sendPushNotification } from "@/utils/pushNotifications";
 import { isVibrationEnabled, setVibrationEnabled, isDndEnabled, setDndEnabled, getDndHours, setDndHours } from "@/utils/notificationSound";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
+import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS } from "@/constants/profileOptions";
+import { Textarea } from "@/components/ui/textarea";
 import { useBlockedUsersList, useUnblockUser } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AdvancedSettingsSection from "@/components/AdvancedSettingsSection";
@@ -51,6 +52,11 @@ const Profile = () => {
   const [hasTattoos, setHasTattoos] = useState<boolean | null>(null);
   const [hasPiercings, setHasPiercings] = useState<boolean | null>(null);
   const [alternativeAesthetic, setAlternativeAesthetic] = useState<boolean | null>(null);
+  
+  // Bio and looking for
+  const [bio, setBio] = useState("");
+  const [selectedLookingFor, setSelectedLookingFor] = useState<string[]>([]);
+  const [bioExpanded, setBioExpanded] = useState(false);
   
   // Privacy settings
   const [shareTypingStatus, setShareTypingStatus] = useState<boolean>(true);
@@ -175,6 +181,8 @@ const Profile = () => {
       setHasPiercings(profile.has_piercings);
       setAlternativeAesthetic(profile.alternative_aesthetic);
       setShareTypingStatus(profile.share_typing_status !== false);
+      setBio((profile as any).bio || "");
+      setSelectedLookingFor((profile as any).looking_for || []);
     }
   }, [profile]);
 
@@ -313,7 +321,9 @@ const Profile = () => {
         has_piercings: hasPiercings,
         alternative_aesthetic: alternativeAesthetic,
         share_typing_status: shareTypingStatus,
-      });
+        bio: bio || null,
+        looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
+      } as any);
 
       await updateTribes.mutateAsync({
         profileId: profile.id,
@@ -481,6 +491,70 @@ const Profile = () => {
             onChange={(e) => { setCity(e.target.value); setHasChanges(true); }}
             className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
           />
+        </div>
+
+        {/* Bio / Description */}
+        <div className="mb-10 animate-fade-up animate-delay-250">
+          <h2 className="font-display text-lg font-semibold text-foreground mb-2">
+            Sobre ti
+          </h2>
+          <p className="font-body text-xs text-muted-foreground mb-3">
+            Una breve descripción (opcional)
+          </p>
+          <div className="relative">
+            <Textarea
+              placeholder="Cuéntanos algo sobre ti..."
+              value={bio}
+              onChange={(e) => { 
+                const newBio = e.target.value.slice(0, 300);
+                setBio(newBio); 
+                setHasChanges(true); 
+              }}
+              className="min-h-[100px] resize-none font-body bg-secondary/50 border-border/50 focus:border-primary"
+              maxLength={300}
+            />
+            <div className="flex justify-between items-center mt-2">
+              <span className="text-xs text-muted-foreground font-body">
+                {bio.length > 150 && !bioExpanded ? "Tu bio se mostrará con 'ver más'" : ""}
+              </span>
+              <span className={`text-xs font-body ${bio.length >= 280 ? "text-destructive" : "text-muted-foreground"}`}>
+                {bio.length}/300
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Looking for */}
+        <div className="mb-10 animate-fade-up animate-delay-280">
+          <h2 className="font-display text-lg font-semibold text-foreground mb-2">
+            ¿Qué buscas en KIKI?
+          </h2>
+          <p className="font-body text-xs text-muted-foreground mb-3">
+            Selecciona todas las que apliquen
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {LOOKING_FOR_OPTIONS.map(option => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  setHasChanges(true);
+                  setSelectedLookingFor(prev => 
+                    prev.includes(option.value)
+                      ? prev.filter(v => v !== option.value)
+                      : [...prev, option.value]
+                  );
+                }}
+                className={`px-4 py-2 rounded-full font-body text-sm transition-all flex items-center gap-2 ${
+                  selectedLookingFor.includes(option.value)
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                }`}
+              >
+                <span>{option.emoji}</span>
+                <span>{option.value}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Vibe */}
