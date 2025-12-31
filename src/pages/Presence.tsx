@@ -51,9 +51,10 @@ const Presence = () => {
     return connected;
   }, [sentRequests]);
 
-  // My tribes and music for compatibility calculation
+  // My tribes, music and looking_for for compatibility calculation
   const myTribeNames = useMemo(() => myTribes?.map(t => t.tribe) || [], [myTribes]);
   const myStyleNames = useMemo(() => myMusicStyles?.map(m => m.style) || [], [myMusicStyles]);
+  const myLookingFor = useMemo(() => profile?.looking_for || [], [profile?.looking_for]);
 
   // Filters state persisted to localStorage
   const [filters, setFilters] = useLocalStorage<PresenceFilters>(
@@ -96,11 +97,13 @@ const Presence = () => {
   // Fetch all photos in one query
   const { data: photosMap } = useMultipleProfilePhotos(profileIds);
 
-  // Calculate compatibility for each presence
+  // Calculate compatibility for each presence (tribes + music + looking_for)
   const getCompatibility = (presence: typeof otherProfiles[0]) => {
     const sharedTribes = presence.tribes.filter(t => myTribeNames.includes(t));
     const sharedMusic = presence.musicStyles.filter(m => myStyleNames.includes(m));
-    return sharedTribes.length + sharedMusic.length;
+    const theirLookingFor = presence.profile?.looking_for || [];
+    const sharedLookingFor = theirLookingFor.filter(l => myLookingFor.includes(l));
+    return sharedTribes.length + sharedMusic.length + sharedLookingFor.length;
   };
 
   // Apply filters and sort by compatibility
