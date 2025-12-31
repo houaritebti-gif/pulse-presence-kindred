@@ -2,11 +2,12 @@ import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText } from "lucide-react";
 import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
-import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
+import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS } from "@/constants/profileOptions";
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { playCelebrationSound } from "@/utils/notificationSound";
@@ -19,8 +20,10 @@ const STEPS = [
   { id: 3, title: "Elige tu vibra", subtitle: "¿Cómo te sientes hoy?" },
   { id: 4, title: "Tus tribus", subtitle: "¿Con quién conectas?" },
   { id: 5, title: "Tu música", subtitle: "Hasta 5 estilos" },
-  { id: 6, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
-  { id: 7, title: "Tu foto", subtitle: "Opcional pero recomendado" },
+  { id: 6, title: "¿Qué buscas?", subtitle: "En KIKI" },
+  { id: 7, title: "Sobre ti", subtitle: "Breve descripción (opcional)" },
+  { id: 8, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
+  { id: 9, title: "Tu foto", subtitle: "Opcional pero recomendado" },
 ];
 
 const Onboarding = () => {
@@ -44,6 +47,8 @@ const Onboarding = () => {
   const [hasPiercings, setHasPiercings] = useState(false);
   const [alternativeAesthetic, setAlternativeAesthetic] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [bio, setBio] = useState("");
+  const [selectedLookingFor, setSelectedLookingFor] = useState<string[]>([]);
 
   const currentStep = STEPS.find(s => s.id === step)!;
   const progress = (step / STEPS.length) * 100;
@@ -187,8 +192,10 @@ const Onboarding = () => {
       case 3: return selectedVibe !== null;
       case 4: return true; // Tribes are optional
       case 5: return true; // Music is optional
-      case 6: return true; // Details are optional
-      case 7: return true; // Photo is optional
+      case 6: return true; // Looking for is optional
+      case 7: return true; // Bio is optional
+      case 8: return true; // Details are optional
+      case 9: return true; // Photo is optional
       default: return true;
     }
   };
@@ -256,7 +263,9 @@ const Onboarding = () => {
         has_tattoos: hasTattoos,
         has_piercings: hasPiercings,
         alternative_aesthetic: alternativeAesthetic,
-      });
+        bio: bio || null,
+        looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
+      } as any);
 
       // Update tribes
       if (selectedTribes.length > 0) {
@@ -481,6 +490,97 @@ const Onboarding = () => {
               className="flex items-center gap-2 text-muted-foreground mb-4"
               variants={itemVariants}
             >
+              <Target className="w-4 h-4" />
+              <span className="font-body text-sm">Selecciona todas las que apliquen</span>
+            </motion.div>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {LOOKING_FOR_OPTIONS.map((option) => (
+                <motion.button
+                  key={option.value}
+                  onClick={() => {
+                    setSelectedLookingFor(prev => 
+                      prev.includes(option.value)
+                        ? prev.filter(v => v !== option.value)
+                        : [...prev, option.value]
+                    );
+                  }}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-4 py-3 rounded-2xl font-body text-sm transition-colors flex items-center gap-2 ${
+                    selectedLookingFor.includes(option.value)
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-card-foreground hover:bg-card/80"
+                  }`}
+                >
+                  <span className="text-lg">{option.emoji}</span>
+                  <span>{option.value}</span>
+                </motion.button>
+              ))}
+            </div>
+            <AnimatePresence>
+              {selectedLookingFor.length > 0 && (
+                <motion.p 
+                  className="text-center text-sm text-muted-foreground"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  {selectedLookingFor.length} seleccionadas
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        );
+
+      case 7:
+        return (
+          <motion.div 
+            key="step-7" 
+            className="space-y-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div 
+              className="flex items-center gap-2 text-muted-foreground mb-2"
+              variants={itemVariants}
+            >
+              <FileText className="w-4 h-4" />
+              <span className="font-body text-sm">Máximo 300 caracteres</span>
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <Textarea
+                placeholder="Cuéntanos algo sobre ti..."
+                value={bio}
+                onChange={(e) => setBio(e.target.value.slice(0, 300))}
+                className="min-h-[120px] resize-none font-body text-base bg-card border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/60 rounded-2xl"
+                maxLength={300}
+              />
+              <div className="flex justify-end mt-2">
+                <span className={`text-xs font-body ${bio.length >= 280 ? "text-destructive" : "text-muted-foreground"}`}>
+                  {bio.length}/300
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
+        );
+
+      case 8:
+        return (
+          <motion.div 
+            key="step-8" 
+            className="space-y-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div 
+              className="flex items-center gap-2 text-muted-foreground mb-4"
+              variants={itemVariants}
+            >
               <Sparkles className="w-4 h-4" />
               <span className="font-body text-sm">Comparte lo que quieras</span>
             </motion.div>
@@ -528,10 +628,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 7:
+      case 9:
         return (
           <motion.div 
-            key="step-7" 
+            key="step-9" 
             className="space-y-6 flex flex-col items-center"
             variants={containerVariants}
             initial="hidden"
