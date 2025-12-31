@@ -4,11 +4,18 @@ import PresenceCard from "./PresenceCard";
 import AnonymousPresenceCard from "./AnonymousPresenceCard";
 import { PresenceWithProfile } from "@/hooks/usePresence";
 
+interface CompatibilityBreakdown {
+  tribes: number;
+  music: number;
+  lookingFor: number;
+}
+
 interface VirtualizedPresenceListProps {
   profiles: PresenceWithProfile[];
   connectedProfileIds: Set<string>;
   photosMap: Record<string, { photo_url: string }[]> | undefined;
   getCompatibility: (presence: PresenceWithProfile) => number;
+  getCompatibilityBreakdown: (presence: PresenceWithProfile) => CompatibilityBreakdown;
 }
 
 interface RowData {
@@ -16,6 +23,7 @@ interface RowData {
   connectedProfileIds: Set<string>;
   photosMap: Record<string, { photo_url: string }[]> | undefined;
   getCompatibility: (presence: PresenceWithProfile) => number;
+  getCompatibilityBreakdown: (presence: PresenceWithProfile) => CompatibilityBreakdown;
 }
 
 // Row component for virtualized list - receives index and style from List, plus our custom data
@@ -33,7 +41,7 @@ const Row = ({
   style: CSSProperties; 
   data: RowData;
 }): ReactElement => {
-  const { profiles, connectedProfileIds, photosMap, getCompatibility } = data;
+  const { profiles, connectedProfileIds, photosMap, getCompatibility, getCompatibilityBreakdown } = data;
   const presence = profiles[index];
   const profileId = presence.profile?.id;
   const isConnected = profileId && connectedProfileIds.has(profileId);
@@ -45,6 +53,7 @@ const Row = ({
           key={presence.id}
           presence={presence}
           compatibility={getCompatibility(presence)}
+          compatibilityBreakdown={getCompatibilityBreakdown(presence)}
           animationDelay={0}
           photos={profileId 
             ? photosMap?.[profileId]?.map(p => p.photo_url) || []
@@ -80,6 +89,7 @@ export const VirtualizedPresenceList = memo(({
   connectedProfileIds,
   photosMap,
   getCompatibility,
+  getCompatibilityBreakdown,
 }: VirtualizedPresenceListProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(600);
@@ -105,6 +115,7 @@ export const VirtualizedPresenceList = memo(({
     connectedProfileIds,
     photosMap,
     getCompatibility,
+    getCompatibilityBreakdown,
   };
 
   // For small lists, don't virtualize
@@ -120,6 +131,7 @@ export const VirtualizedPresenceList = memo(({
               key={presence.id}
               presence={presence}
               compatibility={getCompatibility(presence)}
+              compatibilityBreakdown={getCompatibilityBreakdown(presence)}
               animationDelay={(index + 1) * 100}
               photos={profileId 
                 ? photosMap?.[profileId]?.map(p => p.photo_url) || []

@@ -30,6 +30,12 @@ interface PresenceProfile {
   looking_for: string[] | null;
 }
 
+interface CompatibilityBreakdown {
+  tribes: number;
+  music: number;
+  lookingFor: number;
+}
+
 interface PresenceCardProps {
   presence: {
     id: string;
@@ -38,11 +44,12 @@ interface PresenceCardProps {
     musicStyles: string[];
   };
   compatibility: number;
+  compatibilityBreakdown?: CompatibilityBreakdown;
   animationDelay: number;
   photos?: string[];
 }
 
-const PresenceCard = ({ presence, compatibility, animationDelay, photos = [] }: PresenceCardProps) => {
+const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [] }: PresenceCardProps) => {
   const navigate = useNavigate();
   const { data: organizedCount } = useOrganizedQuedadasCount(presence.profile?.id);
   const { data: subscriptionTier } = useUserSubscription(presence.profile?.id);
@@ -83,14 +90,37 @@ const PresenceCard = ({ presence, compatibility, animationDelay, photos = [] }: 
             showDots={true}
           />
           
-          {/* Compatibility badge overlay */}
+          {/* Compatibility badge overlay with tooltip */}
           {compatibility > 0 && (
-            <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/90 backdrop-blur-sm shadow-lg">
-              <Heart className="w-3 h-3 text-primary-foreground fill-primary-foreground" />
-              <span className="text-xs font-bold text-primary-foreground">
-                {compatibility} en común
-              </span>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/90 backdrop-blur-sm shadow-lg cursor-help">
+                    <Heart className="w-3 h-3 text-primary-foreground fill-primary-foreground" />
+                    <span className="text-xs font-bold text-primary-foreground">
+                      {compatibility} en común
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  {compatibilityBreakdown ? (
+                    <div className="space-y-1">
+                      {compatibilityBreakdown.tribes > 0 && (
+                        <p>🏴 {compatibilityBreakdown.tribes} {compatibilityBreakdown.tribes === 1 ? "tribu" : "tribus"}</p>
+                      )}
+                      {compatibilityBreakdown.music > 0 && (
+                        <p>🎵 {compatibilityBreakdown.music} {compatibilityBreakdown.music === 1 ? "estilo" : "estilos"}</p>
+                      )}
+                      {compatibilityBreakdown.lookingFor > 0 && (
+                        <p>🔍 {compatibilityBreakdown.lookingFor} {compatibilityBreakdown.lookingFor === 1 ? "interés" : "intereses"}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p>{compatibility} coincidencias</p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           {/* Options menu overlay */}

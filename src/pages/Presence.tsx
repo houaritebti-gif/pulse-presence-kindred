@@ -106,6 +106,19 @@ const Presence = () => {
     return sharedTribes.length + sharedMusic.length + sharedLookingFor.length;
   };
 
+  // Get compatibility breakdown for tooltip
+  const getCompatibilityBreakdown = (presence: typeof otherProfiles[0]) => {
+    const sharedTribes = presence.tribes.filter(t => myTribeNames.includes(t));
+    const sharedMusic = presence.musicStyles.filter(m => myStyleNames.includes(m));
+    const theirLookingFor = presence.profile?.looking_for || [];
+    const sharedLookingFor = theirLookingFor.filter(l => myLookingFor.includes(l));
+    return {
+      tribes: sharedTribes.length,
+      music: sharedMusic.length,
+      lookingFor: sharedLookingFor.length,
+    };
+  };
+
   // Apply filters and sort by compatibility
   const filteredProfiles = useMemo(() => {
     const filtered = otherProfiles.filter(presence => {
@@ -339,6 +352,7 @@ const Presence = () => {
               connectedProfileIds={connectedProfileIds}
               photosMap={photosMap}
               getCompatibility={getCompatibility}
+              getCompatibilityBreakdown={getCompatibilityBreakdown}
             />
             {/* Infinite scroll trigger */}
             <div ref={loadMoreRef} className="h-4" />
