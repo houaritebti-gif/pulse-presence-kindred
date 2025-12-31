@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Search } from "lucide-react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Search, Music } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -243,6 +243,17 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
                   {tribe}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Music styles */}
+          {presence.musicStyles.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-3">
+              <Music className="w-3 h-3 text-primary/70 flex-shrink-0" />
+              <p className="font-body text-xs text-card-foreground/60 truncate">
+                {presence.musicStyles.slice(0, 3).join(" · ")}
+                {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
+              </p>
             </div>
           )}
 
