@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles } from "lucide-react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,7 @@ interface AnonymousPresenceCardProps {
       avatar_url: string | null;
       city?: string | null;
       vibe?: string | null;
+      looking_for?: string[] | null;
     } | null;
     tribes: string[];
     musicStyles: string[];
@@ -233,7 +234,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
           
           {/* Tribes - visible */}
           {presence.tribes.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4">
+            <div className="flex flex-wrap gap-1.5 mb-3">
               {presence.tribes.map(tribe => (
                 <span 
                   key={tribe}
@@ -242,6 +243,17 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
                   {tribe}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Looking for */}
+          {presence.profile?.looking_for && presence.profile.looking_for.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-4">
+              <Search className="w-3 h-3 text-secondary/70 flex-shrink-0" />
+              <p className="font-body text-xs text-card-foreground/60">
+                Busca: {presence.profile.looking_for.slice(0, 2).join(", ")}
+                {presence.profile.looking_for.length > 2 && ` +${presence.profile.looking_for.length - 2}`}
+              </p>
             </div>
           )}
 
