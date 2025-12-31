@@ -473,7 +473,7 @@ const Subscription = () => {
                         disabled={isCreatingCheckout}
                         className={cn(
                           "w-full font-semibold",
-                          t === "premium" && "bg-amber-500 hover:bg-amber-600 text-white",
+                          t === "premium" && "bg-amber-500 hover:bg-amber-600 text-amber-950 dark:text-amber-50",
                           t === "plus" && "bg-primary hover:bg-primary/90"
                         )}
                       >

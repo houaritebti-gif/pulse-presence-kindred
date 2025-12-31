@@ -112,7 +112,7 @@ const GhostMessageLimitModal = ({ open, onOpenChange }: GhostMessageLimitModalPr
               {/* Recommended badge for free users */}
               {isFree && (
                 <div className="absolute top-0 right-0">
-                  <span className="bg-amber-500 text-white text-[10px] font-medium px-2 py-0.5 rounded-bl-lg">
+                  <span className="bg-amber-500 text-amber-950 dark:text-amber-50 text-[10px] font-medium px-2 py-0.5 rounded-bl-lg">
                     Mejor opción
                   </span>
                 </div>
