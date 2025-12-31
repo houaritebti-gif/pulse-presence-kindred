@@ -5,7 +5,8 @@ import {
   Check, 
   Clock, 
   Crown, 
-  ExternalLink, 
+  ExternalLink,
+  EyeOff,
   Ghost, 
   Gift, 
   Infinity, 
@@ -88,6 +89,7 @@ const tierConfig: Record<SubscriptionTier, {
     ghostLimit: "∞",
     features: [
       { text: "Mensajes fantasma ilimitados", icon: <Infinity className="w-4 h-4" />, highlight: true },
+      { text: "Modo Invisible: ver sin ser visto", icon: <EyeOff className="w-4 h-4" />, highlight: true },
       { text: "Mensajes premium con ✨", icon: <Sparkles className="w-4 h-4" />, highlight: true },
       { text: "Segunda oportunidad de mensaje", icon: <MessageCircle className="w-4 h-4" />, highlight: true },
       { text: "Chatbot IA personalizado" },
@@ -347,6 +349,24 @@ const Subscription = () => {
             </div>
             
             <div className="grid gap-3 sm:grid-cols-2">
+              {/* Modo Invisible - Destacado */}
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 sm:col-span-2">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <EyeOff className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold text-sm text-foreground">Modo Invisible</h4>
+                    <Badge className="bg-amber-500/20 text-amber-500 text-[10px] px-1.5 py-0 hover:bg-amber-500/20">
+                      EXCLUSIVO
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Navega por Presencia sin que nadie sepa que estás conectado. La privacidad se paga.
+                  </p>
+                </div>
+              </div>
+
               <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 backdrop-blur-sm">
                 <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
                   <span className="text-lg">✨</span>
