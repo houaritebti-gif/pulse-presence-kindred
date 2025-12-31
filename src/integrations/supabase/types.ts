@@ -310,11 +310,13 @@ export type Database = {
         Row: {
           alternative_aesthetic: boolean | null
           avatar_url: string | null
+          bio: string | null
           city: string | null
           created_at: string | null
           has_piercings: boolean | null
           has_tattoos: boolean | null
           id: string
+          looking_for: string[] | null
           name: string | null
           share_typing_status: boolean | null
           updated_at: string | null
@@ -324,11 +326,13 @@ export type Database = {
         Insert: {
           alternative_aesthetic?: boolean | null
           avatar_url?: string | null
+          bio?: string | null
           city?: string | null
           created_at?: string | null
           has_piercings?: boolean | null
           has_tattoos?: boolean | null
           id?: string
+          looking_for?: string[] | null
           name?: string | null
           share_typing_status?: boolean | null
           updated_at?: string | null
@@ -338,11 +342,13 @@ export type Database = {
         Update: {
           alternative_aesthetic?: boolean | null
           avatar_url?: string | null
+          bio?: string | null
           city?: string | null
           created_at?: string | null
           has_piercings?: boolean | null
           has_tattoos?: boolean | null
           id?: string
+          looking_for?: string[] | null
           name?: string | null
           share_typing_status?: boolean | null
           updated_at?: string | null

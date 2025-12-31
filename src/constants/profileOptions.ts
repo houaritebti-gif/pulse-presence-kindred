@@ -79,5 +79,16 @@ export const OPTIONAL_DETAILS = [
   { key: "alternative_aesthetic", label: "Estética alternativa" },
 ] as const;
 
+// Looking for options with emojis
+export const LOOKING_FOR_OPTIONS = [
+  { value: "Amistades", emoji: "👯" },
+  { value: "Buenas vibras", emoji: "✨" },
+  { value: "Aventuras", emoji: "🚀" },
+  { value: "Pasar el rato", emoji: "🎉" },
+  { value: "Conexiones reales", emoji: "💫" },
+  { value: "Lo que surja", emoji: "🌊" },
+] as const;
+
 export type MusicStyleType = typeof ALL_MUSIC_STYLES[number];
 export type VibeType = typeof VIBES[number]["value"];
+export type LookingForType = typeof LOOKING_FOR_OPTIONS[number]["value"];

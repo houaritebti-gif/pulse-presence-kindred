@@ -279,7 +279,6 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture={isMobile ? "environment" : undefined}
         onChange={handleFileSelect}
         className="hidden"
       />
