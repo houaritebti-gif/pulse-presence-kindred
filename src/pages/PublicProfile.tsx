@@ -40,18 +40,21 @@ const PublicProfile = () => {
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
   const [bioExpanded, setBioExpanded] = useState(false);
 
-  // Find shared tribes and music styles
+  // Find shared tribes, music styles and looking_for
   const compatibility = useMemo(() => {
     const myTribeNames = myTribes?.map(t => t.tribe) || [];
     const myStyleNames = myMusicStyles?.map(m => m.style) || [];
+    const myLookingFor = myProfile?.looking_for || [];
     
     const sharedTribes = publicProfile?.tribes.filter(t => myTribeNames.includes(t)) || [];
     const sharedMusic = publicProfile?.musicStyles.filter(m => myStyleNames.includes(m)) || [];
+    const theirLookingFor = (publicProfile?.profile as any)?.looking_for || [];
+    const sharedLookingFor = theirLookingFor.filter((l: string) => myLookingFor.includes(l));
     
-    const totalShared = sharedTribes.length + sharedMusic.length;
+    const totalShared = sharedTribes.length + sharedMusic.length + sharedLookingFor.length;
     
-    return { sharedTribes, sharedMusic, totalShared };
-  }, [publicProfile, myTribes, myMusicStyles]);
+    return { sharedTribes, sharedMusic, sharedLookingFor, totalShared };
+  }, [publicProfile, myTribes, myMusicStyles, myProfile?.looking_for]);
 
   if (isLoading) {
     return (
@@ -234,29 +237,41 @@ const PublicProfile = () => {
               Busca en KIKI
             </h2>
             <div className="flex flex-wrap gap-2">
-              {((profile as any).looking_for as string[]).map((item: string) => (
-                <span 
-                  key={item}
-                  className="px-3 py-1.5 rounded-full bg-secondary font-body text-sm text-secondary-foreground"
-                >
-                  {item}
-                </span>
-              ))}
+              {((profile as any).looking_for as string[]).map((item: string) => {
+                const isShared = compatibility.sharedLookingFor.includes(item);
+                return (
+                  <span 
+                    key={item}
+                    className={`px-3 py-1.5 rounded-full font-body text-sm ${
+                      isShared 
+                        ? "bg-secondary/80 text-secondary-foreground ring-1 ring-secondary" 
+                        : "bg-secondary/40 text-secondary-foreground"
+                    }`}
+                  >
+                    {isShared && "✓ "}{item}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}
         {compatibility.totalShared > 0 && (
-          <div className="mb-8 p-4 rounded-2xl bg-primary/10 border border-primary/20 animate-fade-up animate-delay-150">
+          <div className={`mb-8 p-4 rounded-2xl border animate-fade-up animate-delay-150 ${
+            compatibility.totalShared >= 5 
+              ? "bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 border-primary/30" 
+              : "bg-primary/10 border-primary/20"
+          }`}>
             <div className="flex items-center gap-2 mb-3">
-              <Heart className="w-4 h-4 text-primary" />
+              <Heart className={`w-4 h-4 text-primary ${compatibility.totalShared >= 5 ? "animate-pulse" : ""}`} />
               <span className="font-display text-sm font-semibold text-primary">
+                {compatibility.totalShared >= 5 && "✨ "}
                 {compatibility.totalShared} {compatibility.totalShared === 1 ? "cosa en común" : "cosas en común"}
               </span>
             </div>
             
             {compatibility.sharedTribes.length > 0 && (
               <div className="mb-2">
-                <span className="font-body text-xs text-muted-foreground">Tribus compartidas: </span>
+                <span className="font-body text-xs text-muted-foreground">🏴 Tribus: </span>
                 <span className="font-body text-sm text-foreground">
                   {compatibility.sharedTribes.join(", ")}
                 </span>
@@ -264,10 +279,19 @@ const PublicProfile = () => {
             )}
             
             {compatibility.sharedMusic.length > 0 && (
-              <div>
-                <span className="font-body text-xs text-muted-foreground">Música en común: </span>
+              <div className="mb-2">
+                <span className="font-body text-xs text-muted-foreground">🎵 Música: </span>
                 <span className="font-body text-sm text-foreground">
                   {compatibility.sharedMusic.join(", ")}
+                </span>
+              </div>
+            )}
+
+            {compatibility.sharedLookingFor.length > 0 && (
+              <div>
+                <span className="font-body text-xs text-muted-foreground">🔍 Buscan: </span>
+                <span className="font-body text-sm text-foreground">
+                  {compatibility.sharedLookingFor.join(", ")}
                 </span>
               </div>
             )}
