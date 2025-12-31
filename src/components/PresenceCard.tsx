@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar, Search } from "lucide-react";
+import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar, Search, Star } from "lucide-react";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import PremiumBadge from "@/components/PremiumBadge";
@@ -95,16 +95,30 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/90 backdrop-blur-sm shadow-lg cursor-help">
-                    <Heart className="w-3 h-3 text-primary-foreground fill-primary-foreground" />
+                  <div className={`absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-sm shadow-lg cursor-help transition-all ${
+                    compatibility >= 5 
+                      ? "bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-[shimmer_2s_linear_infinite] shadow-primary/40 shadow-lg" 
+                      : "bg-primary/90"
+                  }`}>
+                    {compatibility >= 5 ? (
+                      <Star className="w-3 h-3 text-primary-foreground fill-primary-foreground animate-pulse" />
+                    ) : (
+                      <Heart className="w-3 h-3 text-primary-foreground fill-primary-foreground" />
+                    )}
                     <span className="text-xs font-bold text-primary-foreground">
                       {compatibility} en común
                     </span>
+                    {compatibility >= 5 && (
+                      <Sparkles className="w-3 h-3 text-primary-foreground animate-pulse" />
+                    )}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
                   {compatibilityBreakdown ? (
                     <div className="space-y-1">
+                      {compatibility >= 5 && (
+                        <p className="text-primary font-semibold">✨ ¡Alta compatibilidad!</p>
+                      )}
                       {compatibilityBreakdown.tribes > 0 && (
                         <p>🏴 {compatibilityBreakdown.tribes} {compatibilityBreakdown.tribes === 1 ? "tribu" : "tribus"}</p>
                       )}
