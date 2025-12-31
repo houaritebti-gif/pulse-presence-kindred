@@ -71,18 +71,24 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
     e.stopPropagation();
     
     if (!limitData?.canSend) {
-      toast.error("Has alcanzado el límite de 5 mensajes ghost hoy");
+      const limitText = limitData?.limit === Infinity 
+        ? "" 
+        : ` (límite: ${limitData?.limit}/día)`;
+      toast.error(`Has alcanzado el límite de mensajes ghost hoy${limitText}`);
       return;
     }
     
     setShowMessageDialog(true);
   };
 
-  const handleSendGhostMessage = async () => {
+  const handleSendGhostMessage = async (isPremiumMessage: boolean = false) => {
     if (!selectedMessage || !myProfile?.id || !presence.profile?.id) return;
 
     if (!limitData?.canSend) {
-      toast.error("Has alcanzado el límite de 5 mensajes ghost hoy");
+      const limitText = limitData?.limit === Infinity 
+        ? "" 
+        : ` (límite: ${limitData?.limit}/día)`;
+      toast.error(`Has alcanzado el límite de mensajes ghost hoy${limitText}`);
       return;
     }
 
@@ -92,6 +98,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
         from_profile_id: myProfile.id,
         to_profile_id: presence.profile.id,
         content: selectedMessage,
+        is_premium_message: isPremiumMessage,
       });
 
       if (error) {
@@ -362,7 +369,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
                 Cancelar
               </Button>
               <Button
-                onClick={handleSendGhostMessage}
+                onClick={() => handleSendGhostMessage(false)}
                 disabled={!selectedMessage || sending}
                 className="gap-2"
               >

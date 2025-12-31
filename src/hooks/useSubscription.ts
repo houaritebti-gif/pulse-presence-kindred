@@ -193,6 +193,11 @@ export const useSubscription = () => {
   const canAccessChatbot = effectiveTier === 'plus' || effectiveTier === 'premium';
   const canCreateQuedadas = effectiveTier === 'premium';
   const canDeleteQuedadas = effectiveTier === 'premium';
+  const canSendPremiumMessages = effectiveTier === 'premium';
+  const canSendSecondChance = effectiveTier === 'premium';
+  
+  // Ghost message limits by tier
+  const ghostMessageLimit = effectiveTier === 'premium' ? Infinity : effectiveTier === 'plus' ? 15 : 5;
 
   return {
     subscription,
@@ -217,6 +222,9 @@ export const useSubscription = () => {
     canAccessChatbot,
     canCreateQuedadas,
     canDeleteQuedadas,
+    canSendPremiumMessages,
+    canSendSecondChance,
+    ghostMessageLimit,
     // Tier checks
     isFree: effectiveTier === 'free',
     isPlus: effectiveTier === 'plus',

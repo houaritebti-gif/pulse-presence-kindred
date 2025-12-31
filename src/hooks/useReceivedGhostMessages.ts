@@ -11,6 +11,8 @@ export interface ReceivedGhostMessage {
   content: string;
   created_at: string;
   read_at: string | null;
+  is_premium_message: boolean;
+  is_second_chance: boolean;
   from_profile: {
     id: string;
     name: string | null;
@@ -40,6 +42,8 @@ export const useReceivedGhostMessages = () => {
           content,
           created_at,
           read_at,
+          is_premium_message,
+          is_second_chance,
           from_profile_id,
           from_profile:profiles!ghost_messages_from_profile_id_fkey(
             id, name, vibe, avatar_url, city
@@ -67,6 +71,8 @@ export const useReceivedGhostMessages = () => {
           content: msg.content,
           created_at: msg.created_at || "",
           read_at: msg.read_at,
+          is_premium_message: msg.is_premium_message || false,
+          is_second_chance: msg.is_second_chance || false,
           from_profile: msg.from_profile as ReceivedGhostMessage["from_profile"],
           hasSentBack: sentToIds.has(msg.from_profile_id),
         })) as ReceivedGhostMessage[];

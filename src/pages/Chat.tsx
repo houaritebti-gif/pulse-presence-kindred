@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Send, Flame, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Flame, Sparkles, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
-import { useGhostMessageLimit, useHasSparkWith } from "@/hooks/useSparks";
+import { useGhostMessageLimit, useHasSparkWith, useCanSendSecondChance } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
+import { useSubscription } from "@/hooks/useSubscription";
 import { sendPushNotification } from "@/utils/pushNotifications";
 import { toast } from "sonner";
 
@@ -30,6 +31,8 @@ const Chat = () => {
   const { data: limitData } = useGhostMessageLimit();
   const hasSpark = useHasSparkWith(profileId);
   const { sparkDetected, sparkChatId, checkForNewSpark } = useSparkDetection();
+  const { isPremium, canSendPremiumMessages } = useSubscription();
+  const { data: secondChanceData } = useCanSendSecondChance(profileId);
   
   const [targetProfile, setTargetProfile] = useState<TargetProfile | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
@@ -37,8 +40,10 @@ const Chat = () => {
   const [newSparkCreated, setNewSparkCreated] = useState(false);
   const [newSparkChatId, setNewSparkChatId] = useState<string | null>(null);
   const [alreadySent, setAlreadySent] = useState(false);
+  const [canSendSecondChance, setCanSendSecondChance] = useState(false);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [sendAsPremium, setSendAsPremium] = useState(false);
 
   // Load target profile and check if already sent
   useEffect(() => {
@@ -64,6 +69,11 @@ const Chat = () => {
           .maybeSingle();
 
         setAlreadySent(!!existingMessage);
+        
+        // Update second chance state from the hook data
+        if (existingMessage && secondChanceData?.canSend) {
+          setCanSendSecondChance(true);
+        }
       } catch (error) {
         console.error("Error loading chat:", error);
       } finally {
@@ -89,12 +99,15 @@ const Chat = () => {
     }
   }, [sparkDetected, sparkChatId, sent]);
 
-  const handleSend = async () => {
+  const handleSend = async (isSecondChance: boolean = false, isPremiumMessage: boolean = false) => {
     if (!selectedMessage || !myProfile || !profileId) return;
 
-    // Check daily limit
-    if (!limitData?.canSend) {
-      toast.error("Has alcanzado el límite de 5 mensajes hoy");
+    // Check daily limit (not needed for second chance)
+    if (!isSecondChance && !limitData?.canSend) {
+      const limitText = limitData?.limit === Infinity 
+        ? "" 
+        : ` (límite: ${limitData?.limit}/día)`;
+      toast.error(`Has alcanzado el límite de mensajes hoy${limitText}`);
       return;
     }
 
@@ -104,6 +117,8 @@ const Chat = () => {
         from_profile_id: myProfile.id,
         to_profile_id: profileId,
         content: selectedMessage,
+        is_premium_message: isPremiumMessage,
+        is_second_chance: isSecondChance,
       });
 
       if (error) {
@@ -174,8 +189,8 @@ const Chat = () => {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
-        {alreadySent ? (
-          /* Already sent message */
+        {alreadySent && !canSendSecondChance ? (
+          /* Already sent message - no second chance available */
           <div className="text-center animate-fade-up">
             <div className="w-20 h-20 rounded-full bg-card mx-auto mb-4" />
             <h2 className="font-display text-2xl font-bold text-foreground mb-3">
@@ -186,6 +201,12 @@ const Chat = () => {
               <br />
               Si hay chispa, lo sabrás.
             </p>
+            {isPremium && secondChanceData?.reason === 'too_soon' && (
+              <p className="font-body text-xs text-muted-foreground/60 mb-4">
+                <Crown className="w-3 h-3 inline mr-1" />
+                Podrás enviar una segunda oportunidad en {secondChanceData.daysRemaining} días
+              </p>
+            )}
             <Button 
               variant="kiki-soft" 
               size="lg"
@@ -193,6 +214,59 @@ const Chat = () => {
             >
               Volver a presencia
             </Button>
+          </div>
+        ) : alreadySent && canSendSecondChance ? (
+          /* Second chance available (Premium only) */
+          <div className="text-center animate-fade-up">
+            <div className="relative w-20 h-20 mx-auto mb-4">
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center ring-2 ring-primary/30">
+                <Crown className="w-8 h-8 text-primary" />
+              </div>
+              <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-primary animate-pulse" />
+            </div>
+            <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+              Segunda oportunidad
+            </h2>
+            <p className="font-body text-muted-foreground mb-6 max-w-xs">
+              Como Premium, puedes enviar un segundo mensaje a {targetProfile.name || "esta persona"}.
+              <br />
+              <span className="text-primary text-sm">Esta es tu última oportunidad.</span>
+            </p>
+
+            {/* Message options */}
+            <div className="space-y-3 mb-6">
+              {GHOST_MESSAGES.map((msg) => (
+                <button
+                  key={msg}
+                  onClick={() => setSelectedMessage(msg)}
+                  className={`w-full p-4 rounded-xl font-body text-sm text-left transition-all border ${
+                    selectedMessage === msg
+                      ? "bg-primary/10 border-primary/30 text-foreground"
+                      : "bg-card border-border/30 text-muted-foreground hover:border-primary/20"
+                  }`}
+                >
+                  "{msg}"
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <Button 
+                variant="kiki-soft" 
+                onClick={() => navigate("/presence")}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                variant="kiki" 
+                onClick={() => handleSend(true, true)}
+                disabled={!selectedMessage || sending}
+                className="gap-2"
+              >
+                <Crown className="w-4 h-4" />
+                {sending ? "Enviando..." : "Enviar segunda oportunidad"}
+              </Button>
+            </div>
           </div>
         ) : !sent ? (
           <>
@@ -248,17 +322,32 @@ const Chat = () => {
             <Button 
               variant="kiki" 
               size="lg"
-              onClick={handleSend}
+              onClick={() => handleSend(false, sendAsPremium)}
               disabled={!selectedMessage || sending || !limitData?.canSend}
               className="w-full animate-fade-up animate-delay-300"
             >
               <Send className="w-4 h-4 mr-2" />
-              {sending ? "Enviando..." : "Enviar mensaje fantasma"}
+              {sending ? "Enviando..." : sendAsPremium ? "Enviar mensaje especial ✨" : "Enviar mensaje fantasma"}
             </Button>
+
+            {/* Premium message toggle */}
+            {canSendPremiumMessages && (
+              <button
+                onClick={() => setSendAsPremium(!sendAsPremium)}
+                className={`mt-3 flex items-center justify-center gap-2 font-body text-xs transition-all ${
+                  sendAsPremium 
+                    ? "text-primary" 
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Crown className={`w-3.5 h-3.5 ${sendAsPremium ? "text-primary" : ""}`} />
+                {sendAsPremium ? "Mensaje especial activado ✨" : "Enviar como mensaje especial"}
+              </button>
+            )}
 
             {/* Note */}
             <p className="font-body text-xs text-muted-foreground/60 text-center mt-6 animate-fade-up animate-delay-400">
-              Un mensaje por persona. Máx 5 al día. Sin notificación.
+              Un mensaje por persona. {limitData?.limit === Infinity ? "Ilimitado (Premium)" : `Máx ${limitData?.limit}/día (${limitData?.tier})`}.
             </p>
           </>
         ) : newSparkCreated ? (

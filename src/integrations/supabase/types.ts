@@ -107,6 +107,8 @@ export type Database = {
           created_at: string | null
           from_profile_id: string
           id: string
+          is_premium_message: boolean | null
+          is_second_chance: boolean | null
           read_at: string | null
           to_profile_id: string
         }
@@ -115,6 +117,8 @@ export type Database = {
           created_at?: string | null
           from_profile_id: string
           id?: string
+          is_premium_message?: boolean | null
+          is_second_chance?: boolean | null
           read_at?: string | null
           to_profile_id: string
         }
@@ -123,6 +127,8 @@ export type Database = {
           created_at?: string | null
           from_profile_id?: string
           id?: string
+          is_premium_message?: boolean | null
+          is_second_chance?: boolean | null
           read_at?: string | null
           to_profile_id?: string
         }
