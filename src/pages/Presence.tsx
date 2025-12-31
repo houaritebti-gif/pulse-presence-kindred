@@ -86,10 +86,15 @@ const Presence = () => {
       return;
     }
     
-    // Trigger animation when going invisible (Premium user)
+    // Trigger animation and haptic when going invisible (Premium user)
     if (myPresence?.visible_to_others && canUseInvisibleMode) {
       setInvisibleAnimating(true);
       setTimeout(() => setInvisibleAnimating(false), 1500);
+      
+      // Subtle haptic feedback on mobile
+      if ('vibrate' in navigator) {
+        navigator.vibrate([15, 50, 15]); // Short-pause-short pattern
+      }
     }
     
     setPresence.mutate({ 
