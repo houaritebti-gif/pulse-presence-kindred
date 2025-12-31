@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
@@ -297,7 +298,7 @@ const Presence = () => {
       {/* Main content */}
       <div className="flex-1 max-w-lg mx-auto w-full">
         {/* Hero text */}
-        <div className="text-center mb-12 animate-fade-up">
+        <div className="text-center mb-8 animate-fade-up">
           <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4 leading-tight">
             Hay personas con vibra
             <br />
@@ -306,6 +307,41 @@ const Presence = () => {
           <p className="font-body text-muted-foreground">
             Entra. Observa. Conecta si lo sientes.
           </p>
+        </div>
+
+        {/* Presence toggle - prominent */}
+        <div className="bg-card rounded-2xl p-4 mb-8 animate-fade-up border border-border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                myPresence?.visible_to_others 
+                  ? "bg-primary/20" 
+                  : "bg-muted"
+              }`}>
+                {myPresence?.visible_to_others ? (
+                  <Radio className="w-5 h-5 text-primary animate-pulse" />
+                ) : (
+                  <EyeOff className="w-5 h-5 text-muted-foreground" />
+                )}
+              </div>
+              <div>
+                <p className="font-display font-semibold text-card-foreground">
+                  {myPresence?.visible_to_others ? "Estoy por aquí" : "Modo invisible"}
+                </p>
+                <p className="font-body text-xs text-muted-foreground">
+                  {myPresence?.visible_to_others 
+                    ? "Otros pueden verte en la lista" 
+                    : "Solo tú ves, nadie te ve"}
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={myPresence?.visible_to_others ?? true}
+              onCheckedChange={() => toggleVisibility()}
+              disabled={setPresence.isPending}
+              className="data-[state=checked]:bg-primary"
+            />
+          </div>
         </div>
 
         {/* Filters */}
