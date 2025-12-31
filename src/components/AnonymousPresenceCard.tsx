@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
 import LazyImage from "@/components/LazyImage";
+import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
@@ -62,6 +63,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
   const [showMessageDialog, setShowMessageDialog] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
@@ -71,10 +73,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
     e.stopPropagation();
     
     if (!limitData?.canSend) {
-      const limitText = limitData?.limit === Infinity 
-        ? "" 
-        : ` (límite: ${limitData?.limit}/día)`;
-      toast.error(`Has alcanzado el límite de mensajes ghost hoy${limitText}`);
+      setShowLimitModal(true);
       return;
     }
     
@@ -85,10 +84,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
     if (!selectedMessage || !myProfile?.id || !presence.profile?.id) return;
 
     if (!limitData?.canSend) {
-      const limitText = limitData?.limit === Infinity 
-        ? "" 
-        : ` (límite: ${limitData?.limit}/día)`;
-      toast.error(`Has alcanzado el límite de mensajes ghost hoy${limitText}`);
+      setShowLimitModal(true);
       return;
     }
 
@@ -390,6 +386,12 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
           initialMode={moderationMode}
         />
       )}
+
+      {/* Ghost Message Limit Modal */}
+      <GhostMessageLimitModal 
+        open={showLimitModal} 
+        onOpenChange={setShowLimitModal} 
+      />
     </>
   );
 };
