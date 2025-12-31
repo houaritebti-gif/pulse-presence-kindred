@@ -160,35 +160,19 @@ export const useSetPresence = () => {
     mutationFn: async ({ isPresent, visibleToOthers = true }: { isPresent: boolean; visibleToOthers?: boolean }) => {
       if (!profile) throw new Error("No profile");
 
-      const { data: existing } = await supabase
+      // Use upsert to avoid race conditions with duplicate key errors
+      const { error } = await supabase
         .from("presence")
-        .select("id")
-        .eq("profile_id", profile.id)
-        .maybeSingle();
+        .upsert({
+          profile_id: profile.id,
+          is_present: isPresent,
+          visible_to_others: visibleToOthers,
+          last_pulse: new Date().toISOString(),
+        }, {
+          onConflict: 'profile_id'
+        });
 
-      if (existing) {
-        const { error } = await supabase
-          .from("presence")
-          .update({
-            is_present: isPresent,
-            visible_to_others: visibleToOthers,
-            last_pulse: new Date().toISOString(),
-          })
-          .eq("profile_id", profile.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("presence")
-          .insert({
-            profile_id: profile.id,
-            is_present: isPresent,
-            visible_to_others: visibleToOthers,
-            last_pulse: new Date().toISOString(),
-          });
-
-        if (error) throw error;
-      }
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my_presence", profile?.id] });
