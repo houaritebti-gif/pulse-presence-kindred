@@ -1,14 +1,14 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, GripVertical, Image as ImageIcon, Camera, Sparkles, Crop, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, X, GripVertical, Camera, Sparkles, Crop, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useProfilePhotos, useUploadProfilePhoto, useDeleteProfilePhoto, useReorderProfilePhotos, ProfilePhoto } from "@/hooks/useProfilePhotos";
+import { useProfilePhotos, useUploadProfilePhoto, useDeleteProfilePhoto, useReorderProfilePhotos } from "@/hooks/useProfilePhotos";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import UploadProgress, { UploadPhase } from "./UploadProgress";
 import ImageCropModal from "./ImageCropModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
-
+import { PhotoSourceSelector } from "./PhotoSourceSelector";
 interface ProfilePhotoManagerProps {
   profileId: string;
 }
@@ -34,14 +34,14 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  
+  // Photo source selector state
+  const [photoSourceOpen, setPhotoSourceOpen] = useState(false);
 
   const photoCount = photos?.length || 0;
   const emptySlots = MAX_PHOTOS - photoCount;
 
-  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleFileSelect = useCallback(async (file: File) => {
     // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Solo se permiten imágenes");
@@ -59,11 +59,6 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
     const imageUrl = URL.createObjectURL(file);
     setImageToCrop(imageUrl);
     setCropModalOpen(true);
-
-    // Reset input for future selections
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
   }, []);
 
   // Haptic feedback utility
@@ -134,8 +129,24 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   };
 
   const handleAddClick = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+    if (isMobile) {
+      setPhotoSourceOpen(true);
+    } else {
+      fileInputRef.current?.click();
+    }
+  }, [isMobile]);
+  
+  // Handle file input change for desktop
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+    // Reset input for future selections
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, [handleFileSelect]);
 
   // Mobile reorder - move photo up or down
   const handleMovePhoto = useCallback(async (index: number, direction: 'up' | 'down') => {
@@ -279,7 +290,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        onChange={handleFileSelect}
+        onChange={handleInputChange}
         className="hidden"
       />
 
@@ -441,6 +452,14 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
         <Crop className="w-3.5 h-3.5" />
         <span>Recorta tus fotos antes de subir • Máx. 5MB</span>
       </div>
+
+      {/* Photo Source Selector (mobile only) */}
+      <PhotoSourceSelector
+        open={photoSourceOpen}
+        onOpenChange={setPhotoSourceOpen}
+        onFileSelect={handleFileSelect}
+        title="Añadir foto"
+      />
 
       {/* Crop Modal */}
       {imageToCrop && (
