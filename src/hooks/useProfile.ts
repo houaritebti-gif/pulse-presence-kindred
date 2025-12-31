@@ -9,6 +9,8 @@ export interface Profile {
   avatar_url: string | null;
   vibe: string | null;
   city: string | null;
+  bio: string | null;
+  looking_for: string[] | null;
   has_tattoos: boolean | null;
   has_piercings: boolean | null;
   alternative_aesthetic: boolean | null;
@@ -92,7 +94,7 @@ export const useUpdateProfile = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic" | "share_typing_status">>) => {
+    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "bio" | "looking_for" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic" | "share_typing_status">>) => {
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
