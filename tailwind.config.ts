@@ -115,6 +115,10 @@ export default {
           "50%": { backgroundPosition: "100% 50%" },
           "100%": { backgroundPosition: "0% 50%" },
         },
+        "shimmer": {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -126,6 +130,7 @@ export default {
         "fade-up": "fade-up 0.6s ease-out forwards",
         "glow": "glow 2s ease-in-out infinite",
         "gradient-shift": "gradient-shift 4s ease infinite",
+        "shimmer": "shimmer 2s linear infinite",
       },
     },
   },
