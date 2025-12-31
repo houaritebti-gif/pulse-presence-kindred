@@ -58,7 +58,7 @@ const Presence = () => {
   // Filters state persisted to localStorage
   const [filters, setFilters] = useLocalStorage<PresenceFilters>(
     STORAGE_KEYS.PRESENCE_FILTERS,
-    { tribes: [], musicStyles: [], details: [] }
+    { tribes: [], musicStyles: [], details: [], lookingFor: [] }
   );
 
   // Enable heartbeat
@@ -116,6 +116,13 @@ const Presence = () => {
       if (filters.musicStyles.length > 0) {
         const hasMatchingMusic = presence.musicStyles.some(m => filters.musicStyles.includes(m));
         if (!hasMatchingMusic) return false;
+      }
+
+      // Looking for filter - must have at least one matching option
+      if (filters.lookingFor.length > 0) {
+        const userLookingFor = presence.profile?.looking_for || [];
+        const hasMatchingLookingFor = userLookingFor.some(l => filters.lookingFor.includes(l));
+        if (!hasMatchingLookingFor) return false;
       }
 
       // Details filter - must have all selected details
@@ -293,7 +300,7 @@ const Presence = () => {
           <div className="w-2 h-2 rounded-full bg-primary animate-pulse-soft" />
           <span className="font-body text-sm text-muted-foreground">
             {filteredProfiles.length} {filteredProfiles.length === 1 ? "persona" : "personas"}
-            {filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 
+            {filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0
               ? " (filtrado)" 
               : " presentes"}
           </span>

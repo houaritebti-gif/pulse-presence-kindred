@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Filter, X, ChevronDown, ChevronUp } from "lucide-react";
-import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS } from "@/constants/profileOptions";
+import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS } from "@/constants/profileOptions";
 
 export interface PresenceFilters {
   tribes: string[];
   musicStyles: string[];
   details: string[];
+  lookingFor: string[];
 }
 
 interface PresenceFiltersProps {
@@ -17,8 +18,8 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
-  const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0;
-  const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length;
+  const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0;
+  const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length;
 
   const toggleTribe = (tribe: string) => {
     const newTribes = filters.tribes.includes(tribe)
@@ -41,8 +42,15 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
     onChange({ ...filters, details: newDetails });
   };
 
+  const toggleLookingFor = (option: string) => {
+    const newLookingFor = filters.lookingFor.includes(option)
+      ? filters.lookingFor.filter(l => l !== option)
+      : [...filters.lookingFor, option];
+    onChange({ ...filters, lookingFor: newLookingFor });
+  };
+
   const clearFilters = () => {
-    onChange({ tribes: [], musicStyles: [], details: [] });
+    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [] });
   };
 
   const toggleSection = (section: string) => {
@@ -154,6 +162,40 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
                       ))}
                     </div>
                   </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Looking for section */}
+          <div className="mb-4">
+            <button
+              onClick={() => toggleSection("lookingFor")}
+              className="flex items-center justify-between w-full text-left mb-2"
+            >
+              <span className="font-display text-sm font-semibold text-card-foreground">
+                Busca {filters.lookingFor.length > 0 && `(${filters.lookingFor.length})`}
+              </span>
+              {expandedSection === "lookingFor" ? (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+            {expandedSection === "lookingFor" && (
+              <div className="flex flex-wrap gap-2 animate-fade-up">
+                {LOOKING_FOR_OPTIONS.map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => toggleLookingFor(option.value)}
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                      filters.lookingFor.includes(option.value)
+                        ? "bg-secondary text-secondary-foreground"
+                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                    }`}
+                  >
+                    {option.emoji} {option.value}
+                  </button>
                 ))}
               </div>
             )}
