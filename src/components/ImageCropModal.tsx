@@ -434,7 +434,7 @@ const ImageCropModal = ({
       <DialogContent className={cn(
         "p-0 overflow-hidden flex flex-col",
         isMobile 
-          ? "max-w-[100vw] w-full h-[100dvh] max-h-[100dvh] rounded-none m-0" 
+          ? "!fixed !inset-0 !left-0 !top-0 !translate-x-0 !translate-y-0 max-w-none w-full h-[100dvh] max-h-none rounded-none m-0 border-0" 
           : "max-w-lg max-h-[90vh]"
       )}>
         <DialogHeader className={cn("p-4 pb-2", isMobile && "pt-6")}>
