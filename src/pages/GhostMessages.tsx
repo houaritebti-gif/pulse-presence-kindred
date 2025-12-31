@@ -49,7 +49,11 @@ const GhostMessageCard = ({
 
   return (
     <div
-      className="bg-card rounded-2xl p-5 animate-fade-up border border-border/30 transition-all hover:border-primary/20 relative"
+      className={`bg-card rounded-2xl p-5 animate-fade-up border transition-all hover:border-primary/20 relative ${
+        message.is_premium_message 
+          ? "border-primary/40 ring-1 ring-primary/20 bg-gradient-to-br from-card via-card to-primary/5" 
+          : "border-border/30"
+      }`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* More options menu */}
@@ -123,6 +127,19 @@ const GhostMessageCard = ({
             <h3 className="font-display font-semibold text-card-foreground">
               {isRevealed ? (message.from_profile?.name || "Anónima") : "Alguien misterioso"}
             </h3>
+            {/* Premium message indicator */}
+            {message.is_premium_message && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-semibold animate-pulse-soft">
+                <Sparkles className="w-3 h-3" />
+                Mensaje especial
+              </span>
+            )}
+            {/* Second chance indicator */}
+            {message.is_second_chance && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground text-[10px] font-semibold">
+                Segunda oportunidad
+              </span>
+            )}
             {isRevealed && senderTier === 'premium' && <PremiumBadge size="sm" />}
             {!message.read_at && (
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse-soft" />

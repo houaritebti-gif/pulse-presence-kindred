@@ -379,14 +379,24 @@ export const useExtinguishSpark = () => {
   });
 };
 
-// Check daily ghost message limit (5 per day)
+// Ghost message limits by tier
+const GHOST_MESSAGE_LIMITS = {
+  free: 5,
+  plus: 15,
+  premium: Infinity,
+} as const;
+
+// Check daily ghost message limit based on subscription tier
 export const useGhostMessageLimit = () => {
   const { data: profile } = useProfile();
+  const { tier } = useSubscriptionTier(profile?.id);
+
+  const dailyLimit = GHOST_MESSAGE_LIMITS[tier] || 5;
 
   return useQuery({
-    queryKey: ["ghost_message_count", profile?.id],
+    queryKey: ["ghost_message_count", profile?.id, tier],
     queryFn: async () => {
-      if (!profile) return { count: 0, remaining: 5 };
+      if (!profile) return { count: 0, remaining: dailyLimit, canSend: true, limit: dailyLimit, tier };
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -400,14 +410,95 @@ export const useGhostMessageLimit = () => {
       if (error) throw error;
 
       const sentToday = count || 0;
+      const remaining = dailyLimit === Infinity ? Infinity : Math.max(0, dailyLimit - sentToday);
+      const canSend = dailyLimit === Infinity || sentToday < dailyLimit;
+
       return {
         count: sentToday,
-        remaining: Math.max(0, 5 - sentToday),
-        canSend: sentToday < 5,
+        remaining,
+        canSend,
+        limit: dailyLimit,
+        tier,
       };
     },
     enabled: !!profile?.id,
   });
+};
+
+// Check if user can send a second chance message (Premium only, after 7 days)
+export const useCanSendSecondChance = (targetProfileId: string | undefined) => {
+  const { data: profile } = useProfile();
+  const { tier } = useSubscriptionTier(profile?.id);
+
+  return useQuery({
+    queryKey: ["can_second_chance", profile?.id, targetProfileId],
+    queryFn: async () => {
+      if (!profile?.id || !targetProfileId || tier !== 'premium') {
+        return { canSend: false, reason: tier !== 'premium' ? 'premium_required' : 'no_target' };
+      }
+
+      // Check if we already sent a message to this person
+      const { data: existingMessages, error } = await supabase
+        .from("ghost_messages")
+        .select("id, created_at, is_second_chance")
+        .eq("from_profile_id", profile.id)
+        .eq("to_profile_id", targetProfileId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      if (!existingMessages || existingMessages.length === 0) {
+        return { canSend: false, reason: 'no_first_message' };
+      }
+
+      // Already sent a second chance
+      if (existingMessages.some(m => m.is_second_chance)) {
+        return { canSend: false, reason: 'already_sent_second' };
+      }
+
+      // Check if 7 days have passed since the first message
+      const firstMessage = existingMessages[existingMessages.length - 1];
+      const daysSinceFirst = Math.floor(
+        (Date.now() - new Date(firstMessage.created_at).getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      if (daysSinceFirst < 7) {
+        return { canSend: false, reason: 'too_soon', daysRemaining: 7 - daysSinceFirst };
+      }
+
+      return { canSend: true, reason: null };
+    },
+    enabled: !!profile?.id && !!targetProfileId && tier === 'premium',
+  });
+};
+
+// Helper hook to get subscription tier from profile id
+const useSubscriptionTier = (profileId: string | undefined) => {
+  const query = useQuery({
+    queryKey: ["subscription_tier", profileId],
+    queryFn: async () => {
+      if (!profileId) return 'free' as const;
+
+      const { data, error } = await supabase
+        .from("user_subscriptions")
+        .select("tier, expires_at")
+        .eq("profile_id", profileId)
+        .maybeSingle();
+
+      if (error || !data) return 'free' as const;
+
+      // Check if expired
+      if (data.expires_at && new Date(data.expires_at) < new Date()) {
+        return 'free' as const;
+      }
+
+      return (data.tier || 'free') as 'free' | 'plus' | 'premium';
+    },
+    enabled: !!profileId,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+
+  return { tier: query.data || 'free' as const, isLoading: query.isLoading };
 };
 
 // Mark spark chat as read
