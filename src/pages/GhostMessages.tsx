@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban, User, Zap } from "lucide-react";
+import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban, User, Zap, ChevronDown } from "lucide-react";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
@@ -15,6 +15,7 @@ import UserModerationModal from "@/components/UserModerationModal";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import LazyImage from "@/components/LazyImage";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 // Component to show a single ghost message card
 const GhostMessageCard = ({ 
@@ -320,7 +321,7 @@ const GhostMessages = () => {
             }
           />
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* KIKI Now section - users who want to connect now */}
             {(() => {
               const kikiNowMessages = messages?.filter(m => m.hasKikiNowBoost) || [];
@@ -329,20 +330,23 @@ const GhostMessages = () => {
               return (
                 <>
                   {kikiNowMessages.length > 0 && (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30">
-                          <Zap className="w-4 h-4 text-amber-500" />
-                          <span className="font-display text-sm font-semibold text-amber-500">
-                            Quieren conectar ahora
-                          </span>
-                          <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
-                            {kikiNowMessages.length}
-                          </span>
+                    <Collapsible defaultOpen className="space-y-4">
+                      <CollapsibleTrigger className="w-full">
+                        <div className="flex items-center gap-2 group cursor-pointer">
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 transition-colors group-hover:bg-amber-500/20">
+                            <Zap className="w-4 h-4 text-amber-500" />
+                            <span className="font-display text-sm font-semibold text-amber-500">
+                              Quieren conectar ahora
+                            </span>
+                            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
+                              {kikiNowMessages.length}
+                            </span>
+                            <ChevronDown className="w-4 h-4 text-amber-500 transition-transform group-data-[state=open]:rotate-180" />
+                          </div>
+                          <div className="flex-1 h-px bg-amber-500/20" />
                         </div>
-                        <div className="flex-1 h-px bg-amber-500/20" />
-                      </div>
-                      <div className="space-y-4">
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-4">
                         {kikiNowMessages.map((message, index) => (
                           <GhostMessageCard
                             key={message.id}
@@ -353,16 +357,16 @@ const GhostMessages = () => {
                             navigate={navigate}
                           />
                         ))}
-                      </div>
-                    </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   )}
 
                   {/* Regular messages section */}
                   {otherMessages.length > 0 && (
-                    <div className="space-y-4">
-                      {kikiNowMessages.length > 0 && (
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/30">
+                    <Collapsible defaultOpen className="space-y-4">
+                      <CollapsibleTrigger className="w-full">
+                        <div className="flex items-center gap-2 group cursor-pointer">
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/30 transition-colors group-hover:bg-muted/70">
                             <Ghost className="w-4 h-4 text-muted-foreground" />
                             <span className="font-display text-sm font-semibold text-muted-foreground">
                               Otros mensajes
@@ -370,11 +374,12 @@ const GhostMessages = () => {
                             <span className="ml-1 px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
                               {otherMessages.length}
                             </span>
+                            <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
                           </div>
                           <div className="flex-1 h-px bg-border/30" />
                         </div>
-                      )}
-                      <div className="space-y-4">
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-4">
                         {otherMessages.map((message, index) => (
                           <GhostMessageCard
                             key={message.id}
@@ -385,8 +390,8 @@ const GhostMessages = () => {
                             navigate={navigate}
                           />
                         ))}
-                      </div>
-                    </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   )}
                 </>
               );
