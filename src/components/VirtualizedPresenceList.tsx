@@ -161,8 +161,8 @@ export const VirtualizedPresenceList = memo(({
       <div className="space-y-4 sm:space-y-6">
         {/* Active profiles section (only for paying users) */}
         {canSeeRealtimePresence && activeProfiles.length > 0 && (
-          <>
-            <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-3">
+          <div className="animate-fade-up" style={{ animationDelay: '0ms' }}>
+            <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-3 transition-all duration-300">
               <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500 animate-pulse shadow-sm shadow-green-500/50" />
               <span className="font-display text-sm sm:text-base font-bold text-foreground">
                 Activos ahora
@@ -170,118 +170,140 @@ export const VirtualizedPresenceList = memo(({
               <span className="text-xs sm:text-sm font-body text-green-500 font-semibold">
                 ({activeProfiles.length})
               </span>
-              <div className="flex-1 h-px bg-gradient-to-r from-green-500/40 to-transparent" />
+              <div className="flex-1 h-px bg-gradient-to-r from-green-500/40 to-transparent animate-[fade-in_0.5s_ease-out]" />
             </div>
-            {activeProfiles.map((presence, index) => {
-              const profileId = presence.profile?.id;
-              const isConnected = profileId && connectedProfileIds.has(profileId);
-              const isBoosted = profileId && boostedIds.has(profileId);
-              
-              return isConnected ? (
-                <PresenceCard
-                  key={presence.id}
-                  presence={{
-                    ...presence,
-                    last_pulse: presence.last_pulse,
-                    is_present: presence.is_present,
-                  }}
-                  compatibility={getCompatibility(presence)}
-                  compatibilityBreakdown={getCompatibilityBreakdown(presence)}
-                  animationDelay={(index + 1) * 100}
-                  photos={profileId 
-                    ? photosMap?.[profileId]?.map(p => p.photo_url) || []
-                    : []
-                  }
-                  isBoosted={!!isBoosted}
-                  canSeeRealtimePresence={canSeeRealtimePresence}
-                />
-              ) : (
-                <AnonymousPresenceCard
-                  key={presence.id}
-                  presence={{
-                    id: presence.id,
-                    profile: presence.profile ? {
-                      id: presence.profile.id,
-                      name: presence.profile.name,
-                      avatar_url: presence.profile.avatar_url,
-                      city: presence.profile.city,
-                      looking_for: presence.profile.looking_for,
-                    } : null,
-                    tribes: presence.tribes,
-                    musicStyles: presence.musicStyles,
-                    last_pulse: presence.last_pulse,
-                    is_present: presence.is_present,
-                  }}
-                  animationDelay={(index + 1) * 100}
-                  isBoosted={!!isBoosted}
-                  canSeeRealtimePresence={canSeeRealtimePresence}
-                />
-              );
-            })}
-          </>
+            <div className="space-y-4 sm:space-y-6 mt-2">
+              {activeProfiles.map((presence, index) => {
+                const profileId = presence.profile?.id;
+                const isConnected = profileId && connectedProfileIds.has(profileId);
+                const isBoosted = profileId && boostedIds.has(profileId);
+                
+                return (
+                  <div 
+                    key={presence.id}
+                    className="animate-fade-up transition-all duration-300"
+                    style={{ animationDelay: `${(index + 1) * 80}ms` }}
+                  >
+                    {isConnected ? (
+                      <PresenceCard
+                        presence={{
+                          ...presence,
+                          last_pulse: presence.last_pulse,
+                          is_present: presence.is_present,
+                        }}
+                        compatibility={getCompatibility(presence)}
+                        compatibilityBreakdown={getCompatibilityBreakdown(presence)}
+                        animationDelay={0}
+                        photos={profileId 
+                          ? photosMap?.[profileId]?.map(p => p.photo_url) || []
+                          : []
+                        }
+                        isBoosted={!!isBoosted}
+                        canSeeRealtimePresence={canSeeRealtimePresence}
+                      />
+                    ) : (
+                      <AnonymousPresenceCard
+                        presence={{
+                          id: presence.id,
+                          profile: presence.profile ? {
+                            id: presence.profile.id,
+                            name: presence.profile.name,
+                            avatar_url: presence.profile.avatar_url,
+                            city: presence.profile.city,
+                            looking_for: presence.profile.looking_for,
+                          } : null,
+                          tribes: presence.tribes,
+                          musicStyles: presence.musicStyles,
+                          last_pulse: presence.last_pulse,
+                          is_present: presence.is_present,
+                        }}
+                        animationDelay={0}
+                        isBoosted={!!isBoosted}
+                        canSeeRealtimePresence={canSeeRealtimePresence}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         )}
 
         {/* Separator between active and inactive (only for paying users with both) */}
         {canSeeRealtimePresence && activeProfiles.length > 0 && inactiveProfiles.length > 0 && (
-          <div className="flex items-center gap-2 sm:gap-3 py-3 sm:py-4">
-            <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/70" />
+          <div 
+            className="flex items-center gap-2 sm:gap-3 py-3 sm:py-4 animate-fade-up transition-all duration-500"
+            style={{ animationDelay: `${(activeProfiles.length + 1) * 80}ms` }}
+          >
+            <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground/70 transition-transform duration-300 hover:scale-110" />
             <span className="font-display text-sm sm:text-base font-semibold text-muted-foreground">
               Vistos recientemente
             </span>
             <span className="text-xs sm:text-sm font-body text-muted-foreground/80">
               ({inactiveProfiles.length})
             </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-muted-foreground/30 to-transparent" />
+            <div className="flex-1 h-px bg-gradient-to-r from-muted-foreground/30 to-transparent animate-[fade-in_0.6s_ease-out]" />
           </div>
         )}
 
         {/* Inactive profiles section */}
-        {inactiveProfiles.map((presence, index) => {
-          const profileId = presence.profile?.id;
-          const isConnected = profileId && connectedProfileIds.has(profileId);
-          const isBoosted = profileId && boostedIds.has(profileId);
-          
-          return isConnected ? (
-            <PresenceCard
-              key={presence.id}
-              presence={{
-                ...presence,
-                last_pulse: presence.last_pulse,
-                is_present: presence.is_present,
-              }}
-              compatibility={getCompatibility(presence)}
-              compatibilityBreakdown={getCompatibilityBreakdown(presence)}
-              animationDelay={(activeProfiles.length + index + 1) * 100}
-              photos={profileId 
-                ? photosMap?.[profileId]?.map(p => p.photo_url) || []
-                : []
-              }
-              isBoosted={!!isBoosted}
-              canSeeRealtimePresence={canSeeRealtimePresence}
-            />
-          ) : (
-            <AnonymousPresenceCard
-              key={presence.id}
-              presence={{
-                id: presence.id,
-                profile: presence.profile ? {
-                  id: presence.profile.id,
-                  name: presence.profile.name,
-                  avatar_url: presence.profile.avatar_url,
-                  city: presence.profile.city,
-                  looking_for: presence.profile.looking_for,
-                } : null,
-                tribes: presence.tribes,
-                musicStyles: presence.musicStyles,
-                last_pulse: presence.last_pulse,
-                is_present: presence.is_present,
-              }}
-              animationDelay={(activeProfiles.length + index + 1) * 100}
-              isBoosted={!!isBoosted}
-              canSeeRealtimePresence={canSeeRealtimePresence}
-            />
-          );
-        })}
+        <div className="space-y-4 sm:space-y-6">
+          {inactiveProfiles.map((presence, index) => {
+            const profileId = presence.profile?.id;
+            const isConnected = profileId && connectedProfileIds.has(profileId);
+            const isBoosted = profileId && boostedIds.has(profileId);
+            const baseDelay = canSeeRealtimePresence && activeProfiles.length > 0 
+              ? (activeProfiles.length + 2) * 80 
+              : 0;
+            
+            return (
+              <div 
+                key={presence.id}
+                className="animate-fade-up transition-all duration-300"
+                style={{ animationDelay: `${baseDelay + (index * 80)}ms` }}
+              >
+                {isConnected ? (
+                  <PresenceCard
+                    presence={{
+                      ...presence,
+                      last_pulse: presence.last_pulse,
+                      is_present: presence.is_present,
+                    }}
+                    compatibility={getCompatibility(presence)}
+                    compatibilityBreakdown={getCompatibilityBreakdown(presence)}
+                    animationDelay={0}
+                    photos={profileId 
+                      ? photosMap?.[profileId]?.map(p => p.photo_url) || []
+                      : []
+                    }
+                    isBoosted={!!isBoosted}
+                    canSeeRealtimePresence={canSeeRealtimePresence}
+                  />
+                ) : (
+                  <AnonymousPresenceCard
+                    presence={{
+                      id: presence.id,
+                      profile: presence.profile ? {
+                        id: presence.profile.id,
+                        name: presence.profile.name,
+                        avatar_url: presence.profile.avatar_url,
+                        city: presence.profile.city,
+                        looking_for: presence.profile.looking_for,
+                      } : null,
+                      tribes: presence.tribes,
+                      musicStyles: presence.musicStyles,
+                      last_pulse: presence.last_pulse,
+                      is_present: presence.is_present,
+                    }}
+                    animationDelay={0}
+                    isBoosted={!!isBoosted}
+                    canSeeRealtimePresence={canSeeRealtimePresence}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   }
