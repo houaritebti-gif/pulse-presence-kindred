@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
+import { ShieldCheck } from "lucide-react";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import LazyImage from "@/components/LazyImage";
 
 interface QuedadaCreatorHeaderProps {
@@ -18,6 +20,7 @@ const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => 
   const navigate = useNavigate();
   const { data: creatorTier } = useUserSubscription(creator?.id);
   const { data: organizedCount } = useOrganizedQuedadasCount(creator?.id);
+  const isVerifiedOrganizer = organizedCount && organizedCount > 5;
 
   const handleViewProfile = () => {
     if (creator?.id) {
@@ -52,6 +55,20 @@ const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => 
           >
             por {creator?.name || "Anónima"}
           </button>
+          {isVerifiedOrganizer && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center justify-center text-emerald-500">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  Organizador verificado
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {organizedCount && organizedCount > 0 && (
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
               {organizedCount} {organizedCount === 1 ? 'quedada' : 'quedadas'}
