@@ -16,7 +16,7 @@ import { sendPushNotification } from "@/utils/pushNotifications";
 import { isVibrationEnabled, setVibrationEnabled, isDndEnabled, setDndEnabled, getDndHours, setDndHours } from "@/utils/notificationSound";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS } from "@/constants/profileOptions";
+import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GenderType } from "@/constants/profileOptions";
 import { Textarea } from "@/components/ui/textarea";
 import { useBlockedUsersList, useUnblockUser } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -26,6 +26,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfilePhotoManager from "@/components/ProfilePhotoManager";
 import UploadProgress from "@/components/UploadProgress";
 import ImageCropModal from "@/components/ImageCropModal";
+import GenderSelector from "@/components/GenderSelector";
+import GenderPreferencesSelector from "@/components/GenderPreferencesSelector";
+import { useProfileGenderPreferences, useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -34,9 +37,11 @@ const Profile = () => {
   const { data: tribes } = useProfileTribes(profile?.id);
   const { data: musicStyles } = useProfileMusicStyles(profile?.id);
   const { data: organizedCount } = useOrganizedQuedadasCount(profile?.id);
+  const { data: genderPreferences } = useProfileGenderPreferences(profile?.id);
   const updateProfile = useUpdateProfile();
   const updateTribes = useUpdateTribes();
   const updateMusicStyles = useUpdateMusicStyles();
+  const updateGenderPreferences = useUpdateGenderPreferences();
   const { uploadAvatar, isUploading, uploadPhase, uploadProgress } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,6 +62,10 @@ const Profile = () => {
   const [bio, setBio] = useState("");
   const [selectedLookingFor, setSelectedLookingFor] = useState<string[]>([]);
   const [bioExpanded, setBioExpanded] = useState(false);
+  
+  // Gender
+  const [selectedGender, setSelectedGender] = useState<GenderType | null>(null);
+  const [selectedGenderPreferences, setSelectedGenderPreferences] = useState<GenderType[]>([]);
   
   // Privacy settings
   const [shareTypingStatus, setShareTypingStatus] = useState<boolean>(true);
@@ -183,8 +192,16 @@ const Profile = () => {
       setShareTypingStatus(profile.share_typing_status !== false);
       setBio((profile as any).bio || "");
       setSelectedLookingFor((profile as any).looking_for || []);
+      setSelectedGender((profile as any).gender || null);
     }
   }, [profile]);
+
+  // Load gender preferences
+  useEffect(() => {
+    if (genderPreferences) {
+      setSelectedGenderPreferences(genderPreferences.map(p => p.gender_preference));
+    }
+  }, [genderPreferences]);
 
   // Avatar crop state
   const [cropModalOpen, setCropModalOpen] = useState(false);
@@ -323,6 +340,7 @@ const Profile = () => {
         share_typing_status: shareTypingStatus,
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
+        gender: selectedGender,
       } as any);
 
       await updateTribes.mutateAsync({
@@ -333,6 +351,11 @@ const Profile = () => {
       await updateMusicStyles.mutateAsync({
         profileId: profile.id,
         styles: selectedMusicStyles,
+      });
+
+      await updateGenderPreferences.mutateAsync({
+        profileId: profile.id,
+        preferences: selectedGenderPreferences,
       });
 
       toast.success("Perfil guardado");
@@ -493,7 +516,22 @@ const Profile = () => {
           />
         </div>
 
-        {/* Bio / Description */}
+        {/* Gender Selection */}
+        <div className="mb-10 animate-fade-up animate-delay-220">
+          <GenderSelector
+            value={selectedGender}
+            onChange={(val) => { setSelectedGender(val); setHasChanges(true); }}
+          />
+        </div>
+
+        {/* Gender Preferences - Who to meet */}
+        <div className="mb-10 animate-fade-up animate-delay-230">
+          <GenderPreferencesSelector
+            values={selectedGenderPreferences}
+            onChange={(vals) => { setSelectedGenderPreferences(vals); setHasChanges(true); }}
+          />
+        </div>
+
         <div className="mb-10 animate-fade-up animate-delay-250">
           <h2 className="font-display text-lg font-semibold text-foreground mb-2">
             Sobre ti
