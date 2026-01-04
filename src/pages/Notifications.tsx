@@ -229,25 +229,25 @@ const Notifications = () => {
                           )}
                         </div>
                         {notification.description && (
-                          <p className="font-body text-xs text-card-foreground/60 truncate mt-0.5">
+                          <p className="font-body text-xs text-card-foreground/80 truncate mt-0.5">
                             {notification.description}
                           </p>
                         )}
-                        <p className="font-body text-xs text-card-foreground/40 mt-1">
+                        <p className="font-body text-xs text-card-foreground/60 mt-1">
                           {formatDistanceToNow(new Date(notification.created_at), { 
                             addSuffix: true, 
                             locale: es 
                           })}
                         </p>
                       </div>
-                      <div className="p-2 text-muted-foreground/30 flex-shrink-0">
+                      <div className="p-2 text-card-foreground/40 flex-shrink-0">
                         <Trash2 className="w-4 h-4" />
                       </div>
                     </div>
                   </button>
                 </SwipeableNotification>
               ))}
-              <p className="text-center text-xs text-muted-foreground/50 pt-4 font-body">
+              <p className="text-center text-xs text-muted-foreground pt-4 font-body">
                 ← Eliminar · Marcar leído →
               </p>
             </div>

@@ -64,17 +64,17 @@ const SparkChatItem = ({ chat, animationDelay }: SparkChatItemProps) => {
           </h3>
           {subscriptionTier === 'premium' && <PremiumBadge size="sm" />}
           {chat.last_message_at && (
-            <span className="font-body text-xs text-muted-foreground/50">
+            <span className="font-body text-xs text-card-foreground/60">
               · {formatDistanceToNow(new Date(chat.last_message_at), { addSuffix: false, locale: es })}
             </span>
           )}
         </div>
         {chat.last_message_content ? (
-          <p className="font-body text-sm text-card-foreground/60 truncate">
+          <p className="font-body text-sm text-card-foreground/80 truncate">
             {chat.last_message_content}
           </p>
         ) : (
-          <p className="font-body text-sm text-card-foreground/50">
+          <p className="font-body text-sm text-card-foreground/70">
             Vibra {chat.other_profile?.vibe?.toLowerCase() || "misteriosa"}
           </p>
         )}
