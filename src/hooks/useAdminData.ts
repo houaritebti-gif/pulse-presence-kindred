@@ -276,6 +276,25 @@ export const useUpdateIdentityVerification = () => {
 
         if (profileError) throw profileError;
       }
+
+      // Create notification for the user
+      const notificationData = approved
+        ? {
+            profile_id: profileId,
+            type: "identity_verified",
+            title: "✅ Identidad verificada",
+            description: "Tu verificación de identidad ha sido aprobada por nuestro equipo. Ahora tienes el badge de verificado.",
+            link: "/profile",
+          }
+        : {
+            profile_id: profileId,
+            type: "identity_rejected",
+            title: "❌ Verificación rechazada",
+            description: rejectionReason || "Tu verificación de identidad ha sido rechazada. Puedes intentarlo de nuevo.",
+            link: "/profile",
+          };
+
+      await supabase.from('notifications').insert(notificationData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-identity-verifications'] });

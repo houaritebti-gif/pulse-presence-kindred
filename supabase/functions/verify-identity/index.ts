@@ -191,6 +191,26 @@ If you cannot determine (e.g., face not visible, photo quality too low), respond
         .eq("id", verification.profile_id);
     }
 
+    // Create notification for the user (only for approved or rejected, not manual_review)
+    if (finalStatus === "approved") {
+      await supabase.from("notifications").insert({
+        profile_id: verification.profile_id,
+        type: "identity_verified",
+        title: "✅ Identidad verificada",
+        description: "Tu verificación de identidad ha sido aprobada. Ahora tienes el badge de verificado.",
+        link: "/profile",
+      });
+    } else if (finalStatus === "rejected") {
+      await supabase.from("notifications").insert({
+        profile_id: verification.profile_id,
+        type: "identity_rejected",
+        title: "❌ Verificación rechazada",
+        description: verificationResult.reason || "Tu verificación de identidad no pudo ser completada. Puedes intentarlo de nuevo.",
+        link: "/profile",
+      });
+    }
+    // For manual_review, we don't notify - user sees "en revisión" status
+
     return new Response(
       JSON.stringify({
         success: finalStatus === "approved",
