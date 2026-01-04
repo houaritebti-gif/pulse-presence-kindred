@@ -68,6 +68,8 @@ serve(async (req) => {
         .update({
           status: "rejected",
           rejection_reason: "No tienes foto de perfil. Añade una foto de perfil primero.",
+          ai_confidence: "none",
+          ai_reason: "No profile photo available for comparison",
         })
         .eq("id", verification_id);
 
@@ -78,6 +80,7 @@ serve(async (req) => {
     }
 
     // Use AI to compare photos
+    console.log("Calling AI for photo comparison...");
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -124,11 +127,13 @@ If you cannot determine (e.g., face not visible, photo quality too low), respond
     });
 
     if (!response.ok) {
+      console.error("AI API error:", response.status, await response.text());
       throw new Error("AI verification failed");
     }
 
     const aiResult = await response.json();
     const content = aiResult.choices?.[0]?.message?.content || "";
+    console.log("AI response:", content);
 
     // Parse AI response
     let verificationResult;
@@ -142,23 +147,44 @@ If you cannot determine (e.g., face not visible, photo quality too low), respond
       }
     } catch {
       console.error("Failed to parse AI response:", content);
-      verificationResult = { match: false, reason: "Error al procesar la verificación" };
+      verificationResult = { match: false, confidence: "low", reason: "Error al procesar la verificación" };
     }
 
-    const isApproved = verificationResult.match === true;
+    const confidence = verificationResult.confidence || "low";
+    const isMatch = verificationResult.match === true;
+
+    // Determine final status based on confidence
+    let finalStatus: string;
+    let shouldUpdateProfile = false;
+
+    if (isMatch && confidence === "high") {
+      // High confidence match - auto-approve
+      finalStatus = "approved";
+      shouldUpdateProfile = true;
+    } else if (!isMatch && confidence === "high") {
+      // High confidence no match - auto-reject
+      finalStatus = "rejected";
+    } else {
+      // Low or medium confidence - send to manual review
+      finalStatus = "manual_review";
+    }
+
+    console.log(`Verification result: match=${isMatch}, confidence=${confidence}, status=${finalStatus}`);
 
     // Update verification status
     await supabase
       .from("identity_verifications")
       .update({
-        status: isApproved ? "approved" : "rejected",
-        rejection_reason: isApproved ? null : verificationResult.reason,
-        verified_at: isApproved ? new Date().toISOString() : null,
+        status: finalStatus,
+        rejection_reason: finalStatus === "rejected" ? verificationResult.reason : null,
+        verified_at: finalStatus === "approved" ? new Date().toISOString() : null,
+        ai_confidence: confidence,
+        ai_reason: verificationResult.reason,
       })
       .eq("id", verification_id);
 
     // If approved, update profile
-    if (isApproved) {
+    if (shouldUpdateProfile) {
       await supabase
         .from("profiles")
         .update({ identity_verified: true })
@@ -167,9 +193,11 @@ If you cannot determine (e.g., face not visible, photo quality too low), respond
 
     return new Response(
       JSON.stringify({
-        success: isApproved,
+        success: finalStatus === "approved",
+        status: finalStatus,
         reason: verificationResult.reason,
-        confidence: verificationResult.confidence,
+        confidence: confidence,
+        needsManualReview: finalStatus === "manual_review",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
