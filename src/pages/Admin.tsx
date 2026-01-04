@@ -2,7 +2,7 @@ import { useState } from "react";
 import { 
   Shield, Users, Flag, UserCog, Search, 
   MoreVertical, UserPlus, Trash2, Check, X, Clock, Ban, Plus, 
-  Camera, Eye, ThumbsUp, ThumbsDown
+  Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -39,6 +39,7 @@ import {
   useAdminReports, 
   useAdminUserRoles,
   useAdminIdentityVerifications,
+  useVerificationStats,
   useAddUserRole,
   useRemoveUserRole,
   useUpdateReportStatus,
@@ -63,6 +64,7 @@ const Admin = () => {
   const { data: roles, isLoading: loadingRoles } = useAdminUserRoles();
   const { data: blacklist, isLoading: loadingBlacklist } = useBioBlacklist();
   const { data: verifications, isLoading: loadingVerifications } = useAdminIdentityVerifications();
+  const { data: verificationStats, isLoading: loadingStats } = useVerificationStats();
 
   const addRoleMutation = useAddUserRole();
   const removeRoleMutation = useRemoveUserRole();
@@ -433,8 +435,75 @@ const Admin = () => {
           </TabsContent>
 
           {/* Identity Verifications Tab */}
-          <TabsContent value="verifications" className="space-y-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+          <TabsContent value="verifications" className="space-y-6">
+            {/* Stats Section */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {loadingStats ? (
+                <>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="p-4 bg-card rounded-lg border border-border">
+                      <Skeleton className="h-8 w-16 mb-2" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <div className="p-4 bg-card rounded-lg border border-border">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock className="w-4 h-4 text-amber-500" />
+                      <span className="text-2xl font-bold text-foreground">
+                        {(verificationStats?.pending || 0) + (verificationStats?.manualReview || 0)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Pendientes</p>
+                    <p className="text-xs text-amber-500 mt-1">
+                      +{verificationStats?.pendingLast7Days || 0} esta semana
+                    </p>
+                  </div>
+                  <div className="p-4 bg-card rounded-lg border border-border">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                      <span className="text-2xl font-bold text-foreground">
+                        {verificationStats?.approved || 0}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Aprobadas</p>
+                    <p className="text-xs text-emerald-500 mt-1">
+                      +{verificationStats?.approvedLast7Days || 0} esta semana
+                    </p>
+                  </div>
+                  <div className="p-4 bg-card rounded-lg border border-border">
+                    <div className="flex items-center gap-2 mb-1">
+                      <XCircle className="w-4 h-4 text-destructive" />
+                      <span className="text-2xl font-bold text-foreground">
+                        {verificationStats?.rejected || 0}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Rechazadas</p>
+                    <p className="text-xs text-destructive mt-1">
+                      +{verificationStats?.rejectedLast7Days || 0} esta semana
+                    </p>
+                  </div>
+                  <div className="p-4 bg-card rounded-lg border border-border">
+                    <div className="flex items-center gap-2 mb-1">
+                      <TrendingUp className="w-4 h-4 text-primary" />
+                      <span className="text-2xl font-bold text-foreground">
+                        {verificationStats?.total || 0}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Total solicitudes</p>
+                    <p className="text-xs text-primary mt-1">
+                      {verificationStats?.approved && verificationStats?.total 
+                        ? Math.round((verificationStats.approved / verificationStats.total) * 100)
+                        : 0}% tasa de aprobación
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Camera className="w-4 h-4" />
               <span>Verificaciones pendientes de revisión manual (baja confianza de IA)</span>
             </div>
