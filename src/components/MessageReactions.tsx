@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface ReactionGroup {
   emoji: string;
@@ -37,7 +38,7 @@ export const MessageReactions = ({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             whileTap={{ scale: 0.9 }}
-            onClick={() => !disabled && onToggle(reaction.emoji)}
+            onClick={() => { if (!disabled) { triggerHaptic('selection'); onToggle(reaction.emoji); } }}
             disabled={disabled}
             className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all ${
               reaction.hasReacted
@@ -55,7 +56,7 @@ export const MessageReactions = ({
       <div className="relative">
         <motion.button
           whileTap={{ scale: 0.9 }}
-          onClick={() => setShowPicker(!showPicker)}
+          onClick={() => { triggerHaptic('light'); setShowPicker(!showPicker); }}
           disabled={disabled}
           className={`flex items-center justify-center w-6 h-6 rounded-full bg-secondary/50 border border-border/30 text-muted-foreground hover:text-foreground hover:bg-secondary transition-all ${
             disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
@@ -86,6 +87,7 @@ export const MessageReactions = ({
                       whileHover={{ scale: 1.2 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => {
+                        triggerHaptic('selection');
                         onToggle(emoji);
                         setShowPicker(false);
                       }}
