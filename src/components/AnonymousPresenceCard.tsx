@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Search, Music } from "lucide-react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Search, Music, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +43,7 @@ interface AnonymousPresenceCardProps {
     musicStyles: string[];
   };
   animationDelay: number;
+  isBoosted?: boolean;
 }
 
 // Ghost message options - same as Chat page
@@ -53,7 +54,7 @@ const GHOST_MESSAGES = [
   "Ojalá coincidamos.",
 ];
 
-const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCardProps) => {
+const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false }: AnonymousPresenceCardProps) => {
   const { data: myProfile } = useProfile();
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
@@ -156,7 +157,9 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
   return (
     <>
       <div
-        className="w-full bg-card rounded-2xl overflow-hidden text-left transition-all animate-fade-up"
+        className={`w-full bg-card rounded-2xl overflow-hidden text-left transition-all animate-fade-up ${
+          isBoosted ? "ring-2 ring-primary/50 shadow-lg shadow-primary/20" : ""
+        }`}
         style={{ animationDelay: `${animationDelay}ms` }}
       >
         {/* Blurred photo section */}
@@ -192,6 +195,14 @@ const AnonymousPresenceCard = ({ presence, animationDelay }: AnonymousPresenceCa
               </AvatarFallback>
             </Avatar>
           </div>
+
+          {/* KIKI Now boost badge */}
+          {isBoosted && (
+            <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg animate-pulse z-20">
+              <Zap className="w-3 h-3 text-white fill-white" />
+              <span className="text-[10px] font-bold text-white uppercase tracking-wide">Now</span>
+            </div>
+          )}
 
           {/* Options menu overlay */}
           <div className="absolute top-3 right-3 z-20">

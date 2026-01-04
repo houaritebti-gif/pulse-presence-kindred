@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.ai-chat]
 verify_jwt = false
+
+[functions.create-kiki-now-checkout]
+verify_jwt = true
+
+[functions.verify-kiki-now-boost]
+verify_jwt = true

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar, Search, Star } from "lucide-react";
+import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar, Search, Star, Zap } from "lucide-react";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import PremiumBadge from "@/components/PremiumBadge";
@@ -47,9 +47,10 @@ interface PresenceCardProps {
   compatibilityBreakdown?: CompatibilityBreakdown;
   animationDelay: number;
   photos?: string[];
+  isBoosted?: boolean;
 }
 
-const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [] }: PresenceCardProps) => {
+const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false }: PresenceCardProps) => {
   const navigate = useNavigate();
   const { data: organizedCount } = useOrganizedQuedadasCount(presence.profile?.id);
   const { data: subscriptionTier } = useUserSubscription(presence.profile?.id);
@@ -75,7 +76,9 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
   return (
     <>
       <div
-        className="w-full bg-card rounded-2xl overflow-hidden text-left transition-all hover:scale-[1.02] animate-fade-up cursor-pointer"
+        className={`w-full bg-card rounded-2xl overflow-hidden text-left transition-all hover:scale-[1.02] animate-fade-up cursor-pointer ${
+          isBoosted ? "ring-2 ring-primary/50 shadow-lg shadow-primary/20" : ""
+        }`}
         style={{ animationDelay: `${animationDelay}ms` }}
         onClick={handleCardClick}
       >
@@ -89,6 +92,14 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             showArrows={true}
             showDots={true}
           />
+          
+          {/* KIKI Now boost badge */}
+          {isBoosted && (
+            <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg animate-pulse z-10">
+              <Zap className="w-3 h-3 text-white fill-white" />
+              <span className="text-[10px] font-bold text-white uppercase tracking-wide">Now</span>
+            </div>
+          )}
           
           {/* Compatibility badge overlay with tooltip */}
           {compatibility > 0 && (

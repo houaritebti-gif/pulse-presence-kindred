@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock, Zap } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
@@ -22,11 +22,13 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import VirtualizedPresenceList from "@/components/VirtualizedPresenceList";
 import PresenceListSkeleton from "@/components/PresenceListSkeleton";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useMyKikiNowBoost, useCreateKikiNowCheckout, useVerifyKikiNowBoost, useActiveBoostedProfiles, getBoostTimeRemaining } from "@/hooks/useKikiNow";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 const Presence = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: profile } = useProfile();
   const { data: myTribes } = useProfileTribes(profile?.id);
   const { data: myMusicStyles } = useProfileMusicStyles(profile?.id);
@@ -44,6 +46,48 @@ const Presence = () => {
   const { canUseInvisibleMode, isPremium } = useSubscription();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [invisibleAnimating, setInvisibleAnimating] = useState(false);
+
+  // KIKI Now boost hooks
+  const { data: myBoost } = useMyKikiNowBoost();
+  const { data: activeBoostedData } = useActiveBoostedProfiles();
+  const createCheckout = useCreateKikiNowCheckout();
+  const verifyBoost = useVerifyKikiNowBoost();
+  const [boostTimeRemaining, setBoostTimeRemaining] = useState<{ minutes: number; seconds: number } | null>(null);
+
+  // Handle boost verification on return from Stripe
+  useEffect(() => {
+    const boostStatus = searchParams.get("boost");
+    const sessionId = searchParams.get("session_id");
+    
+    if (boostStatus === "success" && sessionId) {
+      verifyBoost.mutate(sessionId);
+      // Clean up URL params
+      setSearchParams({});
+    } else if (boostStatus === "cancelled") {
+      setSearchParams({});
+    }
+  }, [searchParams]);
+
+  // Update boost countdown
+  useEffect(() => {
+    if (!myBoost?.expires_at) {
+      setBoostTimeRemaining(null);
+      return;
+    }
+
+    const updateTime = () => {
+      const remaining = getBoostTimeRemaining(myBoost.expires_at);
+      if (remaining.expired) {
+        setBoostTimeRemaining(null);
+      } else {
+        setBoostTimeRemaining({ minutes: remaining.minutes, seconds: remaining.seconds });
+      }
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [myBoost?.expires_at]);
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: presenceList });
 
@@ -143,8 +187,10 @@ const Presence = () => {
     };
   };
 
-  // Apply filters and sort by compatibility
+  // Apply filters and sort by boosted first, then compatibility
   const filteredProfiles = useMemo(() => {
+    const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
+    
     const filtered = otherProfiles.filter(presence => {
       // Tribe filter - must have at least one matching tribe
       if (filters.tribes.length > 0) {
@@ -177,9 +223,19 @@ const Presence = () => {
       return true;
     });
 
-    // Sort by compatibility (highest first)
-    return filtered.sort((a, b) => getCompatibility(b) - getCompatibility(a));
-  }, [otherProfiles, filters, myTribeNames, myStyleNames]);
+    // Sort: boosted profiles first, then by compatibility (highest first)
+    return filtered.sort((a, b) => {
+      const aIsBoosted = boostedIds.has(a.profile?.id || "");
+      const bIsBoosted = boostedIds.has(b.profile?.id || "");
+      
+      // Boosted profiles come first
+      if (aIsBoosted && !bIsBoosted) return -1;
+      if (!aIsBoosted && bIsBoosted) return 1;
+      
+      // Within same boost status, sort by compatibility
+      return getCompatibility(b) - getCompatibility(a);
+    });
+  }, [otherProfiles, filters, myTribeNames, myStyleNames, activeBoostedData?.boostedIds]);
 
   const handleRefresh = async () => {
     await refetch();
@@ -395,7 +451,56 @@ const Presence = () => {
           </div>
         </div>
 
-        {/* Premium Modal for Invisible Mode */}
+        {/* KIKI Now Boost Card */}
+        <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-2xl p-4 mb-8 animate-fade-up border border-primary/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                boostTimeRemaining 
+                  ? "bg-gradient-to-br from-primary to-accent animate-pulse" 
+                  : "bg-primary/20"
+              }`}>
+                <Zap className={`w-5 h-5 ${boostTimeRemaining ? "text-white" : "text-primary"}`} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="font-display font-semibold text-card-foreground">
+                    KIKI Now
+                  </p>
+                  {boostTimeRemaining && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold animate-pulse">
+                      🔥 {boostTimeRemaining.minutes}:{boostTimeRemaining.seconds.toString().padStart(2, '0')}
+                    </span>
+                  )}
+                </div>
+                <p className="font-body text-xs text-muted-foreground">
+                  {boostTimeRemaining 
+                    ? "¡Estás destacado! Apareces primero en la lista" 
+                    : "Destaca durante 1 hora — 1,99€"}
+                </p>
+              </div>
+            </div>
+            {!boostTimeRemaining && (
+              <Button
+                variant="kiki"
+                size="sm"
+                onClick={() => createCheckout.mutate()}
+                disabled={createCheckout.isPending}
+                className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+              >
+                {createCheckout.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Zap className="w-4 h-4 mr-1" />
+                    Activar
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
+
         <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
           <DialogContent className="max-w-sm">
             <DialogHeader className="text-center">
