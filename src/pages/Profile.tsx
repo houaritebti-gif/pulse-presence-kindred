@@ -727,7 +727,7 @@ const Profile = () => {
                     {category.styles.map(style => (
                       <button
                         key={style}
-                        onClick={() => toggleMusicStyle(style)}
+                        onClick={() => { triggerHaptic('selection'); toggleMusicStyle(style); }}
                         className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
                           selectedMusicStyles.includes(style)
                             ? "bg-primary text-primary-foreground"
@@ -756,7 +756,7 @@ const Profile = () => {
             {OPTIONAL_DETAILS.map(detail => (
               <button
                 key={detail.key}
-                onClick={() => toggleOptionalDetail(detail.key)}
+                onClick={() => { triggerHaptic('selection'); toggleOptionalDetail(detail.key); }}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
                   getOptionalDetailValue(detail.key) === true
                     ? "bg-primary text-primary-foreground"
