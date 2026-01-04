@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 60 },
@@ -155,55 +156,31 @@ const FAQSection = () => {
   };
 
   return (
-    <section className="py-24 px-6 relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-card/10 to-background" />
-      
-      {/* Animated background elements */}
-      <motion.div 
-        className="absolute top-1/4 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"
-        animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div 
-        className="absolute bottom-1/4 left-10 w-64 h-64 bg-accent/5 rounded-full blur-3xl"
-        animate={{ 
-          scale: [1.2, 1, 1.2],
-          opacity: [0.4, 0.6, 0.4],
-        }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 3 }}
-      />
-
-      <div className="max-w-3xl mx-auto w-full relative z-10">
+    <section className="py-20 px-6 relative overflow-hidden bg-background">
+      <div className="max-w-2xl mx-auto w-full relative z-10">
         {/* Header */}
         <motion.div 
-          className="text-center mb-12" 
+          className="text-center mb-10" 
           initial="hidden" 
           whileInView="visible" 
           viewport={{ once: true, margin: "-100px" }} 
           variants={fadeInUp}
         >
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/20 mb-6"
-            whileHover={{ scale: 1.05 }}
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-5">
             <HelpCircle className="w-4 h-4 text-primary" />
-            <span className="font-body text-sm text-foreground/80">Resolvemos tus dudas</span>
-          </motion.div>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-            Preguntas <span className="gradient-text">frecuentes</span>
+            <span className="font-body text-sm text-foreground">Resolvemos tus dudas</span>
+          </div>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
+            Preguntas frecuentes
           </h2>
-          <p className="font-body text-lg text-muted-foreground max-w-xl mx-auto">
+          <p className="font-body text-base text-muted-foreground max-w-md mx-auto">
             Todo lo que necesitas saber sobre KIKI antes de dar el paso.
           </p>
         </motion.div>
 
         {/* Category Tabs */}
         <motion.div 
-          className="flex flex-wrap justify-center gap-3 mb-10"
+          className="flex flex-wrap justify-center gap-2 mb-8"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -217,39 +194,27 @@ const FAQSection = () => {
               : faqs.filter(f => f.category === category.id).length;
             
             return (
-              <motion.button
+              <button
                 key={category.id}
                 onClick={() => handleCategoryChange(category.id)}
-                className={`
-                  relative flex items-center gap-2 px-5 py-2.5 rounded-full font-body text-sm font-medium
-                  transition-all duration-300 border
-                  ${isActive 
-                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25" 
-                    : "glass-dark border-border/30 text-foreground/70 hover:border-primary/40 hover:text-foreground"
-                  }
-                `}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-full font-body text-sm font-medium transition-all border",
+                  isActive 
+                    ? "bg-primary text-primary-foreground border-primary" 
+                    : "bg-card border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                )}
               >
                 <Icon className="w-4 h-4" />
                 <span>{category.label}</span>
-                <span className={`
-                  text-xs px-2 py-0.5 rounded-full
-                  ${isActive 
+                <span className={cn(
+                  "text-xs px-1.5 py-0.5 rounded-full",
+                  isActive 
                     ? "bg-primary-foreground/20 text-primary-foreground" 
                     : "bg-muted text-muted-foreground"
-                  }
-                `}>
+                )}>
                   {count}
                 </span>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute inset-0 bg-primary rounded-full -z-10"
-                    transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
-                  />
-                )}
-              </motion.button>
+              </button>
             );
           })}
         </motion.div>
@@ -258,107 +223,66 @@ const FAQSection = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeCategory}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer}
+            <Accordion 
+              type="multiple" 
+              value={openItems}
+              onValueChange={setOpenItems}
+              className="space-y-2"
             >
-              <Accordion 
-                type="multiple" 
-                value={openItems}
-                onValueChange={setOpenItems}
-                className="space-y-4"
-              >
-                {filteredFaqs.map((faq, index) => (
-                  <motion.div
-                    key={`${activeCategory}-${index}`}
-                    variants={fadeInUp}
-                    custom={index}
-                  >
-                    <AccordionItem 
-                      value={`item-${index}`}
-                      className="border-none"
-                    >
-                      <motion.div
-                        className="rounded-2xl glass-dark border border-border/20 overflow-hidden transition-all duration-300 hover:border-primary/30"
-                        whileHover={{ scale: 1.01 }}
-                        animate={{
-                          borderColor: openItems.includes(`item-${index}`) 
-                            ? "hsl(var(--primary) / 0.4)" 
-                            : "hsl(var(--border) / 0.2)"
-                        }}
-                      >
-                        <AccordionTrigger className="px-6 py-5 hover:no-underline group">
-                          <div className="flex items-center gap-4 text-left w-full">
-                            <motion.div
-                              className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0"
-                              animate={{
-                                backgroundColor: openItems.includes(`item-${index}`) 
-                                  ? "hsl(var(--primary) / 0.2)" 
-                                  : "hsl(var(--primary) / 0.1)"
-                              }}
-                            >
-                              <motion.div
-                                animate={{ rotate: openItems.includes(`item-${index}`) ? 180 : 0 }}
-                                transition={{ duration: 0.3 }}
-                              >
-                                {openItems.includes(`item-${index}`) ? (
-                                  <Minus className="w-5 h-5 text-primary" />
-                                ) : (
-                                  <Plus className="w-5 h-5 text-primary" />
-                                )}
-                              </motion.div>
-                            </motion.div>
-                            <span className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                              {faq.question}
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-5">
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="pl-14"
-                          >
-                            <p className="font-body text-foreground/70 leading-relaxed">
-                              {faq.answer}
-                            </p>
-                          </motion.div>
-                        </AccordionContent>
-                      </motion.div>
-                    </AccordionItem>
-                  </motion.div>
-                ))}
-              </Accordion>
-            </motion.div>
+              {filteredFaqs.map((faq, index) => (
+                <AccordionItem 
+                  key={`${activeCategory}-${index}`}
+                  value={`item-${index}`}
+                  className="border-none"
+                >
+                  <div className={cn(
+                    "rounded-xl bg-card border transition-colors",
+                    openItems.includes(`item-${index}`) 
+                      ? "border-primary/30" 
+                      : "border-border"
+                  )}>
+                    <AccordionTrigger className="px-4 py-4 hover:no-underline group [&[data-state=open]>div>div:first-child]:bg-primary/20">
+                      <div className="flex items-center gap-3 text-left w-full">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 transition-colors">
+                          {openItems.includes(`item-${index}`) ? (
+                            <Minus className="w-4 h-4 text-primary" />
+                          ) : (
+                            <Plus className="w-4 h-4 text-primary" />
+                          )}
+                        </div>
+                        <span className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {faq.question}
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      <div className="pl-11">
+                        <p className="font-body text-sm text-muted-foreground leading-relaxed">
+                          {faq.answer}
+                        </p>
+                      </div>
+                    </AccordionContent>
+                  </div>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </motion.div>
         </AnimatePresence>
 
         {/* Empty state */}
         {filteredFaqs.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
-          >
+          <div className="text-center py-12">
             <p className="text-muted-foreground">No hay preguntas en esta categoría.</p>
-          </motion.div>
+          </div>
         )}
 
         {/* Bottom CTA */}
-        <motion.div
-          className="mt-12 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-        >
+        <div className="mt-10 text-center">
           <p className="font-body text-muted-foreground">
             ¿Tienes más preguntas?{" "}
             <a 
@@ -368,7 +292,7 @@ const FAQSection = () => {
               Escríbenos
             </a>
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
