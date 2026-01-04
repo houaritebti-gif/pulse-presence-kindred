@@ -140,6 +140,58 @@ export const useAdminUserRoles = () => {
   });
 };
 
+interface VerificationStats {
+  total: number;
+  pending: number;
+  manualReview: number;
+  approved: number;
+  rejected: number;
+  approvedLast7Days: number;
+  rejectedLast7Days: number;
+  pendingLast7Days: number;
+}
+
+// Fetch verification statistics
+export const useVerificationStats = () => {
+  return useQuery({
+    queryKey: ['admin-verification-stats'],
+    queryFn: async (): Promise<VerificationStats> => {
+      const { data, error } = await supabase
+        .from('identity_verifications')
+        .select('status, created_at, verified_at');
+
+      if (error) throw error;
+
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      const stats: VerificationStats = {
+        total: data?.length || 0,
+        pending: data?.filter(v => v.status === 'pending').length || 0,
+        manualReview: data?.filter(v => v.status === 'manual_review').length || 0,
+        approved: data?.filter(v => v.status === 'approved').length || 0,
+        rejected: data?.filter(v => v.status === 'rejected').length || 0,
+        approvedLast7Days: data?.filter(v => 
+          v.status === 'approved' && 
+          v.verified_at && 
+          new Date(v.verified_at) >= sevenDaysAgo
+        ).length || 0,
+        rejectedLast7Days: data?.filter(v => 
+          v.status === 'rejected' && 
+          new Date(v.created_at) >= sevenDaysAgo
+        ).length || 0,
+        pendingLast7Days: data?.filter(v => 
+          (v.status === 'pending' || v.status === 'manual_review') && 
+          new Date(v.created_at) >= sevenDaysAgo
+        ).length || 0,
+      };
+
+      return stats;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
 // Fetch identity verifications pending manual review
 export const useAdminIdentityVerifications = () => {
   return useQuery({
