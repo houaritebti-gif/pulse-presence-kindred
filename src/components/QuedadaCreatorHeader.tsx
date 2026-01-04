@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Award } from "lucide-react";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
-import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import LazyImage from "@/components/LazyImage";
 
@@ -16,10 +15,28 @@ interface QuedadaCreatorHeaderProps {
   title: string;
 }
 
+type OrganizerLevel = 'none' | 'bronze' | 'silver' | 'gold';
+
+const getOrganizerLevel = (count: number | undefined): OrganizerLevel => {
+  if (!count || count < 1) return 'none';
+  if (count >= 16) return 'gold';
+  if (count >= 6) return 'silver';
+  return 'bronze';
+};
+
+const levelConfig: Record<OrganizerLevel, { label: string; color: string; bgColor: string }> = {
+  none: { label: '', color: '', bgColor: '' },
+  bronze: { label: 'Bronce', color: 'text-amber-700', bgColor: 'bg-amber-100 dark:bg-amber-900/30' },
+  silver: { label: 'Plata', color: 'text-slate-500', bgColor: 'bg-slate-200 dark:bg-slate-700/50' },
+  gold: { label: 'Oro', color: 'text-yellow-600', bgColor: 'bg-yellow-100 dark:bg-yellow-900/30' },
+};
+
 const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => {
   const navigate = useNavigate();
   const { data: creatorTier } = useUserSubscription(creator?.id);
   const { data: organizedCount } = useOrganizedQuedadasCount(creator?.id);
+  
+  const organizerLevel = getOrganizerLevel(organizedCount);
   const isVerifiedOrganizer = organizedCount && organizedCount > 5;
 
   const handleViewProfile = () => {
@@ -69,10 +86,20 @@ const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => 
               </Tooltip>
             </TooltipProvider>
           )}
-          {organizedCount && organizedCount > 0 && (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-              {organizedCount} {organizedCount === 1 ? 'quedada' : 'quedadas'}
-            </Badge>
+          {organizerLevel !== 'none' && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${levelConfig[organizerLevel].bgColor} ${levelConfig[organizerLevel].color}`}>
+                    <Award className="w-3 h-3" />
+                    {levelConfig[organizerLevel].label}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {organizedCount} {organizedCount === 1 ? 'quedada organizada' : 'quedadas organizadas'}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
           {creatorTier === 'premium' && <PremiumBadge size="sm" />}
         </div>
