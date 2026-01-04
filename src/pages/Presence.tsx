@@ -225,7 +225,7 @@ const Presence = () => {
       return true;
     });
 
-    // Sort: boosted profiles first, then by compatibility (highest first)
+    // Sort: boosted first, then active users by compatibility, then inactive by last connection
     return filtered.sort((a, b) => {
       const aIsBoosted = boostedIds.has(a.profile?.id || "");
       const bIsBoosted = boostedIds.has(b.profile?.id || "");
@@ -234,8 +234,25 @@ const Presence = () => {
       if (aIsBoosted && !bIsBoosted) return -1;
       if (!aIsBoosted && bIsBoosted) return 1;
       
-      // Within same boost status, sort by compatibility
-      return getCompatibility(b) - getCompatibility(a);
+      // Check if users are currently active (last 5 min)
+      const now = Date.now();
+      const fiveMinutesAgo = now - 5 * 60 * 1000;
+      const aLastPulse = a.last_pulse ? new Date(a.last_pulse).getTime() : 0;
+      const bLastPulse = b.last_pulse ? new Date(b.last_pulse).getTime() : 0;
+      const aIsActive = a.is_present && aLastPulse >= fiveMinutesAgo;
+      const bIsActive = b.is_present && bLastPulse >= fiveMinutesAgo;
+      
+      // Active users come before inactive
+      if (aIsActive && !bIsActive) return -1;
+      if (!aIsActive && bIsActive) return 1;
+      
+      // Among active users, sort by compatibility
+      if (aIsActive && bIsActive) {
+        return getCompatibility(b) - getCompatibility(a);
+      }
+      
+      // Among inactive users, sort by last connection (most recent first)
+      return bLastPulse - aLastPulse;
     });
   }, [otherProfiles, filters, myTribeNames, myStyleNames, activeBoostedData?.boostedIds]);
 
