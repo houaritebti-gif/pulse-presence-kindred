@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRoute from "@/components/AdminRoute";
 import NotificationProvider from "@/components/NotificationProvider";
 import { initializeAdvancedSettings } from "@/hooks/useAdvancedSettings";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -37,6 +38,7 @@ const Subscription = lazy(() => import("./pages/Subscription"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Cookies = lazy(() => import("./pages/Cookies"));
+const Admin = lazy(() => import("./pages/Admin"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Lazy load heavy components
@@ -234,6 +236,14 @@ const App = () => {
               <Route path="/privacidad" element={<Privacy />} />
               <Route path="/terminos" element={<Terms />} />
               <Route path="/cookies" element={<Cookies />} />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <Admin />
+                  </AdminRoute>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
               </div>
