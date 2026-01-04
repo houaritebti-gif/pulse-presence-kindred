@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Filter, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Filter, X, ChevronDown, ChevronUp, Users, Radio } from "lucide-react";
 import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS } from "@/constants/profileOptions";
+import { Switch } from "@/components/ui/switch";
 
 export interface PresenceFilters {
   tribes: string[];
   musicStyles: string[];
   details: string[];
   lookingFor: string[];
+  showAllProfiles?: boolean;
 }
 
 interface PresenceFiltersProps {
@@ -20,6 +22,10 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
 
   const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0;
   const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length;
+
+  const toggleShowAllProfiles = () => {
+    onChange({ ...filters, showAllProfiles: !filters.showAllProfiles });
+  };
 
   const toggleTribe = (tribe: string) => {
     const newTribes = filters.tribes.includes(tribe)
@@ -81,6 +87,35 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
       {/* Filter panel */}
       {isOpen && (
         <div className="mt-4 bg-card rounded-2xl p-4 animate-fade-up">
+          {/* Show all profiles toggle */}
+          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                filters.showAllProfiles ? "bg-accent/20" : "bg-muted"
+              }`}>
+                {filters.showAllProfiles ? (
+                  <Users className="w-4 h-4 text-accent" />
+                ) : (
+                  <Radio className="w-4 h-4 text-muted-foreground" />
+                )}
+              </div>
+              <div>
+                <p className="font-display text-sm font-semibold text-card-foreground">
+                  {filters.showAllProfiles ? "Todos los perfiles" : "Solo activos ahora"}
+                </p>
+                <p className="font-body text-xs text-muted-foreground">
+                  {filters.showAllProfiles 
+                    ? "Viendo todos los perfiles registrados" 
+                    : "Viendo solo quienes están conectados"}
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={filters.showAllProfiles || false}
+              onCheckedChange={toggleShowAllProfiles}
+            />
+          </div>
+
           {/* Clear filters */}
           {hasActiveFilters && (
             <button

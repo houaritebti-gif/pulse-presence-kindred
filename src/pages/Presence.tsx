@@ -32,7 +32,13 @@ const Presence = () => {
   const { data: profile } = useProfile();
   const { data: myTribes } = useProfileTribes(profile?.id);
   const { data: myMusicStyles } = useProfileMusicStyles(profile?.id);
-  const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList();
+  // Filters state persisted to localStorage - moved up to use in hook
+  const [filters, setFilters] = useLocalStorage<PresenceFilters>(
+    STORAGE_KEYS.PRESENCE_FILTERS,
+    { tribes: [], musicStyles: [], details: [], lookingFor: [], showAllProfiles: false }
+  );
+  
+  const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles || false);
   const { data: myPresence } = useMyPresence();
   const setPresence = useSetPresence();
   const { newSparkCount, hasNewSparks, totalSparkCount, markAllAsSeen, newSparks } = useNewSparks();
@@ -107,11 +113,7 @@ const Presence = () => {
   const myStyleNames = useMemo(() => myMusicStyles?.map(m => m.style) || [], [myMusicStyles]);
   const myLookingFor = useMemo(() => profile?.looking_for || [], [profile?.looking_for]);
 
-  // Filters state persisted to localStorage
-  const [filters, setFilters] = useLocalStorage<PresenceFilters>(
-    STORAGE_KEYS.PRESENCE_FILTERS,
-    { tribes: [], musicStyles: [], details: [], lookingFor: [] }
-  );
+  // Filters now defined earlier to use in usePresenceList
 
   // Enable heartbeat
   usePresenceHeartbeat();

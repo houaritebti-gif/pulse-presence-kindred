@@ -29,26 +29,35 @@ export interface PresenceWithProfile {
 
 const PRESENCE_PAGE_SIZE = 20;
 
-export const usePresenceList = () => {
+export const usePresenceList = (showAllProfiles: boolean = false) => {
   const queryClient = useQueryClient();
 
   const query = useInfiniteQuery({
-    queryKey: ["presence_list"],
+    queryKey: ["presence_list", showAllProfiles],
     queryFn: async ({ pageParam = 0 }) => {
-      // Get presence entries that are visible and active (pulsed in last 5 min)
+      // Get presence entries that are visible
+      // If showAllProfiles is true, show all profiles that have ever been present
+      // If false, only show profiles active in last 5 minutes
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
-      const { data: presenceData, error: presenceError } = await supabase
+      let queryBuilder = supabase
         .from("presence")
         .select(`
           *,
           profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic, looking_for, email_verified, identity_verified)
         `)
-        .eq("is_present", true)
         .eq("visible_to_others", true)
-        .gte("last_pulse", fiveMinutesAgo)
         .order("last_pulse", { ascending: false })
         .range(pageParam * PRESENCE_PAGE_SIZE, (pageParam + 1) * PRESENCE_PAGE_SIZE - 1);
+
+      // Only apply active filter if not showing all profiles
+      if (!showAllProfiles) {
+        queryBuilder = queryBuilder
+          .eq("is_present", true)
+          .gte("last_pulse", fiveMinutesAgo);
+      }
+
+      const { data: presenceData, error: presenceError } = await queryBuilder;
 
       if (presenceError) throw presenceError;
 
