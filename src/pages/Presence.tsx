@@ -389,37 +389,39 @@ const Presence = () => {
         </div>
 
         {/* Presence toggle - prominent */}
-        <div className={`bg-card rounded-2xl p-4 mb-8 animate-fade-up border border-border shadow-sm transition-all duration-300 ${
-          invisibleAnimating ? "animate-invisible-glow" : ""
-        }`}>
+        <div className={`rounded-2xl p-4 mb-8 animate-fade-up border shadow-sm transition-all duration-300 ${
+          myPresence?.visible_to_others 
+            ? "bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border-primary/30" 
+            : "bg-card border-border"
+        } ${invisibleAnimating ? "animate-invisible-glow" : ""}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
                 myPresence?.visible_to_others 
-                  ? "bg-primary/20" 
-                  : canUseInvisibleMode ? "bg-amber-500/20" : "bg-muted"
-              } ${invisibleAnimating ? "animate-invisible-activate" : ""}`}>
+                  ? "bg-primary/30 shadow-lg shadow-primary/20" 
+                  : "bg-muted"
+              }`}>
                 {myPresence?.visible_to_others ? (
-                  <Radio className="w-5 h-5 text-primary animate-pulse" />
+                  <Radio className="w-6 h-6 text-primary animate-pulse" />
                 ) : (
-                  <EyeOff className={`w-5 h-5 transition-all duration-300 ${
-                    canUseInvisibleMode ? "text-amber-500" : "text-muted-foreground"
-                  } ${invisibleAnimating ? "animate-invisible-activate" : ""}`} />
+                  <EyeOff className="w-6 h-6 text-muted-foreground" />
                 )}
               </div>
-              <div className={invisibleAnimating ? "animate-invisible-activate" : ""}>
+              <div>
                 <div className="flex items-center gap-2">
-                  <p className="font-display font-semibold text-card-foreground">
+                  <p className={`font-display font-semibold ${
+                    myPresence?.visible_to_others ? "text-primary" : "text-card-foreground"
+                  }`}>
                     {myPresence?.visible_to_others ? "Estoy por aquí" : "Modo invisible"}
                   </p>
-                  {!canUseInvisibleMode && (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
+                  {!canUseInvisibleMode && !myPresence?.visible_to_others && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
                       <Crown className="w-3 h-3" />
                       Premium
                     </span>
                   )}
-                  {invisibleAnimating && (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/30 text-amber-500 text-[10px] font-bold animate-pulse">
+                  {canUseInvisibleMode && !myPresence?.visible_to_others && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
                       ✨ Activado
                     </span>
                   )}
@@ -428,24 +430,20 @@ const Presence = () => {
                   {myPresence?.visible_to_others 
                     ? "Otros pueden verte en la lista" 
                     : canUseInvisibleMode 
-                      ? "Solo tú ves, nadie te ve" 
-                      : "Ver sin ser visto — exclusivo Premium"}
+                      ? "Nadie puede verte, pero tú sí" 
+                      : "Activa Premium para ser invisible"}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {!canUseInvisibleMode && !myPresence?.visible_to_others === false && (
-                <Lock className="w-4 h-4 text-muted-foreground" />
+              {!canUseInvisibleMode && (
+                <Lock className="w-4 h-4 text-amber-500" />
               )}
               <Switch
                 checked={myPresence?.visible_to_others ?? true}
-                onCheckedChange={() => toggleVisibility()}
-                disabled={setPresence.isPending || (!canUseInvisibleMode && !myPresence?.visible_to_others)}
-                className={`data-[state=checked]:bg-primary transition-all duration-300 ${
-                  !myPresence?.visible_to_others && canUseInvisibleMode 
-                    ? "data-[state=unchecked]:bg-amber-500" 
-                    : ""
-                }`}
+                onCheckedChange={toggleVisibility}
+                disabled={setPresence.isPending}
+                className={myPresence?.visible_to_others ? "data-[state=checked]:bg-primary" : ""}
               />
             </div>
           </div>
@@ -502,35 +500,37 @@ const Presence = () => {
         </div>
 
         <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
-          <DialogContent className="max-w-sm">
+          <DialogContent className="max-w-sm bg-card border-border">
             <DialogHeader className="text-center">
               <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center mb-4 shadow-lg shadow-amber-500/30">
                 <EyeOff className="w-8 h-8 text-white" />
               </div>
-              <DialogTitle className="font-display text-xl">
+              <DialogTitle className="font-display text-xl text-card-foreground">
                 Modo Invisible es Premium
               </DialogTitle>
-              <DialogDescription className="text-left space-y-3 pt-4">
-                <p className="font-body text-sm text-muted-foreground">
-                  <strong className="text-foreground">La privacidad se paga.</strong> El modo invisible te permite:
-                </p>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-start gap-2">
-                    <Eye className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                    <span><strong>Ver sin ser visto</strong> — Observa quién está presente sin aparecer en la lista</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Lock className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                    <span><strong>Control total</strong> — Decides cuándo revelarte y cuándo no</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                    <span><strong>Ventaja social</strong> — Quien observa tiene el poder de elegir</span>
-                  </li>
-                </ul>
-                <p className="text-xs text-muted-foreground/80 pt-2 border-t border-border mt-4">
-                  En un mundo de sobreexposición, la invisibilidad es un lujo.
-                </p>
+              <DialogDescription asChild>
+                <div className="text-left space-y-3 pt-4">
+                  <p className="font-body text-sm text-card-foreground/80">
+                    <strong className="text-card-foreground">La privacidad se paga.</strong> El modo invisible te permite:
+                  </p>
+                  <ul className="space-y-2 text-sm text-card-foreground">
+                    <li className="flex items-start gap-2">
+                      <Eye className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                      <span><strong>Ver sin ser visto</strong> — Observa quién está presente sin aparecer en la lista</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Lock className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                      <span><strong>Control total</strong> — Decides cuándo revelarte y cuándo no</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                      <span><strong>Ventaja social</strong> — Quien observa tiene el poder de elegir</span>
+                    </li>
+                  </ul>
+                  <p className="text-xs text-card-foreground/60 pt-2 border-t border-border mt-4">
+                    En un mundo de sobreexposición, la invisibilidad es un lujo.
+                  </p>
+                </div>
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-2 pt-2">
@@ -547,7 +547,7 @@ const Presence = () => {
               <Button 
                 variant="ghost" 
                 onClick={() => setShowPremiumModal(false)}
-                className="text-muted-foreground"
+                className="text-card-foreground/70 hover:text-card-foreground"
               >
                 Quizás luego
               </Button>
