@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { 
   Shield, Users, Flag, UserCog, Search, 
-  MoreVertical, UserPlus, Trash2, Check, X, Clock, Ban, Plus, 
+  MoreVertical, UserPlus, Trash2, Check, X, Clock, Ban, Plus, RefreshCw,
   Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle
 } from "lucide-react";
 import { format } from "date-fns";
@@ -44,7 +44,8 @@ import {
   useAddUserRole,
   useRemoveUserRole,
   useUpdateReportStatus,
-  useUpdateIdentityVerification
+  useUpdateIdentityVerification,
+  useForceReverification
 } from "@/hooks/useAdminData";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
@@ -76,8 +77,18 @@ const Admin = () => {
   const addBlacklistMutation = useAddBlacklistWord();
   const removeBlacklistMutation = useRemoveBlacklistWord();
   const updateVerificationMutation = useUpdateIdentityVerification();
+  const forceReverificationMutation = useForceReverification();
 
   const [viewingSelfie, setViewingSelfie] = useState<string | null>(null);
+
+  const handleForceReverification = async (profileId: string, profileName: string | null) => {
+    try {
+      await forceReverificationMutation.mutateAsync({ profileId });
+      toast.success(`Re-verificación forzada para ${profileName || 'usuario'}`);
+    } catch {
+      toast.error("Error al forzar re-verificación");
+    }
+  };
 
   const filteredProfiles = profiles?.filter(p => 
     p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -244,6 +255,13 @@ const Admin = () => {
                         }}>
                           <UserPlus className="w-4 h-4 mr-2" />
                           Asignar rol
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleForceReverification(profile.id, profile.name)}
+                          className="text-orange-600 focus:text-orange-600"
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Forzar re-verificación
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

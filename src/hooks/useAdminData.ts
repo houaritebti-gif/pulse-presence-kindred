@@ -419,6 +419,56 @@ export const useUpdateIdentityVerification = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-identity-verifications'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-verification-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-verification-chart'] });
+    },
+  });
+};
+
+// Force re-verification of a user (admin action)
+export const useForceReverification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ profileId }: { profileId: string }) => {
+      // Reset identity_verified to false on the profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ identity_verified: false })
+        .eq('id', profileId);
+
+      if (profileError) throw profileError;
+
+      // Delete any existing verification records so user can start fresh
+      const { error: deleteError } = await supabase
+        .from('identity_verifications')
+        .delete()
+        .eq('profile_id', profileId);
+
+      if (deleteError) throw deleteError;
+
+      // Create notification for the user
+      await supabase.from('notifications').insert({
+        profile_id: profileId,
+        type: 'identity_invalidated',
+        title: '🔄 Re-verificación requerida',
+        description: 'Un administrador ha solicitado que vuelvas a verificar tu identidad.',
+        link: '/profile',
+      });
+
+      // Send push notification
+      await sendPushNotification({
+        profileId,
+        title: '🔄 Re-verificación requerida',
+        body: 'Un administrador ha solicitado que vuelvas a verificar tu identidad.',
+        url: '/profile',
+        tag: 'identity-reverification',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-identity-verifications'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-verification-stats'] });
     },
   });
 };
