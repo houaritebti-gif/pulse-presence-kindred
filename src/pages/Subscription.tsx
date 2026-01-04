@@ -69,6 +69,7 @@ const tierConfig: Record<SubscriptionTier, {
     ghostLimit: "15",
     features: [
       { text: "15 mensajes fantasma al día", icon: <Ghost className="w-4 h-4" />, highlight: true },
+      { text: "Presencia en tiempo real", icon: <Radio className="w-4 h-4" />, highlight: true },
       { text: "Chatbot IA personalizado", icon: <Sparkles className="w-4 h-4" />, highlight: true },
       { text: "Ver perfiles en Presencia" },
       { text: "Unirse a quedadas públicas" },
