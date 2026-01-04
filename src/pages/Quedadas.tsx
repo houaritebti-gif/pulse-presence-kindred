@@ -303,28 +303,28 @@ const Quedadas = () => {
 
                     {/* Description */}
                     {quedada.description && (
-                      <p className="font-body text-sm text-card-foreground/70 mb-4 leading-relaxed">
+                      <p className="font-body text-sm text-card-foreground/80 mb-4 leading-relaxed">
                         {quedada.description}
                       </p>
                     )}
 
                     {/* Details */}
                     <div className="flex flex-wrap gap-3 mb-4">
-                      <div className="flex items-center gap-1.5 text-card-foreground/60">
+                      <div className="flex items-center gap-1.5 text-card-foreground/70">
                         <Calendar className="w-3.5 h-3.5" />
                         <span className="font-body text-xs capitalize">{formatEventDate(quedada.event_date)}</span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-card-foreground/60">
+                      <div className="flex items-center gap-1.5 text-card-foreground/70">
                         <Clock className="w-3.5 h-3.5" />
                         <span className="font-body text-xs">{formatEventTime(quedada.event_date)}h</span>
                       </div>
                       {quedada.location_hint && (
-                        <div className="flex items-center gap-1.5 text-card-foreground/60">
+                        <div className="flex items-center gap-1.5 text-card-foreground/70">
                           <MapPin className="w-3.5 h-3.5" />
                           <span className="font-body text-xs">{quedada.location_hint}</span>
                         </div>
                       )}
-                      <div className="flex items-center gap-1.5 text-card-foreground/60">
+                      <div className="flex items-center gap-1.5 text-card-foreground/70">
                         {quedada.private_attendees ? (
                           <EyeOff className="w-3.5 h-3.5" />
                         ) : (
@@ -383,7 +383,7 @@ const Quedadas = () => {
                       <div className="flex items-center justify-between pt-2">
                         <div className="flex items-center gap-2">
                           <Sparkles className="w-3.5 h-3.5 text-accent" />
-                          <span className="font-body text-xs text-card-foreground/50">Tu quedada</span>
+                          <span className="font-body text-xs text-card-foreground/70">Tu quedada</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <button
