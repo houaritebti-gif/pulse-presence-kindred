@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GenderType } from "@/constants/profileOptions";
 import { Textarea } from "@/components/ui/textarea";
-import { useBlockedUsersList, useUnblockUser } from "@/hooks/useUserModeration";
+import { useBlockedUsersList, useUnblockUser, useMyReportHistory, REPORT_REASONS, REPORT_STATUS_LABELS } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AdvancedSettingsSection from "@/components/AdvancedSettingsSection";
 import OfflineQueueManager from "@/components/OfflineQueueManager";
@@ -791,6 +791,9 @@ const Profile = () => {
         {/* Blocked Users Section */}
         <BlockedUsersSection />
 
+        {/* My Reports History Section */}
+        <MyReportsHistorySection />
+
         {/* Advanced Settings Section */}
         <AdvancedSettingsSection />
 
@@ -1148,6 +1151,137 @@ const BlockedUsersSection = () => {
         </div>
       )}
 
+    </div>
+  );
+};
+
+// My Reports History Section Component
+const MyReportsHistorySection = () => {
+  const location = useLocation();
+  const { data: reports, isLoading } = useMyReportHistory();
+  const [expanded, setExpanded] = useState(false);
+  
+  // Auto-expand if navigated from report modal
+  useEffect(() => {
+    if (location.state?.openReportsHistory) {
+      setExpanded(true);
+      // Clear the state so refresh doesn't reopen
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  if (isLoading) return null;
+  
+  const hasReports = reports && reports.length > 0;
+
+  const getReasonLabel = (reason: string) => {
+    const found = REPORT_REASONS.find(r => r.value === reason);
+    return found?.label || reason;
+  };
+
+  const getStatusInfo = (status: string) => {
+    return REPORT_STATUS_LABELS[status] || REPORT_STATUS_LABELS.pending;
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-ES', { 
+      day: 'numeric', 
+      month: 'short',
+      year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+    });
+  };
+
+  return (
+    <div className="mb-10 animate-fade-up animate-delay-550">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between mb-4"
+      >
+        <div className="flex items-center gap-2">
+          <Flag className="w-5 h-5 text-amber-500" />
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Mis reportes
+          </h2>
+          {hasReports && (
+            <span className="text-xs text-muted-foreground">
+              ({reports.length})
+            </span>
+          )}
+        </div>
+        {expanded ? (
+          <ChevronUp className="w-5 h-5 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="space-y-2">
+          {!hasReports ? (
+            <p className="text-sm text-muted-foreground font-body p-4 bg-secondary/50 rounded-xl">
+              No has enviado ningún reporte.
+            </p>
+          ) : (
+            reports.map((report) => {
+              const profile = report.reported_profile as { id: string; name: string | null; avatar_url: string | null } | null;
+              const statusInfo = getStatusInfo(report.status);
+              
+              return (
+                <div 
+                  key={report.id} 
+                  className="p-4 bg-secondary/50 rounded-xl space-y-3"
+                >
+                  {/* Header with profile and status */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={profile?.avatar_url || undefined} />
+                        <AvatarFallback className="bg-muted text-muted-foreground text-sm">
+                          {profile?.name?.charAt(0)?.toUpperCase() || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-body text-sm text-foreground">
+                          {profile?.name || "Usuario eliminado"}
+                        </p>
+                        <p className="font-body text-xs text-muted-foreground">
+                          {formatDate(report.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Status badge */}
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/50 ${statusInfo.color}`}>
+                      <span className="text-xs">{statusInfo.icon}</span>
+                      <span className="font-body text-xs font-medium">
+                        {statusInfo.label}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Reason */}
+                  <div className="flex items-start gap-2">
+                    <span className="font-body text-xs text-muted-foreground">Motivo:</span>
+                    <span className="font-body text-xs text-foreground">
+                      {getReasonLabel(report.reason)}
+                    </span>
+                  </div>
+                  
+                  {/* Details if any */}
+                  {report.details && (
+                    <div className="bg-background/30 rounded-lg p-2.5">
+                      <p className="font-body text-xs text-foreground/80 line-clamp-2">
+                        "{report.details}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
     </div>
   );
 };
