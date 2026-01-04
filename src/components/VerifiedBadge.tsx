@@ -1,8 +1,8 @@
-import { BadgeCheck, Mail } from "lucide-react";
+import { BadgeCheck, Mail, Shield } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface VerifiedBadgeProps {
-  type: "email";
+  type: "email" | "identity";
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
 }
@@ -26,6 +26,12 @@ const VerifiedBadge = ({ type, size = "md", showLabel = false }: VerifiedBadgePr
       label: "Email verificado",
       tooltip: "Este usuario ha verificado su dirección de email",
       className: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+    },
+    identity: {
+      icon: Shield,
+      label: "Identidad verificada",
+      tooltip: "Este usuario ha verificado su identidad con selfie",
+      className: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
     },
   };
 

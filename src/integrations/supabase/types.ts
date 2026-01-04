@@ -178,6 +178,47 @@ export type Database = {
           },
         ]
       }
+      identity_verifications: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          rejection_reason: string | null
+          selfie_url: string
+          status: string
+          updated_at: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          rejection_reason?: string | null
+          selfie_url: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          rejection_reason?: string | null
+          selfie_url?: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_verifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kiki_now_boosts: {
         Row: {
           created_at: string
@@ -417,6 +458,7 @@ export type Database = {
           has_piercings: boolean | null
           has_tattoos: boolean | null
           id: string
+          identity_verified: boolean | null
           looking_for: string[] | null
           name: string | null
           share_typing_status: boolean | null
@@ -435,6 +477,7 @@ export type Database = {
           has_piercings?: boolean | null
           has_tattoos?: boolean | null
           id?: string
+          identity_verified?: boolean | null
           looking_for?: string[] | null
           name?: string | null
           share_typing_status?: boolean | null
@@ -453,6 +496,7 @@ export type Database = {
           has_piercings?: boolean | null
           has_tattoos?: boolean | null
           id?: string
+          identity_verified?: boolean | null
           looking_for?: string[] | null
           name?: string | null
           share_typing_status?: boolean | null

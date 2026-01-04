@@ -167,6 +167,7 @@ const PublicProfile = () => {
               {profile.name || "Anónima"}
             </h1>
             {(profile as any).email_verified && <VerifiedBadge type="email" size="md" />}
+            {(profile as any).identity_verified && <VerifiedBadge type="identity" size="md" />}
             {subscriptionTier === 'premium' && <PremiumBadge size="lg" />}
           </div>
           

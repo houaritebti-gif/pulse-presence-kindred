@@ -15,6 +15,8 @@ export interface Profile {
   has_piercings: boolean | null;
   alternative_aesthetic: boolean | null;
   share_typing_status: boolean | null;
+  email_verified: boolean | null;
+  identity_verified: boolean | null;
   created_at: string;
   updated_at: string;
 }

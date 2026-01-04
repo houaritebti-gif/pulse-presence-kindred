@@ -30,6 +30,7 @@ interface PresenceProfile {
   alternative_aesthetic: boolean | null;
   looking_for: string[] | null;
   email_verified: boolean | null;
+  identity_verified: boolean | null;
 }
 
 interface CompatibilityBreakdown {
@@ -179,6 +180,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
               {presence.profile?.name || "Anónima"}
             </h3>
             {presence.profile?.email_verified && <VerifiedBadge type="email" size="sm" />}
+            {presence.profile?.identity_verified && <VerifiedBadge type="identity" size="sm" />}
             {subscriptionTier === 'premium' && <PremiumBadge size="sm" />}
             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
             {organizedCount && organizedCount > 0 && (
