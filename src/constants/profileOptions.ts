@@ -1,3 +1,25 @@
+// Gender options - main 3 + "other" opens extended list
+export const GENDERS_MAIN = [
+  { value: "woman", label: "Mujer" },
+  { value: "man", label: "Hombre" },
+  { value: "non_binary", label: "No binario" },
+] as const;
+
+export const GENDERS_EXTENDED = [
+  { value: "trans_woman", label: "Mujer trans" },
+  { value: "trans_man", label: "Hombre trans" },
+  { value: "genderqueer", label: "Genderqueer" },
+  { value: "genderfluid", label: "Género fluido" },
+  { value: "agender", label: "Agénero" },
+  { value: "two_spirit", label: "Two-Spirit" },
+  { value: "other", label: "Otro" },
+  { value: "prefer_not_to_say", label: "Prefiero no decir" },
+] as const;
+
+export const ALL_GENDERS = [...GENDERS_MAIN, ...GENDERS_EXTENDED] as const;
+
+export type GenderType = typeof ALL_GENDERS[number]["value"];
+
 // Tribes MVP - closed list with emojis
 export const TRIBES = [
   { value: "Punk / Garage", emoji: "🎸" },

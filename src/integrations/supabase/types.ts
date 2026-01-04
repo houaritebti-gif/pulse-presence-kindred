@@ -222,6 +222,35 @@ export type Database = {
           },
         ]
       }
+      profile_gender_preferences: {
+        Row: {
+          created_at: string | null
+          gender_preference: Database["public"]["Enums"]["gender_type"]
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          gender_preference: Database["public"]["Enums"]["gender_type"]
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string | null
+          gender_preference?: Database["public"]["Enums"]["gender_type"]
+          id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_gender_preferences_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_music_styles: {
         Row: {
           created_at: string | null
@@ -319,6 +348,7 @@ export type Database = {
           bio: string | null
           city: string | null
           created_at: string | null
+          gender: Database["public"]["Enums"]["gender_type"] | null
           has_piercings: boolean | null
           has_tattoos: boolean | null
           id: string
@@ -335,6 +365,7 @@ export type Database = {
           bio?: string | null
           city?: string | null
           created_at?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
           has_piercings?: boolean | null
           has_tattoos?: boolean | null
           id?: string
@@ -351,6 +382,7 @@ export type Database = {
           bio?: string | null
           city?: string | null
           created_at?: string | null
+          gender?: Database["public"]["Enums"]["gender_type"] | null
           has_piercings?: boolean | null
           has_tattoos?: boolean | null
           id?: string
@@ -844,6 +876,18 @@ export type Database = {
       }
     }
     Enums: {
+      gender_type:
+        | "woman"
+        | "man"
+        | "non_binary"
+        | "trans_woman"
+        | "trans_man"
+        | "genderqueer"
+        | "genderfluid"
+        | "agender"
+        | "two_spirit"
+        | "other"
+        | "prefer_not_to_say"
       subscription_tier: "free" | "plus" | "premium"
     }
     CompositeTypes: {
@@ -972,6 +1016,19 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      gender_type: [
+        "woman",
+        "man",
+        "non_binary",
+        "trans_woman",
+        "trans_man",
+        "genderqueer",
+        "genderfluid",
+        "agender",
+        "two_spirit",
+        "other",
+        "prefer_not_to_say",
+      ],
       subscription_tier: ["free", "plus", "premium"],
     },
   },
