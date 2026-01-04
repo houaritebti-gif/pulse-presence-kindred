@@ -169,7 +169,7 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
                 exit="exit"
                 className="absolute inset-0"
               >
-                <div className="relative p-8 rounded-3xl glass-dark border border-border/20 h-full">
+                <div className="relative p-8 rounded-3xl bg-card border border-border/30 h-full">
                   {/* Quote icon */}
                   <motion.div 
                     className="absolute top-6 right-6 text-primary/10"
@@ -202,7 +202,7 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
                       </motion.div>
                       <div>
                         <motion.h4 
-                          className="font-display text-lg font-bold text-foreground"
+                          className="font-display text-lg font-bold text-card-foreground"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.3 }}
@@ -210,7 +210,7 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
                           {currentTestimonial.name}
                         </motion.h4>
                         <motion.p 
-                          className="font-body text-sm text-muted-foreground"
+                          className="font-body text-sm text-card-foreground/70"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.4 }}
@@ -222,7 +222,7 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
                     
                     {/* Testimonial text */}
                     <motion.p 
-                      className="font-body text-foreground/80 leading-relaxed text-lg flex-grow"
+                      className="font-body text-card-foreground/90 leading-relaxed text-lg flex-grow"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
