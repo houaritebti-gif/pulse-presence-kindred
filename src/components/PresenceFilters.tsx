@@ -24,6 +24,10 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
   const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length;
 
   const toggleShowAllProfiles = () => {
+    // Haptic feedback on mobile
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
     onChange({ ...filters, showAllProfiles: !filters.showAllProfiles });
   };
 
@@ -64,63 +68,64 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
   };
 
   return (
-    <div className="mb-6 animate-fade-up">
-      {/* Filter toggle button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full font-body text-sm transition-all ${
-          hasActiveFilters
-            ? "bg-primary text-primary-foreground"
-            : "bg-card text-card-foreground hover:bg-card/80"
-        }`}
-      >
-        <Filter className="w-4 h-4" />
-        <span>Filtrar</span>
-        {activeCount > 0 && (
-          <span className="w-5 h-5 rounded-full bg-primary-foreground/20 text-xs flex items-center justify-center">
-            {activeCount}
-          </span>
-        )}
-        {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-      </button>
+    <div className="mb-6 animate-fade-up space-y-4">
+      {/* Primary toggle - Active now vs All profiles - ALWAYS VISIBLE */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        {/* Segmented control for Active/All toggle */}
+        <div className="flex bg-card rounded-xl p-1 border border-border w-full sm:w-auto">
+          <button
+            onClick={() => !filters.showAllProfiles || toggleShowAllProfiles()}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all ${
+              !filters.showAllProfiles
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-card-foreground"
+            }`}
+          >
+            <Radio className={`w-4 h-4 ${!filters.showAllProfiles ? "animate-pulse" : ""}`} />
+            <span className="whitespace-nowrap">Activos ahora</span>
+          </button>
+          <button
+            onClick={() => filters.showAllProfiles || toggleShowAllProfiles()}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all ${
+              filters.showAllProfiles
+                ? "bg-accent text-accent-foreground shadow-sm"
+                : "text-muted-foreground hover:text-card-foreground"
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span className="whitespace-nowrap">Todos</span>
+          </button>
+        </div>
+
+        {/* Filter button */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm transition-all border ${
+            hasActiveFilters
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-card text-card-foreground hover:bg-card/80 border-border"
+          }`}
+        >
+          <Filter className="w-4 h-4" />
+          <span>Filtrar</span>
+          {activeCount > 0 && (
+            <span className="w-5 h-5 rounded-full bg-primary-foreground/20 text-xs flex items-center justify-center font-bold">
+              {activeCount}
+            </span>
+          )}
+          {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+      </div>
 
       {/* Filter panel */}
       {isOpen && (
-        <div className="mt-4 bg-card rounded-2xl p-4 animate-fade-up">
-          {/* Show all profiles toggle */}
-          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                filters.showAllProfiles ? "bg-accent/20" : "bg-muted"
-              }`}>
-                {filters.showAllProfiles ? (
-                  <Users className="w-4 h-4 text-accent" />
-                ) : (
-                  <Radio className="w-4 h-4 text-muted-foreground" />
-                )}
-              </div>
-              <div>
-                <p className="font-display text-sm font-semibold text-card-foreground">
-                  {filters.showAllProfiles ? "Todos los perfiles" : "Solo activos ahora"}
-                </p>
-                <p className="font-body text-xs text-muted-foreground">
-                  {filters.showAllProfiles 
-                    ? "Viendo todos los perfiles registrados" 
-                    : "Viendo solo quienes están conectados"}
-                </p>
-              </div>
-            </div>
-            <Switch
-              checked={filters.showAllProfiles || false}
-              onCheckedChange={toggleShowAllProfiles}
-            />
-          </div>
+        <div className="bg-card rounded-2xl p-4 animate-fade-up border border-border">
 
           {/* Clear filters */}
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors px-2 py-1 rounded-lg hover:bg-destructive/10 hover:text-destructive"
             >
               <X className="w-3 h-3" />
               Limpiar filtros

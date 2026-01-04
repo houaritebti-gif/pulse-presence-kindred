@@ -268,18 +268,18 @@ const Presence = () => {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24">
+      {/* Header - optimized for mobile */}
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
         <button 
           onClick={() => navigate("/profile")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
+          className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground transition-colors font-body p-1 -ml-1"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Perfil</span>
+          <span className="text-sm sm:text-base">Perfil</span>
         </button>
-        <span className="font-display text-xl font-bold text-foreground">KIKI</span>
-        <div className="flex items-center gap-2">
+        <span className="font-display text-lg sm:text-xl font-bold text-foreground">KIKI</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <ThemeToggle />
           {/* Connection requests button */}
           <button
@@ -395,40 +395,40 @@ const Presence = () => {
 
       {/* Main content */}
       <div className="flex-1 max-w-lg mx-auto w-full">
-        {/* Hero text */}
-        <div className="text-center mb-8 animate-fade-up">
-          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4 leading-tight">
+        {/* Hero text - optimized for mobile */}
+        <div className="text-center mb-6 sm:mb-8 animate-fade-up">
+          <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
             Hay personas con vibra
             <br />
             <span className="text-primary">ahora en {profile?.city || "Madrid"}.</span>
           </h1>
-          <p className="font-body text-muted-foreground">
+          <p className="font-body text-sm sm:text-base text-muted-foreground">
             Entra. Observa. Conecta si lo sientes.
           </p>
         </div>
 
-        {/* Presence toggle - prominent */}
-        <div className={`rounded-2xl p-4 mb-8 animate-fade-up border shadow-sm transition-all duration-300 ${
+        {/* Presence toggle - prominent - optimized for mobile */}
+        <div className={`rounded-2xl p-3 sm:p-4 mb-6 sm:mb-8 animate-fade-up border shadow-sm transition-all duration-300 ${
           myPresence?.visible_to_others 
             ? "bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border-primary/30" 
             : "bg-card border-border"
         } ${invisibleAnimating ? "animate-invisible-glow" : ""}`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                myPresence?.visible_to_others 
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                myPresence?.visible_to_others
                   ? "bg-primary/30 shadow-lg shadow-primary/20" 
                   : "bg-muted"
               }`}>
                 {myPresence?.visible_to_others ? (
-                  <Radio className="w-6 h-6 text-primary animate-pulse" />
+                  <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse" />
                 ) : (
-                  <EyeOff className="w-6 h-6 text-muted-foreground" />
+                  <EyeOff className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
                 )}
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <p className={`font-display font-semibold ${
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <p className={`font-display font-semibold text-sm sm:text-base ${
                     myPresence?.visible_to_others ? "text-primary" : "text-card-foreground"
                   }`}>
                     {myPresence?.visible_to_others ? "Estoy por aquí" : "Modo invisible"}
@@ -468,20 +468,20 @@ const Presence = () => {
           </div>
         </div>
 
-        {/* KIKI Now Boost Card */}
-        <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-2xl p-4 mb-8 animate-fade-up border border-primary/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+        {/* KIKI Now Boost Card - optimized for mobile */}
+        <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-2xl p-3 sm:p-4 mb-6 sm:mb-8 animate-fade-up border border-primary/20">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${
                 boostTimeRemaining 
                   ? "bg-gradient-to-br from-primary to-accent animate-pulse" 
                   : "bg-primary/20"
               }`}>
-                <Zap className={`w-5 h-5 ${boostTimeRemaining ? "text-white" : "text-primary"}`} />
+                <Zap className={`w-4 h-4 sm:w-5 sm:h-5 ${boostTimeRemaining ? "text-white" : "text-primary"}`} />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-display font-semibold text-card-foreground">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <p className="font-display font-semibold text-card-foreground text-sm sm:text-base">
                     KIKI Now
                   </p>
                   {boostTimeRemaining && (
@@ -518,17 +518,17 @@ const Presence = () => {
           </div>
         </div>
 
-        {/* Realtime Presence Upsell Banner - Only for Free users */}
+        {/* Realtime Presence Upsell Banner - Only for Free users - optimized for mobile */}
         {tier === 'free' && (
           <button
             onClick={() => navigate("/subscription")}
-            className="w-full mb-8 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-green-500/10 rounded-2xl p-4 animate-fade-up border border-green-500/20 hover:border-green-500/40 transition-all hover:scale-[1.01] group"
+            className="w-full mb-6 sm:mb-8 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-green-500/10 rounded-2xl p-3 sm:p-4 animate-fade-up border border-green-500/20 hover:border-green-500/40 transition-all hover:scale-[1.01] group"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-                <Radio className="w-5 h-5 text-green-500" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
               </div>
-              <div className="flex-1 text-left">
+              <div className="flex-1 text-left min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-display font-semibold text-card-foreground text-sm">
                     ¿Quién está activo ahora?
