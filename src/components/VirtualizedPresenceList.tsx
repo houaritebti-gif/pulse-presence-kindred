@@ -3,6 +3,7 @@ import { List } from "react-window";
 import PresenceCard from "./PresenceCard";
 import AnonymousPresenceCard from "./AnonymousPresenceCard";
 import { PresenceWithProfile } from "@/hooks/usePresence";
+import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 
 interface CompatibilityBreakdown {
   tribes: number;
@@ -24,6 +25,7 @@ interface RowData {
   photosMap: Record<string, { photo_url: string }[]> | undefined;
   getCompatibility: (presence: PresenceWithProfile) => number;
   getCompatibilityBreakdown: (presence: PresenceWithProfile) => CompatibilityBreakdown;
+  boostedIds: Set<string>;
 }
 
 // Row component for virtualized list - receives index and style from List, plus our custom data
@@ -41,10 +43,11 @@ const Row = ({
   style: CSSProperties; 
   data: RowData;
 }): ReactElement => {
-  const { profiles, connectedProfileIds, photosMap, getCompatibility, getCompatibilityBreakdown } = data;
+  const { profiles, connectedProfileIds, photosMap, getCompatibility, getCompatibilityBreakdown, boostedIds } = data;
   const presence = profiles[index];
   const profileId = presence.profile?.id;
   const isConnected = profileId && connectedProfileIds.has(profileId);
+  const isBoosted = profileId && boostedIds.has(profileId);
 
   return (
     <div style={{ ...style, paddingBottom: 24 }}>
@@ -59,6 +62,7 @@ const Row = ({
             ? photosMap?.[profileId]?.map(p => p.photo_url) || []
             : []
           }
+          isBoosted={!!isBoosted}
         />
       ) : (
         <AnonymousPresenceCard
@@ -76,6 +80,7 @@ const Row = ({
             musicStyles: presence.musicStyles,
           }}
           animationDelay={0}
+          isBoosted={!!isBoosted}
         />
       )}
     </div>
@@ -93,6 +98,8 @@ export const VirtualizedPresenceList = memo(({
 }: VirtualizedPresenceListProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(600);
+  const { data: activeBoostedData } = useActiveBoostedProfiles();
+  const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
 
   // Calculate available height
   useEffect(() => {
@@ -116,6 +123,7 @@ export const VirtualizedPresenceList = memo(({
     photosMap,
     getCompatibility,
     getCompatibilityBreakdown,
+    boostedIds,
   };
 
   // For small lists, don't virtualize
@@ -125,6 +133,7 @@ export const VirtualizedPresenceList = memo(({
         {profiles.map((presence, index) => {
           const profileId = presence.profile?.id;
           const isConnected = profileId && connectedProfileIds.has(profileId);
+          const isBoosted = profileId && boostedIds.has(profileId);
           
           return isConnected ? (
             <PresenceCard
@@ -137,6 +146,7 @@ export const VirtualizedPresenceList = memo(({
                 ? photosMap?.[profileId]?.map(p => p.photo_url) || []
                 : []
               }
+              isBoosted={!!isBoosted}
             />
           ) : (
             <AnonymousPresenceCard
@@ -154,6 +164,7 @@ export const VirtualizedPresenceList = memo(({
                 musicStyles: presence.musicStyles,
               }}
               animationDelay={(index + 1) * 100}
+              isBoosted={!!isBoosted}
             />
           );
         })}

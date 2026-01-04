@@ -178,6 +178,41 @@ export type Database = {
           },
         ]
       }
+      kiki_now_boosts: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          profile_id: string
+          started_at: string
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          profile_id: string
+          started_at?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          profile_id?: string
+          started_at?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kiki_now_boosts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -931,6 +966,10 @@ export type Database = {
       get_user_subscription_tier: {
         Args: { p_profile_id: string }
         Returns: Database["public"]["Enums"]["subscription_tier"]
+      }
+      has_active_kiki_now_boost: {
+        Args: { p_profile_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {
