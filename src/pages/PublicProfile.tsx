@@ -10,6 +10,7 @@ import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import { Button } from "@/components/ui/button";
 import PremiumBadge from "@/components/PremiumBadge";
+import VerifiedBadge from "@/components/VerifiedBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -165,6 +166,7 @@ const PublicProfile = () => {
             <h1 className="font-display text-2xl font-bold text-foreground">
               {profile.name || "Anónima"}
             </h1>
+            {(profile as any).email_verified && <VerifiedBadge type="email" size="md" />}
             {subscriptionTier === 'premium' && <PremiumBadge size="lg" />}
           </div>
           

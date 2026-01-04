@@ -4,6 +4,7 @@ import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar, Search, Star
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import PremiumBadge from "@/components/PremiumBadge";
+import VerifiedBadge from "@/components/VerifiedBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,7 @@ interface PresenceProfile {
   has_piercings: boolean | null;
   alternative_aesthetic: boolean | null;
   looking_for: string[] | null;
+  email_verified: boolean | null;
 }
 
 interface CompatibilityBreakdown {
@@ -176,6 +178,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             <h3 className="font-display text-lg font-semibold text-card-foreground">
               {presence.profile?.name || "Anónima"}
             </h3>
+            {presence.profile?.email_verified && <VerifiedBadge type="email" size="sm" />}
             {subscriptionTier === 'premium' && <PremiumBadge size="sm" />}
             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
             {organizedCount && organizedCount > 0 && (
