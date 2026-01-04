@@ -151,6 +151,12 @@ interface VerificationStats {
   pendingLast7Days: number;
 }
 
+export interface DailyVerificationData {
+  date: string;
+  approved: number;
+  rejected: number;
+}
+
 // Fetch verification statistics
 export const useVerificationStats = () => {
   return useQuery({
@@ -187,6 +193,62 @@ export const useVerificationStats = () => {
       };
 
       return stats;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+// Fetch daily verification data for chart (last 30 days)
+export const useVerificationChartData = () => {
+  return useQuery({
+    queryKey: ['admin-verification-chart'],
+    queryFn: async (): Promise<DailyVerificationData[]> => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data, error } = await supabase
+        .from('identity_verifications')
+        .select('status, created_at, verified_at')
+        .or(`status.eq.approved,status.eq.rejected`)
+        .gte('created_at', thirtyDaysAgo.toISOString());
+
+      if (error) throw error;
+
+      // Create a map for each day in the last 30 days
+      const dailyData: Map<string, { approved: number; rejected: number }> = new Map();
+      
+      // Initialize all days with 0
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        dailyData.set(dateStr, { approved: 0, rejected: 0 });
+      }
+
+      // Count verifications per day
+      data?.forEach(v => {
+        // For approved, use verified_at date; for rejected, use created_at
+        const dateToUse = v.status === 'approved' && v.verified_at 
+          ? new Date(v.verified_at)
+          : new Date(v.created_at);
+        const dateStr = dateToUse.toISOString().split('T')[0];
+        
+        const existing = dailyData.get(dateStr);
+        if (existing) {
+          if (v.status === 'approved') {
+            existing.approved++;
+          } else if (v.status === 'rejected') {
+            existing.rejected++;
+          }
+        }
+      });
+
+      // Convert to array
+      return Array.from(dailyData.entries()).map(([date, counts]) => ({
+        date,
+        approved: counts.approved,
+        rejected: counts.rejected,
+      }));
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
