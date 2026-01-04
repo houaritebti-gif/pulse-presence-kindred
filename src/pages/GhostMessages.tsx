@@ -322,64 +322,75 @@ const GhostMessages = () => {
         ) : (
           <div className="space-y-8">
             {/* KIKI Now section - users who want to connect now */}
-            {messages?.some(m => m.hasKikiNowBoost) && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30">
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    <span className="font-display text-sm font-semibold text-amber-500">
-                      Quieren conectar ahora
-                    </span>
-                  </div>
-                  <div className="flex-1 h-px bg-amber-500/20" />
-                </div>
-                <div className="space-y-4">
-                  {messages
-                    ?.filter(m => m.hasKikiNowBoost)
-                    .map((message, index) => (
-                      <GhostMessageCard
-                        key={message.id}
-                        message={message}
-                        index={index}
-                        onNavigateToChat={handleNavigateToChat}
-                        onNavigateToSpark={handleNavigateToSpark}
-                        navigate={navigate}
-                      />
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {/* Regular messages section */}
-            {messages?.some(m => !m.hasKikiNowBoost) && (
-              <div className="space-y-4">
-                {messages?.some(m => m.hasKikiNowBoost) && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/30">
-                      <Ghost className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-display text-sm font-semibold text-muted-foreground">
-                        Otros mensajes
-                      </span>
+            {(() => {
+              const kikiNowMessages = messages?.filter(m => m.hasKikiNowBoost) || [];
+              const otherMessages = messages?.filter(m => !m.hasKikiNowBoost) || [];
+              
+              return (
+                <>
+                  {kikiNowMessages.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30">
+                          <Zap className="w-4 h-4 text-amber-500" />
+                          <span className="font-display text-sm font-semibold text-amber-500">
+                            Quieren conectar ahora
+                          </span>
+                          <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
+                            {kikiNowMessages.length}
+                          </span>
+                        </div>
+                        <div className="flex-1 h-px bg-amber-500/20" />
+                      </div>
+                      <div className="space-y-4">
+                        {kikiNowMessages.map((message, index) => (
+                          <GhostMessageCard
+                            key={message.id}
+                            message={message}
+                            index={index}
+                            onNavigateToChat={handleNavigateToChat}
+                            onNavigateToSpark={handleNavigateToSpark}
+                            navigate={navigate}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex-1 h-px bg-border/30" />
-                  </div>
-                )}
-                <div className="space-y-4">
-                  {messages
-                    ?.filter(m => !m.hasKikiNowBoost)
-                    .map((message, index) => (
-                      <GhostMessageCard
-                        key={message.id}
-                        message={message}
-                        index={index}
-                        onNavigateToChat={handleNavigateToChat}
-                        onNavigateToSpark={handleNavigateToSpark}
-                        navigate={navigate}
-                      />
-                    ))}
-                </div>
-              </div>
-            )}
+                  )}
+
+                  {/* Regular messages section */}
+                  {otherMessages.length > 0 && (
+                    <div className="space-y-4">
+                      {kikiNowMessages.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/30">
+                            <Ghost className="w-4 h-4 text-muted-foreground" />
+                            <span className="font-display text-sm font-semibold text-muted-foreground">
+                              Otros mensajes
+                            </span>
+                            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
+                              {otherMessages.length}
+                            </span>
+                          </div>
+                          <div className="flex-1 h-px bg-border/30" />
+                        </div>
+                      )}
+                      <div className="space-y-4">
+                        {otherMessages.map((message, index) => (
+                          <GhostMessageCard
+                            key={message.id}
+                            message={message}
+                            index={index}
+                            onNavigateToChat={handleNavigateToChat}
+                            onNavigateToSpark={handleNavigateToSpark}
+                            navigate={navigate}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
 
