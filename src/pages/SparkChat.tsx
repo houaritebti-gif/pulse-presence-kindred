@@ -513,7 +513,7 @@ const SparkChat = () => {
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="text-muted-foreground/50 hover:text-foreground transition-colors">
+              <button className="text-muted-foreground hover:text-foreground transition-colors">
                 <MoreVertical className="w-5 h-5" />
               </button>
             </DropdownMenuTrigger>
@@ -695,7 +695,7 @@ const SparkChat = () => {
                         {otherUserLastRead && new Date(msg.created_at) <= otherUserLastRead ? (
                           <CheckCheck className="w-4 h-4 text-primary/70" />
                         ) : (
-                          <Check className="w-4 h-4 text-muted-foreground/50" />
+                          <Check className="w-4 h-4 text-muted-foreground/70" />
                         )}
                       </div>
                     )}
@@ -724,9 +724,9 @@ const SparkChat = () => {
             </div>
             <div className="px-4 py-3 bg-card rounded-2xl rounded-bl-md">
               <div className="flex gap-1">
-                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                <span className="w-2 h-2 bg-muted-foreground/70 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 bg-muted-foreground/70 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 bg-muted-foreground/70 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           </div>
