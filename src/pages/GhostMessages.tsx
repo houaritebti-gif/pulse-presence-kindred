@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban } from "lucide-react";
+import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban, User } from "lucide-react";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
@@ -22,11 +22,13 @@ const GhostMessageCard = ({
   index,
   onNavigateToChat,
   onNavigateToSpark,
+  navigate,
 }: { 
   message: ReturnType<typeof useReceivedGhostMessages>["data"] extends (infer T)[] ? T : never;
   index: number;
   onNavigateToChat: (profileId: string) => void;
   onNavigateToSpark: () => void;
+  navigate: (path: string) => void;
 }) => {
   const hasSpark = useHasSparkWith(message.from_profile?.id);
   const markAsRead = useMarkGhostMessageRead();
@@ -166,32 +168,48 @@ const GhostMessageCard = ({
               <span className="font-body text-xs">{timeAgo}</span>
             </div>
 
-            {hasSpark ? (
+            <div className="flex items-center gap-2">
+              {/* View Profile Button - always visible */}
               <Button
-                variant="kiki"
+                variant="ghost"
                 size="sm"
-                onClick={onNavigateToSpark}
-                className="gap-1.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/profile/${message.from_profile?.id}`);
+                }}
+                className="gap-1.5 text-muted-foreground hover:text-foreground"
               >
-                <Flame className="w-3.5 h-3.5" />
-                Ir al chat
+                <User className="w-3.5 h-3.5" />
+                Ver perfil
               </Button>
-            ) : message.hasSentBack ? (
-              <span className="font-body text-xs text-primary flex items-center gap-1">
-                <Send className="w-3 h-3" />
-                Mensaje enviado
-              </span>
-            ) : (
-              <Button
-                variant="kiki-soft"
-                size="sm"
-                onClick={() => onNavigateToChat(message.from_profile?.id || "")}
-                className="gap-1.5"
-              >
-                <Ghost className="w-3.5 h-3.5" />
-                Responder
-              </Button>
-            )}
+
+              {hasSpark ? (
+                <Button
+                  variant="kiki"
+                  size="sm"
+                  onClick={onNavigateToSpark}
+                  className="gap-1.5"
+                >
+                  <Flame className="w-3.5 h-3.5" />
+                  Ir al chat
+                </Button>
+              ) : message.hasSentBack ? (
+                <span className="font-body text-xs text-primary flex items-center gap-1">
+                  <Send className="w-3 h-3" />
+                  Enviado
+                </span>
+              ) : (
+                <Button
+                  variant="kiki-soft"
+                  size="sm"
+                  onClick={() => onNavigateToChat(message.from_profile?.id || "")}
+                  className="gap-1.5"
+                >
+                  <Ghost className="w-3.5 h-3.5" />
+                  Responder
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -303,6 +321,7 @@ const GhostMessages = () => {
                 index={index}
                 onNavigateToChat={handleNavigateToChat}
                 onNavigateToSpark={handleNavigateToSpark}
+                navigate={navigate}
               />
             ))}
           </div>

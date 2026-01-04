@@ -271,7 +271,7 @@ const Subscription = () => {
         {/* Ghost Messages Comparison */}
         <div className="space-y-4">
           <div className="text-center">
-            <h2 className="font-display text-2xl font-bold text-foreground mb-2">
+            <h2 className="font-display text-xl font-bold text-foreground mb-2">
               Mensajes Fantasma por Plan
             </h2>
             <p className="text-muted-foreground text-sm">
@@ -279,7 +279,7 @@ const Subscription = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {(["free", "plus", "premium"] as SubscriptionTier[]).map((t) => {
               const config = tierConfig[t];
               const isCurrentTier = tier === t;
@@ -288,20 +288,18 @@ const Subscription = () => {
                 <div
                   key={t}
                   className={cn(
-                    "relative rounded-2xl p-4 text-center transition-all duration-300",
-                    "border-2",
-                    isCurrentTier ? config.borderColor : "border-border/50",
-                    isCurrentTier && "ring-2 ring-offset-2 ring-offset-background",
-                    t === "premium" && isCurrentTier && "ring-amber-500/50",
-                    t === "plus" && isCurrentTier && "ring-primary/50",
-                    t === "free" && isCurrentTier && "ring-muted-foreground/30"
+                    "relative rounded-xl p-3 text-center transition-all",
+                    "border bg-card",
+                    isCurrentTier 
+                      ? `${config.borderColor} border-2` 
+                      : "border-border"
                   )}
                 >
                   {isCurrentTier && (
                     <Badge 
                       className={cn(
                         "absolute -top-2 left-1/2 -translate-x-1/2 text-[10px] px-2",
-                        t === "premium" && "bg-amber-500 hover:bg-amber-500",
+                        t === "premium" && "bg-amber-500 hover:bg-amber-500 text-amber-950",
                         t === "plus" && "bg-primary hover:bg-primary",
                         t === "free" && "bg-muted-foreground hover:bg-muted-foreground"
                       )}
@@ -310,18 +308,9 @@ const Subscription = () => {
                     </Badge>
                   )}
                   
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl mx-auto mb-3 flex items-center justify-center",
-                    config.iconBg
-                  )}>
-                    <Ghost className={cn("w-5 h-5", config.color)} />
-                  </div>
-                  
+                  <Ghost className={cn("w-5 h-5 mx-auto mb-2", config.color)} />
                   <p className="text-xs text-muted-foreground mb-1">{config.name}</p>
-                  <p className={cn(
-                    "font-display text-3xl font-bold",
-                    config.color
-                  )}>
+                  <p className={cn("font-display text-2xl font-bold", config.color)}>
                     {config.ghostLimit}
                   </p>
                   <p className="text-xs text-muted-foreground">/día</p>
@@ -332,62 +321,54 @@ const Subscription = () => {
         </div>
 
         {/* Premium Features Highlight */}
-        <Card className="overflow-hidden border-2 border-amber-500/30">
-          <div className="bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-transparent p-6">
+        <Card className="overflow-hidden border border-amber-500/30 bg-card">
+          <div className="p-5">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/30 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-amber-500" />
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-amber-500" />
               </div>
               <div>
-                <h3 className="font-display text-lg font-bold text-foreground">
-                  Funciones Premium Exclusivas
+                <h3 className="font-display text-base font-bold text-foreground">
+                  Funciones Premium
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Destaca y conecta de manera especial
                 </p>
               </div>
             </div>
             
-            <div className="grid gap-3 sm:grid-cols-2">
-              {/* Modo Invisible - Destacado */}
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 sm:col-span-2">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
-                  <EyeOff className="w-5 h-5 text-amber-500" />
-                </div>
+            <div className="space-y-3">
+              {/* Modo Invisible */}
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <EyeOff className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-0.5">
                     <h4 className="font-semibold text-sm text-foreground">Modo Invisible</h4>
-                    <Badge className="bg-amber-500/20 text-amber-500 text-[10px] px-1.5 py-0 hover:bg-amber-500/20">
+                    <Badge className="bg-amber-500 text-amber-950 text-[9px] px-1.5 py-0 hover:bg-amber-500">
                       EXCLUSIVO
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Navega por Presencia sin que nadie sepa que estás conectado. La privacidad se paga.
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Navega por Presencia sin que nadie sepa que estás conectado
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 backdrop-blur-sm">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="text-lg">✨</span>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/50">
+                  <span className="text-base">✨</span>
+                  <div>
+                    <h4 className="font-medium text-sm text-foreground">Mensaje Premium</h4>
+                    <p className="text-xs text-muted-foreground">Destaca con un mensaje especial</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-foreground">Mensaje Premium</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Marca tu mensaje con ✨ para que destaque y la persona sepa que invertiste en conectar
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60 backdrop-blur-sm">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <MessageCircle className="w-4 h-4 text-amber-500" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm text-foreground">Segunda Oportunidad</h4>
-                  <p className="text-xs text-muted-foreground">
-                    ¿No te respondieron? Envía un segundo mensaje después de unos días
-                  </p>
+                
+                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/50">
+                  <MessageCircle className="w-4 h-4 text-amber-500 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-sm text-foreground">Segunda Oportunidad</h4>
+                    <p className="text-xs text-muted-foreground">Reenvía si no responden</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -396,16 +377,14 @@ const Subscription = () => {
 
         {/* Free Trial CTA */}
         {canStartTrial && (
-          <Card className="p-6 border-2 border-dashed border-primary/50 bg-gradient-to-br from-primary/15 via-primary/5 to-transparent">
+          <Card className="p-5 border border-dashed border-primary/50 bg-card">
             <div className="text-center">
-              <div className="w-20 h-20 rounded-3xl bg-primary/20 flex items-center justify-center mx-auto mb-4 animate-float">
-                <Gift className="w-10 h-10 text-primary" />
-              </div>
-              <h3 className="font-display text-xl font-bold text-foreground mb-2">
+              <Gift className="w-12 h-12 text-primary mx-auto mb-3" />
+              <h3 className="font-display text-lg font-bold text-foreground mb-2">
                 ¡7 días gratis de Plus!
               </h3>
-              <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
-                Prueba 15 mensajes fantasma al día y el chatbot IA sin compromiso
+              <p className="text-sm text-muted-foreground mb-4">
+                Prueba 15 mensajes al día y chatbot IA sin compromiso
               </p>
               <Button 
                 onClick={() => {
@@ -425,7 +404,7 @@ const Subscription = () => {
                   </>
                 )}
               </Button>
-              <p className="text-xs text-muted-foreground mt-3">
+              <p className="text-xs text-muted-foreground mt-2">
                 Sin tarjeta · Se cancela sola
               </p>
             </div>
@@ -445,12 +424,12 @@ const Subscription = () => {
         )}
 
         {/* Plan Cards */}
-        <div className="space-y-4">
-          <h2 className="font-display text-xl font-bold text-foreground text-center">
+        <div className="space-y-3">
+          <h2 className="font-display text-lg font-bold text-foreground text-center">
             {isPremium ? "Tu plan actual" : "Elige tu plan"}
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {(["free", "plus", "premium"] as SubscriptionTier[]).map((t) => {
               const config = tierConfig[t];
               const isCurrentTier = tier === t;
@@ -460,32 +439,24 @@ const Subscription = () => {
                 <Card
                   key={t}
                   className={cn(
-                    "relative overflow-hidden transition-all duration-300",
-                    "border-2",
-                    isCurrentTier ? config.borderColor : "border-border/50 hover:border-border",
-                    isCurrentTier && t === "premium" && "shadow-lg shadow-amber-500/10",
-                    isCurrentTier && t === "plus" && "shadow-lg shadow-primary/10"
+                    "relative overflow-hidden transition-all",
+                    "border bg-card",
+                    isCurrentTier ? `${config.borderColor} border-2` : "border-border"
                   )}
                 >
-                  {/* Background gradient */}
-                  <div className={cn(
-                    "absolute inset-0 bg-gradient-to-br opacity-60",
-                    config.bgGradient
-                  )} />
-                  
-                  <div className="relative p-5">
+                  <div className="relative p-4">
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         <div className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center",
+                          "w-10 h-10 rounded-lg flex items-center justify-center",
                           config.iconBg
                         )}>
                           <span className={config.color}>{config.icon}</span>
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-display text-lg font-bold text-foreground">
+                            <h3 className="font-display text-base font-bold text-foreground">
                               {config.name}
                             </h3>
                             {isCurrentTier && (
@@ -502,13 +473,13 @@ const Subscription = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {config.description}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-display text-2xl font-bold text-foreground">
+                        <p className="font-display text-xl font-bold text-foreground">
                           {config.price}
                         </p>
                         {config.priceSubtext && (
@@ -518,8 +489,8 @@ const Subscription = () => {
                     </div>
 
                     {/* Features */}
-                    <ul className="space-y-2 mb-4">
-                      {config.features.map((feature, index) => (
+                    <ul className="space-y-1.5 mb-3">
+                      {config.features.slice(0, 4).map((feature, index) => (
                         <li 
                           key={index} 
                           className={cn(
@@ -527,18 +498,15 @@ const Subscription = () => {
                             feature.highlight ? "text-foreground font-medium" : "text-muted-foreground"
                           )}
                         >
-                          {feature.icon ? (
-                            <span className={cn(
-                              feature.highlight ? config.color : "text-muted-foreground"
-                            )}>
-                              {feature.icon}
-                            </span>
-                          ) : (
-                            <Check className={cn("w-4 h-4 shrink-0", config.color)} />
-                          )}
+                          <Check className={cn("w-3.5 h-3.5 shrink-0", config.color)} />
                           {feature.text}
                         </li>
                       ))}
+                      {config.features.length > 4 && (
+                        <li className="text-xs text-muted-foreground pl-5">
+                          +{config.features.length - 4} más
+                        </li>
+                      )}
                     </ul>
 
                     {/* Action Button */}
