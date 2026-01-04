@@ -255,14 +255,14 @@ const FAQSection = () => {
                             <Plus className="w-4 h-4 text-primary" />
                           )}
                         </div>
-                        <span className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <span className="font-display text-base font-semibold text-card-foreground group-hover:text-primary transition-colors">
                           {faq.question}
                         </span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
                       <div className="pl-11">
-                        <p className="font-body text-sm text-muted-foreground leading-relaxed">
+                        <p className="font-body text-sm text-card-foreground/70 leading-relaxed">
                           {faq.answer}
                         </p>
                       </div>
