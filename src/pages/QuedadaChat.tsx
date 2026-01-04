@@ -2,12 +2,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, ImagePlus, Loader2, X, EyeOff, UserX, Crop } from "lucide-react";
+import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, Loader2, EyeOff, UserX, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead, useQuedadaAttendees, useExpelAttendee } from "@/hooks/useQuedadas";
-import { useChatImageUpload } from "@/hooks/useChatImageUpload";
-import { compressChatImage } from "@/utils/imageCompression";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,7 +13,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import ImageLightbox from "@/components/ImageLightbox";
-import UploadProgress from "@/components/UploadProgress";
 import LazyImage from "@/components/LazyImage";
 import VoiceMessagePlayer from "@/components/VoiceMessagePlayer";
 import VoiceRecordButton from "@/components/VoiceRecordButton";
@@ -26,7 +23,7 @@ import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import QuedadaAttendeeItem from "@/components/QuedadaAttendeeItem";
 import QuedadaMessageSender from "@/components/QuedadaMessageSender";
-import ImageCropModal from "@/components/ImageCropModal";
+
 import { useGroupTypingIndicator } from "@/hooks/useGroupTypingIndicator";
 import { useQuedadaReactions } from "@/hooks/useQuedadaReactions";
 import { MessageReactions } from "@/components/MessageReactions";
@@ -52,9 +49,6 @@ const QuedadaChat = () => {
   // Reactions
   const { getMessageReactions, toggleReaction, availableEmojis, isToggling } = useQuedadaReactions(quedadaId);
   
-  // Image upload
-  const { uploadImage, isUploading: isUploadingImage, uploadPhase, uploadProgress } = useChatImageUpload();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Voice recording
   const { 
@@ -92,20 +86,12 @@ const QuedadaChat = () => {
     }
   }, [profile?.id, storeSupabaseConfigForSW]);
   
-  const isUploading = isUploadingImage || isUploadingVoice;
+  const isUploading = isUploadingVoice;
   
   const [newMessage, setNewMessage] = useState("");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isCompressingPreview, setIsCompressingPreview] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showAttendees, setShowAttendees] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // Crop modal state
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const [pendingCropFile, setPendingCropFile] = useState<File | null>(null);
   
   // Get pending messages for this chat
   const pendingMessages = quedadaId ? getMessagesForChat(quedadaId, 'quedada') : [];
@@ -210,15 +196,15 @@ const QuedadaChat = () => {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!newMessage.trim() && !selectedFile) || !quedadaId || !quedada) return;
+    if (!newMessage.trim() || !quedadaId || !quedada) return;
     
     stopTyping(); // Stop typing indicator on send
 
     const recipientIds = getRecipientIds();
     const messageContent = newMessage.trim();
 
-    // If offline and no image, queue the message
-    if (!isOnline && !selectedFile && messageContent) {
+    // If offline, queue the message
+    if (!isOnline && messageContent) {
       await addToQueue({
         type: 'quedada',
         chatId: quedadaId,
@@ -235,133 +221,30 @@ const QuedadaChat = () => {
     }
 
     try {
-      let finalContent = messageContent;
-      
-      // If there's an image to upload
-      if (selectedFile && user?.id) {
-        const imageUrl = await uploadImage(selectedFile, user.id);
-        if (imageUrl) {
-          finalContent = imageUrl;
-        } else {
-          return; // Upload failed, don't send message
-        }
-      }
-      
-      if (!finalContent) return;
-      
       await sendMessage.mutateAsync({ 
         quedadaId, 
-        content: finalContent,
+        content: messageContent,
         recipientProfileIds: recipientIds,
         quedadaTitle: quedada.title,
       });
       setNewMessage("");
-      setSelectedFile(null);
-      setImagePreview(null);
     } catch (error: any) {
-      // If send fails and it's a text message, queue it
-      if (!selectedFile && messageContent) {
-        addToQueue({
-          type: 'quedada',
-          chatId: quedadaId,
-          content: messageContent,
-          metadata: {
-            recipientProfileIds: recipientIds,
-            quedadaTitle: quedada.title,
-          },
-        });
-        setNewMessage("");
-        toast.info("Mensaje guardado. Se enviará al reconectar.");
-      } else {
-        toast.error("Error al enviar: " + error.message);
-      }
-    }
-  };
-
-  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    if (!file.type.startsWith("image/")) {
-      toast.error("Solo se permiten imágenes");
-      return;
-    }
-    
-    const maxSize = 10 * 1024 * 1024; // 10MB before compression
-    if (file.size > maxSize) {
-      toast.error("La imagen es demasiado grande (máx. 10MB)");
-      return;
-    }
-    
-    // Store file and open crop modal
-    setPendingCropFile(file);
-    const imageUrl = URL.createObjectURL(file);
-    setImageToCrop(imageUrl);
-    setCropModalOpen(true);
-    
-    // Reset input for future selections
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  }, []);
-
-  const handleCropComplete = useCallback(async (croppedBlob: Blob) => {
-    // Clean up object URL
-    if (imageToCrop) {
-      URL.revokeObjectURL(imageToCrop);
-    }
-    setImageToCrop(null);
-    setPendingCropFile(null);
-    setCropModalOpen(false);
-    
-    setIsCompressingPreview(true);
-    
-    try {
-      // Create file from blob
-      const croppedFile = new File([croppedBlob], "chat-image.jpg", {
-        type: "image/jpeg",
+      // If send fails, queue it
+      addToQueue({
+        type: 'quedada',
+        chatId: quedadaId,
+        content: messageContent,
+        metadata: {
+          recipientProfileIds: recipientIds,
+          quedadaTitle: quedada.title,
+        },
       });
-      
-      // Compress image for upload
-      const compressedFile = await compressChatImage(croppedFile);
-      setSelectedFile(compressedFile);
-      
-      // Create preview from compressed file
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-        setIsCompressingPreview(false);
-      };
-      reader.readAsDataURL(compressedFile);
-      
-      // Haptic feedback
-      if (navigator.vibrate) navigator.vibrate(15);
-    } catch (error) {
-      console.error("Error processing cropped image:", error);
-      toast.error("Error al procesar la imagen");
-      setIsCompressingPreview(false);
-    }
-  }, [imageToCrop]);
-
-  const handleCropClose = useCallback(() => {
-    if (imageToCrop) {
-      URL.revokeObjectURL(imageToCrop);
-    }
-    setImageToCrop(null);
-    setPendingCropFile(null);
-    setCropModalOpen(false);
-  }, [imageToCrop]);
-
-  const clearImagePreview = () => {
-    setSelectedFile(null);
-    setImagePreview(null);
-    setIsCompressingPreview(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      setNewMessage("");
+      toast.info("Mensaje guardado. Se enviará al reconectar.");
     }
   };
 
-  // Helper function to check if content is an image URL
+  // Helper function to check if content is an image URL (for displaying received images)
   const isImageMessage = (content: string) => {
     return content.includes("chat-images") && (
       content.includes(".jpg") || 
@@ -684,71 +567,10 @@ const QuedadaChat = () => {
         </div>
       )}
 
-      {/* Image preview with upload progress */}
-      {(imagePreview || isUploadingImage) && (
-        <div className="relative z-10 px-6 py-2 border-t border-border/20 backdrop-blur-sm bg-background/80">
-          <div className="relative inline-block">
-            {imagePreview && (
-              <img 
-                src={imagePreview} 
-                alt="Vista previa"
-                className={`h-20 rounded-lg object-cover transition-opacity ${isUploadingImage ? "opacity-50" : "opacity-100"}`}
-              />
-            )}
-            
-            {/* Upload progress overlay */}
-            {isUploadingImage && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm rounded-lg">
-                <UploadProgress
-                  isVisible={true}
-                  phase={uploadPhase}
-                  progress={uploadProgress}
-                  className="scale-75"
-                />
-              </div>
-            )}
-            
-            {/* Close button - only show when not uploading */}
-            {!isUploadingImage && (
-              <button
-                type="button"
-                onClick={clearImagePreview}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Input */}
       <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80">
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageSelect}
-          className="hidden"
-        />
-        
         <div className="flex gap-3 items-center">
-          {/* Image button - hide when recording */}
-          {!isRecording && (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading || isCompressingPreview}
-              className="h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-accent hover:border-accent/50 transition-all duration-300 disabled:opacity-50"
-            >
-              {isUploadingImage || isCompressingPreview ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <ImagePlus className="w-5 h-5" />
-              )}
-            </button>
-          )}
 
           {/* Voice record button */}
           <VoiceRecordButton
@@ -770,7 +592,7 @@ const QuedadaChat = () => {
                     setNewMessage(e.target.value);
                     handleTyping();
                   }}
-                  placeholder={selectedFile ? "Añade un mensaje..." : "Escribe algo..."}
+                  placeholder="Escribe algo..."
                   className="h-12 font-body bg-card/50 text-foreground border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
                 />
               </div>
@@ -778,7 +600,7 @@ const QuedadaChat = () => {
                 type="submit"
                 size="icon"
                 className="h-12 w-12 rounded-xl bg-accent hover:bg-accent/90 shadow-lg shadow-accent/30 hover:shadow-accent/50 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                disabled={(!newMessage.trim() && !selectedFile) || sendMessage.isPending || isUploading}
+                disabled={!newMessage.trim() || sendMessage.isPending || isUploading}
               >
                 {isUploading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -909,14 +731,6 @@ const QuedadaChat = () => {
         </div>
       )}
 
-      {/* Image Crop Modal */}
-      <ImageCropModal
-        isOpen={cropModalOpen && !!imageToCrop}
-        onClose={handleCropClose}
-        imageSrc={imageToCrop || ""}
-        onCropComplete={handleCropComplete}
-        aspectRatio={4 / 5}
-      />
     </main>
   );
 };
