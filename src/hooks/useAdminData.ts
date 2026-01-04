@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AppRole } from "./useUserRole";
+import { sendPushNotification } from "@/utils/pushNotifications";
 
 interface Profile {
   id: string;
@@ -278,23 +279,29 @@ export const useUpdateIdentityVerification = () => {
       }
 
       // Create notification for the user
-      const notificationData = approved
-        ? {
-            profile_id: profileId,
-            type: "identity_verified",
-            title: "✅ Identidad verificada",
-            description: "Tu verificación de identidad ha sido aprobada por nuestro equipo. Ahora tienes el badge de verificado.",
-            link: "/profile",
-          }
-        : {
-            profile_id: profileId,
-            type: "identity_rejected",
-            title: "❌ Verificación rechazada",
-            description: rejectionReason || "Tu verificación de identidad ha sido rechazada. Puedes intentarlo de nuevo.",
-            link: "/profile",
-          };
+      const notificationTitle = approved ? "✅ Identidad verificada" : "❌ Verificación rechazada";
+      const notificationDesc = approved
+        ? "Tu verificación de identidad ha sido aprobada por nuestro equipo. Ahora tienes el badge de verificado."
+        : (rejectionReason || "Tu verificación de identidad ha sido rechazada. Puedes intentarlo de nuevo.");
+
+      const notificationData = {
+        profile_id: profileId,
+        type: approved ? "identity_verified" : "identity_rejected",
+        title: notificationTitle,
+        description: notificationDesc,
+        link: "/profile",
+      };
 
       await supabase.from('notifications').insert(notificationData);
+
+      // Send push notification
+      await sendPushNotification({
+        profileId,
+        title: notificationTitle,
+        body: notificationDesc,
+        url: "/profile",
+        tag: approved ? "identity-verified" : "identity-rejected",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-identity-verifications'] });
