@@ -422,7 +422,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                 Cancelar
               </Button>
               <Button
-                onClick={() => handleSendGhostMessage(false)}
+                onClick={() => { triggerHaptic('success'); handleSendGhostMessage(false); }}
                 disabled={!selectedMessage || sending}
                 className="gap-2"
               >
