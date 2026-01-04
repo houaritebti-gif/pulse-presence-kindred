@@ -236,17 +236,17 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20">
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <button className="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background active:scale-95 transition-all">
-                  <MoreVertical className="w-4 h-4 text-foreground" />
+                <button className="group w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background hover:shadow-lg active:scale-90 transition-all duration-200">
+                  <MoreVertical className="w-4 h-4 text-foreground group-hover:rotate-90 transition-transform duration-300" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem onClick={handleReport} className="gap-2 cursor-pointer py-3 sm:py-2">
-                  <Flag className="w-4 h-4" />
+              <DropdownMenuContent align="end" className="w-40 animate-scale-in">
+                <DropdownMenuItem onClick={handleReport} className="gap-2 cursor-pointer py-3 sm:py-2 transition-colors hover:bg-muted/80">
+                  <Flag className="w-4 h-4 transition-transform group-hover:scale-110" />
                   Reportar
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleBlock} className="gap-2 text-destructive cursor-pointer py-3 sm:py-2">
-                  <Ban className="w-4 h-4" />
+                <DropdownMenuItem onClick={handleBlock} className="gap-2 text-destructive cursor-pointer py-3 sm:py-2 transition-colors hover:bg-destructive/10">
+                  <Ban className="w-4 h-4 transition-transform group-hover:scale-110" />
                   Bloquear
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -329,22 +329,22 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
               <Button
                 variant="secondary"
                 disabled
-                className="w-full gap-2 h-11 sm:h-10 text-sm sm:text-base"
+                className="w-full gap-2 h-11 sm:h-10 text-sm sm:text-base transition-all duration-300"
               >
-                <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Check className="w-4 h-4 sm:w-5 sm:h-5 animate-scale-in" />
                 Mensaje enviado
               </Button>
             ) : (
               <Button
                 onClick={handleOpenDialog}
                 disabled={sending || !limitData?.canSend}
-                className="w-full gap-2 h-11 sm:h-10 text-sm sm:text-base active:scale-[0.98] transition-transform"
+                className="group w-full gap-2 h-11 sm:h-10 text-sm sm:text-base active:scale-[0.96] hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
                 variant="default"
               >
-                <Ghost className="w-4 h-4 sm:w-5 sm:h-5" />
-                Enviar mensaje ghost
+                <Ghost className="w-4 h-4 sm:w-5 sm:h-5 group-hover:animate-bounce transition-transform" />
+                <span className="group-hover:tracking-wide transition-all duration-200">Enviar mensaje ghost</span>
                 {limitData && (
-                  <span className="text-xs opacity-80 ml-1">
+                  <span className="text-xs opacity-80 ml-1 group-hover:opacity-100 transition-opacity">
                     ({limitData.remaining}/5)
                   </span>
                 )}
