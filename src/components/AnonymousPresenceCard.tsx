@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface AnonymousPresenceCardProps {
   presence: {
@@ -100,6 +101,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
 
   const handleOpenDialog = (e: React.MouseEvent) => {
     e.stopPropagation();
+    triggerHaptic('selection');
     
     if (!limitData?.canSend) {
       setShowLimitModal(true);
@@ -235,17 +237,20 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           {/* Options menu overlay */}
           <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <button className="group w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background hover:shadow-lg active:scale-90 transition-all duration-200">
+              <DropdownMenuTrigger asChild>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); triggerHaptic('light'); }}
+                  className="group w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background hover:shadow-lg active:scale-90 transition-all duration-200"
+                >
                   <MoreVertical className="w-4 h-4 text-foreground group-hover:rotate-90 transition-transform duration-300" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40 animate-scale-in">
-                <DropdownMenuItem onClick={handleReport} className="gap-2 cursor-pointer py-3 sm:py-2 transition-colors hover:bg-muted/80">
+                <DropdownMenuItem onClick={(e) => { triggerHaptic('medium'); handleReport(e); }} className="gap-2 cursor-pointer py-3 sm:py-2 transition-colors hover:bg-muted/80">
                   <Flag className="w-4 h-4 transition-transform group-hover:scale-110" />
                   Reportar
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleBlock} className="gap-2 text-destructive cursor-pointer py-3 sm:py-2 transition-colors hover:bg-destructive/10">
+                <DropdownMenuItem onClick={(e) => { triggerHaptic('warning'); handleBlock(e); }} className="gap-2 text-destructive cursor-pointer py-3 sm:py-2 transition-colors hover:bg-destructive/10">
                   <Ban className="w-4 h-4 transition-transform group-hover:scale-110" />
                   Bloquear
                 </DropdownMenuItem>
