@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { 
   Shield, Users, Flag, UserCog, Search, 
-  MoreVertical, UserPlus, Trash2, Check, X, Clock
+  MoreVertical, UserPlus, Trash2, Check, X, Clock, Ban, Plus
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -42,20 +42,29 @@ import {
   useUpdateReportStatus
 } from "@/hooks/useAdminData";
 import { AppRole } from "@/hooks/useUserRole";
+import { 
+  useBioBlacklist, 
+  useAddBlacklistWord, 
+  useRemoveBlacklistWord 
+} from "@/hooks/useBioBlacklist";
 
 const Admin = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [addRoleDialogOpen, setAddRoleDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("moderator");
+  const [newBlacklistWord, setNewBlacklistWord] = useState("");
 
   const { data: profiles, isLoading: loadingProfiles } = useAdminProfiles();
   const { data: reports, isLoading: loadingReports } = useAdminReports();
   const { data: roles, isLoading: loadingRoles } = useAdminUserRoles();
+  const { data: blacklist, isLoading: loadingBlacklist } = useBioBlacklist();
 
   const addRoleMutation = useAddUserRole();
   const removeRoleMutation = useRemoveUserRole();
   const updateReportMutation = useUpdateReportStatus();
+  const addBlacklistMutation = useAddBlacklistWord();
+  const removeBlacklistMutation = useRemoveBlacklistWord();
 
   const filteredProfiles = profiles?.filter(p => 
     p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -135,7 +144,7 @@ const Admin = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Usuarios</span>
@@ -152,6 +161,10 @@ const Admin = () => {
             <TabsTrigger value="roles" className="gap-2">
               <UserCog className="w-4 h-4" />
               <span className="hidden sm:inline">Roles</span>
+            </TabsTrigger>
+            <TabsTrigger value="blacklist" className="gap-2">
+              <Ban className="w-4 h-4" />
+              <span className="hidden sm:inline">Blacklist</span>
             </TabsTrigger>
           </TabsList>
 
@@ -335,6 +348,72 @@ const Admin = () => {
                 </div>
               ))
             )}
+          </TabsContent>
+
+          {/* Blacklist Tab */}
+          <TabsContent value="blacklist" className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Añadir palabra prohibida..."
+                value={newBlacklistWord}
+                onChange={(e) => setNewBlacklistWord(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newBlacklistWord.trim()) {
+                    addBlacklistMutation.mutate(newBlacklistWord);
+                    setNewBlacklistWord("");
+                  }
+                }}
+              />
+              <Button 
+                onClick={() => {
+                  if (newBlacklistWord.trim()) {
+                    addBlacklistMutation.mutate(newBlacklistWord);
+                    setNewBlacklistWord("");
+                  }
+                }}
+                disabled={!newBlacklistWord.trim() || addBlacklistMutation.isPending}
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Las palabras de esta lista serán bloqueadas automáticamente en las bios de los perfiles. 
+              Los chats privados no están afectados.
+            </p>
+
+            <div className="space-y-2">
+              {loadingBlacklist ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                ))
+              ) : blacklist?.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No hay palabras en la blacklist
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {blacklist?.map((item) => (
+                    <Badge 
+                      key={item.id} 
+                      variant="secondary" 
+                      className="px-3 py-1.5 text-sm flex items-center gap-2"
+                    >
+                      {item.word}
+                      <button
+                        onClick={() => removeBlacklistMutation.mutate(item.id)}
+                        className="hover:text-destructive transition-colors"
+                        disabled={removeBlacklistMutation.isPending}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>

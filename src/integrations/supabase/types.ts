@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      bio_blacklist: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          word: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          word: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bio_blacklist_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           chat_id: string
@@ -886,6 +915,14 @@ export type Database = {
       can_view_profile: {
         Args: { target_profile_id: string; viewer_user_id: string }
         Returns: boolean
+      }
+      contains_blacklisted_words: {
+        Args: { text_to_check: string }
+        Returns: boolean
+      }
+      get_blacklisted_matches: {
+        Args: { text_to_check: string }
+        Returns: string[]
       }
       get_connection_status: {
         Args: { target_profile_id: string; viewer_user_id: string }
