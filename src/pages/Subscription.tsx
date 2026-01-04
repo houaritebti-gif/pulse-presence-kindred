@@ -91,6 +91,7 @@ const tierConfig: Record<SubscriptionTier, {
     features: [
       { text: "Mensajes fantasma ilimitados", icon: <Infinity className="w-4 h-4" />, highlight: true },
       { text: "Modo Invisible: ver sin ser visto", icon: <EyeOff className="w-4 h-4" />, highlight: true },
+      { text: "Presencia en tiempo real", icon: <Radio className="w-4 h-4" />, highlight: true },
       { text: "Mensajes premium con ✨", icon: <Sparkles className="w-4 h-4" />, highlight: true },
       { text: "Segunda oportunidad de mensaje", icon: <MessageCircle className="w-4 h-4" />, highlight: true },
       { text: "Chatbot IA personalizado" },
