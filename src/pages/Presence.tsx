@@ -522,27 +522,27 @@ const Presence = () => {
         {tier === 'free' && (
           <button
             onClick={() => navigate("/subscription")}
-            className="w-full mb-6 sm:mb-8 bg-gradient-to-r from-green-500/15 via-emerald-500/10 to-green-500/15 rounded-2xl p-4 sm:p-5 animate-fade-up border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-[1.01] group shadow-sm shadow-green-500/10"
+            className="w-full mb-6 sm:mb-8 bg-gradient-to-br from-primary/15 via-accent/10 to-primary/15 rounded-2xl p-4 sm:p-5 animate-fade-up border border-primary/30 hover:border-primary/50 transition-all hover:scale-[1.01] group shadow-lg shadow-primary/10"
           >
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-green-500/30 to-emerald-500/20 flex items-center justify-center shrink-0 shadow-inner">
-                <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 animate-pulse" />
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary/40 to-accent/30 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+                <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse" />
               </div>
               <div className="flex-1 text-left min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <p className="font-display font-bold text-card-foreground text-base sm:text-lg">
+                <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                  <p className="font-display font-bold text-primary text-base sm:text-lg leading-tight">
                     ¿Quién está activo ahora?
                   </p>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/25 text-green-600 dark:text-green-400 text-[11px] font-bold shadow-sm">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/30 text-accent-foreground text-[11px] font-bold shadow-sm">
                     Plus
                   </span>
                 </div>
-                <p className="font-body text-sm text-card-foreground/75">
-                  Ve en tiempo real quién está conectado ahora mismo
+                <p className="font-body text-sm text-card-foreground/85">
+                  Ve en tiempo real quién está conectado
                 </p>
               </div>
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-green-500/25 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity shrink-0">
-                <span className="text-green-500 font-bold text-sm sm:text-base">→</span>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/25 flex items-center justify-center opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all shrink-0">
+                <span className="text-primary font-bold text-base sm:text-lg">→</span>
               </div>
             </div>
           </button>
