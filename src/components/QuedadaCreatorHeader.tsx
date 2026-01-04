@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
+import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
+import { Badge } from "@/components/ui/badge";
 import LazyImage from "@/components/LazyImage";
 
 interface QuedadaCreatorHeaderProps {
@@ -15,6 +17,7 @@ interface QuedadaCreatorHeaderProps {
 const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => {
   const navigate = useNavigate();
   const { data: creatorTier } = useUserSubscription(creator?.id);
+  const { data: organizedCount } = useOrganizedQuedadasCount(creator?.id);
 
   const handleViewProfile = () => {
     if (creator?.id) {
@@ -42,13 +45,18 @@ const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => 
         <h3 className="font-display font-semibold text-card-foreground text-lg leading-tight">
           {title}
         </h3>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <button
             onClick={handleViewProfile}
             className="font-body text-xs text-card-foreground/50 hover:text-accent transition-colors cursor-pointer"
           >
             por {creator?.name || "Anónima"}
           </button>
+          {organizedCount && organizedCount > 0 && (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+              {organizedCount} {organizedCount === 1 ? 'quedada' : 'quedadas'}
+            </Badge>
+          )}
           {creatorTier === 'premium' && <PremiumBadge size="sm" />}
         </div>
       </div>
