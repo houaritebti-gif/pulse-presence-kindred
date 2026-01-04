@@ -412,6 +412,7 @@ export type Database = {
           bio: string | null
           city: string | null
           created_at: string | null
+          email_verified: boolean | null
           gender: Database["public"]["Enums"]["gender_type"] | null
           has_piercings: boolean | null
           has_tattoos: boolean | null
@@ -429,6 +430,7 @@ export type Database = {
           bio?: string | null
           city?: string | null
           created_at?: string | null
+          email_verified?: boolean | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
           has_piercings?: boolean | null
           has_tattoos?: boolean | null
@@ -446,6 +448,7 @@ export type Database = {
           bio?: string | null
           city?: string | null
           created_at?: string | null
+          email_verified?: boolean | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
           has_piercings?: boolean | null
           has_tattoos?: boolean | null

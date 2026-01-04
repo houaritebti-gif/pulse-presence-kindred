@@ -20,6 +20,7 @@ export interface PresenceWithProfile {
     has_piercings: boolean | null;
     alternative_aesthetic: boolean | null;
     looking_for: string[] | null;
+    email_verified: boolean | null;
   };
   tribes: string[];
   musicStyles: string[];
@@ -40,7 +41,7 @@ export const usePresenceList = () => {
         .from("presence")
         .select(`
           *,
-          profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic, looking_for)
+          profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic, looking_for, email_verified)
         `)
         .eq("is_present", true)
         .eq("visible_to_others", true)
