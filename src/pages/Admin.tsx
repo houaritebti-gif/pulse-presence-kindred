@@ -40,11 +40,14 @@ import {
   useAdminUserRoles,
   useAdminIdentityVerifications,
   useVerificationStats,
+  useVerificationChartData,
   useAddUserRole,
   useRemoveUserRole,
   useUpdateReportStatus,
   useUpdateIdentityVerification
 } from "@/hooks/useAdminData";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { AppRole } from "@/hooks/useUserRole";
 import { 
   useBioBlacklist, 
@@ -65,6 +68,7 @@ const Admin = () => {
   const { data: blacklist, isLoading: loadingBlacklist } = useBioBlacklist();
   const { data: verifications, isLoading: loadingVerifications } = useAdminIdentityVerifications();
   const { data: verificationStats, isLoading: loadingStats } = useVerificationStats();
+  const { data: chartData, isLoading: loadingChart } = useVerificationChartData();
 
   const addRoleMutation = useAddUserRole();
   const removeRoleMutation = useRemoveUserRole();
@@ -501,6 +505,90 @@ const Admin = () => {
                   </div>
                 </>
               )}
+            </div>
+
+            {/* Chart Section */}
+            <div className="p-4 bg-card rounded-lg border border-border">
+              <h3 className="text-sm font-medium text-foreground mb-4">
+                Verificaciones últimos 30 días
+              </h3>
+              {loadingChart ? (
+                <div className="h-48 flex items-center justify-center">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              ) : (
+                <ChartContainer
+                  config={{
+                    approved: {
+                      label: "Aprobadas",
+                      color: "hsl(142, 76%, 36%)",
+                    },
+                    rejected: {
+                      label: "Rechazadas",
+                      color: "hsl(var(--destructive))",
+                    },
+                  }}
+                  className="h-48 w-full"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData || []}>
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={(value) => {
+                          const date = new Date(value);
+                          return `${date.getDate()}/${date.getMonth() + 1}`;
+                        }}
+                        tick={{ fontSize: 10 }}
+                        tickLine={false}
+                        axisLine={false}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 10 }}
+                        tickLine={false}
+                        axisLine={false}
+                        allowDecimals={false}
+                      />
+                      <ChartTooltip 
+                        content={<ChartTooltipContent />}
+                        labelFormatter={(value) => {
+                          const date = new Date(value);
+                          return date.toLocaleDateString('es-ES', { 
+                            day: 'numeric', 
+                            month: 'short' 
+                          });
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="approved"
+                        stroke="hsl(142, 76%, 36%)"
+                        strokeWidth={2}
+                        dot={false}
+                        name="Aprobadas"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="rejected"
+                        stroke="hsl(var(--destructive))"
+                        strokeWidth={2}
+                        dot={false}
+                        name="Rechazadas"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              )}
+              <div className="flex items-center justify-center gap-6 mt-3 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-0.5 rounded bg-emerald-500" />
+                  <span className="text-muted-foreground">Aprobadas</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-0.5 rounded bg-destructive" />
+                  <span className="text-muted-foreground">Rechazadas</span>
+                </div>
+              </div>
             </div>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
