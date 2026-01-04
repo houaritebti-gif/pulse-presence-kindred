@@ -537,7 +537,7 @@ const Landing = () => {
               <motion.div 
                 key={index} 
                 variants={scaleIn} 
-                className="group p-8 rounded-3xl glass-dark border border-border/20 hover:border-primary/40 transition-all duration-500 relative overflow-hidden"
+                className="group p-8 rounded-3xl bg-card border border-border/30 hover:border-primary/40 transition-all duration-500 relative overflow-hidden"
                 whileHover={{ 
                   y: -10,
                   boxShadow: "0 20px 60px -20px hsl(var(--primary) / 0.3)",
@@ -565,8 +565,8 @@ const Landing = () => {
                     <feature.icon className="relative w-10 h-10 text-primary" />
                   </motion.div>
                 </div>
-                <h3 className="font-display text-xl font-bold text-foreground mb-3">{feature.title}</h3>
-                <p className="font-body text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
+                <h3 className="font-display text-xl font-bold text-card-foreground mb-3">{feature.title}</h3>
+                <p className="font-body text-card-foreground/70 text-sm leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
           </motion.div>
