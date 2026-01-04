@@ -236,13 +236,13 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false }: 
         {/* Info section */}
         <div className="p-4">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-display text-lg font-semibold text-card-foreground/60">
+            <h3 className="font-display text-lg font-semibold text-card-foreground/80">
               Perfil privado
             </h3>
             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
           </div>
           
-          <p className="font-body text-sm text-card-foreground/50 mb-3">
+          <p className="font-body text-sm text-card-foreground/70 mb-3">
             Envía un mensaje ghost para conectar
           </p>
           
@@ -252,7 +252,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false }: 
               {presence.tribes.map(tribe => (
                 <span 
                   key={tribe}
-                  className="px-2.5 py-1 rounded-full bg-card-foreground/10 font-body text-xs text-card-foreground/80"
+                  className="px-2.5 py-1 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground"
                 >
                   {tribe}
                 </span>
@@ -263,8 +263,8 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false }: 
           {/* Music styles */}
           {presence.musicStyles.length > 0 && (
             <div className="flex items-center gap-1.5 mb-3">
-              <Music className="w-3 h-3 text-primary/70 flex-shrink-0" />
-              <p className="font-body text-xs text-card-foreground/60 truncate">
+              <Music className="w-3 h-3 text-primary flex-shrink-0" />
+              <p className="font-body text-xs text-card-foreground/80 truncate">
                 {presence.musicStyles.slice(0, 3).join(" · ")}
                 {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
               </p>
@@ -274,8 +274,8 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false }: 
           {/* Looking for */}
           {presence.profile?.looking_for && presence.profile.looking_for.length > 0 && (
             <div className="flex items-center gap-1.5 mb-4">
-              <Search className="w-3 h-3 text-secondary/70 flex-shrink-0" />
-              <p className="font-body text-xs text-card-foreground/60">
+              <Search className="w-3 h-3 text-primary/80 flex-shrink-0" />
+              <p className="font-body text-xs text-card-foreground/80">
                 Busca: {presence.profile.looking_for.slice(0, 2).join(", ")}
                 {presence.profile.looking_for.length > 2 && ` +${presence.profile.looking_for.length - 2}`}
               </p>

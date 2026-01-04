@@ -20,14 +20,14 @@ const EmptyState = ({
   const content = (
     <div className="text-center py-16 animate-fade-up">
       <div className="relative w-20 h-20 mx-auto mb-6">
-        <div className="w-full h-full rounded-full bg-card/50 flex items-center justify-center">
-          <Icon className="w-8 h-8 text-muted-foreground/30" />
+        <div className="w-full h-full rounded-full bg-muted flex items-center justify-center">
+          <Icon className="w-8 h-8 text-muted-foreground" />
         </div>
       </div>
       <h3 className="font-display text-lg font-semibold text-foreground mb-2">
         {title}
       </h3>
-      <p className="font-body text-sm text-muted-foreground/60 max-w-[240px] mx-auto leading-relaxed mb-6">
+      <p className="font-body text-sm text-muted-foreground max-w-[240px] mx-auto leading-relaxed mb-6">
         {description}
       </p>
       {action}

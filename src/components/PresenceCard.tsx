@@ -200,7 +200,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             )}
           </div>
           
-          <p className="font-body text-sm text-card-foreground/70 mb-3">
+          <p className="font-body text-sm text-card-foreground/80 mb-3">
             Vibra {presence.profile?.vibe?.toLowerCase() || "misteriosa"}
           </p>
           
@@ -210,7 +210,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
               {presence.tribes.map(tribe => (
                 <span 
                   key={tribe}
-                  className="px-2.5 py-1 rounded-full bg-card-foreground/10 font-body text-xs text-card-foreground/80"
+                  className="px-2.5 py-1 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground"
                 >
                   {tribe}
                 </span>
@@ -221,8 +221,8 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
           {/* Music styles */}
           {presence.musicStyles.length > 0 && (
             <div className="flex items-center gap-1.5 mb-2">
-              <Music className="w-3 h-3 text-primary/70 flex-shrink-0" />
-              <p className="font-body text-xs text-card-foreground/60 truncate">
+              <Music className="w-3 h-3 text-primary flex-shrink-0" />
+              <p className="font-body text-xs text-card-foreground/80 truncate">
                 {presence.musicStyles.slice(0, 3).join(" · ")}
                 {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
               </p>
@@ -232,8 +232,8 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
           {/* Looking for */}
           {presence.profile?.looking_for && presence.profile.looking_for.length > 0 && (
             <div className="flex items-center gap-1.5 mb-2">
-              <Search className="w-3 h-3 text-secondary/70 flex-shrink-0" />
-              <p className="font-body text-xs text-card-foreground/60">
+              <Search className="w-3 h-3 text-primary/80 flex-shrink-0" />
+              <p className="font-body text-xs text-card-foreground/80">
                 Busca: {presence.profile.looking_for.slice(0, 2).join(", ")}
                 {presence.profile.looking_for.length > 2 && ` +${presence.profile.looking_for.length - 2}`}
               </p>
