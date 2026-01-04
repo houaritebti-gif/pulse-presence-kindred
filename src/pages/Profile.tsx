@@ -493,7 +493,7 @@ const Profile = () => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <Camera className="w-6 h-6 text-card-foreground/60 group-hover:text-card-foreground transition-colors" />
+              <Camera className="w-6 h-6 text-card-foreground/70 group-hover:text-card-foreground transition-colors" />
             )}
             {isUploading && (
               <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
@@ -508,7 +508,7 @@ const Profile = () => {
             <div className={`absolute inset-0 rounded-full border-2 transition-colors ${
               avatarUrl 
                 ? "border-transparent group-hover:border-primary/50" 
-                : "border-dashed border-card-foreground/20 group-hover:border-card-foreground/40"
+                : "border-dashed border-card-foreground/30 group-hover:border-card-foreground/50"
             }`} />
             {avatarUrl && (
               <div className="absolute inset-0 bg-background/0 group-hover:bg-background/60 flex items-center justify-center transition-all">
