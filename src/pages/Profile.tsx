@@ -25,6 +25,7 @@ import OfflineQueueManager from "@/components/OfflineQueueManager";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfilePhotoManager from "@/components/ProfilePhotoManager";
 import UploadProgress from "@/components/UploadProgress";
+import IdentityVerificationCard from "@/components/IdentityVerificationCard";
 import ImageCropModal from "@/components/ImageCropModal";
 import GenderSelector from "@/components/GenderSelector";
 import GenderPreferencesSelector from "@/components/GenderPreferencesSelector";
@@ -527,6 +528,11 @@ const Profile = () => {
             <ProfilePhotoManager profileId={profile.id} />
           </div>
         )}
+
+        {/* Identity Verification */}
+        <div className="mb-10 animate-fade-up animate-delay-160">
+          <IdentityVerificationCard />
+        </div>
 
         {/* Name & City */}
         <div className="space-y-4 mb-10 animate-fade-up animate-delay-200">
