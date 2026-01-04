@@ -49,7 +49,7 @@ const Presence = () => {
   const { data: blockedIds } = useBlockedUsers();
   const { data: sentRequests } = useSentConnectionRequests();
   const pendingConnectionCount = usePendingConnectionRequestCount();
-  const { canUseInvisibleMode, isPremium } = useSubscription();
+  const { canUseInvisibleMode, isPremium, tier } = useSubscription();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [invisibleAnimating, setInvisibleAnimating] = useState(false);
 
@@ -517,6 +517,36 @@ const Presence = () => {
             )}
           </div>
         </div>
+
+        {/* Realtime Presence Upsell Banner - Only for Free users */}
+        {tier === 'free' && (
+          <button
+            onClick={() => navigate("/subscription")}
+            className="w-full mb-8 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-green-500/10 rounded-2xl p-4 animate-fade-up border border-green-500/20 hover:border-green-500/40 transition-all hover:scale-[1.01] group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                <Radio className="w-5 h-5 text-green-500" />
+              </div>
+              <div className="flex-1 text-left">
+                <div className="flex items-center gap-2">
+                  <p className="font-display font-semibold text-card-foreground text-sm">
+                    ¿Quién está activo ahora?
+                  </p>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20 text-green-600 dark:text-green-400 text-[10px] font-bold">
+                    Plus
+                  </span>
+                </div>
+                <p className="font-body text-xs text-muted-foreground">
+                  Ve en tiempo real quién está conectado ahora mismo
+                </p>
+              </div>
+              <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                <span className="text-green-500 font-bold text-xs">→</span>
+              </div>
+            </div>
+          </button>
+        )}
 
         <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
           <DialogContent className="max-w-sm bg-card border-border">
