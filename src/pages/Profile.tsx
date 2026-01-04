@@ -29,6 +29,7 @@ import ImageCropModal from "@/components/ImageCropModal";
 import GenderSelector from "@/components/GenderSelector";
 import GenderPreferencesSelector from "@/components/GenderPreferencesSelector";
 import { useProfileGenderPreferences, useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
+import { useCheckBlacklistedWords } from "@/hooks/useBioBlacklist";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -326,8 +327,32 @@ const Profile = () => {
     }
   };
 
+  // Bio blacklist validation
+  const { checkText: checkBlacklistedWords } = useCheckBlacklistedWords();
+  const [bioError, setBioError] = useState<string | null>(null);
+
+  const handleBioChange = (newBio: string) => {
+    setBio(newBio);
+    setHasChanges(true);
+    
+    // Check for blacklisted words
+    const blockedWords = checkBlacklistedWords(newBio);
+    if (blockedWords.length > 0) {
+      setBioError(`Palabras no permitidas: ${blockedWords.join(", ")}`);
+    } else {
+      setBioError(null);
+    }
+  };
+
   const handleContinue = async () => {
     if (!profile) return;
+
+    // Check blacklist before saving
+    const blockedWords = checkBlacklistedWords(bio);
+    if (blockedWords.length > 0) {
+      toast.error(`Tu bio contiene palabras no permitidas: ${blockedWords.join(", ")}`);
+      return;
+    }
 
     try {
       await updateProfile.mutateAsync({
@@ -361,7 +386,12 @@ const Profile = () => {
       toast.success("Perfil guardado");
       navigate("/presence");
     } catch (error: any) {
-      toast.error("Error al guardar: " + error.message);
+      // Check if error is from bio blacklist trigger
+      if (error.message?.includes("prohibited words")) {
+        toast.error("Tu bio contiene palabras no permitidas");
+      } else {
+        toast.error("Error al guardar: " + error.message);
+      }
     }
   };
 
@@ -545,12 +575,16 @@ const Profile = () => {
               value={bio}
               onChange={(e) => { 
                 const newBio = e.target.value.slice(0, 300);
-                setBio(newBio); 
-                setHasChanges(true); 
+                handleBioChange(newBio);
               }}
-              className="min-h-[100px] resize-none font-body bg-secondary/50 border-border/50 focus:border-primary"
+              className={`min-h-[100px] resize-none font-body bg-secondary/50 border-border/50 focus:border-primary ${
+                bioError ? "border-destructive focus:border-destructive" : ""
+              }`}
               maxLength={300}
             />
+            {bioError && (
+              <p className="text-xs text-destructive mt-1 font-body">{bioError}</p>
+            )}
             <div className="flex justify-between items-center mt-2">
               <span className="text-xs text-muted-foreground font-body">
                 {bio.length > 150 && !bioExpanded ? "Tu bio se mostrará con 'ver más'" : ""}
