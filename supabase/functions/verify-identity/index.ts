@@ -191,7 +191,7 @@ If you cannot determine (e.g., face not visible, photo quality too low), respond
         .eq("id", verification.profile_id);
     }
 
-    // Create notification for the user (only for approved or rejected, not manual_review)
+    // Create notification and send push for the user (only for approved or rejected, not manual_review)
     if (finalStatus === "approved") {
       await supabase.from("notifications").insert({
         profile_id: verification.profile_id,
@@ -200,13 +200,47 @@ If you cannot determine (e.g., face not visible, photo quality too low), respond
         description: "Tu verificación de identidad ha sido aprobada. Ahora tienes el badge de verificado.",
         link: "/profile",
       });
+
+      // Send push notification
+      await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          profile_id: verification.profile_id,
+          title: "✅ Identidad verificada",
+          body: "Tu verificación de identidad ha sido aprobada. Ahora tienes el badge de verificado.",
+          url: "/profile",
+          tag: "identity-verified",
+        }),
+      });
     } else if (finalStatus === "rejected") {
+      const rejectionDesc = verificationResult.reason || "Tu verificación de identidad no pudo ser completada. Puedes intentarlo de nuevo.";
+      
       await supabase.from("notifications").insert({
         profile_id: verification.profile_id,
         type: "identity_rejected",
         title: "❌ Verificación rechazada",
-        description: verificationResult.reason || "Tu verificación de identidad no pudo ser completada. Puedes intentarlo de nuevo.",
+        description: rejectionDesc,
         link: "/profile",
+      });
+
+      // Send push notification
+      await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          profile_id: verification.profile_id,
+          title: "❌ Verificación rechazada",
+          body: rejectionDesc,
+          url: "/profile",
+          tag: "identity-rejected",
+        }),
       });
     }
     // For manual_review, we don't notify - user sees "en revisión" status
