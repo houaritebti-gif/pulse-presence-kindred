@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
 import PhotoCarousel from "@/components/PhotoCarousel";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface PresenceProfile {
   id: string;
@@ -200,17 +201,20 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
           {/* Options menu overlay */}
           <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <button className="group w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background hover:shadow-lg active:scale-90 transition-all duration-200">
+              <DropdownMenuTrigger asChild>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); triggerHaptic('light'); }}
+                  className="group w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background hover:shadow-lg active:scale-90 transition-all duration-200"
+                >
                   <MoreVertical className="w-5 h-5 sm:w-4 sm:h-4 text-foreground group-hover:rotate-90 transition-transform duration-300" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44 sm:w-40 animate-scale-in">
-                <DropdownMenuItem onClick={handleReport} className="gap-2 cursor-pointer py-3 sm:py-2 transition-colors hover:bg-muted/80">
+                <DropdownMenuItem onClick={(e) => { triggerHaptic('medium'); handleReport(e); }} className="gap-2 cursor-pointer py-3 sm:py-2 transition-colors hover:bg-muted/80">
                   <Flag className="w-4 h-4 transition-transform group-hover:scale-110" />
                   <span className="text-sm">Reportar</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleBlock} className="gap-2 text-destructive cursor-pointer py-3 sm:py-2 transition-colors hover:bg-destructive/10">
+                <DropdownMenuItem onClick={(e) => { triggerHaptic('warning'); handleBlock(e); }} className="gap-2 text-destructive cursor-pointer py-3 sm:py-2 transition-colors hover:bg-destructive/10">
                   <Ban className="w-4 h-4 transition-transform group-hover:scale-110" />
                   <span className="text-sm">Bloquear</span>
                 </DropdownMenuItem>
