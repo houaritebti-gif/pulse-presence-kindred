@@ -46,6 +46,7 @@ interface AnonymousPresenceCardProps {
   };
   animationDelay: number;
   isBoosted?: boolean;
+  canSeeRealtimePresence?: boolean;
 }
 
 // Ghost message options - same as Chat page
@@ -57,17 +58,21 @@ const GHOST_MESSAGES = [
 ];
 
 // Helper to get activity status
-const getActivityStatus = (lastPulse?: string, isPresent?: boolean) => {
+const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealtime: boolean = true) => {
   if (!lastPulse) return { isActive: false, label: "Inactivo", color: "bg-muted-foreground/50" };
   
   const pulseTime = new Date(lastPulse).getTime();
   const now = Date.now();
   const diffMinutes = (now - pulseTime) / (1000 * 60);
   
-  if (isPresent && diffMinutes <= 5) {
+  // If can see realtime, show "Activo ahora" for recent activity
+  if (canSeeRealtime && isPresent && diffMinutes <= 5) {
     return { isActive: true, label: "Activo ahora", color: "bg-green-500" };
-  } else if (diffMinutes <= 60) {
-    return { isActive: false, label: `Hace ${Math.round(diffMinutes)} min`, color: "bg-yellow-500" };
+  }
+  
+  // For free users OR inactive users, show relative time
+  if (diffMinutes <= 60) {
+    return { isActive: false, label: `Hace ${Math.round(diffMinutes)} min`, color: canSeeRealtime ? "bg-yellow-500" : "bg-muted-foreground/60" };
   } else if (diffMinutes <= 1440) { // 24 hours
     const hours = Math.round(diffMinutes / 60);
     return { isActive: false, label: `Hace ${hours}h`, color: "bg-orange-500" };
@@ -77,7 +82,7 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean) => {
   }
 };
 
-const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false }: AnonymousPresenceCardProps) => {
+const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, canSeeRealtimePresence = true }: AnonymousPresenceCardProps) => {
   const { data: myProfile } = useProfile();
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
@@ -264,7 +269,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false }: 
             </h3>
             {/* Activity indicator */}
             {(() => {
-              const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present);
+              const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
               return (
                 <div className="flex items-center gap-1">
                   <div className={`w-2 h-2 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse" : ""}`} />

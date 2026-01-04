@@ -196,6 +196,7 @@ export const useSubscription = () => {
   const canSendPremiumMessages = effectiveTier === 'premium';
   const canSendSecondChance = effectiveTier === 'premium';
   const canUseInvisibleMode = effectiveTier === 'premium';
+  const canSeeRealtimePresence = effectiveTier === 'plus' || effectiveTier === 'premium';
   
   // Ghost message limits by tier
   const ghostMessageLimit = effectiveTier === 'premium' ? Infinity : effectiveTier === 'plus' ? 15 : 5;
@@ -226,6 +227,7 @@ export const useSubscription = () => {
     canSendPremiumMessages,
     canSendSecondChance,
     canUseInvisibleMode,
+    canSeeRealtimePresence,
     ghostMessageLimit,
     // Tier checks
     isFree: effectiveTier === 'free',
