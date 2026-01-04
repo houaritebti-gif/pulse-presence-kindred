@@ -2,7 +2,7 @@ import { useState } from "react";
 import { 
   Shield, Users, Flag, UserCog, Search, 
   MoreVertical, UserPlus, Trash2, Check, X, Clock, Ban, Plus, RefreshCw,
-  Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle
+  Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle, History, ShieldCheck
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -55,7 +55,8 @@ import {
   useRemoveUserRole,
   useUpdateReportStatus,
   useUpdateIdentityVerification,
-  useForceReverification
+  useForceReverification,
+  useUserVerificationHistory
 } from "@/hooks/useAdminData";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
@@ -74,6 +75,8 @@ const Admin = () => {
   const [newBlacklistWord, setNewBlacklistWord] = useState("");
   const [reverifyDialogOpen, setReverifyDialogOpen] = useState(false);
   const [selectedProfileForReverify, setSelectedProfileForReverify] = useState<{ id: string; name: string | null } | null>(null);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [selectedProfileForHistory, setSelectedProfileForHistory] = useState<{ id: string; name: string | null } | null>(null);
 
   const { data: profiles, isLoading: loadingProfiles } = useAdminProfiles();
   const { data: reports, isLoading: loadingReports } = useAdminReports();
@@ -90,6 +93,7 @@ const Admin = () => {
   const removeBlacklistMutation = useRemoveBlacklistWord();
   const updateVerificationMutation = useUpdateIdentityVerification();
   const forceReverificationMutation = useForceReverification();
+  const { data: verificationHistory, isLoading: loadingHistory } = useUserVerificationHistory(selectedProfileForHistory?.id || null);
 
   const [viewingSelfie, setViewingSelfie] = useState<string | null>(null);
 
@@ -108,6 +112,26 @@ const Admin = () => {
   const openReverifyDialog = (profileId: string, profileName: string | null) => {
     setSelectedProfileForReverify({ id: profileId, name: profileName });
     setReverifyDialogOpen(true);
+  };
+
+  const openHistoryDialog = (profileId: string, profileName: string | null) => {
+    setSelectedProfileForHistory({ id: profileId, name: profileName });
+    setHistoryDialogOpen(true);
+  };
+
+  const getVerificationStatusBadge = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return <Badge className="bg-emerald-500"><CheckCircle2 className="w-3 h-3 mr-1" />Aprobada</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Rechazada</Badge>;
+      case 'pending':
+        return <Badge variant="outline" className="text-yellow-600 border-yellow-600"><Clock className="w-3 h-3 mr-1" />Pendiente</Badge>;
+      case 'manual_review':
+        return <Badge variant="secondary"><Eye className="w-3 h-3 mr-1" />Revisión manual</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
   const filteredProfiles = profiles?.filter(p => 
@@ -251,10 +275,17 @@ const Admin = () => {
               ) : (
                 filteredProfiles?.map((profile) => (
                   <div key={profile.id} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={profile.avatar_url || undefined} />
-                      <AvatarFallback>{(profile.name?.[0] || '?').toUpperCase()}</AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={profile.avatar_url || undefined} />
+                        <AvatarFallback>{(profile.name?.[0] || '?').toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      {profile.identity_verified && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                          <ShieldCheck className="w-2.5 h-2.5 text-white" />
+                        </div>
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-foreground truncate">{profile.name || 'Sin nombre'}</p>
                       <p className="text-xs text-muted-foreground">{profile.city || 'Sin ciudad'}</p>
@@ -275,6 +306,10 @@ const Admin = () => {
                         }}>
                           <UserPlus className="w-4 h-4 mr-2" />
                           Asignar rol
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openHistoryDialog(profile.id, profile.name)}>
+                          <History className="w-4 h-4 mr-2" />
+                          Historial de verificaciones
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => openReverifyDialog(profile.id, profile.name)}
@@ -843,6 +878,86 @@ const Admin = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Verification History Dialog */}
+      <Dialog open={historyDialogOpen} onOpenChange={(open) => {
+        setHistoryDialogOpen(open);
+        if (!open) setSelectedProfileForHistory(null);
+      }}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="w-5 h-5" />
+              Historial de verificaciones
+            </DialogTitle>
+            <DialogDescription>
+              {selectedProfileForHistory?.name || 'Usuario'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto space-y-3 py-2">
+            {loadingHistory ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="p-3 bg-muted/50 rounded-lg">
+                  <Skeleton className="h-4 w-24 mb-2" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              ))
+            ) : verificationHistory?.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No hay historial de verificaciones
+              </div>
+            ) : (
+              verificationHistory?.map((verification) => (
+                <div key={verification.id} className="p-3 bg-muted/50 rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    {getVerificationStatusBadge(verification.status)}
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(verification.created_at), 'dd MMM yyyy, HH:mm', { locale: es })}
+                    </span>
+                  </div>
+                  
+                  {verification.ai_confidence && (
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium">Confianza IA:</span> {verification.ai_confidence}
+                    </p>
+                  )}
+                  
+                  {verification.ai_reason && (
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium">Razón IA:</span> {verification.ai_reason}
+                    </p>
+                  )}
+                  
+                  {verification.rejection_reason && (
+                    <p className="text-xs text-destructive">
+                      <span className="font-medium">Motivo rechazo:</span> {verification.rejection_reason}
+                    </p>
+                  )}
+                  
+                  {verification.verified_at && (
+                    <p className="text-xs text-emerald-600">
+                      <span className="font-medium">Verificado:</span> {format(new Date(verification.verified_at), 'dd MMM yyyy, HH:mm', { locale: es })}
+                    </p>
+                  )}
+                  
+                  {verification.selfie_url && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setViewingSelfie(verification.selfie_url)}
+                      className="mt-1"
+                    >
+                      <Eye className="w-3 h-3 mr-1" />
+                      Ver selfie
+                    </Button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

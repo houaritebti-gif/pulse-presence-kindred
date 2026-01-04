@@ -10,6 +10,7 @@ interface Profile {
   avatar_url: string | null;
   city: string | null;
   created_at: string;
+  identity_verified?: boolean;
 }
 
 interface UserRole {
@@ -51,7 +52,7 @@ export const useAdminProfiles = () => {
     queryFn: async (): Promise<Profile[]> => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, user_id, name, avatar_url, city, created_at')
+        .select('id, user_id, name, avatar_url, city, created_at, identity_verified')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -293,6 +294,36 @@ export const useAdminIdentityVerifications = () => {
         }));
       }
 
+      return data || [];
+    },
+  });
+};
+
+// Fetch verification history for a specific user
+export const useUserVerificationHistory = (profileId: string | null) => {
+  return useQuery({
+    queryKey: ['admin-user-verification-history', profileId],
+    enabled: !!profileId,
+    queryFn: async (): Promise<IdentityVerification[]> => {
+      if (!profileId) return [];
+      
+      const { data, error } = await supabase
+        .from('identity_verifications')
+        .select(`
+          id,
+          profile_id,
+          selfie_url,
+          status,
+          rejection_reason,
+          ai_confidence,
+          ai_reason,
+          verified_at,
+          created_at
+        `)
+        .eq('profile_id', profileId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
       return data || [];
     },
   });
