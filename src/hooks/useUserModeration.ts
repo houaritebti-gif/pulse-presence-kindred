@@ -143,6 +143,47 @@ export const useReportUser = () => {
   });
 };
 
+// Status labels for user-facing display
+export const REPORT_STATUS_LABELS: Record<string, { label: string; color: string; icon: string }> = {
+  pending: { label: "En revisión", color: "text-amber-500", icon: "⏳" },
+  reviewed: { label: "Revisado", color: "text-blue-500", icon: "👀" },
+  resolved: { label: "Resuelto", color: "text-emerald-500", icon: "✅" },
+  dismissed: { label: "Desestimado", color: "text-muted-foreground", icon: "❌" },
+};
+
+// Get user's report history
+export const useMyReportHistory = () => {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
+  return useQuery({
+    queryKey: ["my_reports", profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+
+      const { data, error } = await supabase
+        .from("user_reports")
+        .select(`
+          id,
+          reason,
+          details,
+          status,
+          created_at,
+          reported_profile:profiles!user_reports_reported_profile_id_fkey(
+            id, name, avatar_url
+          )
+        `)
+        .eq("reporter_profile_id", profile.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
+};
+
 // Get full list of blocked users with profile info
 export const useBlockedUsersList = () => {
   const { data: profile } = useProfile();

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Shield, Flag, X, AlertTriangle } from "lucide-react";
+import { Shield, Flag, X, AlertTriangle, CheckCircle2, Clock, ExternalLink } from "lucide-react";
 import { useBlockUser, useReportUser, REPORT_REASONS, ReportReason } from "@/hooks/useUserModeration";
+import { useNavigate } from "react-router-dom";
 
 interface UserModerationModalProps {
   profileId: string;
@@ -17,10 +18,12 @@ const UserModerationModal = ({
   onClose,
   initialMode = "report"
 }: UserModerationModalProps) => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"block" | "report">(initialMode);
   const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
   const [details, setDetails] = useState("");
   const [confirmBlock, setConfirmBlock] = useState(false);
+  const [reportSent, setReportSent] = useState(false);
   
   const blockUser = useBlockUser();
   const reportUser = useReportUser();
@@ -43,7 +46,12 @@ const UserModerationModal = ({
       reason: selectedReason,
       details: details.trim() || undefined,
     });
+    setReportSent(true);
+  };
+  
+  const handleGoToHistory = () => {
     onClose();
+    navigate("/profile", { state: { openReportsHistory: true } });
   };
 
   return (
@@ -84,50 +92,99 @@ const UserModerationModal = ({
         </div>
 
         {mode === "report" ? (
-          <>
-            <h3 className="font-display text-lg font-semibold text-card-foreground mb-2">
-              Reportar a {profileName}
-            </h3>
-            <p className="font-body text-sm text-card-foreground/60 mb-4">
-              Selecciona el motivo del reporte:
-            </p>
-
-            {/* Reason options */}
-            <div className="space-y-2 mb-4">
-              {REPORT_REASONS.map((reason) => (
-                <button
-                  key={reason.value}
-                  onClick={() => setSelectedReason(reason.value)}
-                  className={`w-full p-3 rounded-xl font-body text-sm text-left transition-all ${
-                    selectedReason === reason.value
-                      ? "bg-primary/20 text-card-foreground border border-primary/30"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  }`}
+          reportSent ? (
+            // Success confirmation view
+            <div className="text-center py-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-card-foreground mb-2">
+                Reporte enviado
+              </h3>
+              <p className="font-body text-sm text-card-foreground/60 mb-4">
+                Gracias por ayudarnos a mantener la comunidad segura. Revisaremos tu reporte pronto.
+              </p>
+              
+              {/* Status explanation */}
+              <div className="bg-secondary/50 rounded-xl p-4 mb-4 text-left">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-amber-500" />
+                  <span className="font-body text-sm font-medium text-card-foreground">
+                    ¿Qué pasa ahora?
+                  </span>
+                </div>
+                <ul className="font-body text-xs text-card-foreground/70 space-y-1">
+                  <li>• El reporte será revisado por nuestro equipo</li>
+                  <li>• Puedes ver el estado en tu historial de reportes</li>
+                  <li>• Si es necesario, tomaremos acción</li>
+                </ul>
+              </div>
+              
+              <div className="flex gap-3">
+                <Button
+                  variant="kiki-soft"
+                  className="flex-1"
+                  onClick={onClose}
                 >
-                  {reason.label}
-                </button>
-              ))}
+                  Cerrar
+                </Button>
+                <Button
+                  variant="kiki"
+                  className="flex-1"
+                  onClick={handleGoToHistory}
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Ver historial
+                </Button>
+              </div>
             </div>
+          ) : (
+            // Report form view
+            <>
+              <h3 className="font-display text-lg font-semibold text-card-foreground mb-2">
+                Reportar a {profileName}
+              </h3>
+              <p className="font-body text-sm text-card-foreground/60 mb-4">
+                Selecciona el motivo del reporte:
+              </p>
 
-            {/* Additional details */}
-            <Textarea
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              placeholder="Detalles adicionales (opcional)"
-              className="mb-4 resize-none"
-              rows={3}
-              maxLength={500}
-            />
+              {/* Reason options */}
+              <div className="space-y-2 mb-4">
+                {REPORT_REASONS.map((reason) => (
+                  <button
+                    key={reason.value}
+                    onClick={() => setSelectedReason(reason.value)}
+                    className={`w-full p-3 rounded-xl font-body text-sm text-left transition-all ${
+                      selectedReason === reason.value
+                        ? "bg-primary/20 text-card-foreground border border-primary/30"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    {reason.label}
+                  </button>
+                ))}
+              </div>
 
-            <Button
-              variant="kiki"
-              className="w-full"
-              onClick={handleReport}
-              disabled={!selectedReason || reportUser.isPending}
-            >
-              {reportUser.isPending ? "Enviando..." : "Enviar reporte"}
-            </Button>
-          </>
+              {/* Additional details */}
+              <Textarea
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                placeholder="Detalles adicionales (opcional)"
+                className="mb-4 resize-none"
+                rows={3}
+                maxLength={500}
+              />
+
+              <Button
+                variant="kiki"
+                className="w-full"
+                onClick={handleReport}
+                disabled={!selectedReason || reportUser.isPending}
+              >
+                {reportUser.isPending ? "Enviando..." : "Enviar reporte"}
+              </Button>
+            </>
+          )
         ) : (
           <>
             <div className="flex justify-center mb-4">
