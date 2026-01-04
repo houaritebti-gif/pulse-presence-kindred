@@ -5,6 +5,7 @@ import { useProfile } from "./useProfile";
 import { useQueryClient } from "@tanstack/react-query";
 import { notifyUser } from "@/utils/notificationSound";
 import { useBlockedUsers } from "./useUserModeration";
+import { useActiveBoostedProfiles } from "./useKikiNow";
 
 export interface ReceivedGhostMessage {
   id: string;
@@ -22,15 +23,18 @@ export interface ReceivedGhostMessage {
   };
   // Whether I've sent a ghost message back (means spark exists or will exist)
   hasSentBack: boolean;
+  // Whether sender has an active KIKI Now boost
+  hasKikiNowBoost: boolean;
 }
 
 export const useReceivedGhostMessages = () => {
   const { data: profile } = useProfile();
   const { data: blockedUsers } = useBlockedUsers();
+  const { data: boostedData } = useActiveBoostedProfiles();
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["received_ghost_messages", profile?.id, blockedUsers],
+    queryKey: ["received_ghost_messages", profile?.id, blockedUsers, boostedData?.boostedIds],
     queryFn: async () => {
       if (!profile?.id) return [];
 
@@ -62,6 +66,7 @@ export const useReceivedGhostMessages = () => {
 
       const sentToIds = new Set(sentMessages?.map(m => m.to_profile_id) || []);
       const blockedSet = new Set(blockedUsers || []);
+      const boostedIds = boostedData?.boostedIds || new Set();
 
       // Filter out messages from blocked users
       return (messages || [])
@@ -75,6 +80,7 @@ export const useReceivedGhostMessages = () => {
           is_second_chance: msg.is_second_chance || false,
           from_profile: msg.from_profile as ReceivedGhostMessage["from_profile"],
           hasSentBack: sentToIds.has(msg.from_profile_id),
+          hasKikiNowBoost: boostedIds.has(msg.from_profile_id),
         })) as ReceivedGhostMessage[];
     },
     enabled: !!profile?.id,
