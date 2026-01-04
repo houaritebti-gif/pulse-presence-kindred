@@ -12,6 +12,7 @@ import {
   Infinity, 
   Loader2, 
   MessageCircle, 
+  Radio,
   Sparkles, 
   Star, 
   Zap 
@@ -306,6 +307,63 @@ const Subscription = () => {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        {/* Realtime Presence Feature Highlight - Plus/Premium */}
+        <div className="bg-card rounded-2xl overflow-hidden border border-green-500/30">
+          <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/10 px-5 py-4 border-b border-green-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-green-500/30 flex items-center justify-center">
+                <Radio className="w-5 h-5 text-green-500" />
+              </div>
+              <div>
+                <h3 className="font-display text-base font-bold text-card-foreground">
+                  Presencia en Tiempo Real
+                </h3>
+                <p className="text-xs text-card-foreground/70">
+                  Disponible en Plus y Premium
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-5 space-y-3">
+            {/* Active Now Indicator */}
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center shrink-0 relative">
+                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-semibold text-card-foreground">¿Quién está activo ahora?</h4>
+                  <Badge className="bg-green-500 text-green-950 text-[9px] px-1.5 py-0 hover:bg-green-500">
+                    Plus+
+                  </Badge>
+                </div>
+                <p className="text-sm text-card-foreground/80 leading-relaxed">
+                  Ve en tiempo real quién está conectado. Los perfiles activos se muestran con un indicador verde pulsante y separados de los inactivos.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-card-foreground/5">
+                <div className="w-3 h-3 rounded-full bg-green-500" />
+                <div>
+                  <h4 className="font-medium text-sm text-card-foreground">Activo ahora</h4>
+                  <p className="text-xs text-card-foreground/70">Indicador verde en tiempo real</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-card-foreground/5">
+                <div className="w-5 h-0.5 bg-border" />
+                <div>
+                  <h4 className="font-medium text-sm text-card-foreground">Separación visual</h4>
+                  <p className="text-xs text-card-foreground/70">Activos arriba, inactivos abajo</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
