@@ -522,27 +522,27 @@ const Presence = () => {
         {tier === 'free' && (
           <button
             onClick={() => navigate("/subscription")}
-            className="w-full mb-6 sm:mb-8 bg-gradient-to-r from-green-500/10 via-emerald-500/5 to-green-500/10 rounded-2xl p-3 sm:p-4 animate-fade-up border border-green-500/20 hover:border-green-500/40 transition-all hover:scale-[1.01] group"
+            className="w-full mb-6 sm:mb-8 bg-gradient-to-r from-green-500/15 via-emerald-500/10 to-green-500/15 rounded-2xl p-4 sm:p-5 animate-fade-up border border-green-500/30 hover:border-green-500/50 transition-all hover:scale-[1.01] group shadow-sm shadow-green-500/10"
           >
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-                <Radio className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-green-500/30 to-emerald-500/20 flex items-center justify-center shrink-0 shadow-inner">
+                <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 animate-pulse" />
               </div>
               <div className="flex-1 text-left min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-display font-semibold text-card-foreground text-sm">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <p className="font-display font-bold text-card-foreground text-base sm:text-lg">
                     ¿Quién está activo ahora?
                   </p>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20 text-green-600 dark:text-green-400 text-[10px] font-bold">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/25 text-green-600 dark:text-green-400 text-[11px] font-bold shadow-sm">
                     Plus
                   </span>
                 </div>
-                <p className="font-body text-xs text-muted-foreground">
+                <p className="font-body text-sm text-card-foreground/75">
                   Ve en tiempo real quién está conectado ahora mismo
                 </p>
               </div>
-              <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
-                <span className="text-green-500 font-bold text-xs">→</span>
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-green-500/25 flex items-center justify-center opacity-70 group-hover:opacity-100 transition-opacity shrink-0">
+                <span className="text-green-500 font-bold text-sm sm:text-base">→</span>
               </div>
             </div>
           </button>

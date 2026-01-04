@@ -185,13 +185,13 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
   return (
     <>
       <div
-        className={`w-full bg-card rounded-2xl overflow-hidden text-left transition-all animate-fade-up ${
+        className={`w-full bg-card rounded-2xl sm:rounded-3xl overflow-hidden text-left transition-all animate-fade-up ${
           isBoosted ? "ring-2 ring-primary/50 shadow-lg shadow-primary/20" : ""
         }`}
         style={{ animationDelay: `${animationDelay}ms` }}
       >
         {/* Blurred photo section */}
-        <div className="relative h-48 bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center overflow-hidden">
+        <div className="relative h-40 sm:h-48 bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center overflow-hidden">
           {presence.profile?.avatar_url ? (
             <div 
               className="absolute inset-0"
@@ -213,12 +213,12 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           
           {/* Anonymous avatar */}
           <div className="relative z-10">
-            <Avatar className="w-20 h-20 border-4 border-background/50 shadow-lg">
+            <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-background/50 shadow-lg">
               <AvatarImage 
                 src={presence.profile?.avatar_url || undefined} 
                 style={blurredAvatarStyle}
               />
-              <AvatarFallback className="text-2xl bg-secondary text-secondary-foreground">
+              <AvatarFallback className="text-xl sm:text-2xl bg-secondary text-secondary-foreground">
                 ?
               </AvatarFallback>
             </Avatar>
@@ -226,26 +226,26 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
 
           {/* KIKI Now boost badge */}
           {isBoosted && (
-            <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg animate-pulse z-20">
+            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg animate-pulse z-20">
               <Zap className="w-3 h-3 text-white fill-white" />
               <span className="text-[10px] font-bold text-white uppercase tracking-wide">Now</span>
             </div>
           )}
 
           {/* Options menu overlay */}
-          <div className="absolute top-3 right-3 z-20">
+          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20">
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <button className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background transition-colors">
+                <button className="w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background active:scale-95 transition-all">
                   <MoreVertical className="w-4 h-4 text-foreground" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem onClick={handleReport} className="gap-2 cursor-pointer">
+                <DropdownMenuItem onClick={handleReport} className="gap-2 cursor-pointer py-3 sm:py-2">
                   <Flag className="w-4 h-4" />
                   Reportar
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleBlock} className="gap-2 text-destructive cursor-pointer">
+                <DropdownMenuItem onClick={handleBlock} className="gap-2 text-destructive cursor-pointer py-3 sm:py-2">
                   <Ban className="w-4 h-4" />
                   Bloquear
                 </DropdownMenuItem>
@@ -254,27 +254,27 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           </div>
 
           {/* City badge */}
-          {presence.profile?.city && (
-            <div className="absolute top-3 left-3 z-20 px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-sm">
+          {presence.profile?.city && !isBoosted && (
+            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-20 px-2 py-1 sm:px-2.5 rounded-full bg-background/80 backdrop-blur-sm">
               <span className="text-xs font-body text-foreground">{presence.profile.city}</span>
             </div>
           )}
         </div>
 
         {/* Info section */}
-        <div className="p-4">
+        <div className="p-3 sm:p-4">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-display text-lg font-semibold text-card-foreground/80">
+            <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground/90">
               Perfil privado
             </h3>
             {/* Activity indicator */}
             {(() => {
               const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
               return (
-                <div className="flex items-center gap-1">
-                  <div className={`w-2 h-2 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse" : ""}`} />
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse" : ""}`} />
                   {!activityStatus.isActive && (
-                    <span className="text-[10px] text-muted-foreground font-body">
+                    <span className="text-[11px] sm:text-xs text-muted-foreground/90 font-body">
                       {activityStatus.label}
                     </span>
                   )}
@@ -283,17 +283,17 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             })()}
           </div>
           
-          <p className="font-body text-sm text-card-foreground/70 mb-3">
+          <p className="font-body text-sm text-card-foreground/80 mb-3">
             Envía un mensaje ghost para conectar
           </p>
           
           {/* Tribes - visible */}
           {presence.tribes.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
               {presence.tribes.map(tribe => (
                 <span 
                   key={tribe}
-                  className="px-2.5 py-1 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground"
+                  className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground/90"
                 >
                   {tribe}
                 </span>
@@ -303,9 +303,9 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
 
           {/* Music styles */}
           {presence.musicStyles.length > 0 && (
-            <div className="flex items-center gap-1.5 mb-3">
-              <Music className="w-3 h-3 text-primary flex-shrink-0" />
-              <p className="font-body text-xs text-card-foreground/80 truncate">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-3">
+              <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
+              <p className="font-body text-xs sm:text-sm text-card-foreground/85 truncate">
                 {presence.musicStyles.slice(0, 3).join(" · ")}
                 {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
               </p>
@@ -314,9 +314,9 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
 
           {/* Looking for */}
           {presence.profile?.looking_for && presence.profile.looking_for.length > 0 && (
-            <div className="flex items-center gap-1.5 mb-4">
-              <Search className="w-3 h-3 text-primary/80 flex-shrink-0" />
-              <p className="font-body text-xs text-card-foreground/80">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary/80 flex-shrink-0" />
+              <p className="font-body text-xs sm:text-sm text-card-foreground/85">
                 Busca: {presence.profile.looking_for.slice(0, 2).join(", ")}
                 {presence.profile.looking_for.length > 2 && ` +${presence.profile.looking_for.length - 2}`}
               </p>
@@ -324,27 +324,27 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           )}
 
           {/* Ghost message button */}
-          <div className="mt-2">
+          <div className="mt-3 sm:mt-2">
             {messageSent ? (
               <Button
                 variant="secondary"
                 disabled
-                className="w-full gap-2"
+                className="w-full gap-2 h-11 sm:h-10 text-sm sm:text-base"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                 Mensaje enviado
               </Button>
             ) : (
               <Button
                 onClick={handleOpenDialog}
                 disabled={sending || !limitData?.canSend}
-                className="w-full gap-2"
+                className="w-full gap-2 h-11 sm:h-10 text-sm sm:text-base active:scale-[0.98] transition-transform"
                 variant="default"
               >
-                <Ghost className="w-4 h-4" />
+                <Ghost className="w-4 h-4 sm:w-5 sm:h-5" />
                 Enviar mensaje ghost
                 {limitData && (
-                  <span className="text-xs opacity-70">
+                  <span className="text-xs opacity-80 ml-1">
                     ({limitData.remaining}/5)
                   </span>
                 )}
