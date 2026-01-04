@@ -9,6 +9,7 @@ import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRe
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useAuth } from "@/contexts/AuthContext";
+import { triggerHaptic } from "@/utils/haptics";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -198,6 +199,7 @@ const QuedadaChat = () => {
     e.preventDefault();
     if (!newMessage.trim() || !quedadaId || !quedada) return;
     
+    triggerHaptic('light');
     stopTyping(); // Stop typing indicator on send
 
     const recipientIds = getRecipientIds();

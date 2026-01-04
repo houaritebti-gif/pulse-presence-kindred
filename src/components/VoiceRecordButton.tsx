@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Mic, Square, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface VoiceRecordButtonProps {
   isRecording: boolean;
@@ -33,7 +34,7 @@ const VoiceRecordButton = ({
         {/* Cancel button */}
         <button
           type="button"
-          onClick={onCancelRecording}
+          onClick={() => { triggerHaptic('light'); onCancelRecording(); }}
           className="h-10 w-10 rounded-full bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-all"
         >
           <X className="w-4 h-4" />
@@ -58,7 +59,7 @@ const VoiceRecordButton = ({
         {/* Stop button */}
         <button
           type="button"
-          onClick={onStopRecording}
+          onClick={() => { triggerHaptic('medium'); onStopRecording(); }}
           className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground hover:bg-primary/90 transition-all shadow-lg shadow-primary/30"
         >
           <Square className="w-4 h-4 fill-current" />
@@ -70,7 +71,7 @@ const VoiceRecordButton = ({
   return (
     <button
       type="button"
-      onClick={onStartRecording}
+      onClick={() => { triggerHaptic('selection'); onStartRecording(); }}
       className="h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300"
     >
       <Mic className="w-5 h-5" />
