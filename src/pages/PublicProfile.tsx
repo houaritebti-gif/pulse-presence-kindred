@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
 import ProfilePhotoGallery from "@/components/ProfilePhotoGallery";
+import { triggerHaptic } from "@/utils/haptics";
 
 const PublicProfile = () => {
   const navigate = useNavigate();
@@ -385,7 +386,7 @@ const PublicProfile = () => {
         {!isBlocked && (
           <div className="mt-auto pt-8 animate-fade-up animate-delay-500">
             <Button
-              onClick={() => navigate(`/chat/${profileId}`)}
+              onClick={() => { triggerHaptic('selection'); navigate(`/chat/${profileId}`); }}
               className="w-full h-14 rounded-2xl font-display text-base font-semibold"
             >
               <MessageCircle className="w-5 h-5 mr-2" />

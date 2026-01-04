@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useConnectionRequests";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { triggerHaptic } from "@/utils/haptics";
 
 const Connections = () => {
   const navigate = useNavigate();
@@ -30,14 +31,17 @@ const Connections = () => {
   useConnectionRequestsRealtime();
 
   const handleAccept = (requestId: string) => {
+    triggerHaptic('success');
     acceptRequest.mutate(requestId);
   };
 
   const handleReject = (requestId: string) => {
+    triggerHaptic('light');
     rejectRequest.mutate(requestId);
   };
 
   const handleCancel = (requestId: string) => {
+    triggerHaptic('light');
     cancelRequest.mutate(requestId);
   };
 
