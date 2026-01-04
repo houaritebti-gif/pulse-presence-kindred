@@ -83,6 +83,16 @@ export const useIsProfileBoosted = (profileId: string | undefined) => {
   return data.boostedIds.has(profileId);
 };
 
+// Check if current user has an active KIKI Now boost (boolean)
+export const useHasActiveKikiNowBoost = () => {
+  const { data: boost, isLoading } = useMyKikiNowBoost();
+  
+  return {
+    data: !!boost && new Date(boost.expires_at) > new Date(),
+    isLoading,
+  };
+};
+
 // Create checkout session for KIKI Now
 export const useCreateKikiNowCheckout = () => {
   return useMutation({

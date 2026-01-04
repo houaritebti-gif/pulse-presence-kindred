@@ -7,6 +7,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit, useHasSparkWith, useCanSendSecondChance } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useHasActiveKikiNowBoost } from "@/hooks/useKikiNow";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { sendPushNotification } from "@/utils/pushNotifications";
 import { toast } from "sonner";
@@ -34,6 +35,7 @@ const Chat = () => {
   const { sparkDetected, sparkChatId, checkForNewSpark } = useSparkDetection();
   const { isPremium, canSendPremiumMessages } = useSubscription();
   const { data: secondChanceData } = useCanSendSecondChance(profileId);
+  const { data: hasKikiNowBoost } = useHasActiveKikiNowBoost();
   
   const [targetProfile, setTargetProfile] = useState<TargetProfile | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
@@ -128,6 +130,17 @@ const Chat = () => {
         }
       } else {
         setSent(true);
+        
+        // Send special notification if sender has KIKI Now boost active
+        if (hasKikiNowBoost) {
+          sendPushNotification({
+            profileId: profileId,
+            title: "⚡ ¡Alguien quiere conectar AHORA!",
+            body: `${myProfile.name || "Alguien"} de ${myProfile.city || "tu ciudad"} activó KIKI Now para conocerte`,
+            url: "/ghost-messages",
+            tag: "kiki-now-message",
+          });
+        }
         
         // Wait a moment for the database trigger to execute, then check for spark
         setTimeout(async () => {
