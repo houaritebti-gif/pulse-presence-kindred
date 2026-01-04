@@ -25,6 +25,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -62,6 +72,8 @@ const Admin = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<AppRole>("moderator");
   const [newBlacklistWord, setNewBlacklistWord] = useState("");
+  const [reverifyDialogOpen, setReverifyDialogOpen] = useState(false);
+  const [selectedProfileForReverify, setSelectedProfileForReverify] = useState<{ id: string; name: string | null } | null>(null);
 
   const { data: profiles, isLoading: loadingProfiles } = useAdminProfiles();
   const { data: reports, isLoading: loadingReports } = useAdminReports();
@@ -81,13 +93,21 @@ const Admin = () => {
 
   const [viewingSelfie, setViewingSelfie] = useState<string | null>(null);
 
-  const handleForceReverification = async (profileId: string, profileName: string | null) => {
+  const handleForceReverification = async () => {
+    if (!selectedProfileForReverify) return;
     try {
-      await forceReverificationMutation.mutateAsync({ profileId });
-      toast.success(`Re-verificación forzada para ${profileName || 'usuario'}`);
+      await forceReverificationMutation.mutateAsync({ profileId: selectedProfileForReverify.id });
+      toast.success(`Re-verificación forzada para ${selectedProfileForReverify.name || 'usuario'}`);
+      setReverifyDialogOpen(false);
+      setSelectedProfileForReverify(null);
     } catch {
       toast.error("Error al forzar re-verificación");
     }
+  };
+
+  const openReverifyDialog = (profileId: string, profileName: string | null) => {
+    setSelectedProfileForReverify({ id: profileId, name: profileName });
+    setReverifyDialogOpen(true);
   };
 
   const filteredProfiles = profiles?.filter(p => 
@@ -257,7 +277,7 @@ const Admin = () => {
                           Asignar rol
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => handleForceReverification(profile.id, profile.name)}
+                          onClick={() => openReverifyDialog(profile.id, profile.name)}
                           className="text-orange-600 focus:text-orange-600"
                         >
                           <RefreshCw className="w-4 h-4 mr-2" />
@@ -799,6 +819,30 @@ const Admin = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Force Re-verification Confirmation Dialog */}
+      <AlertDialog open={reverifyDialogOpen} onOpenChange={setReverifyDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Forzar re-verificación?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción invalidará la verificación de identidad de <strong>{selectedProfileForReverify?.name || 'este usuario'}</strong> y le notificará que debe volver a verificarse. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedProfileForReverify(null)}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleForceReverification}
+              disabled={forceReverificationMutation.isPending}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {forceReverificationMutation.isPending ? 'Procesando...' : 'Forzar re-verificación'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
