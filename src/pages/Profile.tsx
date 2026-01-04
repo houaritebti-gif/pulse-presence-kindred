@@ -31,6 +31,7 @@ import GenderSelector from "@/components/GenderSelector";
 import GenderPreferencesSelector from "@/components/GenderPreferencesSelector";
 import { useProfileGenderPreferences, useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
 import { useCheckBlacklistedWords } from "@/hooks/useBioBlacklist";
+import { triggerHaptic } from "@/utils/haptics";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -644,7 +645,7 @@ const Profile = () => {
             {VIBES.map(vibe => (
               <button
                 key={vibe.value}
-                onClick={() => { setSelectedVibe(vibe.value); setHasChanges(true); }}
+                onClick={() => { triggerHaptic('selection'); setSelectedVibe(vibe.value); setHasChanges(true); }}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all flex items-center gap-2 ${
                   selectedVibe === vibe.value
                     ? "bg-card text-card-foreground"
@@ -667,7 +668,7 @@ const Profile = () => {
             {TRIBES.map(tribe => (
               <button
                 key={tribe.value}
-                onClick={() => toggleTribe(tribe.value)}
+                onClick={() => { triggerHaptic('selection'); toggleTribe(tribe.value); }}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
                   selectedTribes.includes(tribe.value)
                     ? "bg-primary text-primary-foreground"

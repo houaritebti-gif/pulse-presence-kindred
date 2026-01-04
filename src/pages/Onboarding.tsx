@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { playCelebrationSound } from "@/utils/notificationSound";
 import UploadProgress from "@/components/UploadProgress";
 import ImageCropModal from "@/components/ImageCropModal";
+import { triggerHaptic } from "@/utils/haptics";
 
 const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
@@ -362,7 +363,7 @@ const Onboarding = () => {
               {VIBES.map((vibe) => (
                 <motion.button
                   key={vibe.value}
-                  onClick={() => setSelectedVibe(vibe.value)}
+                  onClick={() => { triggerHaptic('selection'); setSelectedVibe(vibe.value); }}
                   variants={itemVariants}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
@@ -394,7 +395,7 @@ const Onboarding = () => {
               {TRIBES.map((tribe) => (
                 <motion.button
                   key={tribe.value}
-                  onClick={() => toggleTribe(tribe.value)}
+                  onClick={() => { triggerHaptic('selection'); toggleTribe(tribe.value); }}
                   variants={itemVariants}
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.95 }}
