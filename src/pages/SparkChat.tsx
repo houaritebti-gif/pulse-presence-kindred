@@ -11,6 +11,7 @@ import { useChatImageUpload } from "@/hooks/useChatImageUpload";
 import { compressChatImage } from "@/utils/imageCompression";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
+import { triggerHaptic } from "@/utils/haptics";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import UserModerationModal from "@/components/UserModerationModal";
@@ -199,6 +200,7 @@ const SparkChat = () => {
     e.preventDefault();
     if ((!newMessage.trim() && !selectedFile) || !chatId || !chat) return;
 
+    triggerHaptic('light');
     stopTyping(); // Stop typing indicator on send
     
     const messageContent = newMessage.trim();
@@ -366,6 +368,7 @@ const SparkChat = () => {
   };
 
   const handleStopRecording = async () => {
+    triggerHaptic('medium');
     const blob = await stopRecording();
     if (!blob || !user?.id || !chatId || !chat) return;
     
