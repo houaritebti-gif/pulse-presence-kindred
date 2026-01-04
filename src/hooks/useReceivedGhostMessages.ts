@@ -68,8 +68,8 @@ export const useReceivedGhostMessages = () => {
       const blockedSet = new Set(blockedUsers || []);
       const boostedIds = boostedData?.boostedIds || new Set();
 
-      // Filter out messages from blocked users
-      return (messages || [])
+      // Filter out messages from blocked users and sort by KIKI Now boost first
+      const filteredMessages = (messages || [])
         .filter(msg => !blockedSet.has(msg.from_profile_id))
         .map(msg => ({
           id: msg.id,
@@ -82,6 +82,13 @@ export const useReceivedGhostMessages = () => {
           hasSentBack: sentToIds.has(msg.from_profile_id),
           hasKikiNowBoost: boostedIds.has(msg.from_profile_id),
         })) as ReceivedGhostMessage[];
+
+      // Sort: KIKI Now boosted first, then by created_at descending
+      return filteredMessages.sort((a, b) => {
+        if (a.hasKikiNowBoost && !b.hasKikiNowBoost) return -1;
+        if (!a.hasKikiNowBoost && b.hasKikiNowBoost) return 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
     },
     enabled: !!profile?.id,
     staleTime: 1000 * 60 * 2, // 2 minutes - has realtime updates
