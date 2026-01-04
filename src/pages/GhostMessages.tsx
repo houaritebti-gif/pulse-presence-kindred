@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban, User } from "lucide-react";
+import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban, User, Zap } from "lucide-react";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
@@ -125,10 +125,17 @@ const GhostMessageCard = ({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-display font-semibold text-card-foreground">
               {isRevealed ? (message.from_profile?.name || "Anónima") : "Alguien misterioso"}
             </h3>
+            {/* KIKI Now indicator */}
+            {message.hasKikiNowBoost && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 text-[10px] font-semibold">
+                <Zap className="w-3 h-3" />
+                KIKI Now
+              </span>
+            )}
             {/* Premium message indicator */}
             {message.is_premium_message && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-semibold animate-pulse-soft">
