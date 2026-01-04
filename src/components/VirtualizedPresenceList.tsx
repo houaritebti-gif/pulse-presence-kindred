@@ -54,7 +54,11 @@ const Row = ({
       {isConnected ? (
         <PresenceCard
           key={presence.id}
-          presence={presence}
+          presence={{
+            ...presence,
+            last_pulse: presence.last_pulse,
+            is_present: presence.is_present,
+          }}
           compatibility={getCompatibility(presence)}
           compatibilityBreakdown={getCompatibilityBreakdown(presence)}
           animationDelay={0}
@@ -78,6 +82,8 @@ const Row = ({
             } : null,
             tribes: presence.tribes,
             musicStyles: presence.musicStyles,
+            last_pulse: presence.last_pulse,
+            is_present: presence.is_present,
           }}
           animationDelay={0}
           isBoosted={!!isBoosted}
@@ -138,7 +144,11 @@ export const VirtualizedPresenceList = memo(({
           return isConnected ? (
             <PresenceCard
               key={presence.id}
-              presence={presence}
+              presence={{
+                ...presence,
+                last_pulse: presence.last_pulse,
+                is_present: presence.is_present,
+              }}
               compatibility={getCompatibility(presence)}
               compatibilityBreakdown={getCompatibilityBreakdown(presence)}
               animationDelay={(index + 1) * 100}
@@ -162,6 +172,8 @@ export const VirtualizedPresenceList = memo(({
                 } : null,
                 tribes: presence.tribes,
                 musicStyles: presence.musicStyles,
+                last_pulse: presence.last_pulse,
+                is_present: presence.is_present,
               }}
               animationDelay={(index + 1) * 100}
               isBoosted={!!isBoosted}

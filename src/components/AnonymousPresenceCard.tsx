@@ -41,6 +41,8 @@ interface AnonymousPresenceCardProps {
     } | null;
     tribes: string[];
     musicStyles: string[];
+    last_pulse?: string;
+    is_present?: boolean;
   };
   animationDelay: number;
   isBoosted?: boolean;
@@ -53,6 +55,27 @@ const GHOST_MESSAGES = [
   "Curiosidad.",
   "Ojalá coincidamos.",
 ];
+
+// Helper to get activity status
+const getActivityStatus = (lastPulse?: string, isPresent?: boolean) => {
+  if (!lastPulse) return { isActive: false, label: "Inactivo", color: "bg-muted-foreground/50" };
+  
+  const pulseTime = new Date(lastPulse).getTime();
+  const now = Date.now();
+  const diffMinutes = (now - pulseTime) / (1000 * 60);
+  
+  if (isPresent && diffMinutes <= 5) {
+    return { isActive: true, label: "Activo ahora", color: "bg-green-500" };
+  } else if (diffMinutes <= 60) {
+    return { isActive: false, label: `Hace ${Math.round(diffMinutes)} min`, color: "bg-yellow-500" };
+  } else if (diffMinutes <= 1440) { // 24 hours
+    const hours = Math.round(diffMinutes / 60);
+    return { isActive: false, label: `Hace ${hours}h`, color: "bg-orange-500" };
+  } else {
+    const days = Math.round(diffMinutes / 1440);
+    return { isActive: false, label: `Hace ${days}d`, color: "bg-muted-foreground/50" };
+  }
+};
 
 const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false }: AnonymousPresenceCardProps) => {
   const { data: myProfile } = useProfile();
@@ -239,7 +262,20 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false }: 
             <h3 className="font-display text-lg font-semibold text-card-foreground/80">
               Perfil privado
             </h3>
-            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" />
+            {/* Activity indicator */}
+            {(() => {
+              const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present);
+              return (
+                <div className="flex items-center gap-1">
+                  <div className={`w-2 h-2 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse" : ""}`} />
+                  {!activityStatus.isActive && (
+                    <span className="text-[10px] text-muted-foreground font-body">
+                      {activityStatus.label}
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
           </div>
           
           <p className="font-body text-sm text-card-foreground/70 mb-3">
