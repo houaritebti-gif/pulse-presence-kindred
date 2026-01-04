@@ -54,7 +54,7 @@ const Auth = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate("/profile");
+      navigate("/presence");
     }
   }, [user, navigate]);
 
@@ -119,7 +119,7 @@ const Auth = () => {
         if (error) throw error;
         toast.success("¡Cuenta creada! Ya puedes entrar.");
       }
-      navigate("/profile");
+      navigate("/presence");
     } catch (error: any) {
       if (error.message.includes("Invalid login credentials")) {
         toast.error("Email o contraseña incorrectos");
@@ -137,7 +137,7 @@ const Auth = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/profile`,
+        redirectTo: `${window.location.origin}/presence`,
       },
     });
     if (error) {
