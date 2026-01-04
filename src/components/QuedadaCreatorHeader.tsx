@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import LazyImage from "@/components/LazyImage";
@@ -12,11 +13,21 @@ interface QuedadaCreatorHeaderProps {
 }
 
 const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => {
+  const navigate = useNavigate();
   const { data: creatorTier } = useUserSubscription(creator?.id);
+
+  const handleViewProfile = () => {
+    if (creator?.id) {
+      navigate(`/profile/${creator.id}`);
+    }
+  };
 
   return (
     <div className="flex items-start gap-3 mb-4">
-      <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-accent/20">
+      <button
+        onClick={handleViewProfile}
+        className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-accent/20 hover:ring-accent/40 transition-all cursor-pointer"
+      >
         {creator?.avatar_url ? (
           <LazyImage src={creator.avatar_url} alt="" className="w-full h-full object-cover" placeholderClassName="w-full h-full" />
         ) : (
@@ -26,15 +37,18 @@ const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => 
             </span>
           </div>
         )}
-      </div>
+      </button>
       <div className="flex-1 min-w-0">
         <h3 className="font-display font-semibold text-card-foreground text-lg leading-tight">
           {title}
         </h3>
         <div className="flex items-center gap-1.5">
-          <p className="font-body text-xs text-card-foreground/50">
+          <button
+            onClick={handleViewProfile}
+            className="font-body text-xs text-card-foreground/50 hover:text-accent transition-colors cursor-pointer"
+          >
             por {creator?.name || "Anónima"}
-          </p>
+          </button>
           {creatorTier === 'premium' && <PremiumBadge size="sm" />}
         </div>
       </div>
