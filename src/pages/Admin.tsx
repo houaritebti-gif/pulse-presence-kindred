@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { 
   Shield, Users, Flag, UserCog, Search, 
-  MoreVertical, UserPlus, Trash2, Check, X, Clock, Ban, Plus
+  MoreVertical, UserPlus, Trash2, Check, X, Clock, Ban, Plus, 
+  Camera, Eye, ThumbsUp, ThumbsDown
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -37,9 +38,11 @@ import {
   useAdminProfiles, 
   useAdminReports, 
   useAdminUserRoles,
+  useAdminIdentityVerifications,
   useAddUserRole,
   useRemoveUserRole,
-  useUpdateReportStatus
+  useUpdateReportStatus,
+  useUpdateIdentityVerification
 } from "@/hooks/useAdminData";
 import { AppRole } from "@/hooks/useUserRole";
 import { 
@@ -59,12 +62,16 @@ const Admin = () => {
   const { data: reports, isLoading: loadingReports } = useAdminReports();
   const { data: roles, isLoading: loadingRoles } = useAdminUserRoles();
   const { data: blacklist, isLoading: loadingBlacklist } = useBioBlacklist();
+  const { data: verifications, isLoading: loadingVerifications } = useAdminIdentityVerifications();
 
   const addRoleMutation = useAddUserRole();
   const removeRoleMutation = useRemoveUserRole();
   const updateReportMutation = useUpdateReportStatus();
   const addBlacklistMutation = useAddBlacklistWord();
   const removeBlacklistMutation = useRemoveBlacklistWord();
+  const updateVerificationMutation = useUpdateIdentityVerification();
+
+  const [viewingSelfie, setViewingSelfie] = useState<string | null>(null);
 
   const filteredProfiles = profiles?.filter(p => 
     p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -144,7 +151,7 @@ const Admin = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Usuarios</span>
@@ -155,6 +162,15 @@ const Admin = () => {
               {reports?.filter(r => r.status === 'pending').length ? (
                 <Badge variant="destructive" className="ml-1 h-5 px-1.5">
                   {reports.filter(r => r.status === 'pending').length}
+                </Badge>
+              ) : null}
+            </TabsTrigger>
+            <TabsTrigger value="verifications" className="gap-2">
+              <Camera className="w-4 h-4" />
+              <span className="hidden sm:inline">Identidad</span>
+              {verifications?.length ? (
+                <Badge variant="destructive" className="ml-1 h-5 px-1.5">
+                  {verifications.length}
                 </Badge>
               ) : null}
             </TabsTrigger>
@@ -415,6 +431,153 @@ const Admin = () => {
               )}
             </div>
           </TabsContent>
+
+          {/* Identity Verifications Tab */}
+          <TabsContent value="verifications" className="space-y-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+              <Camera className="w-4 h-4" />
+              <span>Verificaciones pendientes de revisión manual (baja confianza de IA)</span>
+            </div>
+
+            {loadingVerifications ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="p-4 bg-card rounded-lg border border-border">
+                  <div className="flex gap-4">
+                    <Skeleton className="w-20 h-20 rounded-lg" />
+                    <Skeleton className="w-20 h-20 rounded-lg" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-32 mb-2" />
+                      <Skeleton className="h-3 w-48" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : verifications?.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p>No hay verificaciones pendientes</p>
+              </div>
+            ) : (
+              verifications?.map((verification) => (
+                <div key={verification.id} className="p-4 bg-card rounded-lg border border-border space-y-4">
+                  <div className="flex items-start gap-4">
+                    {/* Profile Photo */}
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground text-center">Perfil</p>
+                      <div 
+                        className="w-20 h-20 rounded-lg overflow-hidden border border-border cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setViewingSelfie(verification.profile?.avatar_url || null)}
+                      >
+                        {verification.profile?.avatar_url ? (
+                          <img 
+                            src={verification.profile.avatar_url} 
+                            alt="Foto de perfil" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <Users className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Selfie */}
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground text-center">Selfie</p>
+                      <div 
+                        className="w-20 h-20 rounded-lg overflow-hidden border border-border cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setViewingSelfie(verification.selfie_url)}
+                      >
+                        <img 
+                          src={verification.selfie_url} 
+                          alt="Selfie" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium truncate">
+                          {verification.profile?.name || 'Sin nombre'}
+                        </span>
+                        <Badge variant="outline" className="text-amber-600 border-amber-600">
+                          <Clock className="w-3 h-3 mr-1" />
+                          Revisión manual
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {verification.profile?.city || 'Sin ciudad'}
+                      </p>
+                      
+                      {/* AI Analysis */}
+                      <div className="text-xs space-y-1 p-2 bg-muted/50 rounded">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Confianza IA:</span>
+                          <Badge 
+                            variant={verification.ai_confidence === 'high' ? 'default' : 'secondary'}
+                            className="text-xs"
+                          >
+                            {verification.ai_confidence || 'N/A'}
+                          </Badge>
+                        </div>
+                        {verification.ai_reason && (
+                          <p className="text-muted-foreground italic">
+                            "{verification.ai_reason}"
+                          </p>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Solicitado {format(new Date(verification.created_at), "d MMM yyyy, HH:mm", { locale: es })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-2 border-t border-border">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 text-emerald-600 border-emerald-600 hover:bg-emerald-600/10"
+                      onClick={() => {
+                        updateVerificationMutation.mutate({
+                          verificationId: verification.id,
+                          profileId: verification.profile_id,
+                          approved: true,
+                        });
+                        toast.success("Verificación aprobada");
+                      }}
+                      disabled={updateVerificationMutation.isPending}
+                    >
+                      <ThumbsUp className="w-4 h-4 mr-2" />
+                      Aprobar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 text-destructive border-destructive hover:bg-destructive/10"
+                      onClick={() => {
+                        updateVerificationMutation.mutate({
+                          verificationId: verification.id,
+                          profileId: verification.profile_id,
+                          approved: false,
+                          rejectionReason: "Las fotos no coinciden según revisión manual",
+                        });
+                        toast.success("Verificación rechazada");
+                      }}
+                      disabled={updateVerificationMutation.isPending}
+                    >
+                      <ThumbsDown className="w-4 h-4 mr-2" />
+                      Rechazar
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -446,6 +609,19 @@ const Admin = () => {
               {addRoleMutation.isPending ? 'Asignando...' : 'Asignar'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Selfie Lightbox */}
+      <Dialog open={!!viewingSelfie} onOpenChange={() => setViewingSelfie(null)}>
+        <DialogContent className="max-w-md p-2">
+          {viewingSelfie && (
+            <img 
+              src={viewingSelfie} 
+              alt="Vista ampliada" 
+              className="w-full h-auto rounded-lg"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

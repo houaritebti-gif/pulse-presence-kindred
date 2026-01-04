@@ -77,8 +77,8 @@ const IdentityVerificationCard = () => {
     );
   }
 
-  // Pending verification
-  if (verification?.status === "pending") {
+  // Pending verification (including manual review)
+  if (verification?.status === "pending" || verification?.status === "manual_review") {
     return (
       <Card className="border-amber-500/30 bg-amber-500/5">
         <CardContent className="p-6">
@@ -88,10 +88,14 @@ const IdentityVerificationCard = () => {
             </div>
             <div>
               <p className="font-medium text-amber-600 dark:text-amber-400">
-                Verificación en proceso
+                {verification?.status === "manual_review" 
+                  ? "En revisión manual" 
+                  : "Verificación en proceso"}
               </p>
               <p className="text-sm text-muted-foreground">
-                Estamos revisando tu selfie
+                {verification?.status === "manual_review"
+                  ? "Un administrador revisará tu selfie pronto"
+                  : "Estamos procesando tu selfie"}
               </p>
             </div>
           </div>

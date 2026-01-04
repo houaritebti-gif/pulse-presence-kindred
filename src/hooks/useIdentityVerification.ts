@@ -8,8 +8,10 @@ export interface IdentityVerification {
   id: string;
   profile_id: string;
   selfie_url: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "manual_review" | "approved" | "rejected";
   rejection_reason: string | null;
+  ai_confidence: string | null;
+  ai_reason: string | null;
   verified_at: string | null;
   created_at: string;
 }

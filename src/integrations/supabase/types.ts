@@ -180,6 +180,8 @@ export type Database = {
       }
       identity_verifications: {
         Row: {
+          ai_confidence: string | null
+          ai_reason: string | null
           created_at: string
           id: string
           profile_id: string
@@ -190,6 +192,8 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
+          ai_confidence?: string | null
+          ai_reason?: string | null
           created_at?: string
           id?: string
           profile_id: string
@@ -200,6 +204,8 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
+          ai_confidence?: string | null
+          ai_reason?: string | null
           created_at?: string
           id?: string
           profile_id?: string

@@ -30,6 +30,19 @@ interface UserReport {
   reported?: Profile;
 }
 
+interface IdentityVerification {
+  id: string;
+  profile_id: string;
+  selfie_url: string;
+  status: string;
+  rejection_reason: string | null;
+  ai_confidence: string | null;
+  ai_reason: string | null;
+  verified_at: string | null;
+  created_at: string;
+  profile?: Profile;
+}
+
 // Fetch all profiles for admin view
 export const useAdminProfiles = () => {
   return useQuery({
@@ -126,6 +139,50 @@ export const useAdminUserRoles = () => {
   });
 };
 
+// Fetch identity verifications pending manual review
+export const useAdminIdentityVerifications = () => {
+  return useQuery({
+    queryKey: ['admin-identity-verifications'],
+    queryFn: async (): Promise<IdentityVerification[]> => {
+      const { data, error } = await supabase
+        .from('identity_verifications')
+        .select(`
+          id,
+          profile_id,
+          selfie_url,
+          status,
+          rejection_reason,
+          ai_confidence,
+          ai_reason,
+          verified_at,
+          created_at
+        `)
+        .eq('status', 'manual_review')
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      // Get profile info
+      const profileIds = data?.map(v => v.profile_id) || [];
+      if (profileIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, user_id, name, avatar_url, city')
+          .in('id', profileIds);
+
+        const profileMap = new Map(profiles?.map(p => [p.id, p]));
+        
+        return (data || []).map(verification => ({
+          ...verification,
+          profile: profileMap.get(verification.profile_id) as Profile | undefined,
+        }));
+      }
+
+      return data || [];
+    },
+  });
+};
+
 // Add role to user
 export const useAddUserRole = () => {
   const queryClient = useQueryClient();
@@ -178,6 +235,50 @@ export const useUpdateReportStatus = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
+    },
+  });
+};
+
+// Update identity verification status (admin decision)
+export const useUpdateIdentityVerification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      verificationId, 
+      profileId,
+      approved, 
+      rejectionReason 
+    }: { 
+      verificationId: string; 
+      profileId: string;
+      approved: boolean; 
+      rejectionReason?: string;
+    }) => {
+      // Update verification status
+      const { error: verificationError } = await supabase
+        .from('identity_verifications')
+        .update({
+          status: approved ? 'approved' : 'rejected',
+          rejection_reason: approved ? null : (rejectionReason || 'Rechazado por administrador'),
+          verified_at: approved ? new Date().toISOString() : null,
+        })
+        .eq('id', verificationId);
+
+      if (verificationError) throw verificationError;
+
+      // If approved, update profile
+      if (approved) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ identity_verified: true })
+          .eq('id', profileId);
+
+        if (profileError) throw profileError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-identity-verifications'] });
     },
   });
 };
