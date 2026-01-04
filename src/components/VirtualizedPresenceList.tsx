@@ -1,9 +1,11 @@
 import { memo, useRef, useEffect, useState, CSSProperties, ReactElement } from "react";
 import { List } from "react-window";
+import { Radio, Crown } from "lucide-react";
 import PresenceCard from "./PresenceCard";
 import AnonymousPresenceCard from "./AnonymousPresenceCard";
 import { PresenceWithProfile } from "@/hooks/usePresence";
 import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface CompatibilityBreakdown {
   tribes: number;
@@ -26,7 +28,16 @@ interface RowData {
   getCompatibility: (presence: PresenceWithProfile) => number;
   getCompatibilityBreakdown: (presence: PresenceWithProfile) => CompatibilityBreakdown;
   boostedIds: Set<string>;
+  canSeeRealtimePresence: boolean;
 }
+
+// Helper to check if profile is active (last 5 min)
+const isProfileActive = (presence: PresenceWithProfile) => {
+  if (!presence.last_pulse || !presence.is_present) return false;
+  const pulseTime = new Date(presence.last_pulse).getTime();
+  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+  return pulseTime >= fiveMinutesAgo;
+};
 
 // Row component for virtualized list - receives index and style from List, plus our custom data
 const Row = ({ 
@@ -43,7 +54,7 @@ const Row = ({
   style: CSSProperties; 
   data: RowData;
 }): ReactElement => {
-  const { profiles, connectedProfileIds, photosMap, getCompatibility, getCompatibilityBreakdown, boostedIds } = data;
+  const { profiles, connectedProfileIds, photosMap, getCompatibility, getCompatibilityBreakdown, boostedIds, canSeeRealtimePresence } = data;
   const presence = profiles[index];
   const profileId = presence.profile?.id;
   const isConnected = profileId && connectedProfileIds.has(profileId);
@@ -67,6 +78,7 @@ const Row = ({
             : []
           }
           isBoosted={!!isBoosted}
+          canSeeRealtimePresence={canSeeRealtimePresence}
         />
       ) : (
         <AnonymousPresenceCard
@@ -87,6 +99,7 @@ const Row = ({
           }}
           animationDelay={0}
           isBoosted={!!isBoosted}
+          canSeeRealtimePresence={canSeeRealtimePresence}
         />
       )}
     </div>
@@ -105,6 +118,7 @@ export const VirtualizedPresenceList = memo(({
   const containerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(600);
   const { data: activeBoostedData } = useActiveBoostedProfiles();
+  const { canSeeRealtimePresence } = useSubscription();
   const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
 
   // Calculate available height
@@ -123,6 +137,14 @@ export const VirtualizedPresenceList = memo(({
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
+  // Separate active and inactive profiles for visual separator (only for paying users)
+  const activeProfiles = canSeeRealtimePresence 
+    ? profiles.filter(p => isProfileActive(p))
+    : [];
+  const inactiveProfiles = canSeeRealtimePresence 
+    ? profiles.filter(p => !isProfileActive(p))
+    : profiles;
+
   const rowData: RowData = {
     profiles,
     connectedProfileIds,
@@ -130,13 +152,85 @@ export const VirtualizedPresenceList = memo(({
     getCompatibility,
     getCompatibilityBreakdown,
     boostedIds,
+    canSeeRealtimePresence,
   };
 
-  // For small lists, don't virtualize
-  if (profiles.length <= 5) {
+  // For small lists or when showing separator, don't virtualize
+  if (profiles.length <= 5 || canSeeRealtimePresence) {
     return (
       <div className="space-y-6">
-        {profiles.map((presence, index) => {
+        {/* Active profiles section (only for paying users) */}
+        {canSeeRealtimePresence && activeProfiles.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 py-2">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="font-display text-sm font-semibold text-foreground">
+                Activos ahora ({activeProfiles.length})
+              </span>
+              <div className="flex-1 h-px bg-gradient-to-r from-green-500/30 to-transparent" />
+            </div>
+            {activeProfiles.map((presence, index) => {
+              const profileId = presence.profile?.id;
+              const isConnected = profileId && connectedProfileIds.has(profileId);
+              const isBoosted = profileId && boostedIds.has(profileId);
+              
+              return isConnected ? (
+                <PresenceCard
+                  key={presence.id}
+                  presence={{
+                    ...presence,
+                    last_pulse: presence.last_pulse,
+                    is_present: presence.is_present,
+                  }}
+                  compatibility={getCompatibility(presence)}
+                  compatibilityBreakdown={getCompatibilityBreakdown(presence)}
+                  animationDelay={(index + 1) * 100}
+                  photos={profileId 
+                    ? photosMap?.[profileId]?.map(p => p.photo_url) || []
+                    : []
+                  }
+                  isBoosted={!!isBoosted}
+                  canSeeRealtimePresence={canSeeRealtimePresence}
+                />
+              ) : (
+                <AnonymousPresenceCard
+                  key={presence.id}
+                  presence={{
+                    id: presence.id,
+                    profile: presence.profile ? {
+                      id: presence.profile.id,
+                      name: presence.profile.name,
+                      avatar_url: presence.profile.avatar_url,
+                      city: presence.profile.city,
+                      looking_for: presence.profile.looking_for,
+                    } : null,
+                    tribes: presence.tribes,
+                    musicStyles: presence.musicStyles,
+                    last_pulse: presence.last_pulse,
+                    is_present: presence.is_present,
+                  }}
+                  animationDelay={(index + 1) * 100}
+                  isBoosted={!!isBoosted}
+                  canSeeRealtimePresence={canSeeRealtimePresence}
+                />
+              );
+            })}
+          </>
+        )}
+
+        {/* Separator between active and inactive (only for paying users with both) */}
+        {canSeeRealtimePresence && activeProfiles.length > 0 && inactiveProfiles.length > 0 && (
+          <div className="flex items-center gap-2 py-4">
+            <Radio className="w-4 h-4 text-muted-foreground" />
+            <span className="font-display text-sm font-semibold text-muted-foreground">
+              Vistos recientemente ({inactiveProfiles.length})
+            </span>
+            <div className="flex-1 h-px bg-gradient-to-r from-muted-foreground/30 to-transparent" />
+          </div>
+        )}
+
+        {/* Inactive profiles section */}
+        {inactiveProfiles.map((presence, index) => {
           const profileId = presence.profile?.id;
           const isConnected = profileId && connectedProfileIds.has(profileId);
           const isBoosted = profileId && boostedIds.has(profileId);
@@ -151,12 +245,13 @@ export const VirtualizedPresenceList = memo(({
               }}
               compatibility={getCompatibility(presence)}
               compatibilityBreakdown={getCompatibilityBreakdown(presence)}
-              animationDelay={(index + 1) * 100}
+              animationDelay={(activeProfiles.length + index + 1) * 100}
               photos={profileId 
                 ? photosMap?.[profileId]?.map(p => p.photo_url) || []
                 : []
               }
               isBoosted={!!isBoosted}
+              canSeeRealtimePresence={canSeeRealtimePresence}
             />
           ) : (
             <AnonymousPresenceCard
@@ -175,8 +270,9 @@ export const VirtualizedPresenceList = memo(({
                 last_pulse: presence.last_pulse,
                 is_present: presence.is_present,
               }}
-              animationDelay={(index + 1) * 100}
+              animationDelay={(activeProfiles.length + index + 1) * 100}
               isBoosted={!!isBoosted}
+              canSeeRealtimePresence={canSeeRealtimePresence}
             />
           );
         })}

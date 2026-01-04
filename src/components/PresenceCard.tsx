@@ -56,17 +56,21 @@ interface PresenceCardProps {
 }
 
 // Helper to get activity status
-const getActivityStatus = (lastPulse?: string, isPresent?: boolean) => {
+const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealtime: boolean = true) => {
   if (!lastPulse) return { isActive: false, label: "Inactivo", color: "bg-muted-foreground/50" };
   
   const pulseTime = new Date(lastPulse).getTime();
   const now = Date.now();
   const diffMinutes = (now - pulseTime) / (1000 * 60);
   
-  if (isPresent && diffMinutes <= 5) {
+  // If can see realtime, show "Activo ahora" for recent activity
+  if (canSeeRealtime && isPresent && diffMinutes <= 5) {
     return { isActive: true, label: "Activo ahora", color: "bg-green-500" };
-  } else if (diffMinutes <= 60) {
-    return { isActive: false, label: `Hace ${Math.round(diffMinutes)} min`, color: "bg-yellow-500" };
+  }
+  
+  // For free users OR inactive users, show relative time
+  if (diffMinutes <= 60) {
+    return { isActive: false, label: `Hace ${Math.round(diffMinutes)} min`, color: canSeeRealtime ? "bg-yellow-500" : "bg-muted-foreground/60" };
   } else if (diffMinutes <= 1440) { // 24 hours
     const hours = Math.round(diffMinutes / 60);
     return { isActive: false, label: `Hace ${hours}h`, color: "bg-orange-500" };
@@ -76,7 +80,24 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean) => {
   }
 };
 
-const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false }: PresenceCardProps) => {
+interface PresenceCardProps {
+  presence: {
+    id: string;
+    profile: PresenceProfile | null;
+    tribes: string[];
+    musicStyles: string[];
+    last_pulse?: string;
+    is_present?: boolean;
+  };
+  compatibility: number;
+  compatibilityBreakdown?: CompatibilityBreakdown;
+  animationDelay: number;
+  photos?: string[];
+  isBoosted?: boolean;
+  canSeeRealtimePresence?: boolean;
+}
+
+const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false, canSeeRealtimePresence = true }: PresenceCardProps) => {
   const navigate = useNavigate();
   const { data: organizedCount } = useOrganizedQuedadasCount(presence.profile?.id);
   const { data: subscriptionTier } = useUserSubscription(presence.profile?.id);
@@ -99,7 +120,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
     setShowModerationModal(true);
   };
 
-  const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present);
+  const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
 
   return (
     <>
