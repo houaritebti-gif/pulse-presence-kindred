@@ -1,6 +1,13 @@
 import { ReactNode } from "react";
 import { motion, Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AdminStatsCardProps {
   icon: ReactNode;
@@ -11,6 +18,7 @@ interface AdminStatsCardProps {
   variant?: "default" | "highlight";
   className?: string;
   variants?: Variants;
+  tooltip?: string;
 }
 
 const AdminStatsCard = ({
@@ -22,6 +30,7 @@ const AdminStatsCard = ({
   variant = "default",
   className,
   variants,
+  tooltip,
 }: AdminStatsCardProps) => {
   const trendColorClasses = {
     emerald: "text-[hsl(160,60%,45%)] dark:text-[hsl(160,70%,55%)]",
@@ -42,13 +51,27 @@ const AdminStatsCard = ({
         className
       )}
     >
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center justify-between mb-3">
         <div className={cn(
           "w-10 h-10 rounded-lg flex items-center justify-center",
           variant === "highlight" ? "bg-primary/15" : "bg-muted"
         )}>
           {icon}
         </div>
+        {tooltip && (
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="p-1 rounded-md hover:bg-muted/50 transition-colors">
+                  <Info className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[200px] text-center">
+                <p className="text-xs">{tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
       <p className="text-4xl font-black text-foreground tracking-tight leading-none">
         {value}
