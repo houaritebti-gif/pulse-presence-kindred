@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin } from "lucide-react";
 import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, ALL_GENDERS } from "@/constants/profileOptions";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
@@ -11,6 +11,7 @@ export interface PresenceFilters {
   details: string[];
   lookingFor: string[];
   genders: GenderType[];
+  cities: string[];
   showAllProfiles?: boolean;
   ageRange?: [number, number];
 }
@@ -18,16 +19,29 @@ export interface PresenceFilters {
 interface PresenceFiltersProps {
   filters: PresenceFilters;
   onChange: (filters: PresenceFilters) => void;
+  availableCities?: string[];
 }
 
-const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) => {
+interface PresenceFiltersProps {
+  filters: PresenceFilters;
+  onChange: (filters: PresenceFilters) => void;
+}
+
+const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: PresenceFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const hasAgeFilter = filters.ageRange && (filters.ageRange[0] !== 18 || filters.ageRange[1] !== 99);
   const hasGenderFilter = filters.genders && filters.genders.length > 0;
-  const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0 || hasGenderFilter || hasAgeFilter;
-  const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length + filters.genders.length + (hasAgeFilter ? 1 : 0);
+  const hasCityFilter = filters.cities && filters.cities.length > 0;
+  const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter;
+  const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length + filters.genders.length + filters.cities.length + (hasAgeFilter ? 1 : 0);
+
+  // Sort cities alphabetically
+  const sortedCities = useMemo(() => 
+    [...availableCities].sort((a, b) => a.localeCompare(b, 'es')),
+    [availableCities]
+  );
 
   const toggleShowAllProfiles = () => {
     // Haptic feedback on mobile
@@ -72,12 +86,19 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
     onChange({ ...filters, genders: newGenders });
   };
 
+  const toggleCity = (city: string) => {
+    const newCities = filters.cities.includes(city)
+      ? filters.cities.filter(c => c !== city)
+      : [...filters.cities, city];
+    onChange({ ...filters, cities: newCities });
+  };
+
   const handleAgeRangeChange = (value: number[]) => {
     onChange({ ...filters, ageRange: [value[0], value[1]] as [number, number] });
   };
 
   const clearFilters = () => {
-    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], ageRange: undefined });
+    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], ageRange: undefined });
   };
 
   const toggleSection = (section: string) => {
@@ -326,6 +347,43 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
               </div>
             )}
           </div>
+
+          {/* City section */}
+          {sortedCities.length > 0 && (
+            <div className="mb-4">
+              <button
+                onClick={() => toggleSection("city")}
+                className="flex items-center justify-between w-full text-left mb-2"
+              >
+                <span className="font-display text-sm font-semibold text-card-foreground flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Ciudad {filters.cities.length > 0 && `(${filters.cities.length})`}
+                </span>
+                {expandedSection === "city" ? (
+                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                )}
+              </button>
+              {expandedSection === "city" && (
+                <div className="flex flex-wrap gap-2 animate-fade-up">
+                  {sortedCities.map(city => (
+                    <button
+                      key={city}
+                      onClick={() => toggleCity(city)}
+                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                        filters.cities.includes(city)
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                      }`}
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Age range section */}
           <div>

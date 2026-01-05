@@ -35,7 +35,7 @@ const Presence = () => {
   // Filters state persisted to localStorage - moved up to use in hook
   const [filters, setFilters] = useLocalStorage<PresenceFilters>(
     STORAGE_KEYS.PRESENCE_FILTERS,
-    { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], showAllProfiles: false }
+    { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], showAllProfiles: false }
   );
   
   const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles || false);
@@ -158,6 +158,18 @@ const Presence = () => {
     ) || [];
   }, [presenceList, profile?.id, blockedIds]);
 
+  // Get unique cities from all profiles for filter
+  const availableCities = useMemo(() => {
+    const citiesSet = new Set<string>();
+    otherProfiles.forEach(p => {
+      const city = (p.profile as any)?.city;
+      if (city && typeof city === 'string' && city.trim()) {
+        citiesSet.add(city.trim());
+      }
+    });
+    return Array.from(citiesSet);
+  }, [otherProfiles]);
+
   // Get all profile IDs for batch photo fetch
   const profileIds = useMemo(() => 
     otherProfiles.map(p => p.profile?.id).filter(Boolean) as string[],
@@ -247,6 +259,13 @@ const Presence = () => {
         const profileGender = presence.profile?.gender as typeof filters.genders[number] | null;
         if (!profileGender) return false; // Hide profiles without gender when filter is active
         if (!filters.genders.includes(profileGender)) return false;
+      }
+
+      // City filter - must match at least one selected city
+      if (filters.cities && filters.cities.length > 0) {
+        const profileCity = (presence.profile as any)?.city;
+        if (!profileCity) return false; // Hide profiles without city when filter is active
+        if (!filters.cities.includes(profileCity)) return false;
       }
 
       return true;
@@ -639,7 +658,7 @@ const Presence = () => {
         </Dialog>
 
         {/* Filters */}
-        <PresenceFiltersComponent filters={filters} onChange={setFilters} />
+        <PresenceFiltersComponent filters={filters} onChange={setFilters} availableCities={availableCities} />
 
         {/* Presence indicator */}
         <div className="flex items-center justify-center gap-2 mb-10 animate-fade-up animate-delay-100">
