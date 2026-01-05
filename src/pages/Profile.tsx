@@ -1074,6 +1074,16 @@ const Profile = () => {
         onCropComplete={handleCropComplete}
         aspectRatio={1}
       />
+
+      {/* Footer */}
+      <div className="mt-10 text-center animate-fade-up animate-delay-500 pb-4">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
+          <User className="w-3.5 h-3.5 text-primary/60" />
+          <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+            Tu espacio · Tu ritmo
+          </p>
+        </div>
+      </div>
     </main>
   );
 };
@@ -1293,18 +1303,7 @@ const MyReportsHistorySection = () => {
           )}
         </div>
       )}
-
-        {/* Footer */}
-        <div className="mt-10 text-center animate-fade-up animate-delay-500">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
-            <User className="w-3.5 h-3.5 text-primary/60" />
-            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
-              Tu espacio · Tu ritmo
-            </p>
-          </div>
-        </div>
-      </div>
-    </main>
+    </div>
   );
 };
 
