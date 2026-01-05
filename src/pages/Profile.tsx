@@ -445,7 +445,7 @@ const Profile = () => {
         </div>
       </div>
 
-      <div className="flex-1 max-w-md mx-auto w-full">
+      <div className="flex-1 max-w-lg mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-10 animate-fade-up">
           <h1 className="text-3xl font-bold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
