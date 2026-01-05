@@ -235,7 +235,16 @@ const FAQSection = () => {
         </motion.div>
 
         {/* Expand/Collapse All Button */}
-        <div className="flex justify-end mb-3">
+        <div className="flex justify-end items-center gap-2 mb-3">
+          <motion.span
+            key={openItems.length}
+            initial={{ scale: 1.2, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-xs text-muted-foreground font-medium"
+            style={{ fontFamily: 'Arial, sans-serif' }}
+          >
+            {openItems.length}/{filteredFaqs.length}
+          </motion.span>
           <motion.button
             onClick={toggleAll}
             className={cn(
