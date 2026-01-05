@@ -61,7 +61,7 @@ const Row = ({
   const isBoosted = profileId && boostedIds.has(profileId);
 
   return (
-    <div style={{ ...style, paddingBottom: 24 }}>
+    <div style={{ ...style, paddingBottom: 32, paddingTop: 8 }}>
       {isConnected ? (
         <PresenceCard
           key={presence.id}
@@ -106,7 +106,7 @@ const Row = ({
   );
 };
 
-const ITEM_HEIGHT = 320; // Approximate card height + gap
+const ITEM_HEIGHT = 400; // Approximate card height + gap for proper spacing
 
 export const VirtualizedPresenceList = memo(({
   profiles,
@@ -170,7 +170,7 @@ export const VirtualizedPresenceList = memo(({
       <div 
         {...getContainerProps()}
         aria-label="Lista de perfiles presentes"
-        className="space-y-4 sm:space-y-6"
+        className="space-y-5 sm:space-y-8 pb-8"
       >
         {/* Active profiles section (only for paying users) */}
         {canSeeRealtimePresence && activeProfiles.length > 0 && (
@@ -185,7 +185,7 @@ export const VirtualizedPresenceList = memo(({
               </span>
               <div className="flex-1 h-px bg-gradient-to-r from-green-500/40 to-transparent animate-[fade-in_0.5s_ease-out]" />
             </div>
-            <div className="space-y-4 sm:space-y-6 mt-2">
+            <div className="space-y-5 sm:space-y-8 mt-3">
               {activeProfiles.map((presence, index) => {
                 const profileId = presence.profile?.id;
                 const isConnected = profileId && connectedProfileIds.has(profileId);
@@ -261,7 +261,7 @@ export const VirtualizedPresenceList = memo(({
         )}
 
         {/* Inactive profiles section */}
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-5 sm:space-y-8">
           {inactiveProfiles.map((presence, index) => {
             const profileId = presence.profile?.id;
             const isConnected = profileId && connectedProfileIds.has(profileId);
