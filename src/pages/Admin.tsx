@@ -286,38 +286,38 @@ const Admin = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 h-12 p-1 bg-muted/50">
-            <TabsTrigger value="dashboard" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsList className="grid w-full grid-cols-6 h-14 p-1.5 bg-muted/60 border-2 border-border rounded-xl">
+            <TabsTrigger value="dashboard" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg font-semibold text-sm">
               <TrendingUp className="w-4 h-4" />
               <span className="hidden sm:inline">Dashboard</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="users" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg font-semibold text-sm">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Usuarios</span>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm relative">
+            <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg font-semibold text-sm relative">
               <Flag className="w-4 h-4" />
               <span className="hidden sm:inline">Reportes</span>
               {dashboardStats.pendingReports > 0 && (
-                <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px] absolute -top-1 -right-1 sm:relative sm:top-0 sm:right-0">
+                <Badge variant="destructive" className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px] font-bold absolute -top-1 -right-1 sm:relative sm:top-0 sm:right-0">
                   {dashboardStats.pendingReports}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="verifications" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm relative">
+            <TabsTrigger value="verifications" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg font-semibold text-sm relative">
               <Camera className="w-4 h-4" />
               <span className="hidden sm:inline">Identidad</span>
               {dashboardStats.pendingVerifications > 0 && (
-                <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px] absolute -top-1 -right-1 sm:relative sm:top-0 sm:right-0">
+                <Badge variant="destructive" className="ml-1 h-5 min-w-[20px] px-1.5 text-[10px] font-bold absolute -top-1 -right-1 sm:relative sm:top-0 sm:right-0">
                   {dashboardStats.pendingVerifications}
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="roles" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="roles" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg font-semibold text-sm">
               <UserCog className="w-4 h-4" />
               <span className="hidden sm:inline">Roles</span>
             </TabsTrigger>
-            <TabsTrigger value="blacklist" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="blacklist" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg font-semibold text-sm">
               <Ban className="w-4 h-4" />
               <span className="hidden sm:inline">Blacklist</span>
             </TabsTrigger>
@@ -335,9 +335,9 @@ const Admin = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="p-5 bg-card rounded-xl border border-border"
+              className="p-6 bg-card rounded-xl border-2 border-border"
             >
-              <h3 className="text-sm font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial, sans-serif' }}>
+              <h3 className="text-base font-bold text-foreground mb-5">
                 Verificaciones últimos 30 días
               </h3>
               {loadingChart ? (
@@ -408,14 +408,14 @@ const Admin = () => {
                   </ResponsiveContainer>
                 </ChartContainer>
               )}
-              <div className="flex items-center justify-center gap-6 mt-4 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                  <span className="text-muted-foreground">Aprobadas</span>
+              <div className="flex items-center justify-center gap-8 mt-5 text-sm font-medium">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-4 h-4 rounded-full bg-emerald-500" />
+                  <span className="text-foreground/80">Aprobadas</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-destructive" />
-                  <span className="text-muted-foreground">Rechazadas</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-4 h-4 rounded-full bg-destructive" />
+                  <span className="text-foreground/80">Rechazadas</span>
                 </div>
               </div>
             </motion.div>

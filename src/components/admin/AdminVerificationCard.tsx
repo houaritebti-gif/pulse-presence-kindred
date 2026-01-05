@@ -39,14 +39,14 @@ const AdminVerificationCard = ({
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="p-5 bg-card rounded-xl border border-border hover:border-amber-500/30 transition-all duration-200"
+      className="p-5 bg-card rounded-xl border-2 border-border hover:border-amber-500/40 transition-all duration-200"
     >
       <div className="flex items-start gap-4 mb-4">
         {/* Profile Photo */}
-        <div className="space-y-1.5">
-          <p className="text-xs text-muted-foreground text-center font-medium">Perfil</p>
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground text-center font-semibold uppercase tracking-wide">Perfil</p>
           <div
-            className="w-24 h-24 rounded-xl overflow-hidden border-2 border-border cursor-pointer hover:border-primary/50 transition-colors shadow-sm"
+            className="w-24 h-24 rounded-xl overflow-hidden border-2 border-border cursor-pointer hover:border-primary/50 transition-colors shadow-md"
             onClick={() => verification.profile?.avatar_url && onViewImage(verification.profile.avatar_url)}
           >
             {verification.profile?.avatar_url ? (
@@ -64,10 +64,10 @@ const AdminVerificationCard = ({
         </div>
 
         {/* Selfie */}
-        <div className="space-y-1.5">
-          <p className="text-xs text-muted-foreground text-center font-medium">Selfie</p>
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground text-center font-semibold uppercase tracking-wide">Selfie</p>
           <div
-            className="w-24 h-24 rounded-xl overflow-hidden border-2 border-amber-500/30 cursor-pointer hover:border-amber-500 transition-colors shadow-sm"
+            className="w-24 h-24 rounded-xl overflow-hidden border-2 border-amber-500/40 cursor-pointer hover:border-amber-500 transition-colors shadow-md"
             onClick={() => onViewImage(verification.selfie_url)}
           >
             <img
@@ -81,53 +81,53 @@ const AdminVerificationCard = ({
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <span className="font-semibold text-foreground truncate" style={{ fontFamily: 'Arial, sans-serif' }}>
+            <span className="font-bold text-base text-foreground truncate">
               {verification.profile?.name || "Sin nombre"}
             </span>
-            <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">
+            <Badge variant="outline" className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40 font-semibold">
               <Clock className="w-3 h-3 mr-1" />
               Revisión manual
             </Badge>
           </div>
           
           {verification.profile?.city && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-3">
-              <MapPin className="w-3.5 h-3.5" />
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-3 font-medium">
+              <MapPin className="w-4 h-4" />
               {verification.profile.city}
             </p>
           )}
 
           {/* AI Analysis */}
-          <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+          <div className="p-3 bg-muted/60 rounded-lg space-y-2 border border-border">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-primary" />
-              <span className="text-xs text-muted-foreground">Análisis IA:</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Análisis IA:</span>
               <Badge
                 variant={verification.ai_confidence === "high" ? "default" : "secondary"}
-                className="text-xs"
+                className="text-xs font-semibold"
               >
                 {verification.ai_confidence || "N/A"}
               </Badge>
             </div>
             {verification.ai_reason && (
-              <p className="text-xs text-muted-foreground italic pl-6">
+              <p className="text-sm text-muted-foreground italic pl-6 font-medium">
                 "{verification.ai_reason}"
               </p>
             )}
           </div>
 
-          <p className="text-xs text-muted-foreground mt-3">
+          <p className="text-sm text-muted-foreground mt-3 font-medium">
             Solicitado {format(new Date(verification.created_at), "d MMM yyyy, HH:mm", { locale: es })}
           </p>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 pt-4 border-t border-border">
+      <div className="flex gap-3 pt-4 border-t-2 border-border">
         <Button
           size="sm"
           variant="outline"
-          className="flex-1 h-10 text-emerald-600 border-emerald-500/50 hover:bg-emerald-500/10 hover:border-emerald-500"
+          className="flex-1 h-11 text-emerald-600 dark:text-emerald-400 border-2 border-emerald-500/50 hover:bg-emerald-500/15 hover:border-emerald-500 font-semibold"
           onClick={onApprove}
           disabled={isUpdating}
         >
@@ -137,7 +137,7 @@ const AdminVerificationCard = ({
         <Button
           size="sm"
           variant="outline"
-          className="flex-1 h-10 text-destructive border-destructive/50 hover:bg-destructive/10 hover:border-destructive"
+          className="flex-1 h-11 text-destructive border-2 border-destructive/50 hover:bg-destructive/15 hover:border-destructive font-semibold"
           onClick={onReject}
           disabled={isUpdating}
         >
