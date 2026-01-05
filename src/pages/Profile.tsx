@@ -431,7 +431,7 @@ const Profile = () => {
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Presencia</span>
+          <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
         </button>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -440,7 +440,7 @@ const Profile = () => {
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
           >
             <LogOut className="w-4 h-4" />
-            <span>Salir</span>
+            <span style={{ fontFamily: 'Arial, sans-serif' }}>Salir</span>
           </button>
         </div>
       </div>
@@ -448,7 +448,7 @@ const Profile = () => {
       <div className="flex-1 max-w-md mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-10 animate-fade-up">
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Tu perfil
           </h1>
           {organizedCount && organizedCount > 0 && (
@@ -468,7 +468,7 @@ const Profile = () => {
               </Tooltip>
             </TooltipProvider>
           )}
-          <p className="font-body text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
             Solo lo esencial. Nada más.
           </p>
         </div>
