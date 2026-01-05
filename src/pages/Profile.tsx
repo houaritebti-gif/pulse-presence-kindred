@@ -423,7 +423,7 @@ const Profile = () => {
   }
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-6 py-8 pb-24">
+    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <button 
