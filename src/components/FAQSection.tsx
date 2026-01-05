@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { HelpCircle, Minus, Sparkles, Shield, CreditCard } from "lucide-react";
+import { HelpCircle, Minus, Sparkles, Shield, CreditCard, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 import {
   Accordion,
@@ -163,6 +163,16 @@ const FAQSection = () => {
     }
   };
 
+  const allExpanded = openItems.length === filteredFaqs.length;
+
+  const toggleAll = () => {
+    if (allExpanded) {
+      setOpenItems([]);
+    } else {
+      setOpenItems(filteredFaqs.map((_, i) => `item-${i}`));
+    }
+  };
+
   return (
     <section className="py-16 px-4 md:px-6 relative overflow-hidden bg-background">
       <div className="max-w-2xl mx-auto w-full relative z-10">
@@ -223,6 +233,21 @@ const FAQSection = () => {
             );
           })}
         </motion.div>
+
+        {/* Expand/Collapse All Button */}
+        <div className="flex justify-end mb-3">
+          <button
+            onClick={toggleAll}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+              "bg-muted text-foreground hover:bg-foreground/10"
+            )}
+            style={{ fontFamily: 'Arial, sans-serif' }}
+          >
+            <ChevronsUpDown className="w-3.5 h-3.5" />
+            <span>{allExpanded ? "Colapsar todo" : "Expandir todo"}</span>
+          </button>
+        </div>
 
         {/* FAQ Accordion - Flat design, high contrast */}
         <AnimatePresence mode="wait">
