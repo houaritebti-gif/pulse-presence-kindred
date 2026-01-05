@@ -148,6 +148,41 @@
     --input: 0 0% 25%;
     --ring: 340 100% 70%;
   }
+
+  /* High contrast enhancements for interactive elements */
+  .high-contrast button,
+  .high-contrast [role="button"] {
+    border-width: 2px !important;
+    border-style: solid !important;
+    border-color: currentColor !important;
+  }
+
+  .high-contrast .rounded-lg[class*="border"],
+  .high-contrast [class*="Card"],
+  .high-contrast .card {
+    border-width: 2px !important;
+    border-color: hsl(var(--foreground)) !important;
+  }
+
+  .high-contrast input,
+  .high-contrast textarea,
+  .high-contrast select {
+    border-width: 2px !important;
+    border-color: hsl(var(--foreground)) !important;
+  }
+
+  .high-contrast a:focus-visible,
+  .high-contrast button:focus-visible,
+  .high-contrast [role="button"]:focus-visible {
+    outline-width: 3px !important;
+    outline-offset: 3px !important;
+  }
+
+  .high-contrast .badge,
+  .high-contrast [class*="Badge"] {
+    border-width: 2px !important;
+    border-color: currentColor !important;
+  }
 }
 
 @layer base {
