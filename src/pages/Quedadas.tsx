@@ -227,12 +227,13 @@ const Quedadas = () => {
       <div className="relative z-10 flex items-center justify-between mb-8">
         <button 
           onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
+          style={{ fontFamily: 'Arial, sans-serif' }}
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Presencia</span>
         </button>
-        <span className="font-display text-xl font-bold text-foreground">KIKI</span>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <button
@@ -255,10 +256,10 @@ const Quedadas = () => {
             <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-accent/60 animate-pulse-soft" />
           </div>
           
-          <h1 className="font-display text-3xl font-bold text-foreground mb-3">
+          <h1 className="text-3xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Quedadas
           </h1>
-          <p className="font-body text-muted-foreground">
+          <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
             Eventos efímeros en {profile?.city || "tu ciudad"}.
           </p>
         </div>
@@ -303,7 +304,7 @@ const Quedadas = () => {
 
                     {/* Description */}
                     {quedada.description && (
-                      <p className="font-body text-sm text-card-foreground/80 mb-4 leading-relaxed">
+                      <p className="text-sm text-card-foreground/80 mb-4 leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>
                         {quedada.description}
                       </p>
                     )}
@@ -312,16 +313,16 @@ const Quedadas = () => {
                     <div className="flex flex-wrap gap-3 mb-4">
                       <div className="flex items-center gap-1.5 text-card-foreground/70">
                         <Calendar className="w-3.5 h-3.5" />
-                        <span className="font-body text-xs capitalize">{formatEventDate(quedada.event_date)}</span>
+                        <span className="text-xs capitalize" style={{ fontFamily: 'Arial, sans-serif' }}>{formatEventDate(quedada.event_date)}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-card-foreground/70">
                         <Clock className="w-3.5 h-3.5" />
-                        <span className="font-body text-xs">{formatEventTime(quedada.event_date)}h</span>
+                        <span className="text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>{formatEventTime(quedada.event_date)}h</span>
                       </div>
                       {quedada.location_hint && (
                         <div className="flex items-center gap-1.5 text-card-foreground/70">
                           <MapPin className="w-3.5 h-3.5" />
-                          <span className="font-body text-xs">{quedada.location_hint}</span>
+                          <span className="text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>{quedada.location_hint}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-1.5 text-card-foreground/70">
@@ -330,7 +331,7 @@ const Quedadas = () => {
                         ) : (
                           <Users className="w-3.5 h-3.5" />
                         )}
-                        <span className="font-body text-xs">
+                        <span className="text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>
                           {quedada.attendee_count}{quedada.max_attendees ? `/${quedada.max_attendees}` : ""} {quedada.private_attendees ? "(privada)" : "asistentes"}
                         </span>
                       </div>
@@ -383,19 +384,21 @@ const Quedadas = () => {
                       <div className="flex items-center justify-between pt-2">
                         <div className="flex items-center gap-2">
                           <Sparkles className="w-3.5 h-3.5 text-accent" />
-                          <span className="font-body text-xs text-card-foreground/70">Tu quedada</span>
+                          <span className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>Tu quedada</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() => openEditModal(quedada)}
-                            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors font-body text-xs"
+                            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-xs"
+                            style={{ fontFamily: 'Arial, sans-serif' }}
                           >
                             <Pencil className="w-3.5 h-3.5" />
                             Editar
                           </button>
                           <button
                             onClick={() => handleDelete(quedada.id)}
-                            className="flex items-center gap-1.5 text-destructive/70 hover:text-destructive transition-colors font-body text-xs"
+                            className="flex items-center gap-1.5 text-destructive/70 hover:text-destructive transition-colors text-xs"
+                            style={{ fontFamily: 'Arial, sans-serif' }}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             Cancelar
@@ -422,7 +425,7 @@ const Quedadas = () => {
       {showCreate && (
         <div className="fixed inset-0 bg-background/90 backdrop-blur-md flex items-center justify-center p-6 z-50">
           <div className="bg-card rounded-3xl p-6 max-w-md w-full animate-fade-up shadow-2xl border border-border/20 max-h-[90vh] overflow-y-auto">
-            <h3 className="font-display text-xl font-semibold text-card-foreground mb-6 text-center">
+            <h3 className="text-xl font-semibold text-card-foreground mb-6 text-center" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               Nueva quedada
             </h3>
             
@@ -432,6 +435,7 @@ const Quedadas = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="h-12 bg-background/50"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
               
               <Textarea
@@ -439,6 +443,7 @@ const Quedadas = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="bg-background/50 min-h-[80px]"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
               
               <Input
@@ -446,32 +451,35 @@ const Quedadas = () => {
                 value={locationHint}
                 onChange={(e) => setLocationHint(e.target.value)}
                 className="h-12 bg-background/50"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
               
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-body text-xs text-card-foreground/60 mb-1 block">Fecha</label>
+                  <label className="text-xs text-card-foreground/60 mb-1 block" style={{ fontFamily: 'Arial, sans-serif' }}>Fecha</label>
                   <Input
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
                     className="h-12 bg-background/50"
+                    style={{ fontFamily: 'Arial, sans-serif' }}
                     min={new Date().toISOString().split("T")[0]}
                   />
                 </div>
                 <div>
-                  <label className="font-body text-xs text-card-foreground/60 mb-1 block">Hora</label>
+                  <label className="text-xs text-card-foreground/60 mb-1 block" style={{ fontFamily: 'Arial, sans-serif' }}>Hora</label>
                   <Input
                     type="time"
                     value={eventTime}
                     onChange={(e) => setEventTime(e.target.value)}
                     className="h-12 bg-background/50"
+                    style={{ fontFamily: 'Arial, sans-serif' }}
                   />
                 </div>
               </div>
               
               <div>
-                <label className="font-body text-xs text-card-foreground/60 mb-1 block">
+                <label className="text-xs text-card-foreground/60 mb-1 block" style={{ fontFamily: 'Arial, sans-serif' }}>
                   Máximo asistentes (opcional)
                 </label>
                 <Input
@@ -480,6 +488,7 @@ const Quedadas = () => {
                   value={maxAttendees}
                   onChange={(e) => setMaxAttendees(e.target.value)}
                   className="h-12 bg-background/50"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                   min="2"
                 />
               </div>
@@ -488,8 +497,8 @@ const Quedadas = () => {
                 <div className="flex items-center gap-2">
                   <EyeOff className="w-4 h-4 text-card-foreground/60" />
                   <div>
-                    <span className="font-body text-sm text-card-foreground">Lista privada</span>
-                    <p className="font-body text-xs text-card-foreground/50">Solo asistentes ven quién va</p>
+                    <span className="text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Lista privada</span>
+                    <p className="text-xs text-card-foreground/50" style={{ fontFamily: 'Arial, sans-serif' }}>Solo asistentes ven quién va</p>
                   </div>
                 </div>
                 <Switch
@@ -525,7 +534,7 @@ const Quedadas = () => {
       {editingQuedada && (
         <div className="fixed inset-0 bg-background/90 backdrop-blur-md flex items-center justify-center p-6 z-50">
           <div className="bg-card rounded-3xl p-6 max-w-md w-full animate-fade-up shadow-2xl border border-border/20 max-h-[90vh] overflow-y-auto">
-            <h3 className="font-display text-xl font-semibold text-card-foreground mb-6 text-center">
+            <h3 className="text-xl font-semibold text-card-foreground mb-6 text-center" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               Editar quedada
             </h3>
             
@@ -535,6 +544,7 @@ const Quedadas = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="h-12 bg-background/50"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
               
               <Textarea
@@ -542,6 +552,7 @@ const Quedadas = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="bg-background/50 min-h-[80px]"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
               
               <Input
@@ -549,32 +560,35 @@ const Quedadas = () => {
                 value={locationHint}
                 onChange={(e) => setLocationHint(e.target.value)}
                 className="h-12 bg-background/50"
+                style={{ fontFamily: 'Arial, sans-serif' }}
               />
               
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-body text-xs text-card-foreground/60 mb-1 block">Fecha</label>
+                  <label className="text-xs text-card-foreground/60 mb-1 block" style={{ fontFamily: 'Arial, sans-serif' }}>Fecha</label>
                   <Input
                     type="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
                     className="h-12 bg-background/50"
+                    style={{ fontFamily: 'Arial, sans-serif' }}
                     min={new Date().toISOString().split("T")[0]}
                   />
                 </div>
                 <div>
-                  <label className="font-body text-xs text-card-foreground/60 mb-1 block">Hora</label>
+                  <label className="text-xs text-card-foreground/60 mb-1 block" style={{ fontFamily: 'Arial, sans-serif' }}>Hora</label>
                   <Input
                     type="time"
                     value={eventTime}
                     onChange={(e) => setEventTime(e.target.value)}
                     className="h-12 bg-background/50"
+                    style={{ fontFamily: 'Arial, sans-serif' }}
                   />
                 </div>
               </div>
               
               <div>
-                <label className="font-body text-xs text-card-foreground/60 mb-1 block">
+                <label className="text-xs text-card-foreground/60 mb-1 block" style={{ fontFamily: 'Arial, sans-serif' }}>
                   Máximo asistentes (opcional)
                 </label>
                 <Input
@@ -583,6 +597,7 @@ const Quedadas = () => {
                   value={maxAttendees}
                   onChange={(e) => setMaxAttendees(e.target.value)}
                   className="h-12 bg-background/50"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                   min="2"
                 />
               </div>
@@ -591,8 +606,8 @@ const Quedadas = () => {
                 <div className="flex items-center gap-2">
                   <EyeOff className="w-4 h-4 text-card-foreground/60" />
                   <div>
-                    <span className="font-body text-sm text-card-foreground">Lista privada</span>
-                    <p className="font-body text-xs text-card-foreground/50">Solo asistentes ven quién va</p>
+                    <span className="text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Lista privada</span>
+                    <p className="text-xs text-card-foreground/50" style={{ fontFamily: 'Arial, sans-serif' }}>Solo asistentes ven quién va</p>
                   </div>
                 </div>
                 <Switch
