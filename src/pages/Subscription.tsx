@@ -239,10 +239,10 @@ const Subscription = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="font-display text-xl font-bold text-foreground">
+            <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               Planes KIKI
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               Elige cómo quieres conectar
             </p>
           </div>
@@ -259,8 +259,8 @@ const Subscription = () => {
                 <Clock className="w-7 h-7" />
               </div>
               <div className="flex-1">
-                <h3 className="font-display font-bold text-lg">Prueba activa</h3>
-                <p className="text-sm text-primary-foreground/80">
+              <h3 className="font-bold text-lg" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>Prueba activa</h3>
+                <p className="text-sm text-primary-foreground/80" style={{ fontFamily: 'Arial, sans-serif' }}>
                   Disfruta <span className="font-bold">{trialDaysRemaining} días</span> gratis del plan Plus
                 </p>
               </div>
@@ -271,10 +271,10 @@ const Subscription = () => {
         {/* Ghost Messages Visual Comparison */}
         <div className="space-y-4">
           <div className="text-center">
-            <h2 className="font-display text-xl font-bold text-foreground mb-1">
+            <h2 className="text-xl font-bold text-foreground mb-1" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               👻 Mensajes Fantasma
             </h2>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
               Envía mensajes anónimos cada día
             </p>
           </div>
@@ -301,11 +301,11 @@ const Subscription = () => {
                   )}
                   
                   <Ghost className={cn("w-8 h-8 mx-auto mb-2", config.accentClass)} />
-                  <p className="text-xs text-card-foreground/70 mb-1 font-medium">{config.name}</p>
-                  <p className={cn("font-display text-3xl font-bold text-card-foreground")}>
+                  <p className="text-xs text-card-foreground/70 mb-1 font-medium" style={{ fontFamily: 'Arial, sans-serif' }}>{config.name}</p>
+                  <p className={cn("text-3xl font-bold text-card-foreground")} style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                     {config.ghostLimit}
                   </p>
-                  <p className="text-xs text-card-foreground/60">/día</p>
+                  <p className="text-xs text-card-foreground/60" style={{ fontFamily: 'Arial, sans-serif' }}>/día</p>
                 </div>
               );
             })}
@@ -320,10 +320,10 @@ const Subscription = () => {
                 <Radio className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <h3 className="font-display text-base font-bold text-card-foreground">
+                <h3 className="text-base font-bold text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                   Presencia en Tiempo Real
                 </h3>
-                <p className="text-xs text-card-foreground/70">
+                <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
                   Disponible en Plus y Premium
                 </p>
               </div>
@@ -338,12 +338,12 @@ const Subscription = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-semibold text-card-foreground">¿Quién está activo ahora?</h4>
+                  <h4 className="font-semibold text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>¿Quién está activo ahora?</h4>
                   <Badge className="bg-green-500 text-green-950 text-[9px] px-1.5 py-0 hover:bg-green-500">
                     Plus+
                   </Badge>
                 </div>
-                <p className="text-sm text-card-foreground/80 leading-relaxed">
+                <p className="text-sm text-card-foreground/80 leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>
                   Ve en tiempo real quién está conectado. Los perfiles activos se muestran con un indicador verde pulsante y separados de los inactivos.
                 </p>
               </div>
@@ -353,16 +353,16 @@ const Subscription = () => {
               <div className="flex items-center gap-3 p-3 rounded-xl bg-card-foreground/5">
                 <div className="w-3 h-3 rounded-full bg-green-500" />
                 <div>
-                  <h4 className="font-medium text-sm text-card-foreground">Activo ahora</h4>
-                  <p className="text-xs text-card-foreground/70">Indicador verde en tiempo real</p>
+                  <h4 className="font-medium text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Activo ahora</h4>
+                  <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>Indicador verde en tiempo real</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3 p-3 rounded-xl bg-card-foreground/5">
                 <div className="w-5 h-0.5 bg-border" />
                 <div>
-                  <h4 className="font-medium text-sm text-card-foreground">Separación visual</h4>
-                  <p className="text-xs text-card-foreground/70">Activos arriba, inactivos abajo</p>
+                  <h4 className="font-medium text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Separación visual</h4>
+                  <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>Activos arriba, inactivos abajo</p>
                 </div>
               </div>
             </div>
@@ -377,10 +377,10 @@ const Subscription = () => {
                 <Crown className="w-5 h-5 text-amber-400" />
               </div>
               <div>
-                <h3 className="font-display text-base font-bold text-card-foreground">
+                <h3 className="text-base font-bold text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                   Solo en Premium
                 </h3>
-                <p className="text-xs text-card-foreground/70">
+                <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
                   Ventajas exclusivas para ti
                 </p>
               </div>
@@ -395,12 +395,12 @@ const Subscription = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-semibold text-card-foreground">Modo Invisible</h4>
+                  <h4 className="font-semibold text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>Modo Invisible</h4>
                   <Badge className="bg-amber-500 text-amber-950 text-[9px] px-1.5 py-0 hover:bg-amber-500">
                     EXCLUSIVO
                   </Badge>
                 </div>
-                <p className="text-sm text-card-foreground/80 leading-relaxed">
+                <p className="text-sm text-card-foreground/80 leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>
                   Navega por Presencia sin que nadie sepa que estás conectado. <strong>La privacidad se paga.</strong>
                 </p>
               </div>
@@ -410,32 +410,32 @@ const Subscription = () => {
               <div className="flex items-center gap-3 p-3 rounded-xl bg-card-foreground/5">
                 <span className="text-xl">✨</span>
                 <div>
-                  <h4 className="font-medium text-sm text-card-foreground">Mensaje Premium</h4>
-                  <p className="text-xs text-card-foreground/70">Destaca entre los demás</p>
+                  <h4 className="font-medium text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Mensaje Premium</h4>
+                  <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>Destaca entre los demás</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3 p-3 rounded-xl bg-card-foreground/5">
                 <MessageCircle className="w-5 h-5 text-amber-400" />
                 <div>
-                  <h4 className="font-medium text-sm text-card-foreground">2ª Oportunidad</h4>
-                  <p className="text-xs text-card-foreground/70">Reenvía si no responden</p>
+                  <h4 className="font-medium text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>2ª Oportunidad</h4>
+                  <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>Reenvía si no responden</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-xl bg-card-foreground/5">
                 <Infinity className="w-5 h-5 text-amber-400" />
                 <div>
-                  <h4 className="font-medium text-sm text-card-foreground">Sin límites</h4>
-                  <p className="text-xs text-card-foreground/70">Mensajes ilimitados</p>
+                  <h4 className="font-medium text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Sin límites</h4>
+                  <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>Mensajes ilimitados</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-xl bg-card-foreground/5">
                 <Crown className="w-5 h-5 text-amber-400" />
                 <div>
-                  <h4 className="font-medium text-sm text-card-foreground">Badge Dorado</h4>
-                  <p className="text-xs text-card-foreground/70">Muestra tu estatus</p>
+                  <h4 className="font-medium text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Badge Dorado</h4>
+                  <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>Muestra tu estatus</p>
                 </div>
               </div>
             </div>
@@ -446,10 +446,10 @@ const Subscription = () => {
         {canStartTrial && (
           <div className="bg-gradient-to-br from-primary to-accent rounded-2xl p-6 text-center text-primary-foreground">
             <Gift className="w-14 h-14 mx-auto mb-4 opacity-90" />
-            <h3 className="font-display text-xl font-bold mb-2">
+            <h3 className="text-xl font-bold mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               ¡7 días gratis de Plus!
             </h3>
-            <p className="text-sm text-primary-foreground/90 mb-5">
+            <p className="text-sm text-primary-foreground/90 mb-5" style={{ fontFamily: 'Arial, sans-serif' }}>
               Prueba 15 mensajes al día y chatbot IA sin compromiso
             </p>
             <Button 
@@ -470,7 +470,7 @@ const Subscription = () => {
                 </>
               )}
             </Button>
-            <p className="text-xs text-primary-foreground/70 mt-3">
+            <p className="text-xs text-primary-foreground/70 mt-3" style={{ fontFamily: 'Arial, sans-serif' }}>
               Sin tarjeta · Se cancela sola
             </p>
           </div>
@@ -480,7 +480,7 @@ const Subscription = () => {
         {trialUsed && isFree && (
           <div className="bg-muted rounded-xl p-4 flex items-center gap-3">
             <Clock className="w-5 h-5 text-muted-foreground shrink-0" />
-            <p className="text-sm text-foreground">
+            <p className="text-sm text-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               Ya usaste tu prueba gratuita. ¡Suscríbete para seguir disfrutando!
             </p>
           </div>
@@ -488,7 +488,7 @@ const Subscription = () => {
 
         {/* Plan Cards */}
         <div className="space-y-4">
-          <h2 className="font-display text-lg font-bold text-foreground text-center">
+          <h2 className="text-lg font-bold text-foreground text-center" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             {isPremium ? "Tu plan actual" : "Elige tu plan"}
           </h2>
 
@@ -525,7 +525,7 @@ const Subscription = () => {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-display text-lg font-bold text-card-foreground">
+                            <h3 className="text-lg font-bold text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                               {config.name}
                             </h3>
                             {isCurrentTier && (
@@ -542,17 +542,17 @@ const Subscription = () => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-card-foreground/70">
+                          <p className="text-sm text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
                             {config.description}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-display text-2xl font-bold text-card-foreground">
+                        <p className="text-2xl font-bold text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                           {config.price}
                         </p>
                         {config.priceSubtext && (
-                          <p className="text-xs text-card-foreground/60">{config.priceSubtext}</p>
+                          <p className="text-xs text-card-foreground/60" style={{ fontFamily: 'Arial, sans-serif' }}>{config.priceSubtext}</p>
                         )}
                       </div>
                     </div>
@@ -599,10 +599,10 @@ const Subscription = () => {
                     {isCurrentTier && subscription?.expires_at && (
                       <div className="mt-4 pt-4 border-t border-card-foreground/10">
                         <div className="flex justify-between text-sm">
-                          <span className="text-card-foreground/70">
+                          <span className="text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
                             {isOnTrial ? "Prueba termina" : "Próxima renovación"}
                           </span>
-                          <span className="text-card-foreground font-medium">
+                          <span className="text-card-foreground font-medium" style={{ fontFamily: 'Arial, sans-serif' }}>
                             {formatDate(subscription.expires_at)}
                           </span>
                         </div>
@@ -631,7 +631,7 @@ const Subscription = () => {
               )}
               Gestionar suscripción
             </Button>
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="text-xs text-center text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               Actualiza tu método de pago, cambia de plan o cancela
             </p>
           </div>
@@ -639,10 +639,10 @@ const Subscription = () => {
 
         {/* Security Note */}
         <div className="text-center pt-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
             🔒 Pagos seguros con Stripe
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1" style={{ fontFamily: 'Arial, sans-serif' }}>
             Cancela cuando quieras, sin compromisos
           </p>
         </div>
