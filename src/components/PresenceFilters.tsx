@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar } from "lucide-react";
-import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS } from "@/constants/profileOptions";
+import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User } from "lucide-react";
+import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, ALL_GENDERS } from "@/constants/profileOptions";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import { GenderType } from "@/constants/profileOptions";
 
 export interface PresenceFilters {
   tribes: string[];
   musicStyles: string[];
   details: string[];
   lookingFor: string[];
+  genders: GenderType[];
   showAllProfiles?: boolean;
   ageRange?: [number, number];
 }
@@ -23,8 +25,9 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const hasAgeFilter = filters.ageRange && (filters.ageRange[0] !== 18 || filters.ageRange[1] !== 99);
-  const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0 || hasAgeFilter;
-  const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length + (hasAgeFilter ? 1 : 0);
+  const hasGenderFilter = filters.genders && filters.genders.length > 0;
+  const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0 || hasGenderFilter || hasAgeFilter;
+  const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length + filters.genders.length + (hasAgeFilter ? 1 : 0);
 
   const toggleShowAllProfiles = () => {
     // Haptic feedback on mobile
@@ -62,12 +65,19 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
     onChange({ ...filters, lookingFor: newLookingFor });
   };
 
+  const toggleGender = (gender: GenderType) => {
+    const newGenders = filters.genders.includes(gender)
+      ? filters.genders.filter(g => g !== gender)
+      : [...filters.genders, gender];
+    onChange({ ...filters, genders: newGenders });
+  };
+
   const handleAgeRangeChange = (value: number[]) => {
     onChange({ ...filters, ageRange: [value[0], value[1]] as [number, number] });
   };
 
   const clearFilters = () => {
-    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], ageRange: undefined });
+    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], ageRange: undefined });
   };
 
   const toggleSection = (section: string) => {
@@ -276,6 +286,41 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
                     }`}
                   >
                     {detail.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Gender section */}
+          <div className="mb-4">
+            <button
+              onClick={() => toggleSection("gender")}
+              className="flex items-center justify-between w-full text-left mb-2"
+            >
+              <span className="font-display text-sm font-semibold text-card-foreground flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Género {filters.genders.length > 0 && `(${filters.genders.length})`}
+              </span>
+              {expandedSection === "gender" ? (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+            {expandedSection === "gender" && (
+              <div className="flex flex-wrap gap-2 animate-fade-up">
+                {ALL_GENDERS.map(gender => (
+                  <button
+                    key={gender.value}
+                    onClick={() => toggleGender(gender.value)}
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                      filters.genders.includes(gender.value)
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                    }`}
+                  >
+                    {gender.label}
                   </button>
                 ))}
               </div>

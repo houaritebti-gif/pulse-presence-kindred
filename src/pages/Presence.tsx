@@ -35,7 +35,7 @@ const Presence = () => {
   // Filters state persisted to localStorage - moved up to use in hook
   const [filters, setFilters] = useLocalStorage<PresenceFilters>(
     STORAGE_KEYS.PRESENCE_FILTERS,
-    { tribes: [], musicStyles: [], details: [], lookingFor: [], showAllProfiles: false }
+    { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], showAllProfiles: false }
   );
   
   const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles || false);
@@ -240,6 +240,13 @@ const Presence = () => {
         if (!birthdate) return false; // Hide profiles without birthdate when age filter is active
         const age = calculateAge(birthdate);
         if (age < filters.ageRange[0] || age > filters.ageRange[1]) return false;
+      }
+
+      // Gender filter - must match at least one selected gender
+      if (filters.genders && filters.genders.length > 0) {
+        const profileGender = presence.profile?.gender as typeof filters.genders[number] | null;
+        if (!profileGender) return false; // Hide profiles without gender when filter is active
+        if (!filters.genders.includes(profileGender)) return false;
       }
 
       return true;

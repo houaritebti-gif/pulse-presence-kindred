@@ -22,6 +22,8 @@ export interface PresenceWithProfile {
     looking_for: string[] | null;
     email_verified: boolean | null;
     identity_verified: boolean | null;
+    gender: string | null;
+    birthdate: string | null;
   };
   tribes: string[];
   musicStyles: string[];
@@ -44,7 +46,7 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
         .from("presence")
         .select(`
           *,
-          profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic, looking_for, email_verified, identity_verified)
+          profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic, looking_for, email_verified, identity_verified, gender, birthdate)
         `)
         .eq("visible_to_others", true)
         .order("last_pulse", { ascending: false })
