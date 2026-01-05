@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect, useState, CSSProperties, ReactElement } from "react";
+import { memo, useRef, useEffect, useState, useCallback, CSSProperties, ReactElement } from "react";
 import { List } from "react-window";
 import { Radio, Crown } from "lucide-react";
 import PresenceCard from "./PresenceCard";
@@ -6,7 +6,7 @@ import AnonymousPresenceCard from "./AnonymousPresenceCard";
 import { PresenceWithProfile } from "@/hooks/usePresence";
 import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 import { useSubscription } from "@/hooks/useSubscription";
-
+import { useListKeyboardNavigation } from "@/hooks/useListKeyboardNavigation";
 interface CompatibilityBreakdown {
   tribes: number;
   music: number;
@@ -155,10 +155,23 @@ export const VirtualizedPresenceList = memo(({
     canSeeRealtimePresence,
   };
 
+  // Keyboard navigation for non-virtualized list
+  const allProfilesForNav = canSeeRealtimePresence 
+    ? [...activeProfiles, ...inactiveProfiles]
+    : profiles;
+
+  const { getContainerProps, getItemProps } = useListKeyboardNavigation({
+    itemCount: allProfilesForNav.length,
+  });
+
   // For small lists or when showing separator, don't virtualize
   if (profiles.length <= 5 || canSeeRealtimePresence) {
     return (
-      <div className="space-y-4 sm:space-y-6">
+      <div 
+        {...getContainerProps()}
+        aria-label="Lista de perfiles presentes"
+        className="space-y-4 sm:space-y-6"
+      >
         {/* Active profiles section (only for paying users) */}
         {canSeeRealtimePresence && activeProfiles.length > 0 && (
           <div className="animate-fade-up" style={{ animationDelay: '0ms' }}>
@@ -181,6 +194,7 @@ export const VirtualizedPresenceList = memo(({
                 return (
                   <div 
                     key={presence.id}
+                    {...getItemProps(index)}
                     className="animate-fade-up transition-all duration-300"
                     style={{ animationDelay: `${(index + 1) * 80}ms` }}
                   >
@@ -259,6 +273,7 @@ export const VirtualizedPresenceList = memo(({
             return (
               <div 
                 key={presence.id}
+                {...getItemProps(activeProfiles.length + index)}
                 className="animate-fade-up transition-all duration-300"
                 style={{ animationDelay: `${baseDelay + (index * 80)}ms` }}
               >

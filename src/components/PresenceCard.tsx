@@ -126,11 +126,20 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
   return (
     <>
       <div
-        className={`w-full bg-card rounded-2xl sm:rounded-3xl overflow-hidden text-left transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/10 active:scale-[0.98] animate-fade-up cursor-pointer ${
+        className={`w-full bg-card rounded-2xl sm:rounded-3xl overflow-hidden text-left transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/10 active:scale-[0.98] animate-fade-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
           isBoosted ? "ring-2 ring-primary/50 shadow-lg shadow-primary/20" : "shadow-md"
         }`}
         style={{ animationDelay: `${animationDelay}ms` }}
         onClick={handleCardClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleCardClick();
+          }
+        }}
+        tabIndex={0}
+        role="button"
+        aria-label={`Ver perfil de ${presence.profile?.name || "usuario anónimo"}`}
       >
         {/* Photo carousel - larger display */}
         <div className="relative">
