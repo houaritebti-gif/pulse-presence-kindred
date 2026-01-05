@@ -158,6 +158,13 @@ export interface DailyVerificationData {
   rejected: number;
 }
 
+export interface DailyActivityData {
+  date: string;
+  displayDate: string;
+  newUsers: number;
+  verifications: number;
+}
+
 // Fetch verification statistics
 export const useVerificationStats = () => {
   return useQuery({
@@ -250,6 +257,78 @@ export const useVerificationChartData = () => {
         approved: counts.approved,
         rejected: counts.rejected,
       }));
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
+
+// Fetch daily activity data for chart (last 7 days) - new users + verifications
+export const useAdminActivityChart = () => {
+  return useQuery({
+    queryKey: ['admin-activity-chart'],
+    queryFn: async (): Promise<DailyActivityData[]> => {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      // Fetch new users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('created_at')
+        .gte('created_at', sevenDaysAgo.toISOString());
+
+      if (profilesError) throw profilesError;
+
+      // Fetch verifications (approved)
+      const { data: verifications, error: verificationsError } = await supabase
+        .from('identity_verifications')
+        .select('verified_at')
+        .eq('status', 'approved')
+        .gte('verified_at', sevenDaysAgo.toISOString());
+
+      if (verificationsError) throw verificationsError;
+
+      // Create a map for each day in the last 7 days
+      const dailyData: Map<string, { newUsers: number; verifications: number }> = new Map();
+      const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      
+      // Initialize all days with 0
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        dailyData.set(dateStr, { newUsers: 0, verifications: 0 });
+      }
+
+      // Count new users per day
+      profiles?.forEach(p => {
+        const dateStr = new Date(p.created_at).toISOString().split('T')[0];
+        const existing = dailyData.get(dateStr);
+        if (existing) {
+          existing.newUsers++;
+        }
+      });
+
+      // Count verifications per day
+      verifications?.forEach(v => {
+        if (v.verified_at) {
+          const dateStr = new Date(v.verified_at).toISOString().split('T')[0];
+          const existing = dailyData.get(dateStr);
+          if (existing) {
+            existing.verifications++;
+          }
+        }
+      });
+
+      // Convert to array with display date
+      return Array.from(dailyData.entries()).map(([date, counts]) => {
+        const d = new Date(date);
+        return {
+          date,
+          displayDate: `${dayNames[d.getDay()]} ${d.getDate()}`,
+          newUsers: counts.newUsers,
+          verifications: counts.verifications,
+        };
+      });
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
