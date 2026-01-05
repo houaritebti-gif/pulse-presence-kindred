@@ -419,6 +419,16 @@ const Quedadas = () => {
             )}
           </>
         )}
+
+        {/* Footer */}
+        <div className="mt-10 text-center animate-fade-up animate-delay-500">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
+            <Calendar className="w-3.5 h-3.5 text-accent/60" />
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+              Planes reales · Gente real
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Create modal */}

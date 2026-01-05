@@ -278,12 +278,15 @@ const Connections = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Info note */}
-        <p className="text-center text-xs text-muted-foreground/60 mt-10" style={{ fontFamily: 'Arial, sans-serif' }}>
-          Al aceptar una conexión, ambas personas
-          <br />
-          podrán ver sus perfiles completos.
-        </p>
+        {/* Footer */}
+        <div className="mt-10 text-center animate-fade-up animate-delay-500">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
+            <Link2 className="w-3.5 h-3.5 text-accent/60" />
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+              Perfiles visibles solo al conectar
+            </p>
+          </div>
+        </div>
       </div>
     </main>
   );
