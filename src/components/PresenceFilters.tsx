@@ -75,7 +75,7 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
         <div className="flex bg-card rounded-xl p-1 border border-border w-full sm:w-auto">
           <button
             onClick={() => !filters.showAllProfiles || toggleShowAllProfiles()}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               !filters.showAllProfiles
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:text-card-foreground"
@@ -86,7 +86,7 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
           </button>
           <button
             onClick={() => filters.showAllProfiles || toggleShowAllProfiles()}
-            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all ${
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               filters.showAllProfiles
                 ? "bg-accent text-accent-foreground shadow-sm"
                 : "text-muted-foreground hover:text-card-foreground"
@@ -100,7 +100,7 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
         {/* Filter button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm transition-all border ${
+          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             hasActiveFilters
               ? "bg-primary text-primary-foreground border-primary"
               : "bg-card text-card-foreground hover:bg-card/80 border-border"
@@ -125,7 +125,7 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors px-2 py-1 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors px-2 py-1 rounded-lg hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <X className="w-3 h-3" />
               Limpiar filtros
@@ -136,7 +136,7 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
           <div className="mb-4">
             <button
               onClick={() => toggleSection("tribes")}
-              className="flex items-center justify-between w-full text-left mb-2"
+              className="flex items-center justify-between w-full text-left mb-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <span className="font-display text-sm font-semibold text-card-foreground">
                 Tribus {filters.tribes.length > 0 && `(${filters.tribes.length})`}
@@ -153,7 +153,7 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
                   <button
                     key={tribe.value}
                     onClick={() => toggleTribe(tribe.value)}
-                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                       filters.tribes.includes(tribe.value)
                         ? "bg-primary text-primary-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"

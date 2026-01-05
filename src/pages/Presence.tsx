@@ -285,7 +285,7 @@ const Presence = () => {
           {/* Connection requests button */}
           <button
             onClick={() => navigate("/connections")}
-            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             title="Solicitudes de conexión"
             aria-label="Solicitudes de conexión"
           >
@@ -299,7 +299,7 @@ const Presence = () => {
           {/* Ghost messages button */}
           <button
             onClick={() => navigate("/ghost-messages")}
-            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             title="Mensajes fantasma"
             aria-label="Mensajes fantasma"
           >
@@ -313,7 +313,7 @@ const Presence = () => {
           {/* Notifications button */}
           <button
             onClick={() => navigate("/notifications")}
-            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             title="Notificaciones"
             aria-label="Notificaciones"
           >
@@ -327,7 +327,7 @@ const Presence = () => {
           {/* Quedadas button */}
           <button
             onClick={() => navigate("/quedadas")}
-            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             title="Quedadas"
             aria-label="Quedadas"
           >
@@ -344,7 +344,7 @@ const Presence = () => {
               markAllAsSeen();
               navigate("/sparks");
             }}
-            className="relative text-muted-foreground hover:text-foreground transition-colors"
+            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             title="Tus chispas"
             aria-label="Tus chispas"
           >
@@ -357,7 +357,7 @@ const Presence = () => {
           </button>
           <button
             onClick={toggleVisibility}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             title={myPresence?.visible_to_others ? "Modo visible" : "Modo invisible"}
             aria-label={myPresence?.visible_to_others ? "Cambiar a modo invisible" : "Cambiar a modo visible"}
           >
