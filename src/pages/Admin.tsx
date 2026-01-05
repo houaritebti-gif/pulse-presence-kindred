@@ -2,7 +2,7 @@ import { useState } from "react";
 import { 
   Shield, Users, Flag, UserCog, Search, 
   MoreVertical, UserPlus, Trash2, Check, X, Clock, Ban, Plus, RefreshCw,
-  Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle, History, ShieldCheck
+  Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle, History, ShieldCheck, HardDrive, Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -56,7 +56,9 @@ import {
   useUpdateReportStatus,
   useUpdateIdentityVerification,
   useForceReverification,
-  useUserVerificationHistory
+  useUserVerificationHistory,
+  useTriggerCleanup,
+  CleanupStats
 } from "@/hooks/useAdminData";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
@@ -94,7 +96,9 @@ const Admin = () => {
   const updateVerificationMutation = useUpdateIdentityVerification();
   const forceReverificationMutation = useForceReverification();
   const { data: verificationHistory, isLoading: loadingHistory } = useUserVerificationHistory(selectedProfileForHistory?.id || null);
-
+  const triggerCleanupMutation = useTriggerCleanup();
+  
+  const [lastCleanupResult, setLastCleanupResult] = useState<CleanupStats | null>(null);
   const [viewingSelfie, setViewingSelfie] = useState<string | null>(null);
 
   const handleForceReverification = async () => {
@@ -106,6 +110,20 @@ const Admin = () => {
       setSelectedProfileForReverify(null);
     } catch {
       toast.error("Error al forzar re-verificación");
+    }
+  };
+
+  const handleTriggerCleanup = async () => {
+    try {
+      const result = await triggerCleanupMutation.mutateAsync();
+      setLastCleanupResult(result);
+      if (result.totalDeleted > 0) {
+        toast.success(`Limpieza completada: ${result.totalDeleted} archivos eliminados`);
+      } else {
+        toast.info("No había archivos para limpiar");
+      }
+    } catch {
+      toast.error("Error al ejecutar limpieza");
     }
   };
 
@@ -577,6 +595,60 @@ const Admin = () => {
                     </p>
                   </div>
                 </>
+              )}
+            </div>
+
+            {/* Storage Cleanup Section */}
+            <div className="p-4 bg-card rounded-lg border border-border">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <HardDrive className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-sm font-medium text-foreground">Limpieza de Storage</h3>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleTriggerCleanup}
+                  disabled={triggerCleanupMutation.isPending}
+                >
+                  {triggerCleanupMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Limpiando...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Ejecutar limpieza
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              <p className="text-xs text-muted-foreground mb-3">
+                Elimina selfies de verificaciones completadas, archivos huérfanos y registros antiguos. 
+                Se ejecuta automáticamente cada día a las 3 AM.
+              </p>
+
+              {lastCleanupResult && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-muted/50 rounded-lg">
+                  <div className="text-center">
+                    <span className="text-lg font-bold text-foreground">{lastCleanupResult.deletedFromCompletedVerifications}</span>
+                    <p className="text-xs text-muted-foreground">De verificaciones</p>
+                  </div>
+                  <div className="text-center">
+                    <span className="text-lg font-bold text-foreground">{lastCleanupResult.deletedOrphanedFiles}</span>
+                    <p className="text-xs text-muted-foreground">Huérfanos</p>
+                  </div>
+                  <div className="text-center">
+                    <span className="text-lg font-bold text-foreground">{lastCleanupResult.deletedOldVerifications}</span>
+                    <p className="text-xs text-muted-foreground">Registros viejos</p>
+                  </div>
+                  <div className="text-center">
+                    <span className="text-lg font-bold text-emerald-500">{lastCleanupResult.totalDeleted}</span>
+                    <p className="text-xs text-muted-foreground">Total eliminados</p>
+                  </div>
+                </div>
               )}
             </div>
 
