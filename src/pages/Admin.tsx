@@ -58,7 +58,9 @@ import {
   useForceReverification,
   useUserVerificationHistory,
   useTriggerCleanup,
-  CleanupStats
+  useCleanupHistory,
+  CleanupStats,
+  CleanupExecution
 } from "@/hooks/useAdminData";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
@@ -97,9 +99,11 @@ const Admin = () => {
   const forceReverificationMutation = useForceReverification();
   const { data: verificationHistory, isLoading: loadingHistory } = useUserVerificationHistory(selectedProfileForHistory?.id || null);
   const triggerCleanupMutation = useTriggerCleanup();
+  const { data: cleanupHistory, isLoading: loadingCleanupHistory } = useCleanupHistory();
   
   const [lastCleanupResult, setLastCleanupResult] = useState<CleanupStats | null>(null);
   const [viewingSelfie, setViewingSelfie] = useState<string | null>(null);
+  const [showCleanupHistory, setShowCleanupHistory] = useState(false);
 
   const handleForceReverification = async () => {
     if (!selectedProfileForReverify) return;
@@ -605,24 +609,34 @@ const Admin = () => {
                   <HardDrive className="w-4 h-4 text-muted-foreground" />
                   <h3 className="text-sm font-medium text-foreground">Limpieza de Storage</h3>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleTriggerCleanup}
-                  disabled={triggerCleanupMutation.isPending}
-                >
-                  {triggerCleanupMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                      Limpiando...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Ejecutar limpieza
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowCleanupHistory(!showCleanupHistory)}
+                  >
+                    <History className="w-3 h-3 mr-1" />
+                    Historial
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleTriggerCleanup}
+                    disabled={triggerCleanupMutation.isPending}
+                  >
+                    {triggerCleanupMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        Limpiando...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="w-3 h-3 mr-1" />
+                        Ejecutar limpieza
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
               
               <p className="text-xs text-muted-foreground mb-3">
@@ -631,7 +645,7 @@ const Admin = () => {
               </p>
 
               {lastCleanupResult && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-muted/50 rounded-lg">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-muted/50 rounded-lg mb-3">
                   <div className="text-center">
                     <span className="text-lg font-bold text-foreground">{lastCleanupResult.deletedFromCompletedVerifications}</span>
                     <p className="text-xs text-muted-foreground">De verificaciones</p>
@@ -648,6 +662,73 @@ const Admin = () => {
                     <span className="text-lg font-bold text-emerald-500">{lastCleanupResult.totalDeleted}</span>
                     <p className="text-xs text-muted-foreground">Total eliminados</p>
                   </div>
+                </div>
+              )}
+
+              {/* Cleanup History */}
+              {showCleanupHistory && (
+                <div className="mt-4 border-t border-border pt-4">
+                  <h4 className="text-sm font-medium text-foreground mb-3">Historial de ejecuciones</h4>
+                  {loadingCleanupHistory ? (
+                    <div className="space-y-2">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-12 w-full" />
+                      ))}
+                    </div>
+                  ) : cleanupHistory?.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No hay historial de limpiezas
+                    </p>
+                  ) : (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {cleanupHistory?.map((execution) => (
+                        <div 
+                          key={execution.id} 
+                          className={`p-3 rounded-lg border ${
+                            execution.success 
+                              ? 'bg-muted/30 border-border' 
+                              : 'bg-destructive/10 border-destructive/30'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              {execution.success ? (
+                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                              ) : (
+                                <XCircle className="w-4 h-4 text-destructive" />
+                              )}
+                              <span className="text-sm font-medium">
+                                {format(new Date(execution.executed_at), "d MMM yyyy, HH:mm", { locale: es })}
+                              </span>
+                              <Badge variant="outline" className="text-xs">
+                                {execution.triggered_by === 'cron' ? 'Automático' : 'Manual'}
+                              </Badge>
+                            </div>
+                            {execution.duration_ms && (
+                              <span className="text-xs text-muted-foreground">
+                                {(execution.duration_ms / 1000).toFixed(1)}s
+                              </span>
+                            )}
+                          </div>
+                          
+                          {execution.success ? (
+                            <div className="flex gap-4 text-xs text-muted-foreground mt-1">
+                              <span>Verificaciones: {execution.deleted_from_completed}</span>
+                              <span>Huérfanos: {execution.deleted_orphaned}</span>
+                              <span>Registros: {execution.deleted_old_verifications}</span>
+                              <span className="font-medium text-foreground">
+                                Total: {execution.total_deleted}
+                              </span>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-destructive mt-1">
+                              Error: {execution.error_message || 'Error desconocido'}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
