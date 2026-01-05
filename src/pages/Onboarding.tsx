@@ -1,9 +1,9 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText } from "lucide-react";
+import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar } from "lucide-react";
 import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { toast } from "sonner";
@@ -14,17 +14,19 @@ import { playCelebrationSound } from "@/utils/notificationSound";
 import UploadProgress from "@/components/UploadProgress";
 import ImageCropModal from "@/components/ImageCropModal";
 import { triggerHaptic } from "@/utils/haptics";
+import BirthdateSelector from "@/components/BirthdateSelector";
 
 const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
   { id: 2, title: "¿Cuál es tu ciudad?", subtitle: "Donde conectas" },
-  { id: 3, title: "Elige tu vibra", subtitle: "¿Cómo te sientes hoy?" },
-  { id: 4, title: "Tus tribus", subtitle: "¿Con quién conectas?" },
-  { id: 5, title: "Tu música", subtitle: "Hasta 5 estilos" },
-  { id: 6, title: "¿Qué buscas?", subtitle: "En KIKI" },
-  { id: 7, title: "Sobre ti", subtitle: "Breve descripción (opcional)" },
-  { id: 8, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
-  { id: 9, title: "Tu foto", subtitle: "Opcional pero recomendado" },
+  { id: 3, title: "¿Cuándo naciste?", subtitle: "Solo mostraremos tu edad" },
+  { id: 4, title: "Elige tu vibra", subtitle: "¿Cómo te sientes hoy?" },
+  { id: 5, title: "Tus tribus", subtitle: "¿Con quién conectas?" },
+  { id: 6, title: "Tu música", subtitle: "Hasta 5 estilos" },
+  { id: 7, title: "¿Qué buscas?", subtitle: "En KIKI" },
+  { id: 8, title: "Sobre ti", subtitle: "Breve descripción (opcional)" },
+  { id: 9, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
+  { id: 10, title: "Tu foto", subtitle: "Opcional pero recomendado" },
 ];
 
 const Onboarding = () => {
@@ -41,6 +43,7 @@ const Onboarding = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [name, setName] = useState("");
   const [city, setCity] = useState("Madrid");
+  const [birthdate, setBirthdate] = useState<string | null>(null);
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
   const [selectedMusicStyles, setSelectedMusicStyles] = useState<string[]>([]);
@@ -53,6 +56,25 @@ const Onboarding = () => {
 
   const currentStep = STEPS.find(s => s.id === step)!;
   const progress = (step / STEPS.length) * 100;
+
+  // Calculate age from birthdate
+  const calculateAge = useCallback((birthdateStr: string): number => {
+    const today = new Date();
+    const birth = new Date(birthdateStr);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  }, []);
+
+  const userAge = useMemo(() => {
+    if (!birthdate || birthdate.includes("0000") || birthdate.includes("00-00")) return null;
+    return calculateAge(birthdate);
+  }, [birthdate, calculateAge]);
+
+  const isValidAge = userAge !== null && userAge >= 18;
 
   // Animation variants for framer-motion
   const containerVariants = {
@@ -190,13 +212,14 @@ const Onboarding = () => {
     switch (step) {
       case 1: return name.trim().length > 0;
       case 2: return city.trim().length > 0;
-      case 3: return selectedVibe !== null;
-      case 4: return true; // Tribes are optional
-      case 5: return true; // Music is optional
-      case 6: return true; // Looking for is optional
-      case 7: return true; // Bio is optional
-      case 8: return true; // Details are optional
-      case 9: return true; // Photo is optional
+      case 3: return isValidAge; // Must be 18+
+      case 4: return selectedVibe !== null;
+      case 5: return true; // Tribes are optional
+      case 6: return true; // Music is optional
+      case 7: return true; // Looking for is optional
+      case 8: return true; // Bio is optional
+      case 9: return true; // Details are optional
+      case 10: return true; // Photo is optional
       default: return true;
     }
   };
@@ -266,6 +289,7 @@ const Onboarding = () => {
         alternative_aesthetic: alternativeAesthetic,
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
+        birthdate: birthdate && !birthdate.includes("0000") ? birthdate : null,
       } as any);
 
       // Update tribes
@@ -353,6 +377,47 @@ const Onboarding = () => {
         return (
           <motion.div 
             key="step-3" 
+            className="space-y-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div 
+              className="flex items-center gap-2 text-muted-foreground mb-2"
+              variants={itemVariants}
+            >
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Solo mostraremos tu edad, no la fecha</span>
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <BirthdateSelector
+                value={birthdate}
+                onChange={setBirthdate}
+              />
+            </motion.div>
+            <AnimatePresence>
+              {userAge !== null && userAge >= 18 && (
+                <motion.div 
+                  className="text-center"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                >
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium">
+                    <Check className="w-4 h-4" />
+                    {userAge} años
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        );
+
+      case 4:
+        return (
+          <motion.div 
+            key="step-4" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -382,7 +447,7 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 4:
+      case 5:
         return (
           <motion.div 
             key="step-4" 
@@ -426,7 +491,7 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 5:
+      case 6:
         return (
           <motion.div 
             key="step-5" 
@@ -480,7 +545,7 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 6:
+      case 7:
         return (
           <motion.div 
             key="step-6" 
@@ -538,7 +603,7 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 7:
+      case 8:
         return (
           <motion.div 
             key="step-7" 
@@ -573,7 +638,7 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 8:
+      case 9:
         return (
           <motion.div 
             key="step-8" 
@@ -635,7 +700,7 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 9:
+      case 10:
         return (
           <motion.div 
             key="step-9" 
