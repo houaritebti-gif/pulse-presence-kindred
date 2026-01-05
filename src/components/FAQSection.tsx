@@ -265,11 +265,29 @@ const FAQSection = () => {
                                 faq.category === "payments" && "bg-amber-500/15 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500/25"
                               )
                         )}>
-                          {openItems.includes(`item-${index}`) ? (
-                            <Minus className="w-3.5 h-3.5" />
-                          ) : (
-                            <span>{index + 1}</span>
-                          )}
+                          <AnimatePresence mode="wait">
+                            {openItems.includes(`item-${index}`) ? (
+                              <motion.div
+                                key="minus"
+                                initial={{ rotate: -90, opacity: 0 }}
+                                animate={{ rotate: 0, opacity: 1 }}
+                                exit={{ rotate: 90, opacity: 0 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </motion.div>
+                            ) : (
+                              <motion.span
+                                key="number"
+                                initial={{ rotate: 90, opacity: 0 }}
+                                animate={{ rotate: 0, opacity: 1 }}
+                                exit={{ rotate: -90, opacity: 0 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                              >
+                                {index + 1}
+                              </motion.span>
+                            )}
+                          </AnimatePresence>
                         </div>
                         <span 
                           className={cn(
