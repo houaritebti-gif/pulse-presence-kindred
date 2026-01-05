@@ -225,8 +225,8 @@ const Admin = () => {
               <Shield className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="font-display text-xl font-bold text-foreground">Panel de Admin</h1>
-              <p className="text-xs text-muted-foreground">Gestión de usuarios y reportes</p>
+              <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>Panel de Admin</h1>
+              <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Gestión de usuarios y reportes</p>
             </div>
           </div>
         </div>
