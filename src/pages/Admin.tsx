@@ -372,7 +372,7 @@ const Admin = () => {
                         <AvatarFallback>{(report.reported?.name?.[0] || '?').toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-sm text-foreground">
+                        <p className="font-medium text-sm text-card-foreground">
                           {report.reported?.name || 'Usuario'}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -384,7 +384,7 @@ const Admin = () => {
                   </div>
                   
                   <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">Motivo: {report.reason}</p>
+                    <p className="text-sm font-medium text-card-foreground">Motivo: {report.reason}</p>
                     {report.details && (
                       <p className="text-sm text-muted-foreground">{report.details}</p>
                     )}

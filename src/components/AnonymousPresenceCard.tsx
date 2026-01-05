@@ -402,7 +402,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                     "border-2",
                     selectedMessage === msg
                       ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-card hover:border-primary/50 text-muted-foreground hover:text-foreground"
+                      : "border-border bg-card hover:border-primary/50 text-card-foreground"
                   )}
                 >
                   {msg}

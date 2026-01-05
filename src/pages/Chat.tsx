@@ -258,7 +258,7 @@ const Chat = () => {
                   className={`w-full p-4 rounded-xl font-body text-sm text-left transition-all border ${
                     selectedMessage === msg
                       ? "bg-primary/10 border-primary/30 text-foreground"
-                      : "bg-card border-border/30 text-muted-foreground hover:border-primary/20"
+                      : "bg-card border-border/30 text-card-foreground hover:border-primary/20"
                   }`}
                 >
                   "{msg}"
