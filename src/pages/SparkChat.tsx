@@ -469,6 +469,7 @@ const SparkChat = () => {
         <button 
           onClick={() => navigate("/sparks")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+          aria-label="Volver a Sparks"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         </button>
@@ -476,6 +477,7 @@ const SparkChat = () => {
         <button 
           onClick={() => chat.other_profile?.id && navigate(`/user/${chat.other_profile.id}`)}
           className="flex items-center gap-3 animate-fade-up hover:opacity-80 transition-opacity"
+          aria-label={`Ver perfil de ${chat.other_profile?.name || "usuario"}`}
         >
           {/* Avatar with glow ring */}
           <div className="relative">
@@ -516,7 +518,11 @@ const SparkChat = () => {
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="text-muted-foreground hover:text-foreground transition-colors">
+              <button 
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Más opciones"
+                title="Más opciones"
+              >
                 <MoreVertical className="w-5 h-5" />
               </button>
             </DropdownMenuTrigger>

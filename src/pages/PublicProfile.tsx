@@ -111,6 +111,7 @@ const PublicProfile = () => {
         <button 
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+          aria-label="Volver atrás"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Volver</span>
@@ -120,7 +121,11 @@ const PublicProfile = () => {
         {/* Actions menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="text-muted-foreground hover:text-foreground transition-colors p-2">
+            <button 
+              className="text-muted-foreground hover:text-foreground transition-colors p-2"
+              aria-label="Más opciones"
+              title="Más opciones"
+            >
               <MoreVertical className="w-5 h-5" />
             </button>
           </DropdownMenuTrigger>

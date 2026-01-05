@@ -433,6 +433,7 @@ const Profile = () => {
         <button 
           onClick={() => navigate("/presence")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+          aria-label="Volver a Presencia"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
@@ -443,6 +444,8 @@ const Profile = () => {
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
+            aria-label="Cerrar sesión"
+            title="Cerrar sesión"
           >
             <LogOut className="w-4 h-4" />
           </button>

@@ -361,6 +361,7 @@ const QuedadaChat = () => {
           <button 
             onClick={() => navigate("/quedadas")}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+            aria-label="Volver a Quedadas"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           </button>
@@ -379,6 +380,8 @@ const QuedadaChat = () => {
             <button 
               onClick={() => setShowAttendees(true)}
               className="flex items-center gap-1 text-muted-foreground hover:text-accent transition-colors"
+              aria-label="Ver asistentes"
+              title="Ver asistentes"
             >
               {quedada.private_attendees && !quedada.is_creator && !quedada.is_attending ? (
               <EyeOff className="w-4 h-4" />
