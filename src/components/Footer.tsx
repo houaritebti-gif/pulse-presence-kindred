@@ -13,7 +13,7 @@ const Footer = () => {
             <h3 className="text-2xl font-bold text-primary mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               KIKI
             </h3>
-            <p className="text-muted-foreground text-sm max-w-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
+            <p className="text-foreground/80 text-sm max-w-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
               Conecta con personas afines en tu ciudad. Presencia en tiempo real, 
               chispas mutuas y quedadas grupales.
             </p>
@@ -26,7 +26,7 @@ const Footer = () => {
               <li>
                 <Link 
                   to="/privacidad" 
-                  className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  className="text-foreground/80 hover:text-primary transition-colors text-sm"
                 >
                   Política de Privacidad
                 </Link>
@@ -34,7 +34,7 @@ const Footer = () => {
               <li>
                 <Link 
                   to="/terminos" 
-                  className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  className="text-foreground/80 hover:text-primary transition-colors text-sm"
                 >
                   Términos de Servicio
                 </Link>
@@ -42,7 +42,7 @@ const Footer = () => {
               <li>
                 <Link 
                   to="/cookies" 
-                  className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  className="text-foreground/80 hover:text-primary transition-colors text-sm"
                 >
                   Política de Cookies
                 </Link>
@@ -58,7 +58,7 @@ const Footer = () => {
                 href="https://instagram.com/kiki" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
@@ -67,7 +67,7 @@ const Footer = () => {
                 href="https://twitter.com/kiki" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
                 aria-label="Twitter"
               >
                 <Twitter className="w-5 h-5" />
@@ -76,7 +76,7 @@ const Footer = () => {
                 href="https://discord.gg/kiki" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300"
                 aria-label="Discord"
               >
                 <MessageCircle className="w-5 h-5" />
@@ -87,10 +87,10 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-muted-foreground text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-foreground/70 text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
             © {currentYear} KIKI. Todos los derechos reservados.
           </p>
-          <p className="text-muted-foreground text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-foreground/70 text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>
             Hecho con 💜 para la comunidad alternativa
           </p>
         </div>
