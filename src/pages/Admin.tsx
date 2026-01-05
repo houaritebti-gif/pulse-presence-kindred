@@ -86,6 +86,12 @@ const Admin = () => {
   const [selectedProfileForHistory, setSelectedProfileForHistory] = useState<{ id: string; name: string | null } | null>(null);
   const [reportFilter, setReportFilter] = useState<"all" | "pending" | "resolved">("all");
   const [userFilter, setUserFilter] = useState<"all" | "verified" | "unverified">("all");
+  const [softDarkMode, setSoftDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('admin-soft-dark') === 'true';
+    }
+    return false;
+  });
 
   const { data: profiles, isLoading: loadingProfiles, refetch: refetchProfiles } = useAdminProfiles();
   const { data: reports, isLoading: loadingReports, refetch: refetchReports } = useAdminReports();
@@ -110,6 +116,11 @@ const Admin = () => {
   const [viewingSelfie, setViewingSelfie] = useState<string | null>(null);
   const [showCleanupHistory, setShowCleanupHistory] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleToggleSoftDark = (enabled: boolean) => {
+    setSoftDarkMode(enabled);
+    localStorage.setItem('admin-soft-dark', String(enabled));
+  };
 
   // Dashboard stats
   const dashboardStats = useMemo(() => ({
@@ -281,8 +292,13 @@ const Admin = () => {
   };
 
   return (
-    <div className="admin-panel min-h-screen bg-background pb-20">
-      <AdminHeader onRefresh={handleRefresh} isRefreshing={isRefreshing} />
+    <div className={`admin-panel min-h-screen bg-background pb-20 ${softDarkMode ? 'admin-soft-dark' : ''}`}>
+      <AdminHeader 
+        onRefresh={handleRefresh} 
+        isRefreshing={isRefreshing} 
+        softDarkMode={softDarkMode}
+        onToggleSoftDark={handleToggleSoftDark}
+      />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
