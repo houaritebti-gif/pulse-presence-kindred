@@ -690,7 +690,9 @@ const Onboarding = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 overflow-hidden">
+    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 overflow-hidden relative">
+      {/* Ambient glow */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
       {/* Progress bar */}
       <motion.div 
         className="w-full h-1 bg-card rounded-full mb-8 overflow-hidden"
