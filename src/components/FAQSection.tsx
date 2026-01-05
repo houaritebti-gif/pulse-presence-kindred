@@ -236,17 +236,34 @@ const FAQSection = () => {
 
         {/* Expand/Collapse All Button */}
         <div className="flex justify-end mb-3">
-          <button
+          <motion.button
             onClick={toggleAll}
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
               "bg-muted text-foreground hover:bg-foreground/10"
             )}
             style={{ fontFamily: 'Arial, sans-serif' }}
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <ChevronsUpDown className="w-3.5 h-3.5" />
-            <span>{allExpanded ? "Colapsar todo" : "Expandir todo"}</span>
-          </button>
+            <motion.div
+              animate={{ rotate: allExpanded ? 180 : 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              <ChevronsUpDown className="w-3.5 h-3.5" />
+            </motion.div>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={allExpanded ? "collapse" : "expand"}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+                {allExpanded ? "Colapsar todo" : "Expandir todo"}
+              </motion.span>
+            </AnimatePresence>
+          </motion.button>
         </div>
 
         {/* FAQ Accordion - Flat design, high contrast */}
