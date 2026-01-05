@@ -34,9 +34,9 @@ const Sparks = () => {
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Presencia</span>
+          <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
         </button>
-        <span className="font-display text-xl font-bold text-foreground">KIKI</span>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
         <ThemeToggle />
       </div>
 
@@ -53,10 +53,10 @@ const Sparks = () => {
             <Sparkles className="absolute -bottom-2 -left-2 w-4 h-4 text-accent/50 animate-pulse-soft animate-delay-300" />
           </div>
           
-          <h1 className="font-display text-3xl font-bold text-foreground mb-3">
+          <h1 className="text-3xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Tus chispas
           </h1>
-          <p className="font-body text-muted-foreground">
+          <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
             Conexiones mutuas. Conversaciones reales.
           </p>
         </div>
@@ -102,7 +102,7 @@ const Sparks = () => {
         <div className="mt-12 text-center animate-fade-up animate-delay-500">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
             <Sparkles className="w-3.5 h-3.5 text-primary/60" />
-            <p className="font-body text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               Sin typing · Sin leído · Sin presión
             </p>
           </div>
