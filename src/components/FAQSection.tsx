@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { HelpCircle, Plus, Minus, Sparkles, Shield, CreditCard } from "lucide-react";
+import { HelpCircle, Minus, Sparkles, Shield, CreditCard } from "lucide-react";
 import { useState } from "react";
 import {
   Accordion,
@@ -241,12 +241,12 @@ const FAQSection = () => {
                     "rounded-lg border-2 transition-all duration-200 ease-out",
                     openItems.includes(`item-${index}`) 
                       ? "bg-foreground/5 border-foreground/20" 
-                      : "bg-card border-border hover:border-foreground/30 hover:bg-foreground/[0.02] hover:scale-[1.01] hover:shadow-xl hover:-translate-y-0.5"
+                      : "bg-card border-border hover:border-primary/40 hover:bg-foreground/[0.02] hover:scale-[1.01] hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 hover:ring-2 hover:ring-primary/20"
                   )}>
                     <AccordionTrigger className="px-4 py-3 hover:no-underline group">
                       <div className="flex items-center gap-3 text-left w-full">
                         <div className={cn(
-                          "w-6 h-6 rounded flex items-center justify-center flex-shrink-0 transition-colors",
+                          "w-6 h-6 rounded flex items-center justify-center flex-shrink-0 transition-colors text-xs font-bold",
                           openItems.includes(`item-${index}`) 
                             ? "bg-foreground text-background" 
                             : "bg-foreground/10 text-foreground"
@@ -254,7 +254,7 @@ const FAQSection = () => {
                           {openItems.includes(`item-${index}`) ? (
                             <Minus className="w-3.5 h-3.5" />
                           ) : (
-                            <Plus className="w-3.5 h-3.5" />
+                            <span>{index + 1}</span>
                           )}
                         </div>
                         <span 
