@@ -956,9 +956,9 @@ const PhotoCarousel = memo(({
                   ease: "easeInOut"
                 }}
               >
-                <ChevronLeft className="w-3 h-3 text-foreground/70" />
-                <span className="text-xs font-body text-foreground/70">Desliza</span>
-                <ChevronRight className="w-3 h-3 text-foreground/70" />
+                <ChevronLeft className="w-3 h-3 text-foreground/85" />
+                <span className="text-xs font-body text-foreground/85">Desliza</span>
+                <ChevronRight className="w-3 h-3 text-foreground/85" />
               </motion.div>
             </motion.div>
           )}
@@ -972,8 +972,8 @@ const PhotoCarousel = memo(({
               transition={{ delay: 2, duration: 0.5 }}
             >
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-background/60 backdrop-blur-sm">
-                <ZoomIn className="w-3 h-3 text-foreground/70" />
-                <span className="text-xs font-body text-foreground/70">Pellizca para zoom</span>
+                <ZoomIn className="w-3 h-3 text-foreground/85" />
+                <span className="text-xs font-body text-foreground/85">Pellizca para zoom</span>
               </div>
             </motion.div>
           )}
