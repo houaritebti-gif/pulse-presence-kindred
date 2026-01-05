@@ -156,31 +156,27 @@ const FAQSection = () => {
   };
 
   return (
-    <section className="py-20 px-6 relative overflow-hidden bg-background">
+    <section className="py-16 px-4 md:px-6 relative overflow-hidden bg-background">
       <div className="max-w-2xl mx-auto w-full relative z-10">
-        {/* Header */}
+        {/* Header - Simplified */}
         <motion.div 
-          className="text-center mb-10" 
+          className="text-center mb-8" 
           initial="hidden" 
           whileInView="visible" 
           viewport={{ once: true, margin: "-100px" }} 
           variants={fadeInUp}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-5">
-            <HelpCircle className="w-4 h-4 text-primary" />
-            <span className="font-body text-sm text-foreground">Resolvemos tus dudas</span>
-          </div>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Preguntas frecuentes
           </h2>
-          <p className="font-body text-base text-muted-foreground max-w-md mx-auto">
-            Todo lo que necesitas saber sobre KIKI antes de dar el paso.
+          <p className="text-sm text-muted-foreground">
+            Todo lo que necesitas saber antes de empezar.
           </p>
         </motion.div>
 
-        {/* Category Tabs */}
+        {/* Category Tabs - High contrast pills */}
         <motion.div 
-          className="flex flex-wrap justify-center gap-2 mb-8"
+          className="flex flex-wrap justify-center gap-2 mb-6"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -198,19 +194,20 @@ const FAQSection = () => {
                 key={category.id}
                 onClick={() => handleCategoryChange(category.id)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-full font-body text-sm font-medium transition-all border",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all",
                   isActive 
-                    ? "bg-primary text-primary-foreground border-primary" 
-                    : "bg-card border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    ? "bg-foreground text-background" 
+                    : "bg-muted text-foreground hover:bg-foreground/10"
                 )}
+                style={{ fontFamily: 'Arial, sans-serif' }}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 <span>{category.label}</span>
                 <span className={cn(
-                  "text-xs px-1.5 py-0.5 rounded-full",
+                  "text-xs px-1.5 py-0.5 rounded-full font-medium",
                   isActive 
-                    ? "bg-primary-foreground/20 text-primary-foreground" 
-                    : "bg-muted text-muted-foreground"
+                    ? "bg-background/20 text-background" 
+                    : "bg-foreground/10 text-foreground/70"
                 )}>
                   {count}
                 </span>
@@ -219,7 +216,7 @@ const FAQSection = () => {
           })}
         </motion.div>
 
-        {/* FAQ Accordion */}
+        {/* FAQ Accordion - Flat design, high contrast */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeCategory}
@@ -241,28 +238,39 @@ const FAQSection = () => {
                   className="border-none"
                 >
                   <div className={cn(
-                    "rounded-xl bg-card border transition-colors",
+                    "rounded-lg border-2 transition-colors",
                     openItems.includes(`item-${index}`) 
-                      ? "border-primary/30" 
-                      : "border-border"
+                      ? "bg-foreground/5 border-foreground/20" 
+                      : "bg-card border-border hover:border-foreground/20"
                   )}>
-                    <AccordionTrigger className="px-4 py-4 hover:no-underline group [&[data-state=open]>div>div:first-child]:bg-primary/20">
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline group">
                       <div className="flex items-center gap-3 text-left w-full">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 transition-colors">
+                        <div className={cn(
+                          "w-6 h-6 rounded flex items-center justify-center flex-shrink-0 transition-colors",
+                          openItems.includes(`item-${index}`) 
+                            ? "bg-foreground text-background" 
+                            : "bg-foreground/10 text-foreground"
+                        )}>
                           {openItems.includes(`item-${index}`) ? (
-                            <Minus className="w-4 h-4 text-primary" />
+                            <Minus className="w-3.5 h-3.5" />
                           ) : (
-                            <Plus className="w-4 h-4 text-primary" />
+                            <Plus className="w-3.5 h-3.5" />
                           )}
                         </div>
-                        <span className="font-display text-base font-semibold text-card-foreground group-hover:text-primary transition-colors">
+                        <span 
+                          className="text-sm font-bold text-foreground leading-tight"
+                          style={{ fontFamily: 'Arial, sans-serif' }}
+                        >
                           {faq.question}
                         </span>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
-                      <div className="pl-11">
-                        <p className="font-body text-sm text-card-foreground/70 leading-relaxed">
+                      <div className="pl-9">
+                        <p 
+                          className="text-sm text-foreground/80 leading-relaxed"
+                          style={{ fontFamily: 'Arial, sans-serif' }}
+                        >
                           {faq.answer}
                         </p>
                       </div>
@@ -281,13 +289,13 @@ const FAQSection = () => {
           </div>
         )}
 
-        {/* Bottom CTA */}
-        <div className="mt-10 text-center">
-          <p className="font-body text-muted-foreground">
-            ¿Tienes más preguntas?{" "}
+        {/* Bottom CTA - Clean */}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+            ¿Más dudas?{" "}
             <a 
               href="mailto:hola@kiki.app" 
-              className="text-primary hover:underline font-medium transition-colors"
+              className="text-foreground underline underline-offset-2 font-semibold hover:text-primary transition-colors"
             >
               Escríbenos
             </a>
