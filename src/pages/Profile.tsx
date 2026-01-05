@@ -351,8 +351,28 @@ const Profile = () => {
     }
   };
 
+  const calculateAge = (birthdateStr: string): number => {
+    const today = new Date();
+    const birth = new Date(birthdateStr);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   const handleContinue = async () => {
     if (!profile) return;
+
+    // Check minimum age (18 years)
+    if (birthdate && !birthdate.includes("0000") && !birthdate.includes("00-00")) {
+      const age = calculateAge(birthdate);
+      if (age < 18) {
+        toast.error("Debes tener al menos 18 años para usar esta aplicación");
+        return;
+      }
+    }
 
     // Check blacklist before saving
     const blockedWords = checkBlacklistedWords(bio);
@@ -373,7 +393,7 @@ const Profile = () => {
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
         gender: selectedGender,
-        birthdate: birthdate,
+        birthdate: birthdate && !birthdate.includes("0000") ? birthdate : null,
       } as any);
 
       await updateTribes.mutateAsync({
