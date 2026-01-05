@@ -595,7 +595,7 @@ const QuedadaChat = () => {
                     handleTyping();
                   }}
                   placeholder="Escribe algo..."
-                  className="h-12 font-body bg-card/50 text-foreground border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
+                  className="h-12 font-body bg-card/50 text-card-foreground border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
                 />
               </div>
               <Button

@@ -46,7 +46,7 @@ export const KeyboardShortcutsHelp = () => {
               key={shortcut.keys} 
               className="flex items-center justify-between py-2 border-b border-border/30 last:border-0"
             >
-              <span className="font-body text-sm text-foreground">
+              <span className="font-body text-sm text-card-foreground">
                 {shortcut.description}
               </span>
               <kbd className="px-2 py-1 bg-muted rounded text-xs font-mono text-muted-foreground">
