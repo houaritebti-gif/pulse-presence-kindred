@@ -17,6 +17,7 @@ export interface Profile {
   share_typing_status: boolean | null;
   email_verified: boolean | null;
   identity_verified: boolean | null;
+  birthdate: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -96,7 +97,7 @@ export const useUpdateProfile = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "bio" | "looking_for" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic" | "share_typing_status">>) => {
+    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "bio" | "looking_for" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic" | "share_typing_status" | "birthdate">>) => {
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase

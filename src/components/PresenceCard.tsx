@@ -32,7 +32,21 @@ interface PresenceProfile {
   looking_for: string[] | null;
   email_verified: boolean | null;
   identity_verified: boolean | null;
+  birthdate?: string | null;
 }
+
+// Helper to calculate age from birthdate
+const calculateAge = (birthdate: string | null | undefined): number | null => {
+  if (!birthdate) return null;
+  const today = new Date();
+  const birth = new Date(birthdate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
 
 interface CompatibilityBreakdown {
   tribes: number;
@@ -238,6 +252,11 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground leading-tight">
               {presence.profile?.name || "Anónima"}
+              {presence.profile?.birthdate && (
+                <span className="font-normal text-muted-foreground ml-1.5">
+                  {calculateAge(presence.profile.birthdate)}
+                </span>
+              )}
             </h3>
             {presence.profile?.email_verified && <VerifiedBadge type="email" size="sm" />}
             {presence.profile?.identity_verified && <VerifiedBadge type="identity" size="sm" />}
