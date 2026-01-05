@@ -570,10 +570,10 @@ const Profile = () => {
         </div>
 
         <div className="mb-10 animate-fade-up animate-delay-250">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-2">
+          <h2 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Sobre ti
           </h2>
-          <p className="font-body text-xs text-muted-foreground mb-3">
+          <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Arial, sans-serif' }}>
             Una breve descripción (opcional)
           </p>
           <div className="relative">
@@ -605,10 +605,10 @@ const Profile = () => {
 
         {/* Looking for */}
         <div className="mb-10 animate-fade-up animate-delay-280">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-2">
+          <h2 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             ¿Qué buscas en KIKI?
           </h2>
-          <p className="font-body text-xs text-muted-foreground mb-3">
+          <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Arial, sans-serif' }}>
             Selecciona todas las que apliquen
           </p>
           <div className="flex flex-wrap gap-2">
@@ -638,7 +638,7 @@ const Profile = () => {
 
         {/* Vibe */}
         <div className="mb-10 animate-fade-up animate-delay-300">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Tu vibra
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -661,7 +661,7 @@ const Profile = () => {
 
         {/* Tribes */}
         <div className="mb-10 animate-fade-up animate-delay-400">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Tus tribus
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -689,7 +689,7 @@ const Profile = () => {
           >
             <div className="flex items-center gap-2">
               <Music className="w-5 h-5 text-primary" />
-              <h2 className="font-display text-lg font-semibold text-foreground">
+              <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                 Tu música
               </h2>
               <span className="text-xs text-muted-foreground">
@@ -748,7 +748,7 @@ const Profile = () => {
         <div className="mb-10 animate-fade-up animate-delay-500">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="font-display text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               Detalles (opcional)
             </h2>
           </div>
@@ -771,7 +771,7 @@ const Profile = () => {
 
         {/* Subscription Section */}
         <div className="mb-6 animate-fade-up animate-delay-500">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Suscripción
           </h2>
           <button
@@ -809,7 +809,7 @@ const Profile = () => {
 
         {/* Privacy Settings */}
         <div className="mb-6 animate-fade-up animate-delay-600">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Privacidad del chat
           </h2>
           <div className="space-y-3">
@@ -838,7 +838,7 @@ const Profile = () => {
 
         {/* Sound Settings */}
         <div className="mb-6 animate-fade-up animate-delay-600">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Sonidos y notificaciones
           </h2>
           <div className="space-y-3">
@@ -1092,7 +1092,7 @@ const BlockedUsersSection = () => {
       >
         <div className="flex items-center gap-2">
           <Ban className="w-5 h-5 text-destructive" />
-          <h2 className="font-display text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Usuarios bloqueados
           </h2>
           {hasBlocked && (
@@ -1207,7 +1207,7 @@ const MyReportsHistorySection = () => {
       >
         <div className="flex items-center gap-2">
           <Flag className="w-5 h-5 text-amber-500" />
-          <h2 className="font-display text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Mis reportes
           </h2>
           {hasReports && (
