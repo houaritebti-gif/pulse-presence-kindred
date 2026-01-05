@@ -191,6 +191,33 @@ If you cannot determine (e.g., face not visible, photo quality too low), respond
         .eq("id", verification.profile_id);
     }
 
+    // Cleanup: Delete selfie from storage after final decision (approved or rejected)
+    // Keep for manual_review since admin may need to see it
+    if (finalStatus === "approved" || finalStatus === "rejected") {
+      try {
+        // Extract file path from signed URL
+        const selfieUrlParts = selfieUrl.split("/identity-selfies/");
+        if (selfieUrlParts.length > 1) {
+          // Get the path before query params
+          const filePath = selfieUrlParts[1].split("?")[0];
+          console.log(`Cleaning up selfie: ${filePath}`);
+          
+          const { error: deleteError } = await supabase.storage
+            .from("identity-selfies")
+            .remove([filePath]);
+          
+          if (deleteError) {
+            console.error("Failed to delete selfie:", deleteError);
+          } else {
+            console.log("Selfie deleted successfully");
+          }
+        }
+      } catch (cleanupError) {
+        // Don't fail the verification if cleanup fails
+        console.error("Selfie cleanup error:", cleanupError);
+      }
+    }
+
     // Create notification and send push for the user (only for approved or rejected, not manual_review)
     if (finalStatus === "approved") {
       await supabase.from("notifications").insert({
