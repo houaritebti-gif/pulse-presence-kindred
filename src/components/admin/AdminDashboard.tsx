@@ -16,6 +16,31 @@ interface AdminDashboardProps {
   isLoading?: boolean;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 300,
+      damping: 24,
+    },
+  },
+};
+
 const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
   if (isLoading) {
     return (
@@ -29,8 +54,9 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
       className="space-y-6"
     >
       {/* Quick Actions Banner */}
@@ -60,8 +86,9 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div variants={containerVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminStatsCard
+          variants={itemVariants}
           icon={<Users className="w-5 h-5 text-primary" />}
           value={stats.totalUsers}
           label="Usuarios totales"
@@ -70,6 +97,7 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           variant="highlight"
         />
         <AdminStatsCard
+          variants={itemVariants}
           icon={<ShieldCheck className="w-5 h-5 text-[hsl(160,60%,45%)] dark:text-[hsl(160,70%,55%)]" />}
           value={stats.verifiedUsers}
           label="Verificados"
@@ -77,37 +105,42 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           trendColor="primary"
         />
         <AdminStatsCard
+          variants={itemVariants}
           icon={<Flag className="w-5 h-5 text-destructive" />}
           value={stats.pendingReports}
           label="Reportes pendientes"
           trendColor={stats.pendingReports > 0 ? "destructive" : "muted"}
         />
         <AdminStatsCard
+          variants={itemVariants}
           icon={<Camera className="w-5 h-5 text-[hsl(45,90%,40%)] dark:text-[hsl(45,90%,65%)]" />}
           value={stats.pendingVerifications}
           label="Verificaciones pendientes"
           trendColor={stats.pendingVerifications > 0 ? "amber" : "muted"}
         />
-      </div>
+      </motion.div>
 
       {/* Secondary Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <motion.div variants={containerVariants} className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <AdminStatsCard
+          variants={itemVariants}
           icon={<UserCog className="w-5 h-5 text-muted-foreground" />}
           value={stats.totalRoles}
           label="Roles asignados"
         />
         <AdminStatsCard
+          variants={itemVariants}
           icon={<TrendingUp className="w-5 h-5 text-muted-foreground" />}
           value={stats.newUsersThisWeek}
           label="Nuevos esta semana"
         />
         <AdminStatsCard
+          variants={itemVariants}
           icon={<Activity className="w-5 h-5 text-muted-foreground" />}
           value={`${stats.verifiedUsers > 0 ? Math.round((stats.verifiedUsers / stats.totalUsers) * 100) : 0}%`}
           label="Tasa verificación"
         />
-      </div>
+      </motion.div>
     </motion.div>
   );
 };
