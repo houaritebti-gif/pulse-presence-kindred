@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Filter, X, ChevronDown, ChevronUp, Users, Radio } from "lucide-react";
+import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar } from "lucide-react";
 import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS } from "@/constants/profileOptions";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 
 export interface PresenceFilters {
   tribes: string[];
@@ -9,6 +10,7 @@ export interface PresenceFilters {
   details: string[];
   lookingFor: string[];
   showAllProfiles?: boolean;
+  ageRange?: [number, number];
 }
 
 interface PresenceFiltersProps {
@@ -20,8 +22,9 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
-  const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0;
-  const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length;
+  const hasAgeFilter = filters.ageRange && (filters.ageRange[0] !== 18 || filters.ageRange[1] !== 99);
+  const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0 || hasAgeFilter;
+  const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length + (hasAgeFilter ? 1 : 0);
 
   const toggleShowAllProfiles = () => {
     // Haptic feedback on mobile
@@ -59,8 +62,12 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
     onChange({ ...filters, lookingFor: newLookingFor });
   };
 
+  const handleAgeRangeChange = (value: number[]) => {
+    onChange({ ...filters, ageRange: [value[0], value[1]] as [number, number] });
+  };
+
   const clearFilters = () => {
-    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [] });
+    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], ageRange: undefined });
   };
 
   const toggleSection = (section: string) => {
@@ -242,7 +249,7 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
           </div>
 
           {/* Details section */}
-          <div>
+          <div className="mb-4">
             <button
               onClick={() => toggleSection("details")}
               className="flex items-center justify-between w-full text-left mb-2"
@@ -271,6 +278,82 @@ const PresenceFiltersComponent = ({ filters, onChange }: PresenceFiltersProps) =
                     {detail.label}
                   </button>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Age range section */}
+          <div>
+            <button
+              onClick={() => toggleSection("age")}
+              className="flex items-center justify-between w-full text-left mb-2"
+            >
+              <span className="font-display text-sm font-semibold text-card-foreground flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Edad {hasAgeFilter && `(${filters.ageRange?.[0]}-${filters.ageRange?.[1]})`}
+              </span>
+              {expandedSection === "age" ? (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              )}
+            </button>
+            {expandedSection === "age" && (
+              <div className="space-y-4 animate-fade-up px-1">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{filters.ageRange?.[0] || 18} años</span>
+                  <span>{filters.ageRange?.[1] || 99} años</span>
+                </div>
+                <Slider
+                  value={filters.ageRange || [18, 99]}
+                  onValueChange={handleAgeRangeChange}
+                  min={18}
+                  max={99}
+                  step={1}
+                  className="w-full"
+                />
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={() => handleAgeRangeChange([18, 25])}
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                      filters.ageRange?.[0] === 18 && filters.ageRange?.[1] === 25
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                    }`}
+                  >
+                    18-25
+                  </button>
+                  <button
+                    onClick={() => handleAgeRangeChange([25, 35])}
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                      filters.ageRange?.[0] === 25 && filters.ageRange?.[1] === 35
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                    }`}
+                  >
+                    25-35
+                  </button>
+                  <button
+                    onClick={() => handleAgeRangeChange([35, 50])}
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                      filters.ageRange?.[0] === 35 && filters.ageRange?.[1] === 50
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                    }`}
+                  >
+                    35-50
+                  </button>
+                  <button
+                    onClick={() => handleAgeRangeChange([18, 99])}
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                      !hasAgeFilter
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                    }`}
+                  >
+                    Todas
+                  </button>
+                </div>
               </div>
             )}
           </div>

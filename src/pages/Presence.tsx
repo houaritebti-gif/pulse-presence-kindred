@@ -190,6 +190,18 @@ const Presence = () => {
   };
 
   // Apply filters and sort by boosted first, then compatibility
+  // Helper to calculate age from birthdate
+  const calculateAge = (birthdate: string): number => {
+    const today = new Date();
+    const birth = new Date(birthdate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   const filteredProfiles = useMemo(() => {
     const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
     
@@ -220,6 +232,14 @@ const Presence = () => {
           if (detail === "has_piercings" && !presence.profile?.has_piercings) return false;
           if (detail === "alternative_aesthetic" && !presence.profile?.alternative_aesthetic) return false;
         }
+      }
+
+      // Age range filter
+      if (filters.ageRange && (filters.ageRange[0] !== 18 || filters.ageRange[1] !== 99)) {
+        const birthdate = (presence.profile as any)?.birthdate;
+        if (!birthdate) return false; // Hide profiles without birthdate when age filter is active
+        const age = calculateAge(birthdate);
+        if (age < filters.ageRange[0] || age > filters.ageRange[1]) return false;
       }
 
       return true;
