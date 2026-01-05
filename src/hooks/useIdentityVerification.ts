@@ -62,10 +62,10 @@ export const useSubmitIdentityVerification = () => {
 
       if (uploadError) throw uploadError;
 
-      // Get signed URL for the selfie (private bucket)
+      // Get signed URL for the selfie (private bucket) - 1 hour expiration for security
       const { data: signedUrlData } = await supabase.storage
         .from("identity-selfies")
-        .createSignedUrl(fileName, 60 * 60 * 24 * 7); // 7 days
+        .createSignedUrl(fileName, 60 * 60); // 1 hour - short-lived for security
 
       if (!signedUrlData?.signedUrl) throw new Error("Failed to get selfie URL");
 
