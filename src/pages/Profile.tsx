@@ -433,6 +433,7 @@ const Profile = () => {
           <ArrowLeft className="w-4 h-4" />
           <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
         </button>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <button
@@ -440,7 +441,6 @@ const Profile = () => {
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
           >
             <LogOut className="w-4 h-4" />
-            <span style={{ fontFamily: 'Arial, sans-serif' }}>Salir</span>
           </button>
         </div>
       </div>
