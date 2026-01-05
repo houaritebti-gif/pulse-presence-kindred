@@ -246,10 +246,15 @@ const FAQSection = () => {
                     <AccordionTrigger className="px-4 py-3 hover:no-underline group">
                       <div className="flex items-center gap-3 text-left w-full">
                         <div className={cn(
-                          "w-6 h-6 rounded flex items-center justify-center flex-shrink-0 transition-all text-xs font-bold group-hover:animate-pulse",
+                          "w-6 h-6 rounded flex items-center justify-center flex-shrink-0 transition-all text-xs font-bold",
                           openItems.includes(`item-${index}`) 
                             ? "bg-foreground text-background" 
-                            : "bg-foreground/10 text-foreground group-hover:bg-primary/20 group-hover:text-primary"
+                            : cn(
+                                "group-hover:animate-pulse",
+                                faq.category === "general" && "bg-primary/15 text-primary group-hover:bg-primary/25",
+                                faq.category === "security" && "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500/25",
+                                faq.category === "payments" && "bg-amber-500/15 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500/25"
+                              )
                         )}>
                           {openItems.includes(`item-${index}`) ? (
                             <Minus className="w-3.5 h-3.5" />
