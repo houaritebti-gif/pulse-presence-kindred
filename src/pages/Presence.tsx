@@ -396,7 +396,7 @@ const Presence = () => {
       {/* Main content */}
       <div className="flex-1 max-w-lg mx-auto w-full">
         {/* Hero text - optimized for mobile */}
-        <div className="text-center mb-6 sm:mb-8 animate-fade-up">
+        <div className="text-center mb-10 animate-fade-up">
           <h1 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
             Hay personas con vibra
             <br />
@@ -408,7 +408,7 @@ const Presence = () => {
         </div>
 
         {/* Presence toggle - prominent - optimized for mobile */}
-        <div className={`rounded-2xl p-3 sm:p-4 mb-6 sm:mb-8 animate-fade-up border shadow-sm transition-all duration-300 ${
+        <div className={`rounded-2xl p-3 sm:p-4 mb-10 animate-fade-up border shadow-sm transition-all duration-300 ${
           myPresence?.visible_to_others 
             ? "bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border-primary/30" 
             : "bg-card border-border"

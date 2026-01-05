@@ -42,7 +42,7 @@ const Sparks = () => {
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
         {/* Hero section */}
-        <div className="text-center mb-12 animate-fade-up">
+        <div className="text-center mb-10 animate-fade-up">
           {/* Animated spark icon */}
           <div className="relative w-20 h-20 mx-auto mb-6">
             <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse-soft" />

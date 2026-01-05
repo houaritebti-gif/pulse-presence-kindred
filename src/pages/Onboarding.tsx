@@ -707,7 +707,7 @@ const Onboarding = () => {
       </motion.div>
 
       {/* Header with step indicator */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-10">
         <motion.span 
           className="text-xl font-bold text-primary mb-4 block"
           style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
