@@ -258,7 +258,12 @@ const FAQSection = () => {
                           )}
                         </div>
                         <span 
-                          className="text-sm font-bold text-foreground leading-tight"
+                          className={cn(
+                            "text-sm font-bold leading-tight",
+                            openItems.includes(`item-${index}`) 
+                              ? "text-foreground" 
+                              : "text-card-foreground"
+                          )}
                           style={{ fontFamily: 'Arial, sans-serif' }}
                         >
                           {faq.question}
