@@ -95,6 +95,7 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           trend={`+${stats.newUsersThisWeek} esta semana`}
           trendColor="emerald"
           variant="highlight"
+          tooltip="Número total de usuarios registrados en la plataforma"
         />
         <AdminStatsCard
           variants={itemVariants}
@@ -103,6 +104,7 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           label="Verificados"
           trend={stats.totalUsers > 0 ? `${Math.round((stats.verifiedUsers / stats.totalUsers) * 100)}% del total` : "0%"}
           trendColor="primary"
+          tooltip="Usuarios que han completado la verificación de identidad con selfie"
         />
         <AdminStatsCard
           variants={itemVariants}
@@ -110,6 +112,7 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           value={stats.pendingReports}
           label="Reportes pendientes"
           trendColor={stats.pendingReports > 0 ? "destructive" : "muted"}
+          tooltip="Reportes de usuarios que requieren revisión y acción"
         />
         <AdminStatsCard
           variants={itemVariants}
@@ -117,6 +120,7 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           value={stats.pendingVerifications}
           label="Verificaciones pendientes"
           trendColor={stats.pendingVerifications > 0 ? "amber" : "muted"}
+          tooltip="Solicitudes de verificación de identidad esperando aprobación"
         />
       </motion.div>
 
@@ -127,18 +131,21 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           icon={<UserCog className="w-5 h-5 text-muted-foreground" />}
           value={stats.totalRoles}
           label="Roles asignados"
+          tooltip="Usuarios con roles especiales como admin o moderador"
         />
         <AdminStatsCard
           variants={itemVariants}
           icon={<TrendingUp className="w-5 h-5 text-muted-foreground" />}
           value={stats.newUsersThisWeek}
           label="Nuevos esta semana"
+          tooltip="Usuarios registrados en los últimos 7 días"
         />
         <AdminStatsCard
           variants={itemVariants}
           icon={<Activity className="w-5 h-5 text-muted-foreground" />}
           value={`${stats.verifiedUsers > 0 ? Math.round((stats.verifiedUsers / stats.totalUsers) * 100) : 0}%`}
           label="Tasa verificación"
+          tooltip="Porcentaje de usuarios que han verificado su identidad"
         />
       </motion.div>
     </motion.div>
