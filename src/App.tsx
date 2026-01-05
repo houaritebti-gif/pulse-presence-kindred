@@ -10,6 +10,7 @@ import AdminRoute from "@/components/AdminRoute";
 import NotificationProvider from "@/components/NotificationProvider";
 import { initializeAdvancedSettings } from "@/hooks/useAdvancedSettings";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { SkipLink } from "@/components/SkipLink";
 import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp";
@@ -90,6 +91,7 @@ const queryClient = new QueryClient({
 // Keyboard navigation wrapper component
 const KeyboardNavigationWrapper = ({ children }: { children: React.ReactNode }) => {
   useKeyboardShortcuts();
+  useScrollToTop();
   const location = useLocation();
   
   // Show shortcuts help only on main pages (not landing/auth)
