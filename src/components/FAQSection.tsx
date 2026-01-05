@@ -207,7 +207,7 @@ const FAQSection = () => {
                   "text-xs px-1.5 py-0.5 rounded-full font-medium",
                   isActive 
                     ? "bg-background/20 text-background" 
-                    : "bg-foreground/10 text-foreground/70"
+                    : "bg-foreground/10 text-foreground/85"
                 )}>
                   {count}
                 </span>

@@ -87,10 +87,10 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-foreground/70 text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-foreground/85 text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
             © {currentYear} KIKI. Todos los derechos reservados.
           </p>
-          <p className="text-foreground/70 text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-foreground/85 text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>
             Hecho con 💜 para la comunidad alternativa
           </p>
         </div>
