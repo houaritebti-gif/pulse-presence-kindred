@@ -121,16 +121,16 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
           variants={fadeInUp}
         >
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/20 mb-6"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground/5 border border-foreground/10 mb-5"
             whileHover={{ scale: 1.05 }}
           >
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="font-body text-sm text-foreground/80">Historias reales</span>
+            <span className="text-sm text-foreground/80" style={{ fontFamily: 'Arial, sans-serif' }}>Historias reales</span>
           </motion.div>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-            Lo que dicen de <span className="gradient-text">KIKI</span>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+            Lo que dicen de <span className="text-primary">KIKI</span>
           </h2>
-          <p className="font-body text-lg text-muted-foreground max-w-xl mx-auto">
+          <p className="text-base text-muted-foreground max-w-xl mx-auto" style={{ fontFamily: 'Arial, sans-serif' }}>
             Personas reales, conexiones reales. Sin filtros, sin guiones.
           </p>
         </motion.div>
@@ -202,7 +202,8 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
                       </motion.div>
                       <div>
                         <motion.h4 
-                          className="font-display text-lg font-bold text-card-foreground"
+                          className="text-base font-bold text-card-foreground"
+                          style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.3 }}
@@ -210,7 +211,8 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
                           {currentTestimonial.name}
                         </motion.h4>
                         <motion.p 
-                          className="font-body text-sm text-card-foreground/70"
+                          className="text-sm text-card-foreground/70"
+                          style={{ fontFamily: 'Arial, sans-serif' }}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.4 }}
@@ -222,7 +224,8 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
                     
                     {/* Testimonial text */}
                     <motion.p 
-                      className="font-body text-card-foreground/90 leading-relaxed text-lg flex-grow"
+                      className="text-card-foreground/90 leading-relaxed text-base flex-grow"
+                      style={{ fontFamily: 'Arial, sans-serif' }}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
@@ -322,7 +325,8 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
               className="text-center"
             >
               <motion.div 
-                className="font-display text-3xl md:text-4xl font-bold gradient-text"
+                className="text-2xl md:text-3xl font-bold text-primary"
+                style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                 whileInView={{
                   scale: [1, 1.1, 1],
                 }}
@@ -330,7 +334,7 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
               >
                 {stat.value}
               </motion.div>
-              <p className="font-body text-sm text-muted-foreground mt-1">{stat.label}</p>
+              <p className="text-sm text-muted-foreground mt-1" style={{ fontFamily: 'Arial, sans-serif' }}>{stat.label}</p>
             </motion.div>
           ))}
         </motion.div>
