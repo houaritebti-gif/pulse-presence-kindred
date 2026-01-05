@@ -1,5 +1,6 @@
 import { Users, Flag, Camera, UserCog, TrendingUp, Activity, ShieldCheck, AlertTriangle } from "lucide-react";
 import AdminStatsCard from "./AdminStatsCard";
+import AdminActivityChart from "./AdminActivityChart";
 import { motion } from "framer-motion";
 
 interface DashboardStats {
@@ -148,6 +149,9 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           tooltip="Porcentaje de usuarios que han verificado su identidad"
         />
       </motion.div>
+
+      {/* Activity Chart */}
+      <AdminActivityChart />
     </motion.div>
   );
 };
