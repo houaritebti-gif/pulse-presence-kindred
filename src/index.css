@@ -104,7 +104,7 @@
   }
 
   /* Admin Panel Dark Mode - Softer colors for reduced eye strain */
-  .dark .admin-panel {
+  .dark .admin-panel.admin-soft-dark {
     --background: 220 15% 10%;
     --foreground: 220 10% 95%;
 
@@ -117,14 +117,32 @@
     --muted: 220 12% 20%;
     --muted-foreground: 220 10% 65%;
 
-    --border: 220 12% 22%;
+    --border: 220 12% 25%;
     --input: 220 12% 18%;
+  }
 
-    /* Admin-specific accent colors - warmer and softer */
-    --admin-success: 160 60% 45%;
-    --admin-warning: 45 90% 55%;
-    --admin-danger: 0 65% 55%;
-    --admin-info: 210 70% 55%;
+  /* Admin Panel Light Mode - Readable cards instead of black */
+  .admin-panel {
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --muted: 340 20% 96%;
+    --muted-foreground: 340 10% 40%;
+    --border: 340 20% 88%;
+    --input: 340 20% 92%;
+  }
+
+  /* Admin Panel Standard Dark Mode */
+  .dark .admin-panel {
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 70%;
+    --border: 0 0% 25%;
+    --input: 0 0% 20%;
   }
 
   /* High Contrast Mode - Light */

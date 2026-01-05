@@ -1,13 +1,21 @@
-import { Shield, RefreshCw } from "lucide-react";
+import { Shield, RefreshCw, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 
 interface AdminHeaderProps {
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  softDarkMode?: boolean;
+  onToggleSoftDark?: (enabled: boolean) => void;
 }
 
-const AdminHeader = ({ onRefresh, isRefreshing }: AdminHeaderProps) => {
+const AdminHeader = ({ onRefresh, isRefreshing, softDarkMode, onToggleSoftDark }: AdminHeaderProps) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -30,7 +38,23 @@ const AdminHeader = ({ onRefresh, isRefreshing }: AdminHeaderProps) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            {/* Soft Dark Mode Toggle - Only visible in dark mode */}
+            {isDark && onToggleSoftDark && (
+              <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg border border-border">
+                <Moon className="w-4 h-4 text-muted-foreground" />
+                <Label htmlFor="soft-dark" className="text-xs font-medium text-muted-foreground cursor-pointer whitespace-nowrap">
+                  Modo suave
+                </Label>
+                <Switch
+                  id="soft-dark"
+                  checked={softDarkMode}
+                  onCheckedChange={onToggleSoftDark}
+                  className="scale-90"
+                />
+              </div>
+            )}
+
             {onRefresh && (
               <Button
                 variant="outline"
