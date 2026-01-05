@@ -150,10 +150,10 @@ const Auth = () => {
       {/* Back button */}
       <button 
         onClick={() => navigate("/")}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-10"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 mb-10 group"
         style={{ fontFamily: 'Arial, sans-serif' }}
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         <span>Volver</span>
       </button>
 

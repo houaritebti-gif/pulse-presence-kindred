@@ -428,9 +428,9 @@ const Profile = () => {
       <div className="flex items-center justify-between mb-8">
         <button 
           onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
         </button>
         <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
