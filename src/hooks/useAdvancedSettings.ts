@@ -95,7 +95,12 @@ export const applyCompactMode = (compact: boolean) => {
 };
 
 export const getHighContrast = (): boolean => {
-  return localStorage.getItem(STORAGE_KEYS.HIGH_CONTRAST) === "true";
+  const stored = localStorage.getItem(STORAGE_KEYS.HIGH_CONTRAST);
+  if (stored !== null) {
+    return stored === "true";
+  }
+  // Default to system preference using prefers-contrast media query
+  return window.matchMedia("(prefers-contrast: more)").matches;
 };
 
 export const setHighContrast = (enabled: boolean) => {
@@ -116,13 +121,24 @@ export const initializeAdvancedSettings = () => {
   applyHighContrast(getHighContrast());
 
   // Listen for system theme changes
-  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-  const handleChange = () => {
+  const themeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const handleThemeChange = () => {
     if (getTheme() === "system") {
       applyTheme("system");
     }
   };
-  mediaQuery.addEventListener("change", handleChange);
+  themeMediaQuery.addEventListener("change", handleThemeChange);
+
+  // Listen for system high contrast preference changes
+  const contrastMediaQuery = window.matchMedia("(prefers-contrast: more)");
+  const handleContrastChange = () => {
+    // Only auto-apply if user hasn't explicitly set a preference
+    const stored = localStorage.getItem(STORAGE_KEYS.HIGH_CONTRAST);
+    if (stored === null) {
+      applyHighContrast(contrastMediaQuery.matches);
+    }
+  };
+  contrastMediaQuery.addEventListener("change", handleContrastChange);
 };
 
 export const useAdvancedSettings = () => {
