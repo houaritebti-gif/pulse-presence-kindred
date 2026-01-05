@@ -93,7 +93,7 @@ const Sparks = () => {
             <div 
               {...getContainerProps()}
               aria-label="Lista de chispas"
-              className="space-y-4"
+              className="space-y-5 sm:space-y-6 pb-6"
             >
               {chats?.map((chat, index) => (
                 <div key={chat.id} {...getItemProps(index)}>
