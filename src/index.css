@@ -233,7 +233,21 @@
   }
 
   html {
+    scroll-behavior: smooth;
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Smooth scroll for all scrollable containers */
+  * {
+    scroll-behavior: smooth;
+  }
+
+  /* Respect user preferences for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    html,
+    * {
+      scroll-behavior: auto;
+    }
   }
 
   html.theme-transitioning,
