@@ -240,7 +240,12 @@ const FAQSection = () => {
             key={openItems.length}
             initial={{ scale: 1.2, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="text-xs text-muted-foreground font-medium"
+            className={cn(
+              "text-xs font-medium transition-colors duration-300",
+              allExpanded 
+                ? "text-primary font-bold" 
+                : "text-muted-foreground"
+            )}
             style={{ fontFamily: 'Arial, sans-serif' }}
           >
             {openItems.length}/{filteredFaqs.length}
