@@ -145,6 +145,7 @@ const categories = [
 const FAQSection = () => {
   const [openItems, setOpenItems] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<FAQCategory>("all");
+  const [shakingItem, setShakingItem] = useState<string | null>(null);
 
   const filteredFaqs = activeCategory === "all" 
     ? faqs 
@@ -152,7 +153,14 @@ const FAQSection = () => {
 
   const handleCategoryChange = (category: FAQCategory) => {
     setActiveCategory(category);
-    setOpenItems([]); // Reset open items when changing category
+    setOpenItems([]);
+  };
+
+  const handleItemClick = (itemId: string) => {
+    if (openItems.includes(itemId)) {
+      setShakingItem(itemId);
+      setTimeout(() => setShakingItem(null), 400);
+    }
   };
 
   return (
@@ -246,13 +254,22 @@ const FAQSection = () => {
                     value={`item-${index}`}
                     className="border-none"
                   >
-                    <div className={cn(
-                      "rounded-lg border-2 transition-all duration-200 ease-out",
-                      openItems.includes(`item-${index}`) 
-                        ? "bg-foreground/5 border-foreground/20" 
-                        : "bg-card border-border hover:border-primary/40 hover:bg-foreground/[0.02] hover:scale-[1.01] hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 hover:ring-2 hover:ring-primary/20"
-                    )}>
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline group">
+                    <motion.div 
+                      className={cn(
+                        "rounded-lg border-2 transition-all duration-200 ease-out",
+                        openItems.includes(`item-${index}`) 
+                          ? "bg-foreground/5 border-foreground/20" 
+                          : "bg-card border-border hover:border-primary/40 hover:bg-foreground/[0.02] hover:scale-[1.01] hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 hover:ring-2 hover:ring-primary/20"
+                      )}
+                      animate={shakingItem === `item-${index}` ? {
+                        x: [0, -4, 4, -4, 4, -2, 2, 0],
+                        transition: { duration: 0.4 }
+                      } : {}}
+                    >
+                    <AccordionTrigger 
+                      className="px-4 py-3 hover:no-underline group"
+                      onClick={() => handleItemClick(`item-${index}`)}
+                    >
                       <div className="flex items-center gap-3 text-left w-full">
                         <div className={cn(
                           "w-6 h-6 rounded flex items-center justify-center flex-shrink-0 transition-all text-xs font-bold",
@@ -321,7 +338,7 @@ const FAQSection = () => {
                         </p>
                       </motion.div>
                     </AccordionContent>
-                  </div>
+                  </motion.div>
                 </AccordionItem>
               </motion.div>
               ))}
