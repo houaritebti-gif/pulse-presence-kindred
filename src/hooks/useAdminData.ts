@@ -503,3 +503,33 @@ export const useForceReverification = () => {
     },
   });
 };
+
+// Interface for cleanup stats
+export interface CleanupStats {
+  success: boolean;
+  deletedFromCompletedVerifications: number;
+  deletedOrphanedFiles: number;
+  deletedOldVerifications: number;
+  totalDeleted: number;
+  timestamp: string;
+}
+
+// Manual trigger cleanup function
+export const useTriggerCleanup = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (): Promise<CleanupStats> => {
+      const { data, error } = await supabase.functions.invoke('cleanup-identity-selfies', {
+        body: { manual: true },
+      });
+
+      if (error) throw error;
+      return data as CleanupStats;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-verification-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-identity-verifications'] });
+    },
+  });
+};
