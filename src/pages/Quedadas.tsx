@@ -291,7 +291,7 @@ const Quedadas = () => {
           />
         ) : (
           <>
-            <div className="space-y-4">
+            <div className="space-y-5 sm:space-y-6 pb-6">
               {quedadas?.map((quedada, index) => {
                 const isFull = quedada.max_attendees && quedada.attendee_count >= quedada.max_attendees;
                 const isCreator = quedada.creator_profile_id === profile?.id;
@@ -299,7 +299,7 @@ const Quedadas = () => {
                 return (
                   <div
                     key={quedada.id}
-                    className="bg-card rounded-2xl p-5 animate-fade-up border border-transparent hover:border-accent/20 transition-all duration-300"
+                    className="bg-card rounded-2xl p-5 sm:p-6 animate-fade-up border border-transparent hover:border-accent/20 transition-all duration-300"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     {/* Header */}
@@ -313,7 +313,7 @@ const Quedadas = () => {
                     )}
 
                     {/* Details */}
-                    <div className="flex flex-wrap gap-3 mb-4">
+                    <div className="flex flex-wrap gap-3 sm:gap-4 mb-4 sm:mb-5">
                       <div className="flex items-center gap-1.5 text-card-foreground/70">
                         <Calendar className="w-3.5 h-3.5" />
                         <span className="text-xs capitalize" style={{ fontFamily: 'Arial, sans-serif' }}>{formatEventDate(quedada.event_date)}</span>

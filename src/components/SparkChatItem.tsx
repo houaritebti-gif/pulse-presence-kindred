@@ -29,13 +29,13 @@ const SparkChatItem = ({ chat, animationDelay }: SparkChatItemProps) => {
   return (
     <button
       onClick={() => navigate(`/spark/${chat.id}`)}
-      className="w-full bg-card rounded-2xl p-5 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 animate-fade-up flex items-center gap-4 group border border-transparent hover:border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="w-full bg-card rounded-2xl p-5 sm:p-6 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 animate-fade-up flex items-center gap-4 sm:gap-5 group border border-transparent hover:border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       style={{ animationDelay: `${animationDelay}ms` }}
       aria-label={`Chat con ${chat.other_profile?.name || "Anónima"}${chat.unread_count && chat.unread_count > 0 ? `, ${chat.unread_count} mensajes sin leer` : ""}`}
     >
       {/* Avatar with spark indicator */}
       <div className="relative">
-        <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300 group-hover:ring-primary/40">
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300 group-hover:ring-primary/40">
           {chat.other_profile?.avatar_url ? (
             <LazyImage 
               src={chat.other_profile.avatar_url} 
