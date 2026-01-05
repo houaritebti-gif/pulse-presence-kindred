@@ -125,7 +125,7 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
             whileHover={{ scale: 1.05 }}
           >
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm text-foreground/80" style={{ fontFamily: 'Arial, sans-serif' }}>Historias reales</span>
+            <span className="text-sm text-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Historias reales</span>
           </motion.div>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Lo que dicen de <span className="text-primary">KIKI</span>
@@ -144,14 +144,14 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
           {/* Navigation Arrows */}
           <button
             onClick={prevSlide}
-            className="absolute left-0 md:-left-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full glass border border-border/20 flex items-center justify-center text-foreground/60 hover:text-primary hover:border-primary/40 transition-all duration-300 hover:scale-110"
+            className="absolute left-0 md:-left-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full glass border border-border/20 flex items-center justify-center text-foreground hover:text-primary hover:border-primary/40 transition-all duration-300 hover:scale-110"
             aria-label="Anterior testimonio"
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-0 md:-right-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full glass border border-border/20 flex items-center justify-center text-foreground/60 hover:text-primary hover:border-primary/40 transition-all duration-300 hover:scale-110"
+            className="absolute right-0 md:-right-16 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full glass border border-border/20 flex items-center justify-center text-foreground hover:text-primary hover:border-primary/40 transition-all duration-300 hover:scale-110"
             aria-label="Siguiente testimonio"
           >
             <ChevronRight className="w-6 h-6" />
@@ -211,7 +211,7 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
                           {currentTestimonial.name}
                         </motion.h4>
                         <motion.p 
-                          className="text-sm text-card-foreground/70"
+                          className="text-sm text-card-foreground"
                           style={{ fontFamily: 'Arial, sans-serif' }}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
@@ -224,7 +224,7 @@ const TestimonialsCarousel = ({ testimonials }: TestimonialsCarouselProps) => {
                     
                     {/* Testimonial text */}
                     <motion.p 
-                      className="text-card-foreground/90 leading-relaxed text-base flex-grow"
+                      className="text-card-foreground leading-relaxed text-base flex-grow"
                       style={{ fontFamily: 'Arial, sans-serif' }}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
