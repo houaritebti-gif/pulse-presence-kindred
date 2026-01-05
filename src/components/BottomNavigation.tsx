@@ -50,6 +50,8 @@ const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineB
       onMouseEnter={onPrefetch}
       onTouchStart={onPrefetch}
       onFocus={onPrefetch}
+      aria-label={label}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
         "flex flex-col items-center gap-1 px-4 py-2 relative transition-all",
         isActive 

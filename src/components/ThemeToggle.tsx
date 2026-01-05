@@ -50,6 +50,7 @@ export const ThemeToggle = () => {
         isTransitioning && "pointer-events-none"
       )}
       title={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
     >
       <div className={cn(
         "transition-transform duration-300",

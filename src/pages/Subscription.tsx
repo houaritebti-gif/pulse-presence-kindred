@@ -237,6 +237,7 @@ const Subscription = () => {
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
             style={{ fontFamily: 'Arial, sans-serif' }}
+            aria-label="Volver atrás"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Volver</span>

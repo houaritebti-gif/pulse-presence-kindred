@@ -197,6 +197,7 @@ const Connections = () => {
           onClick={() => navigate("/presence")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
           style={{ fontFamily: 'Arial, sans-serif' }}
+          aria-label="Volver a Presencia"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Presencia</span>

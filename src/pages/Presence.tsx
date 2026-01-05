@@ -274,6 +274,7 @@ const Presence = () => {
         <button 
           onClick={() => navigate("/profile")}
           className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body p-1 -ml-1 group"
+          aria-label="Ir a Perfil"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm sm:text-base" style={{ fontFamily: 'Arial, sans-serif' }}>Perfil</span>
@@ -286,6 +287,7 @@ const Presence = () => {
             onClick={() => navigate("/connections")}
             className="relative text-muted-foreground hover:text-foreground transition-colors"
             title="Solicitudes de conexión"
+            aria-label="Solicitudes de conexión"
           >
             <UserPlus className={`w-5 h-5 ${pendingConnectionCount > 0 ? "text-primary" : ""}`} />
             {pendingConnectionCount > 0 && (
@@ -299,6 +301,7 @@ const Presence = () => {
             onClick={() => navigate("/ghost-messages")}
             className="relative text-muted-foreground hover:text-foreground transition-colors"
             title="Mensajes fantasma"
+            aria-label="Mensajes fantasma"
           >
             <Ghost className={`w-5 h-5 ${unreadGhostCount > 0 ? "text-primary" : ""}`} />
             {unreadGhostCount > 0 && (
@@ -312,6 +315,7 @@ const Presence = () => {
             onClick={() => navigate("/notifications")}
             className="relative text-muted-foreground hover:text-foreground transition-colors"
             title="Notificaciones"
+            aria-label="Notificaciones"
           >
             <Bell className={`w-5 h-5 ${unreadCount > 0 ? "text-primary" : ""}`} />
             {unreadCount > 0 && (
@@ -325,6 +329,7 @@ const Presence = () => {
             onClick={() => navigate("/quedadas")}
             className="relative text-muted-foreground hover:text-foreground transition-colors"
             title="Quedadas"
+            aria-label="Quedadas"
           >
             <Calendar className={`w-5 h-5 ${quedadaCount > 0 ? "text-accent" : ""}`} />
             {quedadaCount > 0 && (
@@ -341,6 +346,7 @@ const Presence = () => {
             }}
             className="relative text-muted-foreground hover:text-foreground transition-colors"
             title="Tus chispas"
+            aria-label="Tus chispas"
           >
             <Flame className={`w-5 h-5 ${totalSparkCount > 0 ? "text-primary" : ""}`} />
             {hasNewSparks && (
@@ -353,6 +359,7 @@ const Presence = () => {
             onClick={toggleVisibility}
             className="text-muted-foreground hover:text-foreground transition-colors"
             title={myPresence?.visible_to_others ? "Modo visible" : "Modo invisible"}
+            aria-label={myPresence?.visible_to_others ? "Cambiar a modo invisible" : "Cambiar a modo visible"}
           >
             {myPresence?.visible_to_others ? (
               <Eye className="w-4 h-4" />
