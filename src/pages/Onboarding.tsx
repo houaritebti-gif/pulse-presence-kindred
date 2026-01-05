@@ -367,11 +367,12 @@ const Onboarding = () => {
                   variants={itemVariants}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`p-4 rounded-2xl font-body text-base transition-colors flex items-center justify-center gap-2 ${
+                  className={`p-4 rounded-2xl text-base transition-colors flex items-center justify-center gap-2 ${
                     selectedVibe === vibe.value
                       ? "bg-primary text-primary-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
                   }`}
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 >
                   <span className="text-xl">{vibe.emoji}</span>
                   <span>{vibe.value}</span>
@@ -399,11 +400,12 @@ const Onboarding = () => {
                   variants={itemVariants}
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`px-4 py-2 rounded-full font-body text-sm transition-colors ${
+                  className={`px-4 py-2 rounded-full text-sm transition-colors ${
                     selectedTribes.includes(tribe.value)
                       ? "bg-primary text-primary-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
                   }`}
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 >
                   {tribe.emoji} {tribe.value}
                 </motion.button>
@@ -439,7 +441,7 @@ const Onboarding = () => {
                 key={category.name}
                 variants={itemVariants}
               >
-                <h3 className="font-display text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                   <Music className="w-3 h-3" />
                   {category.name}
                 </h3>
@@ -450,11 +452,12 @@ const Onboarding = () => {
                       onClick={() => { triggerHaptic('selection'); toggleMusicStyle(style); }}
                       whileHover={{ scale: 1.08 }}
                       whileTap={{ scale: 0.95 }}
-                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-colors ${
+                      className={`px-3 py-1.5 rounded-full text-xs transition-colors ${
                         selectedMusicStyles.includes(style)
                           ? "bg-primary text-primary-foreground"
                           : "bg-card text-card-foreground hover:bg-card/80"
                       }`}
+                      style={{ fontFamily: 'Arial, sans-serif' }}
                     >
                       {style}
                     </motion.button>
@@ -492,7 +495,7 @@ const Onboarding = () => {
               variants={itemVariants}
             >
               <Target className="w-4 h-4" />
-              <span className="font-body text-sm">Selecciona todas las que apliquen</span>
+              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Selecciona todas las que apliquen</span>
             </motion.div>
             <div className="flex flex-wrap gap-2 justify-center">
               {LOOKING_FOR_OPTIONS.map((option) => (
@@ -508,11 +511,12 @@ const Onboarding = () => {
                   variants={itemVariants}
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`px-4 py-3 rounded-2xl font-body text-sm transition-colors flex items-center gap-2 ${
+                  className={`px-4 py-3 rounded-2xl text-sm transition-colors flex items-center gap-2 ${
                     selectedLookingFor.includes(option.value)
                       ? "bg-primary text-primary-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
                   }`}
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 >
                   <span className="text-lg">{option.emoji}</span>
                   <span>{option.value}</span>
@@ -549,18 +553,19 @@ const Onboarding = () => {
               variants={itemVariants}
             >
               <FileText className="w-4 h-4" />
-              <span className="font-body text-sm">Máximo 300 caracteres</span>
+              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Máximo 300 caracteres</span>
             </motion.div>
             <motion.div variants={itemVariants}>
               <Textarea
                 placeholder="Cuéntanos algo sobre ti..."
                 value={bio}
                 onChange={(e) => setBio(e.target.value.slice(0, 300))}
-                className="min-h-[120px] resize-none font-body text-base bg-card border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/60 rounded-2xl"
+                className="min-h-[120px] resize-none text-base bg-card border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/60 rounded-2xl"
+                style={{ fontFamily: 'Arial, sans-serif' }}
                 maxLength={300}
               />
               <div className="flex justify-end mt-2">
-                <span className={`text-xs font-body ${bio.length >= 280 ? "text-destructive" : "text-muted-foreground"}`}>
+                <span className={`text-xs ${bio.length >= 280 ? "text-destructive" : "text-muted-foreground"}`} style={{ fontFamily: 'Arial, sans-serif' }}>
                   {bio.length}/300
                 </span>
               </div>
@@ -583,7 +588,7 @@ const Onboarding = () => {
               variants={itemVariants}
             >
               <Sparkles className="w-4 h-4" />
-              <span className="font-body text-sm">Comparte lo que quieras</span>
+              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Comparte lo que quieras</span>
             </motion.div>
             {OPTIONAL_DETAILS.map((detail) => {
               const isSelected = 
@@ -604,11 +609,12 @@ const Onboarding = () => {
                   variants={itemVariants}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`w-full p-4 rounded-2xl font-body text-base transition-colors flex items-center justify-between ${
+                  className={`w-full p-4 rounded-2xl text-base transition-colors flex items-center justify-between ${
                     isSelected
                       ? "bg-accent text-accent-foreground"
                       : "bg-card text-card-foreground hover:bg-card/80"
                   }`}
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 >
                   <span>{detail.label}</span>
                   <AnimatePresence>
@@ -703,7 +709,8 @@ const Onboarding = () => {
       {/* Header with step indicator */}
       <div className="text-center mb-12">
         <motion.span 
-          className="font-display text-xl font-bold text-primary mb-4 block"
+          className="text-xl font-bold text-primary mb-4 block"
+          style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -719,10 +726,10 @@ const Onboarding = () => {
             animate="center"
             exit="exit"
           >
-            <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+            <h1 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               {currentStep.title}
             </h1>
-            <p className="font-body text-muted-foreground">
+            <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               {currentStep.subtitle}
             </p>
           </motion.div>
@@ -756,7 +763,8 @@ const Onboarding = () => {
           <Button
             variant="outline"
             onClick={handleBack}
-            className="flex-1 h-14 rounded-2xl font-display"
+            className="flex-1 h-14 rounded-2xl"
+            style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Atrás
@@ -766,7 +774,8 @@ const Onboarding = () => {
           <Button
             onClick={handleNext}
             disabled={!canProceed()}
-            className="flex-1 h-14 rounded-2xl font-display"
+            className="flex-1 h-14 rounded-2xl"
+            style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
           >
             Siguiente
             <ArrowRight className="w-4 h-4 ml-2" />
@@ -775,7 +784,8 @@ const Onboarding = () => {
           <Button
             onClick={handleComplete}
             disabled={updateProfile.isPending}
-            className="flex-1 h-14 rounded-2xl font-display"
+            className="flex-1 h-14 rounded-2xl"
+            style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
           >
             {updateProfile.isPending ? (
               <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
@@ -793,7 +803,8 @@ const Onboarding = () => {
       {step >= 4 && step < STEPS.length && (
         <button
           onClick={handleNext}
-          className="mt-4 text-center font-body text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="mt-4 text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+          style={{ fontFamily: 'Arial, sans-serif' }}
         >
           Saltar este paso
         </button>

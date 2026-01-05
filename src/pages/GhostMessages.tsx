@@ -104,7 +104,7 @@ const GhostMessageCard = ({
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
-                <span className="font-display text-lg text-card-foreground">
+                <span className="text-lg text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                   {isRevealed ? (message.from_profile?.name?.[0] || "?").toUpperCase() : "?"}
                 </span>
               </div>
@@ -127,7 +127,7 @@ const GhostMessageCard = ({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <h3 className="font-display font-semibold text-card-foreground">
+            <h3 className="font-semibold text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               {isRevealed ? (message.from_profile?.name || "Anónima") : "Alguien misterioso"}
             </h3>
             {/* KIKI Now indicator */}
@@ -157,14 +157,14 @@ const GhostMessageCard = ({
           </div>
           
           {/* Vibe - always visible as hint */}
-          <p className="font-body text-xs text-card-foreground/70 mb-3">
+          <p className="text-xs text-card-foreground/70 mb-3" style={{ fontFamily: 'Arial, sans-serif' }}>
             Vibra {message.from_profile?.vibe?.toLowerCase() || "misteriosa"}
             {message.from_profile?.city && !isRevealed && ` · ${message.from_profile.city}`}
           </p>
 
           {/* Message content */}
           <div className="bg-background/50 rounded-xl p-3 mb-3">
-            <p className="font-body text-sm text-card-foreground italic">
+            <p className="text-sm text-card-foreground italic" style={{ fontFamily: 'Arial, sans-serif' }}>
               "{message.content}"
             </p>
           </div>
@@ -173,7 +173,7 @@ const GhostMessageCard = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-card-foreground/60">
               <Clock className="w-3 h-3" />
-              <span className="font-body text-xs">{timeAgo}</span>
+              <span className="text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>{timeAgo}</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -202,7 +202,7 @@ const GhostMessageCard = ({
                   Ir al chat
                 </Button>
               ) : message.hasSentBack ? (
-                <span className="font-body text-xs text-primary flex items-center gap-1">
+                <span className="text-xs text-primary flex items-center gap-1" style={{ fontFamily: 'Arial, sans-serif' }}>
                   <Send className="w-3 h-3" />
                   Enviado
                 </span>
@@ -226,7 +226,7 @@ const GhostMessageCard = ({
       {!isRevealed && (
         <div className="mt-4 pt-3 border-t border-border/20 flex items-center justify-center gap-2">
           <EyeOff className="w-3.5 h-3.5 text-muted-foreground/70" />
-          <p className="font-body text-xs text-muted-foreground/70">
+          <p className="text-xs text-muted-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
             Responde para revelar su identidad
           </p>
         </div>
@@ -268,12 +268,13 @@ const GhostMessages = () => {
       <div className="relative z-10 flex items-center justify-between mb-8">
         <button 
           onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
+          style={{ fontFamily: 'Arial, sans-serif' }}
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Presencia</span>
         </button>
-        <span className="font-display text-xl font-bold text-foreground">KIKI</span>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
         <div className="w-20" />
       </div>
 
@@ -288,10 +289,10 @@ const GhostMessages = () => {
             <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-primary/60 animate-pulse-soft" />
           </div>
           
-          <h1 className="font-display text-3xl font-bold text-foreground mb-3">
+          <h1 className="text-3xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Mensajes fantasma
           </h1>
-          <p className="font-body text-muted-foreground max-w-xs mx-auto">
+          <p className="text-muted-foreground max-w-xs mx-auto" style={{ fontFamily: 'Arial, sans-serif' }}>
             Personas que te han enviado un mensaje. Responde para revelar quiénes son.
           </p>
         </div>
@@ -335,7 +336,7 @@ const GhostMessages = () => {
                         <div className="flex items-center gap-2 group cursor-pointer">
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 transition-colors group-hover:bg-amber-500/20">
                             <Zap className="w-4 h-4 text-amber-500" />
-                            <span className="font-display text-sm font-semibold text-amber-500">
+                            <span className="text-sm font-semibold text-amber-500" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                               Quieren conectar ahora
                             </span>
                             <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
@@ -368,7 +369,7 @@ const GhostMessages = () => {
                         <div className="flex items-center gap-2 group cursor-pointer">
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/30 transition-colors group-hover:bg-muted/70">
                             <Ghost className="w-4 h-4 text-muted-foreground" />
-                            <span className="font-display text-sm font-semibold text-muted-foreground">
+                            <span className="text-sm font-semibold text-muted-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                               Otros mensajes
                             </span>
                             <span className="ml-1 px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
@@ -403,7 +404,7 @@ const GhostMessages = () => {
         <div className="mt-10 text-center animate-fade-up animate-delay-500">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
             <Eye className="w-3.5 h-3.5 text-primary/60" />
-            <p className="font-body text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               La identidad se revela al responder
             </p>
           </div>
