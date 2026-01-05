@@ -226,30 +226,27 @@ const Subscription = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+      
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border">
-        <div className="flex items-center gap-4 p-4 max-w-lg mx-auto">
-          <Button
-            variant="ghost"
-            size="icon"
+      <div className="relative z-10 px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex items-center justify-between max-w-lg mx-auto">
+          <button 
             onClick={() => navigate(-1)}
-            className="shrink-0"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-              Planes KIKI
-            </h1>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
-              Elige cómo quieres conectar
-            </p>
-          </div>
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Volver</span>
+          </button>
+          <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+          <div className="w-20" />
         </div>
       </div>
 
-      <div className="p-4 pb-32 max-w-lg mx-auto space-y-6">
+      <div className="relative z-10 px-4 pb-32 max-w-lg mx-auto space-y-6">
         
         {/* Trial Banner */}
         {isOnTrial && (
@@ -637,13 +634,16 @@ const Subscription = () => {
           </div>
         )}
 
-        {/* Security Note */}
-        <div className="text-center pt-4">
-          <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
-            🔒 Pagos seguros con Stripe
-          </p>
-          <p className="text-xs text-muted-foreground mt-1" style={{ fontFamily: 'Arial, sans-serif' }}>
-            Cancela cuando quieras, sin compromisos
+        {/* Footer */}
+        <div className="text-center pt-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
+            <Crown className="w-3.5 h-3.5 text-primary/60" />
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+              Conecta mejor · Vive más
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground mt-4" style={{ fontFamily: 'Arial, sans-serif' }}>
+            🔒 Pagos seguros con Stripe · Cancela cuando quieras
           </p>
         </div>
       </div>
