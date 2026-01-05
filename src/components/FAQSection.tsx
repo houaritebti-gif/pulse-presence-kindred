@@ -258,7 +258,7 @@ const FAQSection = () => {
                           )}
                         </div>
                         <span 
-                          className="text-sm font-bold text-card-foreground leading-tight"
+                          className="text-sm font-bold text-foreground leading-tight"
                           style={{ fontFamily: 'Arial, sans-serif' }}
                         >
                           {faq.question}
@@ -268,7 +268,7 @@ const FAQSection = () => {
                     <AccordionContent className="px-4 pb-4">
                       <div className="pl-9">
                         <p 
-                          className="text-sm text-card-foreground leading-relaxed"
+                          className="text-sm text-foreground/90 leading-relaxed font-medium"
                           style={{ fontFamily: 'Arial, sans-serif' }}
                         >
                           {faq.answer}
