@@ -4,6 +4,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSparkChats } from "@/hooks/useSparks";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useListKeyboardNavigation } from "@/hooks/useListKeyboardNavigation";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import SparkChatItem from "@/components/SparkChatItem";
@@ -19,6 +20,15 @@ const Sparks = () => {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
+  });
+
+  const { getContainerProps, getItemProps } = useListKeyboardNavigation({
+    itemCount: chats?.length || 0,
+    onSelect: (index) => {
+      if (chats?.[index]) {
+        navigate(`/spark/${chats[index].id}`);
+      }
+    },
   });
 
   return (
@@ -80,13 +90,18 @@ const Sparks = () => {
           />
         ) : (
           <>
-            <div className="space-y-4">
+            <div 
+              {...getContainerProps()}
+              aria-label="Lista de chispas"
+              className="space-y-4"
+            >
               {chats?.map((chat, index) => (
-                <SparkChatItem 
-                  key={chat.id} 
-                  chat={chat} 
-                  animationDelay={index * 100} 
-                />
+                <div key={chat.id} {...getItemProps(index)}>
+                  <SparkChatItem 
+                    chat={chat} 
+                    animationDelay={index * 100} 
+                  />
+                </div>
               ))}
             </div>
             {/* Infinite scroll trigger */}
