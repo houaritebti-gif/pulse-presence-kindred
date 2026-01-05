@@ -32,7 +32,7 @@ const AdminReportCard = ({ report, onUpdateStatus, isUpdating }: AdminReportCard
     switch (status) {
       case "pending":
         return (
-          <Badge variant="outline" className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40 font-semibold px-2.5 py-1">
+          <Badge variant="outline" className="bg-[hsl(45,90%,55%,0.12)] dark:bg-[hsl(45,90%,55%,0.08)] text-[hsl(45,90%,35%)] dark:text-[hsl(45,90%,65%)] border-[hsl(45,90%,55%,0.35)] dark:border-[hsl(45,90%,55%,0.25)] font-semibold px-2.5 py-1">
             <Clock className="w-3.5 h-3.5 mr-1.5" />
             Pendiente
           </Badge>
@@ -46,7 +46,7 @@ const AdminReportCard = ({ report, onUpdateStatus, isUpdating }: AdminReportCard
         );
       case "resolved":
         return (
-          <Badge className="bg-emerald-500 hover:bg-emerald-600 font-semibold px-2.5 py-1">
+          <Badge className="bg-[hsl(160,60%,45%)] dark:bg-[hsl(160,70%,45%)] hover:bg-[hsl(160,60%,40%)] dark:hover:bg-[hsl(160,70%,40%)] font-semibold px-2.5 py-1">
             <Check className="w-3.5 h-3.5 mr-1.5" />
             Resuelto
           </Badge>
@@ -123,7 +123,7 @@ const AdminReportCard = ({ report, onUpdateStatus, isUpdating }: AdminReportCard
               size="sm"
               onClick={() => onUpdateStatus(report.id, "resolved")}
               disabled={isUpdating}
-              className="bg-emerald-600 hover:bg-emerald-700 font-semibold h-9"
+              className="bg-[hsl(160,60%,45%)] dark:bg-[hsl(160,70%,45%)] hover:bg-[hsl(160,60%,40%)] dark:hover:bg-[hsl(160,70%,40%)] font-semibold h-9"
             >
               <Check className="w-4 h-4 mr-1.5" />
               Resolver

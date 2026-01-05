@@ -22,9 +22,9 @@ const AdminStatsCard = ({
   className,
 }: AdminStatsCardProps) => {
   const trendColorClasses = {
-    emerald: "text-emerald-600 dark:text-emerald-400",
-    amber: "text-amber-600 dark:text-amber-400",
-    destructive: "text-destructive",
+    emerald: "text-[hsl(160,60%,45%)] dark:text-[hsl(160,70%,55%)]",
+    amber: "text-[hsl(45,90%,40%)] dark:text-[hsl(45,90%,60%)]",
+    destructive: "text-destructive dark:text-[hsl(0,65%,60%)]",
     primary: "text-primary",
     muted: "text-muted-foreground",
   };
