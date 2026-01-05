@@ -259,7 +259,7 @@ const FAQSection = () => {
                         </div>
                         <span 
                           className={cn(
-                            "text-sm font-bold leading-tight",
+                            "text-sm font-bold leading-tight transition-colors duration-300 ease-out",
                             openItems.includes(`item-${index}`) 
                               ? "text-foreground" 
                               : "text-card-foreground"
