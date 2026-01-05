@@ -115,7 +115,7 @@ const PublicProfile = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Volver</span>
         </button>
-        <span className="font-display text-xl font-bold text-foreground">KIKI</span>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
         
         {/* Actions menu */}
         <DropdownMenu>
