@@ -249,9 +249,15 @@ const Notifications = () => {
                   </button>
                 </SwipeableNotification>
               ))}
-              <p className="text-center text-xs text-muted-foreground pt-4" style={{ fontFamily: 'Arial, sans-serif' }}>
-                ← Eliminar · Marcar leído →
-              </p>
+              {/* Footer */}
+              <div className="mt-10 text-center animate-fade-up animate-delay-500">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
+                  <Bell className="w-3.5 h-3.5 text-primary/60" />
+                  <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+                    Desliza para gestionar
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
