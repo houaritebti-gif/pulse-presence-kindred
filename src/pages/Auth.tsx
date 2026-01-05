@@ -150,7 +150,8 @@ const Auth = () => {
       {/* Back button */}
       <button 
         onClick={() => navigate("/")}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body mb-12"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-12"
+        style={{ fontFamily: 'Arial, sans-serif' }}
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Volver</span>
@@ -159,10 +160,10 @@ const Auth = () => {
       <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-12 animate-fade-up">
-          <h1 className="font-display text-4xl font-bold text-foreground mb-3">
+          <h1 className="text-4xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             {isLogin ? "Hola de nuevo" : "Únete"}
           </h1>
-          <p className="font-body text-muted-foreground">
+          <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
             {isLogin ? "Te echábamos de menos." : "Bienvenida al club."}
           </p>
         </div>
@@ -176,7 +177,8 @@ const Auth = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
+              className="h-14 text-base bg-secondary/50 border-border/50 focus:border-primary"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             />
             <Input
               type="password"
@@ -187,7 +189,8 @@ const Auth = () => {
                 if (!isLogin) setPasswordError(null);
               }}
               required
-              className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
+              className="h-14 text-base bg-secondary/50 border-border/50 focus:border-primary"
+              style={{ fontFamily: 'Arial, sans-serif' }}
             />
             
             {/* Password strength indicator - only show on signup */}
@@ -196,13 +199,13 @@ const Auth = () => {
                 {/* Strength bar */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-body text-muted-foreground">Seguridad</span>
-                    <span className={`text-xs font-body font-medium ${
+                    <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Seguridad</span>
+                    <span className={`text-xs font-medium ${
                       getPasswordStrength(password).level === "strong" ? "text-green-500" :
                       getPasswordStrength(password).level === "good" ? "text-yellow-500" :
                       getPasswordStrength(password).level === "fair" ? "text-orange-500" :
                       getPasswordStrength(password).level === "weak" ? "text-destructive" : "text-muted-foreground"
-                    }`}>
+                    }`} style={{ fontFamily: 'Arial, sans-serif' }}>
                       {getPasswordStrength(password).label}
                     </span>
                   </div>
@@ -221,9 +224,10 @@ const Auth = () => {
                     return (
                       <div 
                         key={req.label}
-                        className={`flex items-center gap-2 text-xs font-body transition-colors ${
+                        className={`flex items-center gap-2 text-xs transition-colors ${
                           passed ? "text-green-500" : "text-muted-foreground"
                         }`}
+                        style={{ fontFamily: 'Arial, sans-serif' }}
                       >
                         {passed ? (
                           <Check className="w-3 h-3" />
@@ -242,21 +246,21 @@ const Auth = () => {
                     {isCheckingBreach ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                        <span className="text-xs font-body text-muted-foreground">
+                        <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
                           Verificando filtraciones...
                         </span>
                       </>
                     ) : isBreached ? (
                       <>
                         <AlertTriangle className="w-4 h-4 text-destructive" />
-                        <span className="text-xs font-body text-destructive">
+                        <span className="text-xs text-destructive" style={{ fontFamily: 'Arial, sans-serif' }}>
                           ⚠️ Filtrada {breachCount?.toLocaleString()} veces. Elige otra.
                         </span>
                       </>
                     ) : breachChecked ? (
                       <>
                         <Shield className="w-4 h-4 text-green-500" />
-                        <span className="text-xs font-body text-green-500">
+                        <span className="text-xs text-green-500" style={{ fontFamily: 'Arial, sans-serif' }}>
                           No encontrada en filtraciones conocidas
                         </span>
                       </>
@@ -267,7 +271,7 @@ const Auth = () => {
             )}
             
             {passwordError && !isLogin && (
-              <p className="text-xs text-destructive font-body animate-fade-in">
+              <p className="text-xs text-destructive animate-fade-in" style={{ fontFamily: 'Arial, sans-serif' }}>
                 {passwordError}
               </p>
             )}
@@ -287,7 +291,7 @@ const Auth = () => {
         {/* Divider */}
         <div className="flex items-center gap-4 w-full my-8 animate-fade-up animate-delay-300">
           <div className="flex-1 h-px bg-border" />
-          <span className="font-body text-sm text-muted-foreground">o</span>
+          <span className="text-sm text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>o</span>
           <div className="flex-1 h-px bg-border" />
         </div>
 
@@ -323,7 +327,8 @@ const Auth = () => {
         <button
           type="button"
           onClick={() => setIsLogin(!isLogin)}
-          className="mt-8 font-body text-sm text-muted-foreground hover:text-foreground transition-colors animate-fade-up animate-delay-400"
+          className="mt-8 text-sm text-muted-foreground hover:text-foreground transition-colors animate-fade-up animate-delay-400"
+          style={{ fontFamily: 'Arial, sans-serif' }}
         >
           {isLogin ? "¿Primera vez? Crear cuenta" : "¿Ya tienes cuenta? Entrar"}
         </button>
