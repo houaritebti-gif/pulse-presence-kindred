@@ -271,14 +271,19 @@ const FAQSection = () => {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
-                      <div className="pl-9">
+                      <motion.div 
+                        className="pl-9"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                      >
                         <p 
                           className="text-sm text-foreground/90 leading-relaxed font-medium"
                           style={{ fontFamily: 'Arial, sans-serif' }}
                         >
                           {faq.answer}
                         </p>
-                      </div>
+                      </motion.div>
                     </AccordionContent>
                   </div>
                 </AccordionItem>
