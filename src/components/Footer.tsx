@@ -10,10 +10,10 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-2">
-            <h3 className="font-display text-2xl font-bold text-primary mb-3">
+            <h3 className="text-2xl font-bold text-primary mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               KIKI
             </h3>
-            <p className="text-muted-foreground text-sm max-w-sm">
+            <p className="text-muted-foreground text-sm max-w-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
               Conecta con personas afines en tu ciudad. Presencia en tiempo real, 
               chispas mutuas y quedadas grupales.
             </p>
@@ -21,7 +21,7 @@ const Footer = () => {
 
           {/* Legal Links */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Legal</h4>
+            <h4 className="font-bold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>Legal</h4>
             <ul className="space-y-2">
               <li>
                 <Link 
@@ -52,7 +52,7 @@ const Footer = () => {
 
           {/* Social Links */}
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Síguenos</h4>
+            <h4 className="font-bold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>Síguenos</h4>
             <div className="flex gap-4">
               <a 
                 href="https://instagram.com/kiki" 
@@ -87,10 +87,10 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-border/20 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
             © {currentYear} KIKI. Todos los derechos reservados.
           </p>
-          <p className="text-muted-foreground text-xs">
+          <p className="text-muted-foreground text-xs" style={{ fontFamily: 'Arial, sans-serif' }}>
             Hecho con 💜 para la comunidad alternativa
           </p>
         </div>

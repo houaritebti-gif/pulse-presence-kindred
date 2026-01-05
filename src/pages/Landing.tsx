@@ -96,6 +96,7 @@ const AnimatedTitle = ({ text, className }: { text: string; className?: string }
   return (
     <motion.h1 
       className={className}
+      style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
       initial="hidden"
       animate="visible"
       variants={{
@@ -365,7 +366,7 @@ const Landing = () => {
           {/* Logo with dramatic typography - letter by letter animation */}
           <AnimatedTitle 
             text="KIKI"
-            className="font-display text-8xl md:text-9xl lg:text-[10rem] font-bold tracking-tighter text-foreground leading-none glow-text"
+            className="text-8xl md:text-9xl lg:text-[10rem] font-bold tracking-tighter text-foreground leading-none"
           />
 
           {/* Tagline with emphasis */}
@@ -376,7 +377,8 @@ const Landing = () => {
             transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
           >
             <motion.p 
-              className="font-display text-xl md:text-2xl lg:text-3xl font-medium text-foreground/80 leading-relaxed"
+              className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground/80 leading-relaxed"
+              style={{ fontFamily: 'Arial, sans-serif' }}
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.8, duration: 0.6 }}
@@ -384,12 +386,13 @@ const Landing = () => {
               aquí no hay match,
             </motion.p>
             <motion.p 
-              className="font-display text-2xl md:text-3xl lg:text-4xl font-bold leading-relaxed relative inline-block"
+              className="text-2xl md:text-3xl lg:text-4xl font-bold leading-relaxed relative inline-block text-primary"
+              style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1, duration: 0.6 }}
             >
-              <span className="gradient-text">hay chispa.</span>
+              hay chispa.
               <motion.span
                 animate={{ 
                   rotate: [0, 15, -15, 0],
@@ -427,16 +430,17 @@ const Landing = () => {
                     transition: { type: "spring", stiffness: 200 }
                   }
                 }}
-                whileHover={{ scale: 1.05, borderColor: "hsl(var(--primary) / 0.5)" }}
+              whileHover={{ scale: 1.05, borderColor: "hsl(var(--primary) / 0.5)" }}
               >
-                <span className="font-body text-sm text-foreground/80">{tag}</span>
+                <span className="text-sm text-foreground/80" style={{ fontFamily: 'Arial, sans-serif' }}>{tag}</span>
               </motion.div>
             ))}
           </motion.div>
 
           {/* Subtle description */}
           <motion.p 
-            className="font-body text-base md:text-lg text-muted-foreground max-w-md mx-auto leading-relaxed"
+            className="text-base md:text-lg text-muted-foreground max-w-md mx-auto leading-relaxed"
+            style={{ fontFamily: 'Arial, sans-serif' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 1.5 }}
@@ -513,7 +517,8 @@ const Landing = () => {
             variants={fadeInUp}
           >
             <motion.h2 
-              className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4"
+              className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4"
+              style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
               whileInView={{ 
                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
               }}
@@ -521,7 +526,7 @@ const Landing = () => {
             >
               Diferente por diseño
             </motion.h2>
-            <p className="font-body text-lg text-muted-foreground max-w-xl mx-auto">
+            <p className="text-base text-muted-foreground max-w-xl mx-auto" style={{ fontFamily: 'Arial, sans-serif' }}>
               No es otra app de citas. Es un espacio donde las conexiones nacen de forma natural.
             </p>
           </motion.div>
@@ -565,8 +570,8 @@ const Landing = () => {
                     <feature.icon className="relative w-10 h-10 text-primary" />
                   </motion.div>
                 </div>
-                <h3 className="font-display text-xl font-bold text-card-foreground mb-3">{feature.title}</h3>
-                <p className="font-body text-card-foreground/70 text-sm leading-relaxed">{feature.description}</p>
+                <h3 className="text-lg font-bold text-card-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>{feature.title}</h3>
+                <p className="text-card-foreground/70 text-sm leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>{feature.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -592,10 +597,10 @@ const Landing = () => {
             viewport={{ once: true, margin: "-100px" }} 
             variants={fadeInUp}
           >
-            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               Así funciona
             </h2>
-            <p className="font-body text-lg text-muted-foreground">
+            <p className="text-base text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               Simple. Sin complicaciones. Sin drama.
             </p>
           </motion.div>
@@ -617,7 +622,8 @@ const Landing = () => {
               >
                 <div className="flex-shrink-0 relative">
                   <motion.span 
-                    className="font-display text-6xl md:text-7xl font-bold text-primary/20 group-hover:text-primary/50 transition-colors duration-500"
+                    className="text-5xl md:text-6xl font-bold text-primary/20 group-hover:text-primary/50 transition-colors duration-500"
+                    style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                     whileHover={{ scale: 1.1 }}
                   >
                     {item.step}
@@ -632,10 +638,10 @@ const Landing = () => {
                   </motion.div>
                 </div>
                 <div className="pt-4">
-                  <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">
+                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                     {item.title}
                   </h3>
-                  <p className="font-body text-lg text-muted-foreground leading-relaxed">
+                  <p className="text-base text-muted-foreground leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>
                     {item.description}
                   </p>
                 </div>
@@ -654,7 +660,7 @@ const Landing = () => {
           {[...Array(3)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute font-display text-[200px] font-bold text-primary whitespace-nowrap"
+              className="absolute text-[200px] font-bold text-primary whitespace-nowrap"
               style={{ top: `${20 + i * 30}%` }}
               animate={{ x: ["-100%", "100%"] }}
               transition={{ 
@@ -696,7 +702,7 @@ const Landing = () => {
                 >
                   <Star className="w-8 h-8 fill-current" />
                 </motion.div>
-                <p className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground/90 leading-tight">
+                <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground/90 leading-tight" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                   "{quote}"
                 </p>
               </motion.div>
@@ -743,14 +749,16 @@ const Landing = () => {
           </motion.div>
           
           <motion.h2 
-            className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground glow-text" 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground" 
+            style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
             variants={fadeInUp}
           >
             ¿Tienes chispa?
           </motion.h2>
           
           <motion.p 
-            className="font-body text-lg text-muted-foreground" 
+            className="text-base text-muted-foreground" 
+            style={{ fontFamily: 'Arial, sans-serif' }}
             variants={fadeInUp}
           >
             Solo para quienes entienden.
