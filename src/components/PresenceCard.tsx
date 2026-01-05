@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar, Search, Star, Zap } from "lucide-react";
+import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar, Search, Star, Zap, User } from "lucide-react";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import PremiumBadge from "@/components/PremiumBadge";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import { ALL_GENDERS } from "@/constants/profileOptions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +34,15 @@ interface PresenceProfile {
   email_verified: boolean | null;
   identity_verified: boolean | null;
   birthdate?: string | null;
+  gender?: string | null;
 }
+
+// Helper to get gender label from value
+const getGenderLabel = (genderValue: string | null | undefined): string | null => {
+  if (!genderValue) return null;
+  const gender = ALL_GENDERS.find(g => g.value === genderValue);
+  return gender?.label || null;
+};
 
 // Helper to calculate age from birthdate
 const calculateAge = (birthdate: string | null | undefined): number | null => {
@@ -297,6 +306,16 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+          )}
+          
+          {/* Gender */}
+          {presence.profile?.gender && (
+            <div className="flex items-center gap-1.5">
+              <User className="w-4 h-4 sm:w-3 sm:h-3 text-muted-foreground flex-shrink-0" />
+              <span className="font-body text-sm sm:text-xs text-card-foreground/80">
+                {getGenderLabel(presence.profile.gender)}
+              </span>
+            </div>
           )}
           
           {/* Vibe */}
