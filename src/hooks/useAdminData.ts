@@ -263,18 +263,22 @@ export const useVerificationChartData = () => {
 };
 
 // Fetch daily activity data for chart - new users + verifications
-export const useAdminActivityChart = (days: number = 7) => {
+export const useAdminActivityChart = (startDate: Date, endDate: Date) => {
   return useQuery({
-    queryKey: ['admin-activity-chart', days],
+    queryKey: ['admin-activity-chart', startDate.toISOString(), endDate.toISOString()],
     queryFn: async (): Promise<DailyActivityData[]> => {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
+      // Normalize dates to start of day / end of day
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
 
       // Fetch new users
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('created_at')
-        .gte('created_at', startDate.toISOString());
+        .gte('created_at', start.toISOString())
+        .lte('created_at', end.toISOString());
 
       if (profilesError) throw profilesError;
 
@@ -283,19 +287,24 @@ export const useAdminActivityChart = (days: number = 7) => {
         .from('identity_verifications')
         .select('verified_at')
         .eq('status', 'approved')
-        .gte('verified_at', startDate.toISOString());
+        .gte('verified_at', start.toISOString())
+        .lte('verified_at', end.toISOString());
 
       if (verificationsError) throw verificationsError;
 
-      // Create a map for each day
+      // Create a map for each day in the range
       const dailyData: Map<string, { newUsers: number; verifications: number }> = new Map();
       const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
       const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
       
+      // Calculate number of days in range
+      const diffTime = end.getTime() - start.getTime();
+      const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      
       // Initialize all days with 0
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
+      for (let i = 0; i < days; i++) {
+        const date = new Date(start);
+        date.setDate(date.getDate() + i);
         const dateStr = date.toISOString().split('T')[0];
         dailyData.set(dateStr, { newUsers: 0, verifications: 0 });
       }
@@ -325,8 +334,8 @@ export const useAdminActivityChart = (days: number = 7) => {
       // Convert to array with display date
       return Array.from(dailyData.entries()).map(([date, counts]) => {
         const d = new Date(date);
-        // For longer periods, show month + day, for 7 days show day name
-        const displayDate = days <= 7 
+        // For shorter periods, show day name + day, for longer show day + month
+        const displayDate = days <= 14 
           ? `${dayNames[d.getDay()]} ${d.getDate()}`
           : `${d.getDate()} ${monthNames[d.getMonth()]}`;
         return {

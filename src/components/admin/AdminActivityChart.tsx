@@ -1,21 +1,62 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useAdminActivityChart } from "@/hooks/useAdminData";
-import { TrendingUp, Users, ShieldCheck } from "lucide-react";
+import { TrendingUp, Users, ShieldCheck, CalendarIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
-type PeriodOption = 7 | 30 | 90;
+type PeriodOption = 7 | 30 | 90 | 'custom';
 
 const AdminActivityChart = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodOption>(7);
-  const { data: chartData, isLoading } = useAdminActivityChart(selectedPeriod);
+  const [customRange, setCustomRange] = useState<DateRange | undefined>(undefined);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  const periodLabels: Record<PeriodOption, string> = {
+  // Calculate date range based on selection
+  const { startDate, endDate } = useMemo(() => {
+    if (selectedPeriod === 'custom' && customRange?.from && customRange?.to) {
+      return { startDate: customRange.from, endDate: customRange.to };
+    }
+    const days = selectedPeriod === 'custom' ? 7 : selectedPeriod;
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days + 1);
+    return { startDate: start, endDate: end };
+  }, [selectedPeriod, customRange]);
+
+  const { data: chartData, isLoading } = useAdminActivityChart(startDate, endDate);
+
+  const periodLabels: Record<Exclude<PeriodOption, 'custom'>, string> = {
     7: '7 días',
     30: '30 días',
     90: '90 días',
+  };
+
+  const handlePresetClick = (period: Exclude<PeriodOption, 'custom'>) => {
+    setSelectedPeriod(period);
+    setCustomRange(undefined);
+  };
+
+  const handleCustomRangeSelect = (range: DateRange | undefined) => {
+    setCustomRange(range);
+    if (range?.from && range?.to) {
+      setSelectedPeriod('custom');
+      setIsCalendarOpen(false);
+    }
+  };
+
+  const getDisplayLabel = () => {
+    if (selectedPeriod === 'custom' && customRange?.from && customRange?.to) {
+      return `${format(customRange.from, 'd MMM', { locale: es })} - ${format(customRange.to, 'd MMM', { locale: es })}`;
+    }
+    return periodLabels[selectedPeriod as Exclude<PeriodOption, 'custom'>] || '7 días';
   };
 
   if (isLoading) {
@@ -43,23 +84,50 @@ const AdminActivityChart = () => {
             <TrendingUp className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-bold text-foreground">Actividad últimos {periodLabels[selectedPeriod]}</h3>
+            <h3 className="font-bold text-foreground">Actividad - {getDisplayLabel()}</h3>
             <p className="text-xs text-muted-foreground">Nuevos usuarios y verificaciones</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="flex gap-1 p-1 rounded-lg bg-muted/50">
-            {([7, 30, 90] as PeriodOption[]).map((period) => (
+            {([7, 30, 90] as const).map((period) => (
               <Button
                 key={period}
                 variant={selectedPeriod === period ? "secondary" : "ghost"}
                 size="sm"
-                onClick={() => setSelectedPeriod(period)}
+                onClick={() => handlePresetClick(period)}
                 className="h-7 px-2.5 text-xs font-medium"
               >
                 {periodLabels[period]}
               </Button>
             ))}
+            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={selectedPeriod === 'custom' ? "secondary" : "ghost"}
+                  size="sm"
+                  className={cn(
+                    "h-7 px-2.5 text-xs font-medium gap-1",
+                    selectedPeriod === 'custom' && "bg-secondary"
+                  )}
+                >
+                  <CalendarIcon className="h-3.5 w-3.5" />
+                  {selectedPeriod === 'custom' ? 'Personalizado' : 'Personalizar'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="range"
+                  selected={customRange}
+                  onSelect={handleCustomRangeSelect}
+                  numberOfMonths={2}
+                  disabled={(date) => date > new Date()}
+                  initialFocus
+                  locale={es}
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="flex gap-3 text-sm ml-2">
             <div className="flex items-center gap-1.5">
