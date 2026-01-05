@@ -377,7 +377,7 @@ const Landing = () => {
             transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
           >
             <motion.p 
-              className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground/80 leading-relaxed"
+              className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground leading-relaxed"
               style={{ fontFamily: 'Arial, sans-serif' }}
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -432,7 +432,7 @@ const Landing = () => {
                 }}
               whileHover={{ scale: 1.05, borderColor: "hsl(var(--primary) / 0.5)" }}
               >
-                <span className="text-sm text-foreground/80" style={{ fontFamily: 'Arial, sans-serif' }}>{tag}</span>
+                <span className="text-sm text-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>{tag}</span>
               </motion.div>
             ))}
           </motion.div>
@@ -571,7 +571,7 @@ const Landing = () => {
                   </motion.div>
                 </div>
                 <h3 className="text-lg font-bold text-card-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>{feature.title}</h3>
-                <p className="text-card-foreground/70 text-sm leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>{feature.description}</p>
+                <p className="text-card-foreground text-sm leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>{feature.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -702,7 +702,7 @@ const Landing = () => {
                 >
                   <Star className="w-8 h-8 fill-current" />
                 </motion.div>
-                <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground/90 leading-tight" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+                <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                   "{quote}"
                 </p>
               </motion.div>
