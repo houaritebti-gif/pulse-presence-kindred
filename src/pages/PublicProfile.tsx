@@ -110,9 +110,9 @@ const PublicProfile = () => {
       <div className="px-6 py-4 flex items-center justify-between">
         <button 
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Volver</span>
         </button>
         <span className="font-display text-xl font-bold text-foreground">KIKI</span>

@@ -273,9 +273,9 @@ const Presence = () => {
       <div className="flex items-center justify-between mb-6 sm:mb-8">
         <button 
           onClick={() => navigate("/profile")}
-          className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground transition-colors font-body p-1 -ml-1"
+          className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body p-1 -ml-1 group"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm sm:text-base" style={{ fontFamily: 'Arial, sans-serif' }}>Perfil</span>
         </button>
         <span className="text-lg sm:text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
