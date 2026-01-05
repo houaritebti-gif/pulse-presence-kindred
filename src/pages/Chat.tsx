@@ -186,21 +186,22 @@ const Chat = () => {
   }
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8">
-      {/* Header with ambient glow */}
-      <div className="relative mb-8">
-        <div className="absolute inset-0 bg-primary/5 blur-3xl -z-10" />
-        <div className="flex items-center justify-between">
-          <button 
-            onClick={() => navigate("/presence")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>Presencia</span>
-          </button>
-          <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
-          <div className="w-20" />
-        </div>
+    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+      
+      {/* Header */}
+      <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-10">
+        <button 
+          onClick={() => navigate("/presence")}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
+          style={{ fontFamily: 'Arial, sans-serif' }}
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Presencia</span>
+        </button>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+        <div className="w-20" />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
