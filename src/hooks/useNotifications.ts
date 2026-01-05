@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { toast } from "sonner";
@@ -7,12 +7,14 @@ import { createNotification } from "./useNotificationCenter";
 import { notifyUser } from "@/utils/notificationSound";
 import { showBrowserNotification, requestNotificationPermission } from "@/utils/browserNotifications";
 import { sendPushNotification } from "@/utils/pushNotifications";
+import { useScreenReaderAnnounce } from "@/components/ScreenReaderAnnouncer";
 
 // Combined hook that handles all notifications with a single useProfile call
 export const useAppNotifications = () => {
   const { data: profile } = useProfile();
   const location = useLocation();
   const navigate = useNavigate();
+  const { announce } = useScreenReaderAnnounce();
   
   const previousChatsRef = useRef<Set<string>>(new Set());
   const previousMessagesRef = useRef<Set<string>>(new Set());
@@ -70,6 +72,7 @@ export const useAppNotifications = () => {
             
             if (location.pathname !== "/sparks") {
               notifyUser("spark");
+              announce("Nueva chispa: Alguien conectó contigo", "assertive");
               toast("✨ ¡Nueva chispa!", {
                 description: "Alguien conectó contigo",
                 action: {
@@ -119,6 +122,7 @@ export const useAppNotifications = () => {
           if (location.pathname === "/connections") return;
 
           notifyUser("connection");
+          announce(`${newNotification.title}: ${newNotification.description || ""}`, "assertive");
           toast(newNotification.title, {
             description: newNotification.description || undefined,
             action: newNotification.link
@@ -140,7 +144,7 @@ export const useAppNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, location.pathname, navigate]);
+  }, [profile?.id, location.pathname, navigate, announce]);
 
   // Message notifications
   useEffect(() => {
@@ -181,6 +185,7 @@ export const useAppNotifications = () => {
           });
           
           notifyUser("message");
+          announce(`Nuevo mensaje: ${description}`, "polite");
           toast("💬 Nuevo mensaje", {
             description,
             action: {
@@ -200,7 +205,7 @@ export const useAppNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, location.pathname, navigate]);
+  }, [profile?.id, location.pathname, navigate, announce]);
 
   // Quedada attendee notifications
   useEffect(() => {
@@ -253,6 +258,7 @@ export const useAppNotifications = () => {
           
           if (location.pathname !== "/quedadas") {
             notifyUser("quedada");
+            announce(`Nueva persona en tu quedada: ${description}`, "polite");
             toast("📅 Nueva persona en tu quedada", {
               description,
               action: {
@@ -273,7 +279,7 @@ export const useAppNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, location.pathname, navigate]);
+  }, [profile?.id, location.pathname, navigate, announce]);
 
   // Quedada message notifications
   useEffect(() => {
@@ -343,6 +349,7 @@ export const useAppNotifications = () => {
           });
           
           notifyUser("quedada");
+          announce(`Mensaje en ${quedada.title}: ${description}`, "polite");
           toast(`💬 ${quedada.title}`, {
             description,
             action: {
@@ -362,7 +369,7 @@ export const useAppNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, location.pathname, navigate]);
+  }, [profile?.id, location.pathname, navigate, announce]);
 
   // Mark initial load as complete
   useEffect(() => {

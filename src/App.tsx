@@ -16,6 +16,7 @@ import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import { CookieConsent } from "@/components/CookieConsent";
+import { ScreenReaderAnnouncerProvider } from "@/components/ScreenReaderAnnouncer";
 
 // Eager load critical paths
 import Index from "./pages/Index";
@@ -111,6 +112,7 @@ const App = () => {
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+        <ScreenReaderAnnouncerProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -251,6 +253,7 @@ const App = () => {
             </KeyboardNavigationWrapper>
           </NotificationProvider>
         </BrowserRouter>
+        </ScreenReaderAnnouncerProvider>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
