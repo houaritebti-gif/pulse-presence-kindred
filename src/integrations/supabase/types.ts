@@ -85,6 +85,45 @@ export type Database = {
           },
         ]
       }
+      cleanup_executions: {
+        Row: {
+          deleted_from_completed: number
+          deleted_old_verifications: number
+          deleted_orphaned: number
+          duration_ms: number | null
+          error_message: string | null
+          executed_at: string
+          id: string
+          success: boolean
+          total_deleted: number
+          triggered_by: string | null
+        }
+        Insert: {
+          deleted_from_completed?: number
+          deleted_old_verifications?: number
+          deleted_orphaned?: number
+          duration_ms?: number | null
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          success?: boolean
+          total_deleted?: number
+          triggered_by?: string | null
+        }
+        Update: {
+          deleted_from_completed?: number
+          deleted_old_verifications?: number
+          deleted_orphaned?: number
+          duration_ms?: number | null
+          error_message?: string | null
+          executed_at?: string
+          id?: string
+          success?: boolean
+          total_deleted?: number
+          triggered_by?: string | null
+        }
+        Relationships: []
+      }
       connection_requests: {
         Row: {
           created_at: string

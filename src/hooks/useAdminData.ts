@@ -511,8 +511,42 @@ export interface CleanupStats {
   deletedOrphanedFiles: number;
   deletedOldVerifications: number;
   totalDeleted: number;
+  durationMs?: number;
+  triggeredBy?: string;
   timestamp: string;
 }
+
+// Interface for cleanup execution history
+export interface CleanupExecution {
+  id: string;
+  executed_at: string;
+  deleted_from_completed: number;
+  deleted_orphaned: number;
+  deleted_old_verifications: number;
+  total_deleted: number;
+  duration_ms: number | null;
+  triggered_by: string | null;
+  error_message: string | null;
+  success: boolean;
+}
+
+// Fetch cleanup execution history
+export const useCleanupHistory = () => {
+  return useQuery({
+    queryKey: ['admin-cleanup-history'],
+    queryFn: async (): Promise<CleanupExecution[]> => {
+      const { data, error } = await supabase
+        .from('cleanup_executions')
+        .select('*')
+        .order('executed_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
+};
 
 // Manual trigger cleanup function
 export const useTriggerCleanup = () => {
@@ -530,6 +564,7 @@ export const useTriggerCleanup = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-verification-stats'] });
       queryClient.invalidateQueries({ queryKey: ['admin-identity-verifications'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-cleanup-history'] });
     },
   });
 };

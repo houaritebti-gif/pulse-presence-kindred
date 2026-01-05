@@ -11,19 +11,27 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startTime = Date.now();
+  let triggeredBy = "cron";
+
   try {
+    // Check if manual trigger
+    const url = new URL(req.url);
+    if (url.searchParams.get("manual") === "true") {
+      triggeredBy = "manual";
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log("Starting identity selfies cleanup...");
+    console.log(`Starting identity selfies cleanup (triggered by: ${triggeredBy})...`);
 
     let deletedFromCompletedVerifications = 0;
     let deletedOrphanedFiles = 0;
     let deletedOldVerifications = 0;
 
     // 1. Get all completed verifications (approved/rejected) older than 1 day
-    // These should have had their selfies deleted, but we double-check
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     
     const { data: completedVerifications, error: completedError } = await supabase
@@ -40,7 +48,6 @@ serve(async (req) => {
       for (const verification of completedVerifications) {
         if (verification.selfie_url) {
           try {
-            // Extract file path from URL
             const selfieUrlParts = verification.selfie_url.split("/identity-selfies/");
             if (selfieUrlParts.length > 1) {
               const filePath = selfieUrlParts[1].split("?")[0];
@@ -62,7 +69,6 @@ serve(async (req) => {
     }
 
     // 2. List all files in storage and find orphaned ones
-    // (files without corresponding verification records)
     const { data: storageFiles, error: storageError } = await supabase.storage
       .from("identity-selfies")
       .list("", { limit: 1000 });
@@ -73,7 +79,6 @@ serve(async (req) => {
       console.log(`Found ${storageFiles.length} user folders in storage`);
 
       for (const folder of storageFiles) {
-        // Each folder is a user ID
         const { data: userFiles, error: userFilesError } = await supabase.storage
           .from("identity-selfies")
           .list(folder.name, { limit: 100 });
@@ -85,7 +90,6 @@ serve(async (req) => {
 
         if (!userFiles || userFiles.length === 0) continue;
 
-        // Get profile_id for this user
         const { data: profile } = await supabase
           .from("profiles")
           .select("id")
@@ -93,7 +97,6 @@ serve(async (req) => {
           .maybeSingle();
 
         if (!profile) {
-          // User doesn't exist - delete all their files
           console.log(`Deleting files for non-existent user: ${folder.name}`);
           const filesToDelete = userFiles.map(f => `${folder.name}/${f.name}`);
           
@@ -107,11 +110,9 @@ serve(async (req) => {
           continue;
         }
 
-        // Check each file against verifications
         for (const file of userFiles) {
           const filePath = `${folder.name}/${file.name}`;
           
-          // Check if this file is referenced in any verification
           const { data: referencedVerification } = await supabase
             .from("identity_verifications")
             .select("id, status")
@@ -119,10 +120,6 @@ serve(async (req) => {
             .like("selfie_url", `%${file.name}%`)
             .maybeSingle();
 
-          // Delete if:
-          // - Not referenced by any verification (orphaned)
-          // - Or referenced by completed verification (should have been deleted)
-          // - Or file is older than 7 days (stale)
           const fileAgeMs = file.created_at 
             ? Date.now() - new Date(file.created_at).getTime() 
             : Infinity;
@@ -163,12 +160,34 @@ serve(async (req) => {
       console.log(`Deleted ${deletedOldVerifications} old rejected verification records`);
     }
 
+    const durationMs = Date.now() - startTime;
+    const totalDeleted = deletedFromCompletedVerifications + deletedOrphanedFiles;
+
+    // Log execution to history table
+    const { error: logError } = await supabase
+      .from("cleanup_executions")
+      .insert({
+        deleted_from_completed: deletedFromCompletedVerifications,
+        deleted_orphaned: deletedOrphanedFiles,
+        deleted_old_verifications: deletedOldVerifications,
+        total_deleted: totalDeleted,
+        duration_ms: durationMs,
+        triggered_by: triggeredBy,
+        success: true,
+      });
+
+    if (logError) {
+      console.error("Error logging cleanup execution:", logError);
+    }
+
     const summary = {
       success: true,
       deletedFromCompletedVerifications,
       deletedOrphanedFiles,
       deletedOldVerifications,
-      totalDeleted: deletedFromCompletedVerifications + deletedOrphanedFiles,
+      totalDeleted,
+      durationMs,
+      triggeredBy,
       timestamp: new Date().toISOString(),
     };
 
@@ -179,8 +198,28 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
+    const durationMs = Date.now() - startTime;
     console.error("Cleanup error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    // Log failed execution
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+      await supabase
+        .from("cleanup_executions")
+        .insert({
+          duration_ms: durationMs,
+          triggered_by: triggeredBy,
+          success: false,
+          error_message: errorMessage,
+        });
+    } catch (logErr) {
+      console.error("Error logging failed execution:", logErr);
+    }
+
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
