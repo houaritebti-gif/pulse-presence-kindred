@@ -1,21 +1,16 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { 
   Shield, Users, Flag, UserCog, Search, 
-  MoreVertical, UserPlus, Trash2, Check, X, Clock, Ban, Plus, RefreshCw,
-  Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle, History, ShieldCheck, HardDrive, Loader2
+  Trash2, Check, X, Clock, Ban, Plus, RefreshCw,
+  Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle, History, ShieldCheck, HardDrive, Loader2, Download, Filter
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -60,10 +55,9 @@ import {
   useTriggerCleanup,
   useCleanupHistory,
   CleanupStats,
-  CleanupExecution
 } from "@/hooks/useAdminData";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { AppRole } from "@/hooks/useUserRole";
 import { 
   useBioBlacklist, 
@@ -71,7 +65,16 @@ import {
   useRemoveBlacklistWord 
 } from "@/hooks/useBioBlacklist";
 
+// Admin Components
+import AdminHeader from "@/components/admin/AdminHeader";
+import AdminDashboard from "@/components/admin/AdminDashboard";
+import AdminUserCard from "@/components/admin/AdminUserCard";
+import AdminReportCard from "@/components/admin/AdminReportCard";
+import AdminVerificationCard from "@/components/admin/AdminVerificationCard";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+
 const Admin = () => {
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
   const [addRoleDialogOpen, setAddRoleDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -81,12 +84,14 @@ const Admin = () => {
   const [selectedProfileForReverify, setSelectedProfileForReverify] = useState<{ id: string; name: string | null } | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [selectedProfileForHistory, setSelectedProfileForHistory] = useState<{ id: string; name: string | null } | null>(null);
+  const [reportFilter, setReportFilter] = useState<"all" | "pending" | "resolved">("all");
+  const [userFilter, setUserFilter] = useState<"all" | "verified" | "unverified">("all");
 
-  const { data: profiles, isLoading: loadingProfiles } = useAdminProfiles();
-  const { data: reports, isLoading: loadingReports } = useAdminReports();
-  const { data: roles, isLoading: loadingRoles } = useAdminUserRoles();
+  const { data: profiles, isLoading: loadingProfiles, refetch: refetchProfiles } = useAdminProfiles();
+  const { data: reports, isLoading: loadingReports, refetch: refetchReports } = useAdminReports();
+  const { data: roles, isLoading: loadingRoles, refetch: refetchRoles } = useAdminUserRoles();
   const { data: blacklist, isLoading: loadingBlacklist } = useBioBlacklist();
-  const { data: verifications, isLoading: loadingVerifications } = useAdminIdentityVerifications();
+  const { data: verifications, isLoading: loadingVerifications, refetch: refetchVerifications } = useAdminIdentityVerifications();
   const { data: verificationStats, isLoading: loadingStats } = useVerificationStats();
   const { data: chartData, isLoading: loadingChart } = useVerificationChartData();
 
@@ -104,6 +109,65 @@ const Admin = () => {
   const [lastCleanupResult, setLastCleanupResult] = useState<CleanupStats | null>(null);
   const [viewingSelfie, setViewingSelfie] = useState<string | null>(null);
   const [showCleanupHistory, setShowCleanupHistory] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Dashboard stats
+  const dashboardStats = useMemo(() => ({
+    totalUsers: profiles?.length || 0,
+    verifiedUsers: profiles?.filter(p => p.identity_verified).length || 0,
+    pendingReports: reports?.filter(r => r.status === 'pending').length || 0,
+    pendingVerifications: verifications?.length || 0,
+    newUsersThisWeek: profiles?.filter(p => {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return new Date(p.created_at) > weekAgo;
+    }).length || 0,
+    totalRoles: roles?.length || 0,
+  }), [profiles, reports, verifications, roles]);
+
+  // Filtered data
+  const filteredProfiles = useMemo(() => {
+    let filtered = profiles || [];
+    
+    if (searchTerm) {
+      filtered = filtered.filter(p => 
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.city?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (userFilter === "verified") {
+      filtered = filtered.filter(p => p.identity_verified);
+    } else if (userFilter === "unverified") {
+      filtered = filtered.filter(p => !p.identity_verified);
+    }
+    
+    return filtered;
+  }, [profiles, searchTerm, userFilter]);
+
+  const filteredReports = useMemo(() => {
+    let filtered = reports || [];
+    
+    if (reportFilter === "pending") {
+      filtered = filtered.filter(r => r.status === "pending");
+    } else if (reportFilter === "resolved") {
+      filtered = filtered.filter(r => r.status !== "pending");
+    }
+    
+    return filtered;
+  }, [reports, reportFilter]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await Promise.all([
+      refetchProfiles(),
+      refetchReports(),
+      refetchRoles(),
+      refetchVerifications(),
+    ]);
+    setIsRefreshing(false);
+    toast.success("Datos actualizados");
+  };
 
   const handleForceReverification = async () => {
     if (!selectedProfileForReverify) return;
@@ -156,11 +220,6 @@ const Admin = () => {
     }
   };
 
-  const filteredProfiles = profiles?.filter(p => 
-    p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.city?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const handleAddRole = async () => {
     if (!selectedUserId) return;
     
@@ -200,271 +259,356 @@ const Admin = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600"><Clock className="w-3 h-3 mr-1" />Pendiente</Badge>;
-      case 'reviewed':
-        return <Badge variant="secondary"><Check className="w-3 h-3 mr-1" />Revisado</Badge>;
-      case 'resolved':
-        return <Badge className="bg-emerald-500"><Check className="w-3 h-3 mr-1" />Resuelto</Badge>;
-      case 'dismissed':
-        return <Badge variant="outline" className="text-muted-foreground"><X className="w-3 h-3 mr-1" />Descartado</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
+  const exportUsers = () => {
+    if (!profiles) return;
+    const csv = [
+      ['Nombre', 'Ciudad', 'Verificado', 'Fecha registro'].join(','),
+      ...profiles.map(p => [
+        p.name || 'Sin nombre',
+        p.city || 'Sin ciudad',
+        p.identity_verified ? 'Sí' : 'No',
+        format(new Date(p.created_at), 'dd/MM/yyyy')
+      ].join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `usuarios-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    toast.success('Exportación completada');
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <div className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>Panel de Admin</h1>
-              <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Gestión de usuarios y reportes</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AdminHeader onRefresh={handleRefresh} isRefreshing={isRefreshing} />
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="users" className="gap-2">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6 h-12 p-1 bg-muted/50">
+            <TabsTrigger value="dashboard" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+              <TrendingUp className="w-4 h-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Users className="w-4 h-4" />
               <span className="hidden sm:inline">Usuarios</span>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="gap-2">
+            <TabsTrigger value="reports" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm relative">
               <Flag className="w-4 h-4" />
               <span className="hidden sm:inline">Reportes</span>
-              {reports?.filter(r => r.status === 'pending').length ? (
-                <Badge variant="destructive" className="ml-1 h-5 px-1.5">
-                  {reports.filter(r => r.status === 'pending').length}
+              {dashboardStats.pendingReports > 0 && (
+                <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px] absolute -top-1 -right-1 sm:relative sm:top-0 sm:right-0">
+                  {dashboardStats.pendingReports}
                 </Badge>
-              ) : null}
+              )}
             </TabsTrigger>
-            <TabsTrigger value="verifications" className="gap-2">
+            <TabsTrigger value="verifications" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm relative">
               <Camera className="w-4 h-4" />
               <span className="hidden sm:inline">Identidad</span>
-              {verifications?.length ? (
-                <Badge variant="destructive" className="ml-1 h-5 px-1.5">
-                  {verifications.length}
+              {dashboardStats.pendingVerifications > 0 && (
+                <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-[10px] absolute -top-1 -right-1 sm:relative sm:top-0 sm:right-0">
+                  {dashboardStats.pendingVerifications}
                 </Badge>
-              ) : null}
+              )}
             </TabsTrigger>
-            <TabsTrigger value="roles" className="gap-2">
+            <TabsTrigger value="roles" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <UserCog className="w-4 h-4" />
               <span className="hidden sm:inline">Roles</span>
             </TabsTrigger>
-            <TabsTrigger value="blacklist" className="gap-2">
+            <TabsTrigger value="blacklist" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Ban className="w-4 h-4" />
               <span className="hidden sm:inline">Blacklist</span>
             </TabsTrigger>
           </TabsList>
 
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard" className="space-y-6">
+            <AdminDashboard 
+              stats={dashboardStats} 
+              isLoading={loadingProfiles || loadingReports || loadingVerifications} 
+            />
+
+            {/* Chart Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="p-5 bg-card rounded-xl border border-border"
+            >
+              <h3 className="text-sm font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial, sans-serif' }}>
+                Verificaciones últimos 30 días
+              </h3>
+              {loadingChart ? (
+                <div className="h-56 flex items-center justify-center">
+                  <Skeleton className="w-full h-full rounded-lg" />
+                </div>
+              ) : (
+                <ChartContainer
+                  config={{
+                    approved: { label: "Aprobadas", color: "hsl(142, 76%, 36%)" },
+                    rejected: { label: "Rechazadas", color: "hsl(var(--destructive))" },
+                  }}
+                  className="h-56 w-full"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData || []}>
+                      <defs>
+                        <linearGradient id="gradientApproved" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="hsl(142, 76%, 36%)" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="gradientRejected" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis 
+                        dataKey="date" 
+                        tickFormatter={(value) => {
+                          const date = new Date(value);
+                          return `${date.getDate()}/${date.getMonth() + 1}`;
+                        }}
+                        tick={{ fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={false}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={false}
+                        allowDecimals={false}
+                      />
+                      <ChartTooltip 
+                        content={<ChartTooltipContent />}
+                        labelFormatter={(value) => {
+                          const date = new Date(value);
+                          return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="approved"
+                        stroke="hsl(142, 76%, 36%)"
+                        strokeWidth={2}
+                        fill="url(#gradientApproved)"
+                        name="Aprobadas"
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="rejected"
+                        stroke="hsl(var(--destructive))"
+                        strokeWidth={2}
+                        fill="url(#gradientRejected)"
+                        name="Rechazadas"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              )}
+              <div className="flex items-center justify-center gap-6 mt-4 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                  <span className="text-muted-foreground">Aprobadas</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-destructive" />
+                  <span className="text-muted-foreground">Rechazadas</span>
+                </div>
+              </div>
+            </motion.div>
+          </TabsContent>
+
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar usuarios..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre o ciudad..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-11"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Select value={userFilter} onValueChange={(v) => setUserFilter(v as typeof userFilter)}>
+                  <SelectTrigger className="w-[140px] h-11">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="verified">Verificados</SelectItem>
+                    <SelectItem value="unverified">Sin verificar</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="icon" className="h-11 w-11" onClick={exportUsers}>
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-sm text-muted-foreground px-1">
+              <span>{filteredProfiles.length} usuarios</span>
             </div>
 
             <div className="space-y-2">
-              {loadingProfiles ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
-                    <Skeleton className="w-10 h-10 rounded-full" />
-                    <div className="flex-1">
-                      <Skeleton className="h-4 w-32 mb-1" />
-                      <Skeleton className="h-3 w-24" />
+              <AnimatePresence mode="popLayout">
+                {loadingProfiles ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border">
+                      <Skeleton className="w-12 h-12 rounded-full" />
+                      <div className="flex-1">
+                        <Skeleton className="h-4 w-32 mb-2" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
                     </div>
-                  </div>
-                ))
-              ) : filteredProfiles?.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No se encontraron usuarios
-                </div>
-              ) : (
-                filteredProfiles?.map((profile) => (
-                  <div key={profile.id} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
-                    <div className="relative">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={profile.avatar_url || undefined} />
-                        <AvatarFallback>{(profile.name?.[0] || '?').toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      {profile.identity_verified && (
-                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
-                          <ShieldCheck className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground truncate">{profile.name || 'Sin nombre'}</p>
-                      <p className="text-xs text-muted-foreground">{profile.city || 'Sin ciudad'}</p>
-                    </div>
-                    <div className="text-xs text-muted-foreground hidden sm:block">
-                      {format(new Date(profile.created_at), 'dd MMM yyyy', { locale: es })}
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
-                          setSelectedUserId(profile.user_id);
-                          setAddRoleDialogOpen(true);
-                        }}>
-                          <UserPlus className="w-4 h-4 mr-2" />
-                          Asignar rol
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => openHistoryDialog(profile.id, profile.name)}>
-                          <History className="w-4 h-4 mr-2" />
-                          Historial de verificaciones
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => openReverifyDialog(profile.id, profile.name)}
-                          className="text-orange-600 focus:text-orange-600"
-                        >
-                          <RefreshCw className="w-4 h-4 mr-2" />
-                          Forzar re-verificación
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                ))
-              )}
+                  ))
+                ) : filteredProfiles.length === 0 ? (
+                  <AdminEmptyState
+                    icon={<Users className="w-8 h-8" />}
+                    title="No se encontraron usuarios"
+                    description="Prueba con otros filtros o términos de búsqueda"
+                  />
+                ) : (
+                  filteredProfiles.map((profile) => (
+                    <AdminUserCard
+                      key={profile.id}
+                      profile={profile}
+                      onAssignRole={(userId) => {
+                        setSelectedUserId(userId);
+                        setAddRoleDialogOpen(true);
+                      }}
+                      onViewHistory={(id, name) => openHistoryDialog(id, name)}
+                      onForceReverify={(id, name) => openReverifyDialog(id, name)}
+                    />
+                  ))
+                )}
+              </AnimatePresence>
             </div>
           </TabsContent>
 
           {/* Reports Tab */}
           <TabsContent value="reports" className="space-y-4">
-            {loadingReports ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="p-4 bg-card rounded-lg border border-border">
-                  <Skeleton className="h-4 w-48 mb-2" />
-                  <Skeleton className="h-3 w-full mb-2" />
-                  <Skeleton className="h-3 w-32" />
-                </div>
-              ))
-            ) : reports?.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No hay reportes
-              </div>
-            ) : (
-              reports?.map((report) => (
-                <div key={report.id} className="p-4 bg-card rounded-lg border border-border space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={report.reported?.avatar_url || undefined} />
-                        <AvatarFallback>{(report.reported?.name?.[0] || '?').toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-sm text-card-foreground">
-                          {report.reported?.name || 'Usuario'}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Reportado por {report.reporter?.name || 'Usuario'}
-                        </p>
-                      </div>
-                    </div>
-                    {getStatusBadge(report.status)}
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-card-foreground">Motivo: {report.reason}</p>
-                    {report.details && (
-                      <p className="text-sm text-muted-foreground">{report.details}</p>
-                    )}
-                  </div>
+            <div className="flex items-center justify-between">
+              <Select value={reportFilter} onValueChange={(v) => setReportFilter(v as typeof reportFilter)}>
+                <SelectTrigger className="w-[160px] h-11">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los reportes</SelectItem>
+                  <SelectItem value="pending">Pendientes</SelectItem>
+                  <SelectItem value="resolved">Resueltos</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-muted-foreground">
+                {filteredReports.length} reportes
+              </span>
+            </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-border">
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(report.created_at), 'dd MMM yyyy, HH:mm', { locale: es })}
-                    </span>
-                    <div className="flex gap-2">
-                      {report.status === 'pending' && (
-                        <>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleUpdateReportStatus(report.id, 'dismissed')}
-                          >
-                            Descartar
-                          </Button>
-                          <Button 
-                            size="sm"
-                            onClick={() => handleUpdateReportStatus(report.id, 'resolved')}
-                          >
-                            Resolver
-                          </Button>
-                        </>
-                      )}
+            <div className="space-y-3">
+              <AnimatePresence mode="popLayout">
+                {loadingReports ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="p-5 bg-card rounded-xl border border-border">
+                      <Skeleton className="h-4 w-48 mb-3" />
+                      <Skeleton className="h-3 w-full mb-2" />
+                      <Skeleton className="h-3 w-32" />
                     </div>
-                  </div>
-                </div>
-              ))
-            )}
+                  ))
+                ) : filteredReports.length === 0 ? (
+                  <AdminEmptyState
+                    icon={<Flag className="w-8 h-8" />}
+                    title="No hay reportes"
+                    description={reportFilter === "pending" ? "No hay reportes pendientes de revisión" : undefined}
+                  />
+                ) : (
+                  filteredReports.map((report) => (
+                    <AdminReportCard
+                      key={report.id}
+                      report={report}
+                      onUpdateStatus={handleUpdateReportStatus}
+                      isUpdating={updateReportMutation.isPending}
+                    />
+                  ))
+                )}
+              </AnimatePresence>
+            </div>
           </TabsContent>
 
           {/* Roles Tab */}
           <TabsContent value="roles" className="space-y-4">
-            {loadingRoles ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
-                  <Skeleton className="w-10 h-10 rounded-full" />
-                  <div className="flex-1">
-                    <Skeleton className="h-4 w-32 mb-1" />
-                    <Skeleton className="h-3 w-24" />
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+                Roles asignados
+              </h3>
+              <span className="text-sm text-muted-foreground">
+                {roles?.length || 0} roles
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {loadingRoles ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border">
+                    <Skeleton className="w-12 h-12 rounded-full" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-32 mb-2" />
+                      <Skeleton className="h-5 w-24" />
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : roles?.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No hay roles asignados
-              </div>
-            ) : (
-              roles?.map((roleEntry) => (
-                <div key={roleEntry.id} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={roleEntry.profile?.avatar_url || undefined} />
-                    <AvatarFallback>{(roleEntry.profile?.name?.[0] || '?').toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">
-                      {roleEntry.profile?.name || 'Usuario'}
-                    </p>
-                    <Badge variant={getRoleBadgeVariant(roleEntry.role)} className="mt-1">
-                      {roleEntry.role === 'admin' ? 'Administrador' : 
-                       roleEntry.role === 'moderator' ? 'Moderador' : 'Usuario'}
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-muted-foreground hidden sm:block">
-                    {format(new Date(roleEntry.created_at), 'dd MMM yyyy', { locale: es })}
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                    onClick={() => handleRemoveRole(roleEntry.id)}
+                ))
+              ) : roles?.length === 0 ? (
+                <AdminEmptyState
+                  icon={<UserCog className="w-8 h-8" />}
+                  title="No hay roles asignados"
+                  description="Asigna roles desde la pestaña de usuarios"
+                />
+              ) : (
+                roles?.map((roleEntry) => (
+                  <motion.div 
+                    key={roleEntry.id} 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border hover:border-primary/30 transition-all group"
                   >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))
-            )}
+                    <Avatar className="w-12 h-12 ring-2 ring-background shadow-sm">
+                      <AvatarImage src={roleEntry.profile?.avatar_url || undefined} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                        {(roleEntry.profile?.name?.[0] || '?').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground truncate" style={{ fontFamily: 'Arial, sans-serif' }}>
+                        {roleEntry.profile?.name || 'Usuario'}
+                      </p>
+                      <Badge 
+                        variant={getRoleBadgeVariant(roleEntry.role)} 
+                        className="mt-1"
+                      >
+                        {roleEntry.role === 'admin' ? '👑 Administrador' : 
+                         roleEntry.role === 'moderator' ? '🛡️ Moderador' : 'Usuario'}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground hidden sm:block">
+                      {format(new Date(roleEntry.created_at), 'dd MMM yyyy', { locale: es })}
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-9 w-9 text-destructive hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleRemoveRole(roleEntry.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </motion.div>
+                ))
+              )}
+            </div>
           </TabsContent>
 
           {/* Blacklist Tab */}
@@ -480,6 +624,7 @@ const Admin = () => {
                     setNewBlacklistWord("");
                   }
                 }}
+                className="h-11"
               />
               <Button 
                 onClick={() => {
@@ -489,44 +634,56 @@ const Admin = () => {
                   }
                 }}
                 disabled={!newBlacklistWord.trim() || addBlacklistMutation.isPending}
+                className="h-11 px-4"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 mr-2" />
+                Añadir
               </Button>
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              Las palabras de esta lista serán bloqueadas automáticamente en las bios de los perfiles. 
-              Los chats privados no están afectados.
-            </p>
+            <div className="p-4 bg-muted/30 rounded-xl border border-border">
+              <p className="text-sm text-muted-foreground">
+                ⚠️ Las palabras de esta lista serán bloqueadas automáticamente en las bios de los perfiles. 
+                Los chats privados no están afectados.
+              </p>
+            </div>
 
             <div className="space-y-2">
               {loadingBlacklist ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
-                    <Skeleton className="h-4 w-32" />
-                  </div>
-                ))
-              ) : blacklist?.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No hay palabras en la blacklist
+                <div className="flex flex-wrap gap-2">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <Skeleton key={i} className="h-8 w-20 rounded-full" />
+                  ))}
                 </div>
+              ) : blacklist?.length === 0 ? (
+                <AdminEmptyState
+                  icon={<Ban className="w-8 h-8" />}
+                  title="No hay palabras en la blacklist"
+                  description="Añade palabras que quieras bloquear en las bios"
+                />
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {blacklist?.map((item) => (
-                    <Badge 
-                      key={item.id} 
-                      variant="secondary" 
-                      className="px-3 py-1.5 text-sm flex items-center gap-2"
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
                     >
-                      {item.word}
-                      <button
-                        onClick={() => removeBlacklistMutation.mutate(item.id)}
-                        className="hover:text-destructive transition-colors"
-                        disabled={removeBlacklistMutation.isPending}
+                      <Badge 
+                        variant="secondary" 
+                        className="px-3 py-1.5 text-sm flex items-center gap-2 hover:bg-destructive/10 transition-colors group"
                       >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
+                        {item.word}
+                        <button
+                          onClick={() => removeBlacklistMutation.mutate(item.id)}
+                          className="opacity-50 group-hover:opacity-100 hover:text-destructive transition-all"
+                          disabled={removeBlacklistMutation.isPending}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </Badge>
+                    </motion.div>
                   ))}
                 </div>
               )}
@@ -538,17 +695,19 @@ const Admin = () => {
             {/* Stats Section */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {loadingStats ? (
-                <>
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="p-4 bg-card rounded-lg border border-border">
-                      <Skeleton className="h-8 w-16 mb-2" />
-                      <Skeleton className="h-4 w-24" />
-                    </div>
-                  ))}
-                </>
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="p-4 bg-card rounded-xl border border-border">
+                    <Skeleton className="h-8 w-16 mb-2" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                ))
               ) : (
                 <>
-                  <div className="p-4 bg-card rounded-lg border border-border">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-card rounded-xl border border-border"
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <Clock className="w-4 h-4 text-amber-500" />
                       <span className="text-2xl font-bold text-foreground">
@@ -556,11 +715,13 @@ const Admin = () => {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">Pendientes</p>
-                    <p className="text-xs text-amber-500 mt-1">
-                      +{verificationStats?.pendingLast7Days || 0} esta semana
-                    </p>
-                  </div>
-                  <div className="p-4 bg-card rounded-lg border border-border">
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="p-4 bg-card rounded-xl border border-border"
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                       <span className="text-2xl font-bold text-foreground">
@@ -568,11 +729,13 @@ const Admin = () => {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">Aprobadas</p>
-                    <p className="text-xs text-emerald-500 mt-1">
-                      +{verificationStats?.approvedLast7Days || 0} esta semana
-                    </p>
-                  </div>
-                  <div className="p-4 bg-card rounded-lg border border-border">
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="p-4 bg-card rounded-xl border border-border"
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <XCircle className="w-4 h-4 text-destructive" />
                       <span className="text-2xl font-bold text-foreground">
@@ -580,34 +743,44 @@ const Admin = () => {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">Rechazadas</p>
-                    <p className="text-xs text-destructive mt-1">
-                      +{verificationStats?.rejectedLast7Days || 0} esta semana
-                    </p>
-                  </div>
-                  <div className="p-4 bg-card rounded-lg border border-border">
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="p-4 bg-card rounded-xl border border-border"
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <TrendingUp className="w-4 h-4 text-primary" />
                       <span className="text-2xl font-bold text-foreground">
                         {verificationStats?.total || 0}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Total solicitudes</p>
-                    <p className="text-xs text-primary mt-1">
-                      {verificationStats?.approved && verificationStats?.total 
-                        ? Math.round((verificationStats.approved / verificationStats.total) * 100)
-                        : 0}% tasa de aprobación
-                    </p>
-                  </div>
+                    <p className="text-xs text-muted-foreground">Total</p>
+                  </motion.div>
                 </>
               )}
             </div>
 
             {/* Storage Cleanup Section */}
-            <div className="p-4 bg-card rounded-lg border border-border">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-5 bg-card rounded-xl border border-border"
+            >
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <HardDrive className="w-4 h-4 text-muted-foreground" />
-                  <h3 className="text-sm font-medium text-foreground">Limpieza de Storage</h3>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                    <HardDrive className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+                      Limpieza de Storage
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Automático cada día a las 3 AM
+                    </p>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -615,7 +788,7 @@ const Admin = () => {
                     variant="ghost"
                     onClick={() => setShowCleanupHistory(!showCleanupHistory)}
                   >
-                    <History className="w-3 h-3 mr-1" />
+                    <History className="w-4 h-4 mr-1" />
                     Historial
                   </Button>
                   <Button
@@ -626,361 +799,193 @@ const Admin = () => {
                   >
                     {triggerCleanupMutation.isPending ? (
                       <>
-                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                         Limpiando...
                       </>
                     ) : (
                       <>
-                        <Trash2 className="w-3 h-3 mr-1" />
-                        Ejecutar limpieza
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Ejecutar ahora
                       </>
                     )}
                   </Button>
                 </div>
               </div>
-              
-              <p className="text-xs text-muted-foreground mb-3">
-                Elimina selfies de verificaciones completadas, archivos huérfanos y registros antiguos. 
-                Se ejecuta automáticamente cada día a las 3 AM.
-              </p>
 
               {lastCleanupResult && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-muted/50 rounded-lg mb-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg mt-4">
                   <div className="text-center">
-                    <span className="text-lg font-bold text-foreground">{lastCleanupResult.deletedFromCompletedVerifications}</span>
+                    <span className="text-xl font-bold text-foreground">{lastCleanupResult.deletedFromCompletedVerifications}</span>
                     <p className="text-xs text-muted-foreground">De verificaciones</p>
                   </div>
                   <div className="text-center">
-                    <span className="text-lg font-bold text-foreground">{lastCleanupResult.deletedOrphanedFiles}</span>
+                    <span className="text-xl font-bold text-foreground">{lastCleanupResult.deletedOrphanedFiles}</span>
                     <p className="text-xs text-muted-foreground">Huérfanos</p>
                   </div>
                   <div className="text-center">
-                    <span className="text-lg font-bold text-foreground">{lastCleanupResult.deletedOldVerifications}</span>
-                    <p className="text-xs text-muted-foreground">Registros viejos</p>
+                    <span className="text-xl font-bold text-foreground">{lastCleanupResult.deletedOldVerifications}</span>
+                    <p className="text-xs text-muted-foreground">Registros</p>
                   </div>
                   <div className="text-center">
-                    <span className="text-lg font-bold text-emerald-500">{lastCleanupResult.totalDeleted}</span>
-                    <p className="text-xs text-muted-foreground">Total eliminados</p>
+                    <span className="text-xl font-bold text-emerald-500">{lastCleanupResult.totalDeleted}</span>
+                    <p className="text-xs text-muted-foreground">Total</p>
                   </div>
                 </div>
               )}
 
               {/* Cleanup History */}
-              {showCleanupHistory && (
-                <div className="mt-4 border-t border-border pt-4">
-                  <h4 className="text-sm font-medium text-foreground mb-3">Historial de ejecuciones</h4>
-                  {loadingCleanupHistory ? (
-                    <div className="space-y-2">
-                      {Array.from({ length: 3 }).map((_, i) => (
-                        <Skeleton key={i} className="h-12 w-full" />
-                      ))}
-                    </div>
-                  ) : cleanupHistory?.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No hay historial de limpiezas
-                    </p>
-                  ) : (
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {cleanupHistory?.map((execution) => (
-                        <div 
-                          key={execution.id} 
-                          className={`p-3 rounded-lg border ${
-                            execution.success 
-                              ? 'bg-muted/30 border-border' 
-                              : 'bg-destructive/10 border-destructive/30'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="flex items-center gap-2">
-                              {execution.success ? (
-                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                              ) : (
-                                <XCircle className="w-4 h-4 text-destructive" />
+              <AnimatePresence>
+                {showCleanupHistory && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-4 border-t border-border pt-4"
+                  >
+                    <h4 className="text-sm font-medium text-foreground mb-3">Historial de ejecuciones</h4>
+                    {loadingCleanupHistory ? (
+                      <div className="space-y-2">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <Skeleton key={i} className="h-14 w-full rounded-lg" />
+                        ))}
+                      </div>
+                    ) : cleanupHistory?.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No hay historial de limpiezas
+                      </p>
+                    ) : (
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {cleanupHistory?.map((execution) => (
+                          <div 
+                            key={execution.id} 
+                            className={`p-3 rounded-lg border ${
+                              execution.success 
+                                ? 'bg-muted/30 border-border' 
+                                : 'bg-destructive/10 border-destructive/30'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                {execution.success ? (
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                ) : (
+                                  <XCircle className="w-4 h-4 text-destructive" />
+                                )}
+                                <span className="text-sm font-medium">
+                                  {format(new Date(execution.executed_at), "d MMM yyyy, HH:mm", { locale: es })}
+                                </span>
+                                <Badge variant="outline" className="text-xs">
+                                  {execution.triggered_by === 'cron' ? 'Auto' : 'Manual'}
+                                </Badge>
+                              </div>
+                              {execution.duration_ms && (
+                                <span className="text-xs text-muted-foreground">
+                                  {(execution.duration_ms / 1000).toFixed(1)}s
+                                </span>
                               )}
-                              <span className="text-sm font-medium">
-                                {format(new Date(execution.executed_at), "d MMM yyyy, HH:mm", { locale: es })}
-                              </span>
-                              <Badge variant="outline" className="text-xs">
-                                {execution.triggered_by === 'cron' ? 'Automático' : 'Manual'}
-                              </Badge>
                             </div>
-                            {execution.duration_ms && (
-                              <span className="text-xs text-muted-foreground">
-                                {(execution.duration_ms / 1000).toFixed(1)}s
-                              </span>
+                            
+                            {execution.success ? (
+                              <div className="flex gap-4 text-xs text-muted-foreground mt-1">
+                                <span>Verif: {execution.deleted_from_completed}</span>
+                                <span>Huérf: {execution.deleted_orphaned}</span>
+                                <span>Reg: {execution.deleted_old_verifications}</span>
+                                <span className="font-medium text-foreground">
+                                  Total: {execution.total_deleted}
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-destructive mt-1">
+                                Error: {execution.error_message || 'Error desconocido'}
+                              </p>
                             )}
                           </div>
-                          
-                          {execution.success ? (
-                            <div className="flex gap-4 text-xs text-muted-foreground mt-1">
-                              <span>Verificaciones: {execution.deleted_from_completed}</span>
-                              <span>Huérfanos: {execution.deleted_orphaned}</span>
-                              <span>Registros: {execution.deleted_old_verifications}</span>
-                              <span className="font-medium text-foreground">
-                                Total: {execution.total_deleted}
-                              </span>
-                            </div>
-                          ) : (
-                            <p className="text-xs text-destructive mt-1">
-                              Error: {execution.error_message || 'Error desconocido'}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
 
-            {/* Chart Section */}
-            <div className="p-4 bg-card rounded-lg border border-border">
-              <h3 className="text-sm font-medium text-foreground mb-4">
-                Verificaciones últimos 30 días
-              </h3>
-              {loadingChart ? (
-                <div className="h-48 flex items-center justify-center">
-                  <Skeleton className="w-full h-full" />
-                </div>
-              ) : (
-                <ChartContainer
-                  config={{
-                    approved: {
-                      label: "Aprobadas",
-                      color: "hsl(142, 76%, 36%)",
-                    },
-                    rejected: {
-                      label: "Rechazadas",
-                      color: "hsl(var(--destructive))",
-                    },
-                  }}
-                  className="h-48 w-full"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData || []}>
-                      <XAxis 
-                        dataKey="date" 
-                        tickFormatter={(value) => {
-                          const date = new Date(value);
-                          return `${date.getDate()}/${date.getMonth() + 1}`;
-                        }}
-                        tick={{ fontSize: 10 }}
-                        tickLine={false}
-                        axisLine={false}
-                        interval="preserveStartEnd"
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 10 }}
-                        tickLine={false}
-                        axisLine={false}
-                        allowDecimals={false}
-                      />
-                      <ChartTooltip 
-                        content={<ChartTooltipContent />}
-                        labelFormatter={(value) => {
-                          const date = new Date(value);
-                          return date.toLocaleDateString('es-ES', { 
-                            day: 'numeric', 
-                            month: 'short' 
-                          });
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="approved"
-                        stroke="hsl(142, 76%, 36%)"
-                        strokeWidth={2}
-                        dot={false}
-                        name="Aprobadas"
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="rejected"
-                        stroke="hsl(var(--destructive))"
-                        strokeWidth={2}
-                        dot={false}
-                        name="Rechazadas"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              )}
-              <div className="flex items-center justify-center gap-6 mt-3 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-0.5 rounded bg-emerald-500" />
-                  <span className="text-muted-foreground">Aprobadas</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-0.5 rounded bg-destructive" />
-                  <span className="text-muted-foreground">Rechazadas</span>
-                </div>
-              </div>
-            </div>
-
+            {/* Pending Verifications */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Camera className="w-4 h-4" />
-              <span>Verificaciones pendientes de revisión manual (baja confianza de IA)</span>
+              <span>Verificaciones pendientes de revisión manual</span>
             </div>
 
-            {loadingVerifications ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="p-4 bg-card rounded-lg border border-border">
-                  <div className="flex gap-4">
-                    <Skeleton className="w-20 h-20 rounded-lg" />
-                    <Skeleton className="w-20 h-20 rounded-lg" />
-                    <div className="flex-1">
-                      <Skeleton className="h-4 w-32 mb-2" />
-                      <Skeleton className="h-3 w-48" />
+            <div className="space-y-4">
+              {loadingVerifications ? (
+                Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="p-5 bg-card rounded-xl border border-border">
+                    <div className="flex gap-4">
+                      <Skeleton className="w-24 h-24 rounded-xl" />
+                      <Skeleton className="w-24 h-24 rounded-xl" />
+                      <div className="flex-1">
+                        <Skeleton className="h-5 w-32 mb-2" />
+                        <Skeleton className="h-4 w-48" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            ) : verifications?.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No hay verificaciones pendientes</p>
-              </div>
-            ) : (
-              verifications?.map((verification) => (
-                <div key={verification.id} className="p-4 bg-card rounded-lg border border-border space-y-4">
-                  <div className="flex items-start gap-4">
-                    {/* Profile Photo */}
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground text-center">Perfil</p>
-                      <div 
-                        className="w-20 h-20 rounded-lg overflow-hidden border border-border cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setViewingSelfie(verification.profile?.avatar_url || null)}
-                      >
-                        {verification.profile?.avatar_url ? (
-                          <img 
-                            src={verification.profile.avatar_url} 
-                            alt="Foto de perfil" 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <Users className="w-6 h-6 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Selfie */}
-                    <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground text-center">Selfie</p>
-                      <div 
-                        className="w-20 h-20 rounded-lg overflow-hidden border border-border cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setViewingSelfie(verification.selfie_url)}
-                      >
-                        <img 
-                          src={verification.selfie_url} 
-                          alt="Selfie" 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium truncate">
-                          {verification.profile?.name || 'Sin nombre'}
-                        </span>
-                        <Badge variant="outline" className="text-amber-600 border-amber-600">
-                          <Clock className="w-3 h-3 mr-1" />
-                          Revisión manual
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {verification.profile?.city || 'Sin ciudad'}
-                      </p>
-                      
-                      {/* AI Analysis */}
-                      <div className="text-xs space-y-1 p-2 bg-muted/50 rounded">
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">Confianza IA:</span>
-                          <Badge 
-                            variant={verification.ai_confidence === 'high' ? 'default' : 'secondary'}
-                            className="text-xs"
-                          >
-                            {verification.ai_confidence || 'N/A'}
-                          </Badge>
-                        </div>
-                        {verification.ai_reason && (
-                          <p className="text-muted-foreground italic">
-                            "{verification.ai_reason}"
-                          </p>
-                        )}
-                      </div>
-
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Solicitado {format(new Date(verification.created_at), "d MMM yyyy, HH:mm", { locale: es })}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2 border-t border-border">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 text-emerald-600 border-emerald-600 hover:bg-emerald-600/10"
-                      onClick={() => {
-                        updateVerificationMutation.mutate({
-                          verificationId: verification.id,
-                          profileId: verification.profile_id,
-                          approved: true,
-                        });
-                        toast.success("Verificación aprobada");
-                      }}
-                      disabled={updateVerificationMutation.isPending}
-                    >
-                      <ThumbsUp className="w-4 h-4 mr-2" />
-                      Aprobar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 text-destructive border-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        updateVerificationMutation.mutate({
-                          verificationId: verification.id,
-                          profileId: verification.profile_id,
-                          approved: false,
-                          rejectionReason: "Las fotos no coinciden según revisión manual",
-                        });
-                        toast.success("Verificación rechazada");
-                      }}
-                      disabled={updateVerificationMutation.isPending}
-                    >
-                      <ThumbsDown className="w-4 h-4 mr-2" />
-                      Rechazar
-                    </Button>
-                  </div>
-                </div>
-              ))
-            )}
+                ))
+              ) : verifications?.length === 0 ? (
+                <AdminEmptyState
+                  icon={<Camera className="w-8 h-8" />}
+                  title="No hay verificaciones pendientes"
+                  description="Todas las verificaciones han sido procesadas"
+                />
+              ) : (
+                verifications?.map((verification) => (
+                  <AdminVerificationCard
+                    key={verification.id}
+                    verification={verification}
+                    onApprove={() => {
+                      updateVerificationMutation.mutate({
+                        verificationId: verification.id,
+                        profileId: verification.profile_id,
+                        approved: true,
+                      });
+                      toast.success("Verificación aprobada");
+                    }}
+                    onReject={() => {
+                      updateVerificationMutation.mutate({
+                        verificationId: verification.id,
+                        profileId: verification.profile_id,
+                        approved: false,
+                        rejectionReason: "Las fotos no coinciden según revisión manual",
+                      });
+                      toast.success("Verificación rechazada");
+                    }}
+                    onViewImage={(url) => setViewingSelfie(url)}
+                    isUpdating={updateVerificationMutation.isPending}
+                  />
+                ))
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Add Role Dialog */}
       <Dialog open={addRoleDialogOpen} onOpenChange={setAddRoleDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Asignar rol</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCog className="w-5 h-5" />
+              Asignar rol
+            </DialogTitle>
             <DialogDescription>
               Selecciona el rol que quieres asignar a este usuario.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as AppRole)}>
-              <SelectTrigger>
+              <SelectTrigger className="h-11">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="moderator">Moderador</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
+                <SelectItem value="moderator">🛡️ Moderador</SelectItem>
+                <SelectItem value="admin">👑 Administrador</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -989,7 +994,7 @@ const Admin = () => {
               Cancelar
             </Button>
             <Button onClick={handleAddRole} disabled={addRoleMutation.isPending}>
-              {addRoleMutation.isPending ? 'Asignando...' : 'Asignar'}
+              {addRoleMutation.isPending ? 'Asignando...' : 'Asignar rol'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -997,7 +1002,7 @@ const Admin = () => {
 
       {/* Selfie Lightbox */}
       <Dialog open={!!viewingSelfie} onOpenChange={() => setViewingSelfie(null)}>
-        <DialogContent className="max-w-md p-2">
+        <DialogContent className="max-w-lg p-2 bg-black/90">
           {viewingSelfie && (
             <img 
               src={viewingSelfie} 
@@ -1012,7 +1017,10 @@ const Admin = () => {
       <AlertDialog open={reverifyDialogOpen} onOpenChange={setReverifyDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Forzar re-verificación?</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <RefreshCw className="w-5 h-5 text-orange-500" />
+              ¿Forzar re-verificación?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Esta acción invalidará la verificación de identidad de <strong>{selectedProfileForReverify?.name || 'este usuario'}</strong> y le notificará que debe volver a verificarse. Esta acción no se puede deshacer.
             </AlertDialogDescription>
@@ -1062,7 +1070,7 @@ const Admin = () => {
               </div>
             ) : (
               verificationHistory?.map((verification) => (
-                <div key={verification.id} className="p-3 bg-muted/50 rounded-lg space-y-2">
+                <div key={verification.id} className="p-4 bg-muted/50 rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
                     {getVerificationStatusBadge(verification.status)}
                     <span className="text-xs text-muted-foreground">
@@ -1099,7 +1107,7 @@ const Admin = () => {
                       variant="outline" 
                       size="sm" 
                       onClick={() => setViewingSelfie(verification.selfie_url)}
-                      className="mt-1"
+                      className="mt-2"
                     >
                       <Eye className="w-3 h-3 mr-1" />
                       Ver selfie
