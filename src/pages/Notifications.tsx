@@ -101,14 +101,15 @@ const Notifications = () => {
         
         {/* Header */}
         <div className="relative z-10 flex items-center justify-between mb-8">
-          <button 
+        <button 
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
+            style={{ fontFamily: 'Arial, sans-serif' }}
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Volver</span>
           </button>
-          <span className="font-display text-xl font-bold text-foreground">KIKI</span>
+          <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             {readCount > 0 && (
@@ -151,12 +152,12 @@ const Notifications = () => {
               )}
             </div>
             
-            <h1 className="font-display text-3xl font-bold text-foreground mb-3">
-              Notificaciones
-            </h1>
-            <p className="font-body text-muted-foreground">
-              Tu historial de actividad.
-            </p>
+          <h1 className="text-3xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+            Notificaciones
+          </h1>
+          <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+            Tu historial de actividad.
+          </p>
           </div>
 
           {/* Filters */}
@@ -165,11 +166,12 @@ const Notifications = () => {
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-body text-sm whitespace-nowrap transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
                   filter === f.key
                     ? "bg-primary text-primary-foreground"
                     : "bg-card text-card-foreground/70 hover:bg-card/80"
                 }`}
+                style={{ fontFamily: 'Arial, sans-serif' }}
               >
                 {f.icon}
                 {f.label}
@@ -221,7 +223,7 @@ const Notifications = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-display font-semibold text-card-foreground text-sm truncate">
+                          <h3 className="font-semibold text-card-foreground text-sm truncate" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                             {notification.title}
                           </h3>
                           {!notification.read_at && (
@@ -229,11 +231,11 @@ const Notifications = () => {
                           )}
                         </div>
                         {notification.description && (
-                          <p className="font-body text-xs text-card-foreground/80 truncate mt-0.5">
+                          <p className="text-xs text-card-foreground/80 truncate mt-0.5" style={{ fontFamily: 'Arial, sans-serif' }}>
                             {notification.description}
                           </p>
                         )}
-                        <p className="font-body text-xs text-card-foreground/60 mt-1">
+                        <p className="text-xs text-card-foreground/60 mt-1" style={{ fontFamily: 'Arial, sans-serif' }}>
                           {formatDistanceToNow(new Date(notification.created_at), { 
                             addSuffix: true, 
                             locale: es 
@@ -247,7 +249,7 @@ const Notifications = () => {
                   </button>
                 </SwipeableNotification>
               ))}
-              <p className="text-center text-xs text-muted-foreground pt-4 font-body">
+              <p className="text-center text-xs text-muted-foreground pt-4" style={{ fontFamily: 'Arial, sans-serif' }}>
                 ← Eliminar · Marcar leído →
               </p>
             </div>

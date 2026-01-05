@@ -62,10 +62,10 @@ const Connections = () => {
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-display font-semibold text-card-foreground">
+            <span className="font-semibold text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               {request.from_profile?.city || "Desconocida"}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               {formatTime(request.created_at)}
             </span>
           </div>
@@ -73,7 +73,7 @@ const Connections = () => {
           {/* Message if present */}
           {request.message && (
             <div className="mb-3 p-2.5 rounded-lg bg-secondary/50 border border-border/30">
-              <p className="font-body text-sm text-card-foreground italic">
+              <p className="text-sm text-card-foreground italic" style={{ fontFamily: 'Arial, sans-serif' }}>
                 "{request.message}"
               </p>
             </div>
@@ -85,13 +85,14 @@ const Connections = () => {
               {request.from_tribes.slice(0, 3).map(tribe => (
                 <span 
                   key={tribe}
-                  className="px-2 py-0.5 rounded-full bg-primary/10 font-body text-xs text-primary"
+                  className="px-2 py-0.5 rounded-full bg-primary/10 text-xs text-primary"
+                  style={{ fontFamily: 'Arial, sans-serif' }}
                 >
                   {tribe}
                 </span>
               ))}
               {request.from_tribes.length > 3 && (
-                <span className="px-2 py-0.5 font-body text-xs text-muted-foreground">
+                <span className="px-2 py-0.5 text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
                   +{request.from_tribes.length - 3}
                 </span>
               )}
@@ -136,12 +137,12 @@ const Connections = () => {
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-body text-sm text-card-foreground">
+            <span className="text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               {request.to_profile?.city || "Desconocida"}
             </span>
             <span className={`flex items-center gap-1 text-xs ${
               request.status === "accepted" ? "text-green-500" : "text-muted-foreground"
-            }`}>
+            }`} style={{ fontFamily: 'Arial, sans-serif' }}>
               {request.status === "accepted" ? (
                 <>
                   <UserCheck className="w-3 h-3" />
@@ -155,7 +156,7 @@ const Connections = () => {
               )}
             </span>
           </div>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
             {formatTime(request.created_at)}
           </span>
         </div>
@@ -191,12 +192,13 @@ const Connections = () => {
       <div className="flex items-center justify-between mb-8">
         <button 
           onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          style={{ fontFamily: 'Arial, sans-serif' }}
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Presencia</span>
         </button>
-        <span className="font-display text-xl font-bold text-foreground">Conexiones</span>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>Conexiones</span>
         <ThemeToggle />
       </div>
 
@@ -256,7 +258,7 @@ const Connections = () => {
         </Tabs>
 
         {/* Info note */}
-        <p className="text-center font-body text-xs text-muted-foreground/60 mt-10">
+        <p className="text-center text-xs text-muted-foreground/60 mt-10" style={{ fontFamily: 'Arial, sans-serif' }}>
           Al aceptar una conexión, ambas personas
           <br />
           podrán ver sus perfiles completos.
