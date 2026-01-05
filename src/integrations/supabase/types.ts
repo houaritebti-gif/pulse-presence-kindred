@@ -496,6 +496,7 @@ export type Database = {
           alternative_aesthetic: boolean | null
           avatar_url: string | null
           bio: string | null
+          birthdate: string | null
           city: string | null
           created_at: string | null
           email_verified: boolean | null
@@ -515,6 +516,7 @@ export type Database = {
           alternative_aesthetic?: boolean | null
           avatar_url?: string | null
           bio?: string | null
+          birthdate?: string | null
           city?: string | null
           created_at?: string | null
           email_verified?: boolean | null
@@ -534,6 +536,7 @@ export type Database = {
           alternative_aesthetic?: boolean | null
           avatar_url?: string | null
           bio?: string | null
+          birthdate?: string | null
           city?: string | null
           created_at?: string | null
           email_verified?: boolean | null
@@ -1039,6 +1042,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_age: { Args: { birthdate: string }; Returns: number }
       can_view_profile: {
         Args: { target_profile_id: string; viewer_user_id: string }
         Returns: boolean
