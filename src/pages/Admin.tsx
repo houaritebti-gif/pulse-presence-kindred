@@ -281,7 +281,7 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="admin-panel min-h-screen bg-background pb-20">
       <AdminHeader onRefresh={handleRefresh} isRefreshing={isRefreshing} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">

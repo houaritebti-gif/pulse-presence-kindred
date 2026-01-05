@@ -38,20 +38,20 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-5 rounded-xl bg-amber-500/15 border-2 border-amber-500/40"
+          className="p-5 rounded-xl bg-[hsl(45,90%,55%,0.12)] dark:bg-[hsl(45,90%,55%,0.08)] border-2 border-[hsl(45,90%,55%,0.35)] dark:border-[hsl(45,90%,55%,0.25)]"
         >
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-amber-500/25 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+            <div className="w-12 h-12 rounded-full bg-[hsl(45,90%,55%,0.2)] dark:bg-[hsl(45,90%,55%,0.15)] flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-6 h-6 text-[hsl(45,90%,40%)] dark:text-[hsl(45,90%,65%)]" />
             </div>
             <div className="flex-1">
               <p className="font-bold text-lg text-foreground">
                 Acciones pendientes
               </p>
               <p className="text-sm font-medium text-foreground/80">
-                {stats.pendingReports > 0 && <span className="text-destructive font-semibold">{stats.pendingReports} reportes</span>}
+                {stats.pendingReports > 0 && <span className="text-destructive dark:text-[hsl(0,65%,60%)] font-semibold">{stats.pendingReports} reportes</span>}
                 {stats.pendingReports > 0 && stats.pendingVerifications > 0 && " · "}
-                {stats.pendingVerifications > 0 && <span className="text-amber-600 dark:text-amber-400 font-semibold">{stats.pendingVerifications} verificaciones</span>}
+                {stats.pendingVerifications > 0 && <span className="text-[hsl(45,90%,40%)] dark:text-[hsl(45,90%,65%)] font-semibold">{stats.pendingVerifications} verificaciones</span>}
                 {" requieren tu atención"}
               </p>
             </div>
@@ -70,7 +70,7 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           variant="highlight"
         />
         <AdminStatsCard
-          icon={<ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+          icon={<ShieldCheck className="w-5 h-5 text-[hsl(160,60%,45%)] dark:text-[hsl(160,70%,55%)]" />}
           value={stats.verifiedUsers}
           label="Verificados"
           trend={stats.totalUsers > 0 ? `${Math.round((stats.verifiedUsers / stats.totalUsers) * 100)}% del total` : "0%"}
@@ -83,7 +83,7 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           trendColor={stats.pendingReports > 0 ? "destructive" : "muted"}
         />
         <AdminStatsCard
-          icon={<Camera className="w-5 h-5 text-amber-600 dark:text-amber-400" />}
+          icon={<Camera className="w-5 h-5 text-[hsl(45,90%,40%)] dark:text-[hsl(45,90%,65%)]" />}
           value={stats.pendingVerifications}
           label="Verificaciones pendientes"
           trendColor={stats.pendingVerifications > 0 ? "amber" : "muted"}

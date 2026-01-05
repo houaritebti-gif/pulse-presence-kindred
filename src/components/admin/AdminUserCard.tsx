@@ -50,7 +50,7 @@ const AdminUserCard = ({
           </AvatarFallback>
         </Avatar>
         {profile.identity_verified && (
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center ring-2 ring-background">
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[hsl(160,60%,45%)] dark:bg-[hsl(160,70%,50%)] rounded-full flex items-center justify-center ring-2 ring-background">
             <ShieldCheck className="w-3.5 h-3.5 text-white" />
           </div>
         )}
@@ -62,7 +62,7 @@ const AdminUserCard = ({
             {profile.name || "Sin nombre"}
           </p>
           {profile.email_verified && (
-            <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/40 font-semibold">
+            <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 bg-[hsl(210,70%,55%,0.12)] dark:bg-[hsl(210,70%,55%,0.1)] text-[hsl(210,70%,45%)] dark:text-[hsl(210,70%,65%)] border-[hsl(210,70%,55%,0.35)] dark:border-[hsl(210,70%,55%,0.3)] font-semibold">
               <Mail className="w-3 h-3 mr-1" />
               Email
             </Badge>
@@ -102,7 +102,7 @@ const AdminUserCard = ({
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => onForceReverify(profile.id, profile.name)}
-            className="py-2.5 font-medium text-amber-600 focus:text-amber-600 dark:text-amber-400"
+            className="py-2.5 font-medium text-[hsl(45,90%,35%)] dark:text-[hsl(45,90%,65%)] focus:text-[hsl(45,90%,35%)] dark:focus:text-[hsl(45,90%,65%)]"
           >
             <RefreshCw className="w-4 h-4 mr-2.5" />
             Forzar re-verificación

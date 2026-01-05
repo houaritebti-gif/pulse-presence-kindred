@@ -84,7 +84,7 @@ const AdminVerificationCard = ({
             <span className="font-bold text-base text-foreground truncate">
               {verification.profile?.name || "Sin nombre"}
             </span>
-            <Badge variant="outline" className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40 font-semibold">
+            <Badge variant="outline" className="bg-[hsl(45,90%,55%,0.12)] dark:bg-[hsl(45,90%,55%,0.08)] text-[hsl(45,90%,35%)] dark:text-[hsl(45,90%,65%)] border-[hsl(45,90%,55%,0.35)] dark:border-[hsl(45,90%,55%,0.25)] font-semibold">
               <Clock className="w-3 h-3 mr-1" />
               Revisión manual
             </Badge>
@@ -127,7 +127,7 @@ const AdminVerificationCard = ({
         <Button
           size="sm"
           variant="outline"
-          className="flex-1 h-11 text-emerald-600 dark:text-emerald-400 border-2 border-emerald-500/50 hover:bg-emerald-500/15 hover:border-emerald-500 font-semibold"
+          className="flex-1 h-11 text-[hsl(160,60%,40%)] dark:text-[hsl(160,70%,55%)] border-2 border-[hsl(160,60%,45%,0.45)] dark:border-[hsl(160,70%,55%,0.35)] hover:bg-[hsl(160,60%,45%,0.12)] dark:hover:bg-[hsl(160,70%,55%,0.1)] hover:border-[hsl(160,60%,45%)] dark:hover:border-[hsl(160,70%,55%)] font-semibold"
           onClick={onApprove}
           disabled={isUpdating}
         >
