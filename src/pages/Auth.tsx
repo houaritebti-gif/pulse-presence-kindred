@@ -151,15 +151,19 @@ const Auth = () => {
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-20 right-0 w-[300px] h-[300px] bg-accent/5 blur-[100px] rounded-full pointer-events-none" />
       
-      {/* Back button */}
-      <button 
-        onClick={() => navigate("/")}
-        className="relative z-10 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 mb-10 group"
-        style={{ fontFamily: 'Arial, sans-serif' }}
-      >
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        <span>Volver</span>
-      </button>
+      {/* Header with back button and logo */}
+      <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-10">
+        <button 
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
+          style={{ fontFamily: 'Arial, sans-serif' }}
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Volver</span>
+        </button>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+        <div className="w-20" />
+      </div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
         {/* Header */}
