@@ -146,7 +146,7 @@ const Auth = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-6 py-8">
+    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8">
       {/* Back button */}
       <button 
         onClick={() => navigate("/")}

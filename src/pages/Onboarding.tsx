@@ -690,7 +690,7 @@ const Onboarding = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-6 py-8 overflow-hidden">
+    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 overflow-hidden">
       {/* Progress bar */}
       <motion.div 
         className="w-full h-1 bg-card rounded-full mb-8 overflow-hidden"
