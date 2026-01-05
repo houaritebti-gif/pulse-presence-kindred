@@ -150,7 +150,7 @@ const Auth = () => {
       {/* Back button */}
       <button 
         onClick={() => navigate("/")}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-12"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-10"
         style={{ fontFamily: 'Arial, sans-serif' }}
       >
         <ArrowLeft className="w-4 h-4" />
@@ -159,7 +159,7 @@ const Auth = () => {
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
         {/* Header */}
-        <div className="text-center mb-12 animate-fade-up">
+        <div className="text-center mb-10 animate-fade-up">
           <h1 className="text-4xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             {isLogin ? "Hola de nuevo" : "Únete"}
           </h1>
