@@ -262,19 +262,19 @@ export const useVerificationChartData = () => {
   });
 };
 
-// Fetch daily activity data for chart (last 7 days) - new users + verifications
-export const useAdminActivityChart = () => {
+// Fetch daily activity data for chart - new users + verifications
+export const useAdminActivityChart = (days: number = 7) => {
   return useQuery({
-    queryKey: ['admin-activity-chart'],
+    queryKey: ['admin-activity-chart', days],
     queryFn: async (): Promise<DailyActivityData[]> => {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
 
       // Fetch new users
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('created_at')
-        .gte('created_at', sevenDaysAgo.toISOString());
+        .gte('created_at', startDate.toISOString());
 
       if (profilesError) throw profilesError;
 
@@ -283,16 +283,17 @@ export const useAdminActivityChart = () => {
         .from('identity_verifications')
         .select('verified_at')
         .eq('status', 'approved')
-        .gte('verified_at', sevenDaysAgo.toISOString());
+        .gte('verified_at', startDate.toISOString());
 
       if (verificationsError) throw verificationsError;
 
-      // Create a map for each day in the last 7 days
+      // Create a map for each day
       const dailyData: Map<string, { newUsers: number; verifications: number }> = new Map();
       const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
       
       // Initialize all days with 0
-      for (let i = 6; i >= 0; i--) {
+      for (let i = days - 1; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
         const dateStr = date.toISOString().split('T')[0];
@@ -301,10 +302,12 @@ export const useAdminActivityChart = () => {
 
       // Count new users per day
       profiles?.forEach(p => {
-        const dateStr = new Date(p.created_at).toISOString().split('T')[0];
-        const existing = dailyData.get(dateStr);
-        if (existing) {
-          existing.newUsers++;
+        if (p.created_at) {
+          const dateStr = new Date(p.created_at).toISOString().split('T')[0];
+          const existing = dailyData.get(dateStr);
+          if (existing) {
+            existing.newUsers++;
+          }
         }
       });
 
@@ -322,9 +325,13 @@ export const useAdminActivityChart = () => {
       // Convert to array with display date
       return Array.from(dailyData.entries()).map(([date, counts]) => {
         const d = new Date(date);
+        // For longer periods, show month + day, for 7 days show day name
+        const displayDate = days <= 7 
+          ? `${dayNames[d.getDay()]} ${d.getDate()}`
+          : `${d.getDate()} ${monthNames[d.getMonth()]}`;
         return {
           date,
-          displayDate: `${dayNames[d.getDay()]} ${d.getDate()}`,
+          displayDate,
           newUsers: counts.newUsers,
           verifications: counts.verifications,
         };
