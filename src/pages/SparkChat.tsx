@@ -445,10 +445,10 @@ const SparkChat = () => {
             <Flame className="w-8 h-8 text-muted-foreground/30" />
           </div>
         </div>
-        <h2 className="font-display text-xl font-semibold text-foreground mb-2">
+        <h2 className="text-xl font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
           Chat no encontrado
         </h2>
-        <p className="font-body text-muted-foreground text-center mb-6 max-w-[240px]">
+        <p className="text-muted-foreground text-center mb-6 max-w-[240px]" style={{ fontFamily: 'Arial, sans-serif' }}>
           Este chat ya no existe o no tienes acceso a él.
         </p>
         <Button variant="kiki-soft" onClick={() => navigate("/sparks")}>
@@ -487,7 +487,7 @@ const SparkChat = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-card-foreground font-display text-sm bg-gradient-to-br from-primary/20 to-accent/20">
+                <div className="w-full h-full flex items-center justify-center text-card-foreground text-sm bg-gradient-to-br from-primary/20 to-accent/20" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                   {(chat.other_profile?.name?.[0] || "?").toUpperCase()}
                 </div>
               )}
