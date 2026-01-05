@@ -155,7 +155,7 @@ const Auth = () => {
       <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-10">
         <button 
           onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           style={{ fontFamily: 'Arial, sans-serif' }}
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

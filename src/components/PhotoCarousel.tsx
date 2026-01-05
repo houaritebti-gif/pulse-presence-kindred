@@ -381,8 +381,9 @@ const NavButton = memo(({
 }) => (
   <button
     onClick={onClick}
+    aria-label={direction === "prev" ? "Foto anterior" : "Foto siguiente"}
     className={cn(
-      "absolute top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10",
+      "absolute top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity shadow-md z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
       direction === "prev" ? "left-1" : "right-1"
     )}
   >
@@ -438,8 +439,9 @@ const PhotoCounter = memo(({
       e.stopPropagation();
       onClick?.();
     }}
+    aria-label={`Ver galería de fotos, foto ${current} de ${total}`}
     className={cn(
-      "absolute top-2 right-2 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm text-xs font-body text-foreground z-10 transition-all",
+      "absolute top-2 right-2 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm text-xs font-body text-foreground z-10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
       onClick && "hover:bg-background hover:scale-105 active:scale-95 cursor-pointer",
       showGalleryHint && "ring-1 ring-primary/50"
     )}

@@ -53,7 +53,7 @@ const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineB
       aria-label={label}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "flex flex-col items-center gap-1 px-4 py-2 relative transition-all",
+        "flex flex-col items-center gap-1 px-4 py-2 relative transition-all rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         isActive 
           ? "text-primary" 
           : "text-muted-foreground hover:text-foreground"
