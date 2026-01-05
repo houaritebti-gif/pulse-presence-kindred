@@ -316,10 +316,10 @@ const QuedadaChat = () => {
             <Calendar className="w-8 h-8 text-muted-foreground/30" />
           </div>
         </div>
-        <h2 className="font-display text-xl font-semibold text-foreground mb-2">
+        <h2 className="text-xl font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
           Quedada no encontrada
         </h2>
-        <p className="font-body text-muted-foreground text-center mb-6 max-w-[240px]">
+        <p className="text-muted-foreground text-center mb-6 max-w-[240px]" style={{ fontFamily: 'Arial, sans-serif' }}>
           Esta quedada ya no existe o ha expirado.
         </p>
         <Button variant="kiki-soft" onClick={() => navigate("/quedadas")}>
@@ -337,10 +337,10 @@ const QuedadaChat = () => {
     return (
       <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
         <Calendar className="w-12 h-12 text-muted-foreground/30 mb-4" />
-        <h2 className="font-display text-xl font-semibold text-foreground mb-2">
+        <h2 className="text-xl font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
           No tienes acceso
         </h2>
-        <p className="font-body text-muted-foreground text-center mb-6">
+        <p className="text-muted-foreground text-center mb-6" style={{ fontFamily: 'Arial, sans-serif' }}>
           Únete a esta quedada para acceder al chat grupal.
         </p>
         <Button variant="kiki" onClick={() => navigate("/quedadas")}>
@@ -369,7 +369,7 @@ const QuedadaChat = () => {
             <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
               <Calendar className="w-4 h-4 text-accent" />
             </div>
-            <span className="font-display font-semibold text-foreground">
+            <span className="font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               {quedada.title}
             </span>
           </div>
@@ -425,10 +425,10 @@ const QuedadaChat = () => {
               <Sparkles className="absolute -top-2 -right-2 w-5 h-5 text-accent/60 animate-pulse-soft" />
             </div>
             
-            <h3 className="font-display text-lg font-semibold text-foreground mb-2">
+            <h3 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               Chat grupal
             </h3>
-            <p className="font-body text-muted-foreground text-sm text-center max-w-[220px]">
+            <p className="text-muted-foreground text-sm text-center max-w-[220px]" style={{ fontFamily: 'Arial, sans-serif' }}>
               Coordinad los detalles de la quedada aquí.
             </p>
           </div>
@@ -454,7 +454,7 @@ const QuedadaChat = () => {
                     {msg.sender?.avatar_url ? (
                       <img src={msg.sender.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full bg-card flex items-center justify-center text-card-foreground font-display text-[10px]">
+                      <div className="w-full h-full bg-card flex items-center justify-center text-card-foreground text-[10px]" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                         {(msg.sender?.name?.[0] || "?").toUpperCase()}
                       </div>
                     )}
