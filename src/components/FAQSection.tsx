@@ -235,21 +235,36 @@ const FAQSection = () => {
         </motion.div>
 
         {/* Expand/Collapse All Button */}
-        <div className="flex justify-end items-center gap-2 mb-3">
-          <motion.span
-            key={openItems.length}
-            initial={{ scale: 1.2, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className={cn(
-              "text-xs font-medium transition-colors duration-300",
-              allExpanded 
-                ? "text-primary font-bold" 
-                : "text-muted-foreground"
-            )}
-            style={{ fontFamily: 'Arial, sans-serif' }}
-          >
-            {openItems.length}/{filteredFaqs.length}
-          </motion.span>
+        <div className="flex justify-end items-center gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <motion.span
+              key={openItems.length}
+              initial={{ scale: 1.2, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className={cn(
+                "text-xs font-medium transition-colors duration-300",
+                allExpanded 
+                  ? "text-primary font-bold" 
+                  : "text-muted-foreground"
+              )}
+              style={{ fontFamily: 'Arial, sans-serif' }}
+            >
+              {openItems.length}/{filteredFaqs.length}
+            </motion.span>
+            <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
+              <motion.div
+                className={cn(
+                  "h-full rounded-full transition-colors duration-300",
+                  allExpanded ? "bg-primary" : "bg-foreground/30"
+                )}
+                initial={{ width: 0 }}
+                animate={{ 
+                  width: `${(openItems.length / filteredFaqs.length) * 100}%` 
+                }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              />
+            </div>
+          </div>
           <motion.button
             onClick={toggleAll}
             className={cn(
