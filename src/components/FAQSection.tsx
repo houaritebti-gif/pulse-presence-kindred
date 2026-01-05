@@ -241,7 +241,7 @@ const FAQSection = () => {
                     "rounded-lg border-2 transition-all duration-200 ease-out",
                     openItems.includes(`item-${index}`) 
                       ? "bg-foreground/5 border-foreground/20" 
-                      : "bg-card border-border hover:border-foreground/30 hover:bg-foreground/[0.02] hover:scale-[1.01] hover:shadow-md"
+                      : "bg-card border-border hover:border-foreground/30 hover:bg-foreground/[0.02] hover:scale-[1.01] hover:shadow-xl hover:-translate-y-0.5"
                   )}>
                     <AccordionTrigger className="px-4 py-3 hover:no-underline group">
                       <div className="flex items-center gap-3 text-left w-full">
