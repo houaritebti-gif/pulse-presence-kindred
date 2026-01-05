@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface AdminStatsCardProps {
@@ -10,6 +10,7 @@ interface AdminStatsCardProps {
   trendColor?: "emerald" | "amber" | "destructive" | "primary" | "muted";
   variant?: "default" | "highlight";
   className?: string;
+  variants?: Variants;
 }
 
 const AdminStatsCard = ({
@@ -20,6 +21,7 @@ const AdminStatsCard = ({
   trendColor = "muted",
   variant = "default",
   className,
+  variants,
 }: AdminStatsCardProps) => {
   const trendColorClasses = {
     emerald: "text-[hsl(160,60%,45%)] dark:text-[hsl(160,70%,55%)]",
@@ -31,8 +33,7 @@ const AdminStatsCard = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      variants={variants}
       className={cn(
         "p-5 rounded-xl border-2 transition-all duration-200",
         variant === "highlight"
