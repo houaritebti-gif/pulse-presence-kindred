@@ -29,6 +29,7 @@ import IdentityVerificationCard from "@/components/IdentityVerificationCard";
 import ImageCropModal from "@/components/ImageCropModal";
 import GenderSelector from "@/components/GenderSelector";
 import GenderPreferencesSelector from "@/components/GenderPreferencesSelector";
+import BirthdateSelector from "@/components/BirthdateSelector";
 import { useProfileGenderPreferences, useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
 import { useCheckBlacklistedWords } from "@/hooks/useBioBlacklist";
 import { triggerHaptic } from "@/utils/haptics";
@@ -69,6 +70,9 @@ const Profile = () => {
   // Gender
   const [selectedGender, setSelectedGender] = useState<GenderType | null>(null);
   const [selectedGenderPreferences, setSelectedGenderPreferences] = useState<GenderType[]>([]);
+  
+  // Birthdate
+  const [birthdate, setBirthdate] = useState<string | null>(null);
   
   // Privacy settings
   const [shareTypingStatus, setShareTypingStatus] = useState<boolean>(true);
@@ -196,6 +200,7 @@ const Profile = () => {
       setBio((profile as any).bio || "");
       setSelectedLookingFor((profile as any).looking_for || []);
       setSelectedGender((profile as any).gender || null);
+      setBirthdate((profile as any).birthdate || null);
     }
   }, [profile]);
 
@@ -368,6 +373,7 @@ const Profile = () => {
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
         gender: selectedGender,
+        birthdate: birthdate,
       } as any);
 
       await updateTribes.mutateAsync({
@@ -565,6 +571,14 @@ const Profile = () => {
           <GenderSelector
             value={selectedGender}
             onChange={(val) => { setSelectedGender(val); setHasChanges(true); }}
+          />
+        </div>
+
+        {/* Birthdate Selection */}
+        <div className="mb-10 animate-fade-up animate-delay-225">
+          <BirthdateSelector
+            value={birthdate}
+            onChange={(val) => { setBirthdate(val); setHasChanges(true); }}
           />
         </div>
 

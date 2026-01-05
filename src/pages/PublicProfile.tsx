@@ -27,6 +27,19 @@ import UserModerationModal from "@/components/UserModerationModal";
 import ProfilePhotoGallery from "@/components/ProfilePhotoGallery";
 import { triggerHaptic } from "@/utils/haptics";
 
+// Helper to calculate age from birthdate
+const calculateAge = (birthdate: string | null | undefined): number | null => {
+  if (!birthdate) return null;
+  const today = new Date();
+  const birth = new Date(birthdate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
+
 const PublicProfile = () => {
   const navigate = useNavigate();
   const { profileId } = useParams<{ profileId: string }>();
@@ -171,6 +184,11 @@ const PublicProfile = () => {
           <div className="flex items-center justify-center gap-2 mb-2">
             <h1 className="font-display text-2xl font-bold text-foreground">
               {profile.name || "Anónima"}
+              {(profile as any).birthdate && (
+                <span className="font-normal text-muted-foreground ml-2">
+                  {calculateAge((profile as any).birthdate)}
+                </span>
+              )}
             </h1>
             {(profile as any).email_verified && <VerifiedBadge type="email" size="md" />}
             {(profile as any).identity_verified && <VerifiedBadge type="identity" size="md" />}
