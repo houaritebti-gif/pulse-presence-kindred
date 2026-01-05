@@ -733,6 +733,15 @@ const QuedadaChat = () => {
         </div>
       )}
 
+      {/* Footer */}
+      <div className="py-4 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
+          <Users className="w-3.5 h-3.5 text-primary/60" />
+          <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+            Encuentros reales · Gente real
+          </p>
+        </div>
+      </div>
     </main>
   );
 };

@@ -977,6 +977,16 @@ const SparkChat = () => {
         onCropComplete={handleCropComplete}
         aspectRatio={4 / 5}
       />
+
+      {/* Footer */}
+      <div className="py-4 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
+          <Flame className="w-3.5 h-3.5 text-primary/60" />
+          <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+            Conexión real · Sin filtros
+          </p>
+        </div>
+      </div>
     </main>
   );
 };
