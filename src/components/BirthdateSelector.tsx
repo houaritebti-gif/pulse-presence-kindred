@@ -1,172 +1,146 @@
-import { useState, useMemo } from "react";
-import { Calendar } from "lucide-react";
+import { useMemo } from "react";
+import { AlertCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
 
 interface BirthdateSelectorProps {
   value: string | null;
-  onChange: (value: string | null) => void;
-  className?: string;
+  onChange: (date: string | null) => void;
 }
 
-const MONTHS = [
-  { value: "01", label: "Enero" },
-  { value: "02", label: "Febrero" },
-  { value: "03", label: "Marzo" },
-  { value: "04", label: "Abril" },
-  { value: "05", label: "Mayo" },
-  { value: "06", label: "Junio" },
-  { value: "07", label: "Julio" },
-  { value: "08", label: "Agosto" },
-  { value: "09", label: "Septiembre" },
-  { value: "10", label: "Octubre" },
-  { value: "11", label: "Noviembre" },
-  { value: "12", label: "Diciembre" },
-];
-
-export const BirthdateSelector = ({ value, onChange, className }: BirthdateSelectorProps) => {
-  // Parse existing value
-  const parsed = useMemo(() => {
-    if (!value) return { day: "", month: "", year: "" };
-    const parts = value.split("-");
-    return {
-      year: parts[0] || "",
-      month: parts[1] || "",
-      day: parts[2] || "",
-    };
-  }, [value]);
-
-  const [day, setDay] = useState(parsed.day);
-  const [month, setMonth] = useState(parsed.month);
-  const [year, setYear] = useState(parsed.year);
-
-  // Generate year options (18-100 years old)
+const BirthdateSelector = ({ value, onChange }: BirthdateSelectorProps) => {
   const currentYear = new Date().getFullYear();
+  const minAge = 18;
+  const maxAge = 100;
+  
   const years = useMemo(() => {
-    const result = [];
-    for (let y = currentYear - 18; y >= currentYear - 100; y--) {
-      result.push(y.toString());
+    const yearList = [];
+    for (let year = currentYear - minAge; year >= currentYear - maxAge; year--) {
+      yearList.push(year);
     }
-    return result;
+    return yearList;
   }, [currentYear]);
 
-  // Generate day options based on month and year
-  const days = useMemo(() => {
-    const daysInMonth = month && year 
-      ? new Date(parseInt(year), parseInt(month), 0).getDate()
-      : 31;
-    return Array.from({ length: daysInMonth }, (_, i) => 
-      (i + 1).toString().padStart(2, "0")
-    );
-  }, [month, year]);
+  const months = [
+    { value: "01", label: "Enero" },
+    { value: "02", label: "Febrero" },
+    { value: "03", label: "Marzo" },
+    { value: "04", label: "Abril" },
+    { value: "05", label: "Mayo" },
+    { value: "06", label: "Junio" },
+    { value: "07", label: "Julio" },
+    { value: "08", label: "Agosto" },
+    { value: "09", label: "Septiembre" },
+    { value: "10", label: "Octubre" },
+    { value: "11", label: "Noviembre" },
+    { value: "12", label: "Diciembre" },
+  ];
 
-  // Calculate age
-  const age = useMemo(() => {
-    if (!day || !month || !year) return null;
-    const birthDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  const getDaysInMonth = (month: string, year: string) => {
+    if (!month || !year) return 31;
+    return new Date(parseInt(year), parseInt(month), 0).getDate();
+  };
+
+  const parsed = value ? value.split("-") : ["", "", ""];
+  const selectedYear = parsed[0] || "";
+  const selectedMonth = parsed[1] || "";
+  const selectedDay = parsed[2] || "";
+
+  const daysInMonth = getDaysInMonth(selectedMonth, selectedYear);
+  const days = Array.from({ length: daysInMonth }, (_, i) => 
+    String(i + 1).padStart(2, "0")
+  );
+
+  const calculateAge = (birthdate: string): number => {
     const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    const birth = new Date(birthdate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
       age--;
     }
     return age;
-  }, [day, month, year]);
+  };
 
-  const updateValue = (newDay: string, newMonth: string, newYear: string) => {
-    if (newDay && newMonth && newYear) {
-      onChange(`${newYear}-${newMonth}-${newDay}`);
-    } else {
-      onChange(null);
+  const isValidAge = (birthdate: string): boolean => {
+    const age = calculateAge(birthdate);
+    return age >= minAge;
+  };
+
+  const age = value ? calculateAge(value) : null;
+  const showAgeError = value && age !== null && age < minAge;
+
+  const handleChange = (type: "year" | "month" | "day", val: string) => {
+    let newYear = selectedYear;
+    let newMonth = selectedMonth;
+    let newDay = selectedDay;
+
+    if (type === "year") newYear = val;
+    if (type === "month") newMonth = val;
+    if (type === "day") newDay = val;
+
+    if (newYear && newMonth && newDay) {
+      const newDate = `${newYear}-${newMonth}-${newDay}`;
+      onChange(newDate);
+    } else if (newYear || newMonth || newDay) {
+      const partialDate = `${newYear || "0000"}-${newMonth || "00"}-${newDay || "00"}`;
+      onChange(partialDate);
     }
   };
 
-  const handleDayChange = (newDay: string) => {
-    setDay(newDay);
-    updateValue(newDay, month, year);
-  };
-
-  const handleMonthChange = (newMonth: string) => {
-    setMonth(newMonth);
-    // Adjust day if it exceeds days in new month
-    const daysInNewMonth = year 
-      ? new Date(parseInt(year), parseInt(newMonth), 0).getDate()
-      : 31;
-    const adjustedDay = day && parseInt(day) > daysInNewMonth 
-      ? daysInNewMonth.toString().padStart(2, "0") 
-      : day;
-    if (adjustedDay !== day) setDay(adjustedDay);
-    updateValue(adjustedDay, newMonth, year);
-  };
-
-  const handleYearChange = (newYear: string) => {
-    setYear(newYear);
-    updateValue(day, month, newYear);
-  };
-
   return (
-    <div className={cn("space-y-4", className)}>
-      <div className="flex items-center justify-between">
-        <div>
-          <label className="font-body text-sm font-medium text-foreground flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            Fecha de nacimiento
-          </label>
-          <p className="text-xs text-muted-foreground mt-0.5">Solo mostramos tu edad, no la fecha exacta</p>
-        </div>
-        {age !== null && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-            <span className="text-sm font-bold text-primary">{age}</span>
-            <span className="text-xs text-primary/80">años</span>
-          </div>
-        )}
-      </div>
-      
-      <div className="grid grid-cols-3 gap-3">
-        {/* Day */}
-        <Select value={day} onValueChange={handleDayChange}>
-          <SelectTrigger className="h-12 rounded-xl border-2 border-border/60 hover:border-primary/50 transition-colors">
+    <div className="space-y-3">
+      <Label>Fecha de nacimiento</Label>
+      <div className="flex gap-2">
+        <Select value={selectedDay} onValueChange={(v) => handleChange("day", v)}>
+          <SelectTrigger className="w-[80px]">
             <SelectValue placeholder="Día" />
           </SelectTrigger>
-          <SelectContent className="max-h-[240px]">
-            {days.map((d) => (
-              <SelectItem key={d} value={d}>
-                {d}
-              </SelectItem>
+          <SelectContent>
+            {days.map((day) => (
+              <SelectItem key={day} value={day}>{day}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        {/* Month */}
-        <Select value={month} onValueChange={handleMonthChange}>
-          <SelectTrigger className="h-12 rounded-xl border-2 border-border/60 hover:border-primary/50 transition-colors">
+        <Select value={selectedMonth} onValueChange={(v) => handleChange("month", v)}>
+          <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Mes" />
           </SelectTrigger>
           <SelectContent>
-            {MONTHS.map((m) => (
-              <SelectItem key={m.value} value={m.value}>
-                {m.label}
-              </SelectItem>
+            {months.map((month) => (
+              <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        {/* Year */}
-        <Select value={year} onValueChange={handleYearChange}>
-          <SelectTrigger className="h-12 rounded-xl border-2 border-border/60 hover:border-primary/50 transition-colors">
+        <Select value={selectedYear} onValueChange={(v) => handleChange("year", v)}>
+          <SelectTrigger className="w-[100px]">
             <SelectValue placeholder="Año" />
           </SelectTrigger>
-          <SelectContent className="max-h-[240px]">
-            {years.map((y) => (
-              <SelectItem key={y} value={y}>
-                {y}
-              </SelectItem>
+          <SelectContent>
+            {years.map((year) => (
+              <SelectItem key={year} value={String(year)}>{year}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
+
+      {showAgeError && (
+        <div className="flex items-center gap-2 text-destructive text-sm">
+          <AlertCircle className="h-4 w-4" />
+          <span>Debes tener al menos 18 años para usar esta aplicación</span>
+        </div>
+      )}
+
+      {age !== null && age >= minAge && (
+        <p className="text-sm text-muted-foreground">
+          Edad: {age} años
+        </p>
+      )}
     </div>
   );
 };
 
+export { BirthdateSelector, type BirthdateSelectorProps };
 export default BirthdateSelector;
