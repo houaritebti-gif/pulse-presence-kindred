@@ -21,7 +21,7 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-32 bg-card rounded-xl border border-border animate-pulse" />
+          <div key={i} className="h-36 bg-card rounded-xl border-2 border-border animate-pulse" />
         ))}
       </div>
     );
@@ -38,20 +38,20 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30"
+          className="p-5 rounded-xl bg-amber-500/15 border-2 border-amber-500/40"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-amber-500/25 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+              <p className="font-bold text-lg text-foreground">
                 Acciones pendientes
               </p>
-              <p className="text-sm text-muted-foreground">
-                {stats.pendingReports > 0 && `${stats.pendingReports} reportes`}
+              <p className="text-sm font-medium text-foreground/80">
+                {stats.pendingReports > 0 && <span className="text-destructive font-semibold">{stats.pendingReports} reportes</span>}
                 {stats.pendingReports > 0 && stats.pendingVerifications > 0 && " · "}
-                {stats.pendingVerifications > 0 && `${stats.pendingVerifications} verificaciones`}
+                {stats.pendingVerifications > 0 && <span className="text-amber-600 dark:text-amber-400 font-semibold">{stats.pendingVerifications} verificaciones</span>}
                 {" requieren tu atención"}
               </p>
             </div>
@@ -62,7 +62,7 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminStatsCard
-          icon={<Users className="w-4 h-4 text-primary" />}
+          icon={<Users className="w-5 h-5 text-primary" />}
           value={stats.totalUsers}
           label="Usuarios totales"
           trend={`+${stats.newUsersThisWeek} esta semana`}
@@ -70,20 +70,20 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
           variant="highlight"
         />
         <AdminStatsCard
-          icon={<ShieldCheck className="w-4 h-4 text-emerald-500" />}
+          icon={<ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
           value={stats.verifiedUsers}
           label="Verificados"
           trend={stats.totalUsers > 0 ? `${Math.round((stats.verifiedUsers / stats.totalUsers) * 100)}% del total` : "0%"}
           trendColor="primary"
         />
         <AdminStatsCard
-          icon={<Flag className="w-4 h-4 text-destructive" />}
+          icon={<Flag className="w-5 h-5 text-destructive" />}
           value={stats.pendingReports}
           label="Reportes pendientes"
           trendColor={stats.pendingReports > 0 ? "destructive" : "muted"}
         />
         <AdminStatsCard
-          icon={<Camera className="w-4 h-4 text-amber-500" />}
+          icon={<Camera className="w-5 h-5 text-amber-600 dark:text-amber-400" />}
           value={stats.pendingVerifications}
           label="Verificaciones pendientes"
           trendColor={stats.pendingVerifications > 0 ? "amber" : "muted"}
@@ -93,17 +93,17 @@ const AdminDashboard = ({ stats, isLoading }: AdminDashboardProps) => {
       {/* Secondary Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <AdminStatsCard
-          icon={<UserCog className="w-4 h-4 text-muted-foreground" />}
+          icon={<UserCog className="w-5 h-5 text-muted-foreground" />}
           value={stats.totalRoles}
           label="Roles asignados"
         />
         <AdminStatsCard
-          icon={<TrendingUp className="w-4 h-4 text-muted-foreground" />}
+          icon={<TrendingUp className="w-5 h-5 text-muted-foreground" />}
           value={stats.newUsersThisWeek}
           label="Nuevos esta semana"
         />
         <AdminStatsCard
-          icon={<Activity className="w-4 h-4 text-muted-foreground" />}
+          icon={<Activity className="w-5 h-5 text-muted-foreground" />}
           value={`${stats.verifiedUsers > 0 ? Math.round((stats.verifiedUsers / stats.totalUsers) * 100) : 0}%`}
           label="Tasa verificación"
         />

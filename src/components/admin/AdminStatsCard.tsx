@@ -22,8 +22,8 @@ const AdminStatsCard = ({
   className,
 }: AdminStatsCardProps) => {
   const trendColorClasses = {
-    emerald: "text-emerald-500",
-    amber: "text-amber-500",
+    emerald: "text-emerald-600 dark:text-emerald-400",
+    amber: "text-amber-600 dark:text-amber-400",
     destructive: "text-destructive",
     primary: "text-primary",
     muted: "text-muted-foreground",
@@ -34,29 +34,29 @@ const AdminStatsCard = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "p-4 rounded-xl border transition-all duration-200",
+        "p-5 rounded-xl border-2 transition-all duration-200",
         variant === "highlight"
-          ? "bg-primary/5 border-primary/20"
-          : "bg-card border-border hover:border-primary/30",
+          ? "bg-primary/5 border-primary/30 dark:bg-primary/10"
+          : "bg-card border-border hover:border-primary/40",
         className
       )}
     >
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-3 mb-3">
         <div className={cn(
-          "w-8 h-8 rounded-lg flex items-center justify-center",
-          variant === "highlight" ? "bg-primary/10" : "bg-muted"
+          "w-10 h-10 rounded-lg flex items-center justify-center",
+          variant === "highlight" ? "bg-primary/15" : "bg-muted"
         )}>
           {icon}
         </div>
       </div>
-      <p className="text-3xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'Arial Black, sans-serif' }}>
+      <p className="text-4xl font-black text-foreground tracking-tight leading-none">
         {value}
       </p>
-      <p className="text-sm text-muted-foreground mt-0.5" style={{ fontFamily: 'Arial, sans-serif' }}>
+      <p className="text-sm font-medium text-muted-foreground mt-1.5">
         {label}
       </p>
       {trend && (
-        <p className={cn("text-xs mt-2 font-medium", trendColorClasses[trendColor])}>
+        <p className={cn("text-xs mt-2.5 font-semibold", trendColorClasses[trendColor])}>
           {trend}
         </p>
       )}
