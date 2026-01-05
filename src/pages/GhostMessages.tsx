@@ -265,7 +265,7 @@ const GhostMessages = () => {
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
       
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between mb-8">
+      <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-10">
         <button 
           onClick={() => navigate("/presence")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
