@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Send, Flame, Sparkles, Crown } from "lucide-react";
+import { ArrowLeft, Send, Flame, Sparkles, Crown, Ghost } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit, useHasSparkWith, useCanSendSecondChance } from "@/hooks/useSparks";
@@ -186,18 +186,21 @@ const Chat = () => {
   }
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-6 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <button 
-          onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Presencia</span>
-        </button>
-        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
-        <div className="w-20" />
+    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8">
+      {/* Header with ambient glow */}
+      <div className="relative mb-8">
+        <div className="absolute inset-0 bg-primary/5 blur-3xl -z-10" />
+        <div className="flex items-center justify-between">
+          <button 
+            onClick={() => navigate("/presence")}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Presencia</span>
+          </button>
+          <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+          <div className="w-20" />
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
@@ -430,6 +433,16 @@ const Chat = () => {
             </Button>
           </div>
         )}
+      </div>
+
+      {/* Footer */}
+      <div className="py-4 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
+          <Ghost className="w-3.5 h-3.5 text-primary/60" />
+          <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+            Sin presión · Sin respuesta obligatoria
+          </p>
+        </div>
       </div>
 
       {/* Ghost Message Limit Modal */}
