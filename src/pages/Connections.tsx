@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, UserCheck, Clock, Users } from "lucide-react";
+import { ArrowLeft, Check, X, UserCheck, Clock, Users, Sparkles, Link2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -187,9 +187,12 @@ const Connections = () => {
   );
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24">
+    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
+      
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="relative z-10 flex items-center justify-between mb-8">
         <button 
           onClick={() => navigate("/presence")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -198,11 +201,29 @@ const Connections = () => {
           <ArrowLeft className="w-4 h-4" />
           <span>Presencia</span>
         </button>
-        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>Conexiones</span>
+        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
         <ThemeToggle />
       </div>
 
-      <div className="flex-1 max-w-lg mx-auto w-full">
+      <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
+        {/* Hero section */}
+        <div className="text-center mb-10 animate-fade-up">
+          <div className="relative w-20 h-20 mx-auto mb-6">
+            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full animate-pulse-soft" />
+            <div className="relative w-full h-full rounded-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center ring-2 ring-accent/20 ring-offset-4 ring-offset-background">
+              <Link2 className="w-10 h-10 text-accent" />
+            </div>
+            <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-accent/60 animate-pulse-soft" />
+          </div>
+          
+          <h1 className="text-3xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+            Conexiones
+          </h1>
+          <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+            Solicitudes para conocerte mejor.
+          </p>
+        </div>
+
         <Tabs defaultValue="received" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="received" className="gap-2">
