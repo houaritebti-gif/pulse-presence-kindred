@@ -306,6 +306,39 @@
   .bg-gradient-radial {
     background: radial-gradient(circle, var(--tw-gradient-stops));
   }
+
+  /* Micro-interaction utilities */
+  .interactive-scale {
+    @apply transition-transform duration-200 ease-out hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .interactive-lift {
+    @apply transition-all duration-200 ease-out hover:translate-y-[-2px] hover:shadow-lg active:translate-y-0 active:shadow-md;
+  }
+
+  .interactive-glow {
+    @apply transition-shadow duration-200 ease-out hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)];
+  }
+
+  .interactive-press {
+    @apply transition-transform duration-150 ease-out active:scale-[0.95];
+  }
+
+  .interactive-bounce {
+    @apply transition-transform duration-200 ease-out hover:animate-bounce-subtle;
+  }
+
+  .icon-interactive {
+    @apply transition-all duration-200 ease-out hover:scale-110 hover:text-primary active:scale-95;
+  }
+
+  .card-interactive {
+    @apply transition-all duration-200 ease-out hover:scale-[1.01] hover:shadow-lg hover:border-primary/30 active:scale-[0.99] cursor-pointer;
+  }
+
+  .link-underline {
+    @apply relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-primary after:transition-transform after:duration-200 hover:after:origin-bottom-left hover:after:scale-x-100;
+  }
 }
 
 /* KIKI Animations */
