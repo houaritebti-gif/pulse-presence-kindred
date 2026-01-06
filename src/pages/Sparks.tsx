@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -6,6 +7,7 @@ import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useListKeyboardNavigation } from "@/hooks/useListKeyboardNavigation";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import SparkChatItem from "@/components/SparkChatItem";
@@ -39,7 +41,12 @@ const Sparks = () => {
     duration: 400,
   });
 
+  const handleRefresh = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
   return (
+    <PullToRefresh onRefresh={handleRefresh} accentColor="primary">
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24 relative overflow-hidden">
       {/* Ambient glow backgrounds */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
@@ -133,6 +140,7 @@ const Sparks = () => {
         </div>
       </div>
     </main>
+    </PullToRefresh>
   );
 };
 
