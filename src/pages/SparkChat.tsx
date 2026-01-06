@@ -24,6 +24,7 @@ import OfflineMessageIndicator from "@/components/OfflineMessageIndicator";
 import PendingMessage from "@/components/PendingMessage";
 import PremiumBadge from "@/components/PremiumBadge";
 import ImageCropModal from "@/components/ImageCropModal";
+import SharedAvatar from "@/components/SharedAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 
@@ -480,21 +481,15 @@ const SparkChat = () => {
           className="flex items-center gap-3 animate-fade-up hover:opacity-80 transition-opacity"
           aria-label={`Ver perfil de ${chat.other_profile?.name || "usuario"}`}
         >
-          {/* Avatar with glow ring */}
+          {/* Avatar with glow ring - shared element transition */}
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-card overflow-hidden flex-shrink-0 ring-2 ring-primary/30 ring-offset-2 ring-offset-background">
-              {chat.other_profile?.avatar_url ? (
-                <img 
-                  src={chat.other_profile.avatar_url} 
-                  alt={chat.other_profile.name || "Avatar"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-card-foreground text-sm bg-gradient-to-br from-primary/20 to-accent/20" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-                  {(chat.other_profile?.name?.[0] || "?").toUpperCase()}
-                </div>
-              )}
-            </div>
+            <SharedAvatar
+              profileId={chat.other_profile?.id || chatId || ""}
+              avatarUrl={chat.other_profile?.avatar_url}
+              name={chat.other_profile?.name}
+              size="md"
+              ringClassName="ring-2 ring-primary/30 ring-offset-2 ring-offset-background"
+            />
             {/* Spark indicator */}
             <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-background flex items-center justify-center">
               <Flame className="w-3 h-3 text-primary animate-spark-flame" />
