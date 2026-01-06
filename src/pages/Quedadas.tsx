@@ -366,7 +366,7 @@ const Quedadas = () => {
                   className={`bg-card rounded-2xl p-5 sm:p-6 border border-transparent hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] active:scale-[0.99] cursor-pointer transition-all duration-400 ${
                     isExiting 
                       ? 'opacity-0 scale-95 translate-x-8 pointer-events-none' 
-                      : 'opacity-0 animate-fade-up'
+                      : 'opacity-0 animate-stagger-fade-up'
                   }`}
                   style={{
                     ...getAnimationStyle(index),

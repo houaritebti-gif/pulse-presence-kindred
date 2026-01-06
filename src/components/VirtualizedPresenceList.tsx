@@ -195,8 +195,8 @@ export const VirtualizedPresenceList = memo(({
                   <div 
                     key={presence.id}
                     {...getItemProps(index)}
-                    className="animate-fade-up transition-all duration-300"
-                    style={{ animationDelay: `${(index + 1) * 80}ms` }}
+                    className="opacity-0 animate-stagger-fade-up transition-all duration-300"
+                    style={{ animationDelay: `${(index + 1) * 60}ms` }}
                   >
                     {isConnected ? (
                       <PresenceCard
@@ -274,8 +274,8 @@ export const VirtualizedPresenceList = memo(({
               <div 
                 key={presence.id}
                 {...getItemProps(activeProfiles.length + index)}
-                className="animate-fade-up transition-all duration-300"
-                style={{ animationDelay: `${baseDelay + (index * 80)}ms` }}
+                className="opacity-0 animate-stagger-fade-up transition-all duration-300"
+                style={{ animationDelay: `${baseDelay + (index * 60)}ms` }}
               >
                 {isConnected ? (
                   <PresenceCard
