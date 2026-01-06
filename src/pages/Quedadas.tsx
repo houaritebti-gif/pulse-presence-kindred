@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import QuedadasListSkeleton from "@/components/QuedadasListSkeleton";
@@ -226,7 +227,12 @@ const Quedadas = () => {
     return format(date, "HH:mm");
   };
 
+  const handleRefresh = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
   return (
+    <PullToRefresh onRefresh={handleRefresh} accentColor="accent">
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24 relative overflow-hidden">
       {/* Ambient glow */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
@@ -660,6 +666,7 @@ const Quedadas = () => {
         </div>
       )}
     </main>
+    </PullToRefresh>
   );
 };
 
