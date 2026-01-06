@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -8,9 +8,18 @@ interface LazyImageProps {
   className?: string;
   onClick?: () => void;
   placeholderClassName?: string;
+  /** Use circular skeleton for avatars */
+  isCircular?: boolean;
 }
 
-const LazyImage = ({ src, alt, className, onClick, placeholderClassName }: LazyImageProps) => {
+const LazyImage = memo(({ 
+  src, 
+  alt, 
+  className, 
+  onClick, 
+  placeholderClassName,
+  isCircular = false 
+}: LazyImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -27,7 +36,7 @@ const LazyImage = ({ src, alt, className, onClick, placeholderClassName }: LazyI
         });
       },
       {
-        rootMargin: "100px", // Start loading 100px before entering viewport
+        rootMargin: "100px",
         threshold: 0.1,
       }
     );
@@ -50,9 +59,10 @@ const LazyImage = ({ src, alt, className, onClick, placeholderClassName }: LazyI
 
   return (
     <div ref={imgRef} className={cn("relative overflow-hidden", placeholderClassName)}>
-      {/* Skeleton placeholder */}
+      {/* Shimmer skeleton placeholder */}
       {!isLoaded && (
         <Skeleton 
+          variant={isCircular ? "circular" : "default"}
           className={cn(
             "absolute inset-0 w-full h-full",
             placeholderClassName
@@ -66,7 +76,7 @@ const LazyImage = ({ src, alt, className, onClick, placeholderClassName }: LazyI
           src={src}
           alt={alt}
           className={cn(
-            "transition-opacity duration-300",
+            "transition-opacity duration-300 ease-out",
             isLoaded ? "opacity-100" : "opacity-0",
             hasError && "hidden",
             className
@@ -83,6 +93,7 @@ const LazyImage = ({ src, alt, className, onClick, placeholderClassName }: LazyI
       {hasError && (
         <div className={cn(
           "flex items-center justify-center bg-muted text-muted-foreground text-xs",
+          isCircular && "rounded-full",
           placeholderClassName
         )}>
           Error al cargar
@@ -90,6 +101,8 @@ const LazyImage = ({ src, alt, className, onClick, placeholderClassName }: LazyI
       )}
     </div>
   );
-};
+});
+
+LazyImage.displayName = "LazyImage";
 
 export default LazyImage;

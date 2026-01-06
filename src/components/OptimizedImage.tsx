@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface OptimizedImageProps {
   src: string;
@@ -7,14 +8,17 @@ interface OptimizedImageProps {
   className?: string;
   fallback?: string;
   aspectRatio?: "square" | "video" | "portrait";
+  /** Use circular skeleton for avatars */
+  isCircular?: boolean;
 }
 
-export const OptimizedImage = ({
+export const OptimizedImage = memo(({
   src,
   alt,
   className,
   fallback = "/placeholder.svg",
   aspectRatio = "square",
+  isCircular = false,
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -33,10 +37,18 @@ export const OptimizedImage = ({
   };
 
   return (
-    <div className={cn("relative overflow-hidden bg-muted", aspectClasses[aspectRatio], className)}>
-      {/* Skeleton loader */}
+    <div className={cn(
+      "relative overflow-hidden bg-muted", 
+      aspectClasses[aspectRatio], 
+      isCircular && "rounded-full",
+      className
+    )}>
+      {/* Shimmer skeleton loader */}
       {!isLoaded && !hasError && (
-        <div className="absolute inset-0 bg-muted animate-pulse" />
+        <Skeleton 
+          variant={isCircular ? "circular" : "default"}
+          className="absolute inset-0 w-full h-full" 
+        />
       )}
       
       <img
@@ -48,10 +60,12 @@ export const OptimizedImage = ({
         onLoad={() => setIsLoaded(true)}
         onError={() => setHasError(true)}
         className={cn(
-          "w-full h-full object-cover transition-opacity duration-300",
+          "w-full h-full object-cover transition-opacity duration-300 ease-out",
           isLoaded ? "opacity-100" : "opacity-0"
         )}
       />
     </div>
   );
-};
+});
+
+OptimizedImage.displayName = "OptimizedImage";
