@@ -285,7 +285,12 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
     <TooltipProvider delayDuration={300}>
     <div className={cn("space-y-4", isShaking && "animate-shake")}>
       {/* Header with prominent title */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-4 border border-primary/20">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-4 border border-primary/20"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
@@ -375,7 +380,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <input
         ref={fileInputRef}
@@ -392,15 +397,30 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
           {photos?.map((photo, index) => (
             <motion.div
               key={photo.id}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
+              initial={{ 
+                opacity: 0, 
+                scale: 0.6, 
+                y: 40,
+                rotateX: 15,
+              }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1, 
+                y: 0,
+                rotateX: 0,
+              }}
+              exit={{ 
+                opacity: 0, 
+                scale: 0.8, 
+                y: -20,
+              }}
               transition={{ 
-                duration: 0.3, 
-                delay: index * 0.05,
+                duration: 0.5, 
+                delay: index * 0.12,
                 type: "spring",
-                stiffness: 300,
-                damping: 25
+                stiffness: 200,
+                damping: 20,
+                mass: 0.8,
               }}
               layout
               draggable={!isMobile}
@@ -519,8 +539,25 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
 
         {/* Empty slots - show as clickable cards, more prominent on mobile */}
         {uploadingIndex === null && [...Array(Math.min(emptySlots, photoCount === 0 ? 3 : Math.max(1, 3 - (photoCount % 3))))].map((_, i) => (
-          <button
+          <motion.button
             key={`empty-${i}`}
+            initial={{ 
+              opacity: 0, 
+              scale: 0.5, 
+              y: 30,
+            }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              y: 0,
+            }}
+            transition={{ 
+              duration: 0.4, 
+              delay: (photoCount + i) * 0.12 + 0.1,
+              type: "spring",
+              stiffness: 250,
+              damping: 22,
+            }}
             onClick={handleAddClick}
             className={cn(
               "aspect-[3/4] rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all duration-200",
@@ -531,19 +568,29 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 : "border-muted-foreground/30 bg-muted/30"
             )}
           >
-            <div className={cn(
-              "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
-              isMobile && "w-20 h-20",
-              photoCount === 0 && i === 0 
-                ? "bg-primary/30 animate-pulse-soft" 
-                : "bg-muted-foreground/10"
-            )}>
+            <motion.div 
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ 
+                delay: (photoCount + i) * 0.12 + 0.3,
+                type: "spring",
+                stiffness: 300,
+                damping: 15,
+              }}
+              className={cn(
+                "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
+                isMobile && "w-20 h-20",
+                photoCount === 0 && i === 0 
+                  ? "bg-primary/30 animate-pulse-soft" 
+                  : "bg-muted-foreground/10"
+              )}
+            >
               {photoCount === 0 && i === 0 ? (
                 <Camera className={cn("w-7 h-7 text-primary", isMobile && "w-10 h-10")} />
               ) : (
                 <Plus className={cn("w-7 h-7 text-muted-foreground", isMobile && "w-9 h-9")} />
               )}
-            </div>
+            </motion.div>
             <span className={cn(
               "text-sm font-body font-semibold text-center px-2",
               isMobile && "text-base",
@@ -553,7 +600,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 ? (isMobile ? "📸 Toca para añadir" : "Añade tu primera foto") 
                 : (isMobile ? "➕ Añadir" : "Añadir foto")}
             </span>
-          </button>
+          </motion.button>
         ))}
       </div>
 
