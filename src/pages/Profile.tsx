@@ -26,6 +26,7 @@ import OfflineQueueManager from "@/components/OfflineQueueManager";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfilePhotoManager from "@/components/ProfilePhotoManager";
 import UploadProgress from "@/components/UploadProgress";
+import ParallaxBackground from "@/components/ParallaxBackground";
 import IdentityVerificationCard from "@/components/IdentityVerificationCard";
 import ImageCropModal from "@/components/ImageCropModal";
 import GenderSelector from "@/components/GenderSelector";
@@ -447,9 +448,8 @@ const Profile = () => {
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24 relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-40 right-0 w-[300px] h-[300px] bg-accent/5 blur-[100px] rounded-full pointer-events-none" />
+      {/* Parallax ambient glow */}
+      <ParallaxBackground variant="profile" />
       
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between mb-8">

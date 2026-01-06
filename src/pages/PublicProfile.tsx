@@ -27,6 +27,7 @@ import {
 import UserModerationModal from "@/components/UserModerationModal";
 import ProfilePhotoGallery from "@/components/ProfilePhotoGallery";
 import { triggerHaptic } from "@/utils/haptics";
+import ParallaxBackground from "@/components/ParallaxBackground";
 
 // Helper to calculate age from birthdate
 const calculateAge = (birthdate: string | null | undefined): number | null => {
@@ -115,7 +116,11 @@ const PublicProfile = () => {
   const profile = publicProfile.profile;
 
   return (
-    <main className="min-h-screen bg-background flex flex-col pb-24">
+    <main className="min-h-screen bg-background flex flex-col pb-24 relative overflow-hidden">
+      {/* Parallax ambient glow */}
+      <ParallaxBackground variant="profile" />
+      
+      {/* Header */}
       {/* Header */}
       <div className="px-6 py-4 flex items-center justify-between">
         <button 
