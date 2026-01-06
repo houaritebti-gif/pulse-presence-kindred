@@ -392,7 +392,8 @@ const SparkChat = () => {
     try {
       await extinguishSpark.mutateAsync(chatId);
       toast.success("Chispa apagada");
-      navigate("/sparks");
+      // Navigate with state so Sparks page can show exit animation
+      navigate("/sparks", { state: { extinguishedSparkId: chatId } });
     } catch (error: any) {
       toast.error("Error: " + error.message);
     }

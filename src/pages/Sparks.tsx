@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSparkChats } from "@/hooks/useSparks";
@@ -15,7 +15,21 @@ import SparksListSkeleton from "@/components/SparksListSkeleton";
 
 const Sparks = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: chats, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useSparkChats();
+  
+  // Track sparks being extinguished with exit animation
+  const [exitingSparks, setExitingSparks] = useState<Set<string>>(new Set());
+  
+  // Check if we're returning from an extinguished spark
+  useEffect(() => {
+    const extinguishedId = (location.state as { extinguishedSparkId?: string })?.extinguishedSparkId;
+    if (extinguishedId) {
+      setExitingSparks(new Set([extinguishedId]));
+      // Clear the state to prevent re-triggering
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: chats });
 
@@ -110,14 +124,30 @@ const Sparks = () => {
               aria-label="Lista de chispas"
               className="space-y-5 sm:space-y-6 pb-6"
             >
-              {chats?.map((chat, index) => (
-                <div key={chat.id} {...getItemProps(index)}>
-                  <SparkChatItem 
-                    chat={chat} 
-                    animationStyle={getAnimationStyle(index)}
-                  />
-                </div>
-              ))}
+              {chats?.map((chat, index) => {
+                const isExiting = exitingSparks.has(chat.id);
+                return (
+                  <div 
+                    key={chat.id} 
+                    {...getItemProps(index)}
+                    className={`transition-all duration-400 ${
+                      isExiting 
+                        ? 'opacity-0 scale-95 translate-x-8 pointer-events-none' 
+                        : ''
+                    }`}
+                    style={isExiting ? { 
+                      opacity: 0, 
+                      transform: 'scale(0.95) translateX(2rem)',
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                    } : undefined}
+                  >
+                    <SparkChatItem 
+                      chat={chat} 
+                      animationStyle={isExiting ? undefined : getAnimationStyle(index)}
+                    />
+                  </div>
+                );
+              })}
             </div>
             {/* Infinite scroll trigger */}
             <div ref={loadMoreRef} className="h-4" />
