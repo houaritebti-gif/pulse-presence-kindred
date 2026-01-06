@@ -29,7 +29,7 @@ const SparkChatItem = ({ chat, animationDelay }: SparkChatItemProps) => {
   return (
     <button
       onClick={() => navigate(`/spark/${chat.id}`)}
-      className="w-full bg-card rounded-2xl p-5 sm:p-6 text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 animate-fade-up flex items-center gap-4 sm:gap-5 group border border-transparent hover:border-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="w-full bg-card rounded-2xl p-5 sm:p-6 text-left transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg hover:shadow-primary/20 animate-fade-up flex items-center gap-4 sm:gap-5 group border border-transparent hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       style={{ animationDelay: `${animationDelay}ms` }}
       aria-label={`Chat con ${chat.other_profile?.name || "Anónima"}${chat.unread_count && chat.unread_count > 0 ? `, ${chat.unread_count} mensajes sin leer` : ""}`}
     >
