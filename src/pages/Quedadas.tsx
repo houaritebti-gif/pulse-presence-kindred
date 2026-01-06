@@ -299,7 +299,7 @@ const Quedadas = () => {
                 return (
                   <div
                     key={quedada.id}
-                    className="bg-card rounded-2xl p-5 sm:p-6 animate-fade-up border border-transparent hover:border-accent/20 transition-all duration-300"
+                    className="bg-card rounded-2xl p-5 sm:p-6 animate-fade-up border border-transparent hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 cursor-pointer"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     {/* Header */}
