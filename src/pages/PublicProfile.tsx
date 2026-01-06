@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
+import PublicProfileSkeleton from "@/components/PublicProfileSkeleton";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useIsBlocked } from "@/hooks/useUserModeration";
@@ -72,11 +73,7 @@ const PublicProfile = () => {
   }, [publicProfile, myTribes, myMusicStyles, myProfile?.looking_for]);
 
   if (isLoading) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </main>
-    );
+    return <PublicProfileSkeleton />;
   }
 
   if (isError) {
