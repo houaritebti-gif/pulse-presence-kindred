@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
-import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { useState } from "react";
+import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from "framer-motion";
 import { Trash2, Check } from "lucide-react";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface SwipeableNotificationProps {
   children: React.ReactNode;
@@ -20,9 +21,8 @@ export const SwipeableNotification = ({
   isRead = false,
   className = ""
 }: SwipeableNotificationProps) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isMarkingRead, setIsMarkingRead] = useState(false);
-  const constraintsRef = useRef<HTMLDivElement>(null);
+  const [isExiting, setIsExiting] = useState(false);
+  const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(null);
   
   const x = useMotionValue(0);
   
@@ -35,12 +35,12 @@ export const SwipeableNotification = ({
   const deleteOpacity = useTransform(
     x,
     [0, DELETE_THRESHOLD / 2, DELETE_THRESHOLD],
-    [0, 0.5, 1]
+    [0, 0.6, 1]
   );
   const deleteScale = useTransform(
     x,
     [0, DELETE_THRESHOLD],
-    [0.5, 1]
+    [0.5, 1.1]
   );
 
   // Read background (swipe right)
@@ -52,81 +52,105 @@ export const SwipeableNotification = ({
   const readOpacity = useTransform(
     x,
     [0, READ_THRESHOLD / 2, READ_THRESHOLD],
-    [0, 0.5, 1]
+    [0, 0.6, 1]
   );
   const readScale = useTransform(
     x,
     [0, READ_THRESHOLD],
-    [0.5, 1]
+    [0.5, 1.1]
   );
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     // Swipe left to delete
     if (info.offset.x < DELETE_THRESHOLD) {
-      setIsDeleting(true);
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
-      }
+      setExitDirection("left");
+      setIsExiting(true);
+      triggerHaptic("medium");
+      
       setTimeout(() => {
         onDelete();
-      }, 200);
+      }, 250);
     }
     // Swipe right to mark as read
     else if (info.offset.x > READ_THRESHOLD && onMarkRead && !isRead) {
-      setIsMarkingRead(true);
-      if (navigator.vibrate) {
-        navigator.vibrate([30, 20, 30]);
-      }
-      setTimeout(() => {
-        onMarkRead();
-        setIsMarkingRead(false);
-      }, 200);
+      setExitDirection("right");
+      triggerHaptic("light");
+      onMarkRead();
+      // Reset position smoothly
+      x.set(0);
     }
   };
 
-  return (
-    <div ref={constraintsRef} className="relative overflow-hidden rounded-2xl">
-      {/* Delete background (left side) */}
-      <motion.div 
-        className="absolute inset-0 flex items-center justify-end pr-6 rounded-2xl"
-        style={{ background: deleteBackground }}
-      >
-        <motion.div style={{ opacity: deleteOpacity, scale: deleteScale }}>
-          <Trash2 className="w-6 h-6 text-destructive-foreground" />
-        </motion.div>
-      </motion.div>
+  const getExitAnimation = () => {
+    if (!isExiting) return {};
+    
+    return { 
+      x: exitDirection === "left" ? -400 : 400, 
+      opacity: 0,
+      height: 0,
+      marginBottom: 0,
+    };
+  };
 
-      {/* Read background (right side) */}
-      {!isRead && onMarkRead && (
+  return (
+    <AnimatePresence mode="popLayout">
+      <motion.div
+        layout
+        initial={{ opacity: 1, height: "auto" }}
+        exit={{ 
+          opacity: 0, 
+          height: 0,
+          marginBottom: 0,
+          transition: { duration: 0.2 }
+        }}
+        className="relative overflow-hidden rounded-2xl"
+      >
+        {/* Delete background (left side) */}
         <motion.div 
-          className="absolute inset-0 flex items-center justify-start pl-6 rounded-2xl"
-          style={{ background: readBackground }}
+          className="absolute inset-0 flex items-center justify-end pr-6 rounded-2xl"
+          style={{ background: deleteBackground }}
         >
-          <motion.div style={{ opacity: readOpacity, scale: readScale }}>
-            <Check className="w-6 h-6 text-primary-foreground" />
+          <motion.div 
+            className="text-destructive-foreground"
+            style={{ opacity: deleteOpacity, scale: deleteScale }}
+          >
+            <Trash2 className="w-5 h-5" />
           </motion.div>
         </motion.div>
-      )}
 
-      {/* Swipeable content */}
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: -150, right: isRead || !onMarkRead ? 0 : 150 }}
-        dragElastic={0.1}
-        onDragEnd={handleDragEnd}
-        style={{ x }}
-        animate={
-          isDeleting 
-            ? { x: -400, opacity: 0 } 
-            : isMarkingRead 
-              ? { x: 0 } 
-              : {}
-        }
-        transition={{ duration: 0.2 }}
-        className={`relative bg-card ${className}`}
-      >
-        {children}
+        {/* Read background (right side) */}
+        {!isRead && onMarkRead && (
+          <motion.div 
+            className="absolute inset-0 flex items-center justify-start pl-6 rounded-2xl"
+            style={{ background: readBackground }}
+          >
+            <motion.div 
+              className="text-primary-foreground"
+              style={{ opacity: readOpacity, scale: readScale }}
+            >
+              <Check className="w-5 h-5" />
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Swipeable content */}
+        <motion.div
+          drag="x"
+          dragConstraints={{ left: -150, right: isRead || !onMarkRead ? 0 : 150 }}
+          dragElastic={0.15}
+          onDragEnd={handleDragEnd}
+          style={{ x }}
+          animate={getExitAnimation()}
+          transition={{ 
+            type: "spring",
+            stiffness: 500,
+            damping: 35,
+          }}
+          className={`relative bg-card cursor-grab active:cursor-grabbing ${className}`}
+        >
+          {children}
+        </motion.div>
       </motion.div>
-    </div>
+    </AnimatePresence>
   );
 };
