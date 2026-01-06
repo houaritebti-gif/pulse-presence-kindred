@@ -1,8 +1,8 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2, X } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useSparkChats } from "@/hooks/useSparks";
+import { useSparkChats, useExtinguishSpark } from "@/hooks/useSparks";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useListKeyboardNavigation } from "@/hooks/useListKeyboardNavigation";
@@ -14,11 +14,14 @@ import SparkChatItem from "@/components/SparkChatItem";
 import SparksListSkeleton from "@/components/SparksListSkeleton";
 import StateTransition from "@/components/StateTransition";
 import ParallaxBackground from "@/components/ParallaxBackground";
+import SwipeableListItem from "@/components/SwipeableListItem";
+import { toast } from "sonner";
 
 const Sparks = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { data: chats, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useSparkChats();
+  const extinguishSpark = useExtinguishSpark();
   
   // Track sparks being extinguished with exit animation
   const [exitingSparks, setExitingSparks] = useState<Set<string>>(new Set());
@@ -60,6 +63,15 @@ const Sparks = () => {
   const handleRefresh = useCallback(async () => {
     await refetch();
   }, [refetch]);
+
+  const handleExtinguishSwipe = useCallback(async (chatId: string) => {
+    try {
+      await extinguishSpark.mutateAsync(chatId);
+      toast.success("Chispa apagada");
+    } catch (error: any) {
+      toast.error("Error: " + error.message);
+    }
+  }, [extinguishSpark]);
 
   // Determine current state for transitions
   const currentState = useMemo(() => {
@@ -108,6 +120,10 @@ const Sparks = () => {
           <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
             Conexiones mutuas. Conversaciones reales.
           </p>
+          {/* Swipe hint */}
+          <p className="text-xs text-muted-foreground/60 mt-2" style={{ fontFamily: 'Arial, sans-serif' }}>
+            Desliza hacia la izquierda para apagar
+          </p>
         </div>
 
         {/* Chats list with smooth state transitions */}
@@ -138,25 +154,29 @@ const Sparks = () => {
             {chats?.map((chat, index) => {
               const isExiting = exitingSparks.has(chat.id);
               return (
-                <div 
-                  key={chat.id} 
-                  {...getItemProps(index)}
+                <SwipeableListItem
+                  key={chat.id}
+                  itemKey={chat.id}
+                  leftAction={{ 
+                    type: "delete",
+                    icon: <X className="w-5 h-5" />,
+                    color: "hsl(var(--destructive))",
+                  }}
+                  onLeftAction={() => handleExtinguishSwipe(chat.id)}
+                  disabled={isExiting}
                   className={`transition-all duration-400 ${
                     isExiting 
                       ? 'opacity-0 scale-95 translate-x-8 pointer-events-none' 
                       : ''
                   }`}
-                  style={isExiting ? { 
-                    opacity: 0, 
-                    transform: 'scale(0.95) translateX(2rem)',
-                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-                  } : undefined}
                 >
-                  <SparkChatItem 
-                    chat={chat} 
-                    animationStyle={isExiting ? undefined : getAnimationStyle(index)}
-                  />
-                </div>
+                  <div {...getItemProps(index)}>
+                    <SparkChatItem 
+                      chat={chat} 
+                      animationStyle={isExiting ? undefined : getAnimationStyle(index)}
+                    />
+                  </div>
+                </SwipeableListItem>
               );
             })}
           </div>
