@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -12,6 +12,7 @@ import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import SparkChatItem from "@/components/SparkChatItem";
 import SparksListSkeleton from "@/components/SparksListSkeleton";
+import StateTransition from "@/components/StateTransition";
 
 const Sparks = () => {
   const navigate = useNavigate();
@@ -59,6 +60,14 @@ const Sparks = () => {
     await refetch();
   }, [refetch]);
 
+  // Determine current state for transitions
+  const currentState = useMemo(() => {
+    if (isLoading) return "loading" as const;
+    if (isError) return "error" as const;
+    if (chats?.length === 0) return "empty" as const;
+    return "content" as const;
+  }, [isLoading, isError, chats?.length]);
+
   return (
     <PullToRefresh onRefresh={handleRefresh} accentColor="primary">
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24 relative overflow-hidden">
@@ -101,63 +110,64 @@ const Sparks = () => {
           </p>
         </div>
 
-        {/* Chats list */}
-        {isLoading ? (
-          <SparksListSkeleton count={4} />
-        ) : isError ? (
-          <ErrorState
-            icon={Flame}
-            description="No pudimos cargar tus chispas. Revisa tu conexión e inténtalo de nuevo."
-            onRetry={() => refetch()}
-            isRetrying={isFetching}
-          />
-        ) : chats?.length === 0 ? (
-          <EmptyState
-            icon={MessageCircle}
-            title="Aún no hay chispas"
-            description="Envía mensajes fantasma y espera que la magia ocurra."
-          />
-        ) : (
-          <>
-            <div 
-              {...getContainerProps()}
-              aria-label="Lista de chispas"
-              className="space-y-5 sm:space-y-6 pb-6"
-            >
-              {chats?.map((chat, index) => {
-                const isExiting = exitingSparks.has(chat.id);
-                return (
-                  <div 
-                    key={chat.id} 
-                    {...getItemProps(index)}
-                    className={`transition-all duration-400 ${
-                      isExiting 
-                        ? 'opacity-0 scale-95 translate-x-8 pointer-events-none' 
-                        : ''
-                    }`}
-                    style={isExiting ? { 
-                      opacity: 0, 
-                      transform: 'scale(0.95) translateX(2rem)',
-                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-                    } : undefined}
-                  >
-                    <SparkChatItem 
-                      chat={chat} 
-                      animationStyle={isExiting ? undefined : getAnimationStyle(index)}
-                    />
-                  </div>
-                );
-              })}
+        {/* Chats list with smooth state transitions */}
+        <StateTransition
+          state={currentState}
+          loadingContent={<SparksListSkeleton count={4} />}
+          errorContent={
+            <ErrorState
+              icon={Flame}
+              description="No pudimos cargar tus chispas. Revisa tu conexión e inténtalo de nuevo."
+              onRetry={() => refetch()}
+              isRetrying={isFetching}
+            />
+          }
+          emptyContent={
+            <EmptyState
+              icon={MessageCircle}
+              title="Aún no hay chispas"
+              description="Envía mensajes fantasma y espera que la magia ocurra."
+            />
+          }
+        >
+          <div 
+            {...getContainerProps()}
+            aria-label="Lista de chispas"
+            className="space-y-5 sm:space-y-6 pb-6"
+          >
+            {chats?.map((chat, index) => {
+              const isExiting = exitingSparks.has(chat.id);
+              return (
+                <div 
+                  key={chat.id} 
+                  {...getItemProps(index)}
+                  className={`transition-all duration-400 ${
+                    isExiting 
+                      ? 'opacity-0 scale-95 translate-x-8 pointer-events-none' 
+                      : ''
+                  }`}
+                  style={isExiting ? { 
+                    opacity: 0, 
+                    transform: 'scale(0.95) translateX(2rem)',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  } : undefined}
+                >
+                  <SparkChatItem 
+                    chat={chat} 
+                    animationStyle={isExiting ? undefined : getAnimationStyle(index)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          {/* Infinite scroll trigger */}
+          <div ref={loadMoreRef} className="h-4" />
+          {isFetchingNextPage && (
+            <div className="flex justify-center py-4">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
-            {/* Infinite scroll trigger */}
-            <div ref={loadMoreRef} className="h-4" />
-            {isFetchingNextPage && (
-              <div className="flex justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-              </div>
-            )}
-          </>
-        )}
+          )}
+        </StateTransition>
 
         {/* Footer */}
         <div className="mt-12 text-center animate-fade-up animate-delay-500">
