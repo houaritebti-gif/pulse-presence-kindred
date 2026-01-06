@@ -22,6 +22,7 @@ import { es } from "date-fns/locale";
 import confetti from "canvas-confetti";
 import { playCelebrationSound } from "@/utils/notificationSound";
 import QuedadaCreatorHeader from "@/components/QuedadaCreatorHeader";
+import ParallaxBackground from "@/components/ParallaxBackground";
 
 const Quedadas = () => {
   const navigate = useNavigate();
@@ -280,8 +281,8 @@ const Quedadas = () => {
   return (
     <PullToRefresh onRefresh={handleRefresh} accentColor="accent">
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24 relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
+      {/* Parallax ambient glow */}
+      <ParallaxBackground variant="list" />
       
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between mb-8">
