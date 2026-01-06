@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +56,10 @@ const Quedadas = () => {
   const [eventTime, setEventTime] = useState("");
   const [maxAttendees, setMaxAttendees] = useState("");
   const [privateAttendees, setPrivateAttendees] = useState(false);
+  
+  // Track quedadas being removed with exit animation
+  const [exitingQuedadas, setExitingQuedadas] = useState<Set<string>>(new Set());
+  const exitTimeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   // Check if user has created any quedadas (for first-time confetti)
   const userCreatedQuedadas = quedadas?.filter(q => q.creator_profile_id === profile?.id) || [];
@@ -145,24 +149,57 @@ const Quedadas = () => {
   };
 
   const handleLeave = async (quedadaId: string) => {
-    try {
-      await leaveQuedada.mutateAsync(quedadaId);
-      toast.success("Has salido de la quedada");
-    } catch (error: any) {
-      toast.error("Error: " + error.message);
-    }
+    // Start exit animation
+    setExitingQuedadas(prev => new Set(prev).add(quedadaId));
+    
+    // Wait for animation to complete before actual removal
+    const timeout = setTimeout(async () => {
+      try {
+        await leaveQuedada.mutateAsync(quedadaId);
+        toast.success("Has salido de la quedada");
+      } catch (error: any) {
+        toast.error("Error: " + error.message);
+        // Remove from exiting set if error
+        setExitingQuedadas(prev => {
+          const next = new Set(prev);
+          next.delete(quedadaId);
+          return next;
+        });
+      } finally {
+        exitTimeoutRefs.current.delete(quedadaId);
+      }
+    }, 400);
+    
+    exitTimeoutRefs.current.set(quedadaId, timeout);
   };
 
   const handleDelete = async (quedadaId: string) => {
     if (!confirm("¿Seguro que quieres cancelar esta quedada? Esta acción no se puede deshacer.")) {
       return;
     }
-    try {
-      await deleteQuedada.mutateAsync(quedadaId);
-      toast.success("Quedada cancelada");
-    } catch (error: any) {
-      toast.error("Error: " + error.message);
-    }
+    
+    // Start exit animation
+    setExitingQuedadas(prev => new Set(prev).add(quedadaId));
+    
+    // Wait for animation to complete before actual deletion
+    const timeout = setTimeout(async () => {
+      try {
+        await deleteQuedada.mutateAsync(quedadaId);
+        toast.success("Quedada cancelada");
+      } catch (error: any) {
+        toast.error("Error: " + error.message);
+        // Remove from exiting set if error
+        setExitingQuedadas(prev => {
+          const next = new Set(prev);
+          next.delete(quedadaId);
+          return next;
+        });
+      } finally {
+        exitTimeoutRefs.current.delete(quedadaId);
+      }
+    }, 400);
+    
+    exitTimeoutRefs.current.set(quedadaId, timeout);
   };
 
   const openEditModal = (quedada: Quedada) => {
@@ -309,12 +346,24 @@ const Quedadas = () => {
               {quedadas?.map((quedada, index) => {
                 const isFull = quedada.max_attendees && quedada.attendee_count >= quedada.max_attendees;
                 const isCreator = quedada.creator_profile_id === profile?.id;
+                const isExiting = exitingQuedadas.has(quedada.id);
                 
                 return (
                   <div
                     key={quedada.id}
-                    className="bg-card rounded-2xl p-5 sm:p-6 opacity-0 animate-fade-up border border-transparent hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 cursor-pointer"
-                    style={getAnimationStyle(index)}
+                    className={`bg-card rounded-2xl p-5 sm:p-6 border border-transparent hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] active:scale-[0.99] cursor-pointer transition-all duration-400 ${
+                      isExiting 
+                        ? 'opacity-0 scale-95 translate-x-8 pointer-events-none' 
+                        : 'opacity-0 animate-fade-up'
+                    }`}
+                    style={{
+                      ...getAnimationStyle(index),
+                      ...(isExiting ? { 
+                        opacity: 0, 
+                        transform: 'scale(0.95) translateX(2rem)',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                      } : {})
+                    }}
                   >
                     {/* Header */}
                     <QuedadaCreatorHeader creator={quedada.creator} title={quedada.title} />
