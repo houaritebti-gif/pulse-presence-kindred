@@ -4,7 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import PremiumBadge from "@/components/PremiumBadge";
-import LazyImage from "@/components/LazyImage";
+import SharedAvatar from "@/components/SharedAvatar";
 
 interface SparkChatItemProps {
   chat: {
@@ -38,22 +38,14 @@ const SparkChatItem = ({ chat, animationDelay = 0, animationStyle }: SparkChatIt
     >
       {/* Avatar with spark indicator */}
       <div className="relative">
-        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300 group-hover:ring-primary/40">
-          {chat.other_profile?.avatar_url ? (
-            <LazyImage 
-              src={chat.other_profile.avatar_url} 
-              alt={chat.other_profile.name || "Avatar"}
-              className="w-full h-full object-cover"
-              placeholderClassName="w-full h-full"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
-              <span className="font-display text-lg text-card-foreground">
-                {(chat.other_profile?.name?.[0] || "?").toUpperCase()}
-              </span>
-            </div>
-          )}
-        </div>
+        <SharedAvatar
+          profileId={chat.other_profile?.id || chat.id}
+          avatarUrl={chat.other_profile?.avatar_url}
+          name={chat.other_profile?.name}
+          size="lg"
+          useLazyLoading
+          ringClassName="ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300 group-hover:ring-primary/40"
+        />
         {/* Flame badge */}
         <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-card flex items-center justify-center shadow-md">
           <Flame className="w-3.5 h-3.5 text-primary animate-spark-flame" />

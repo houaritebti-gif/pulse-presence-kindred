@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
 import PhotoCarousel from "@/components/PhotoCarousel";
+import SharedPhotoTransition from "@/components/SharedPhotoTransition";
 import { triggerHaptic } from "@/utils/haptics";
 
 interface PresenceProfile {
@@ -164,15 +165,17 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
         role="button"
         aria-label={`Ver perfil de ${presence.profile?.name || "usuario anónimo"}`}
       >
-        {/* Photo carousel - larger display */}
-        <div className="relative">
+        {/* Photo carousel - larger display with shared transition */}
+        <SharedPhotoTransition profileId={presence.profile?.id || presence.id}>
           <PhotoCarousel
             photos={photos}
             avatarUrl={presence.profile?.avatar_url}
             name={presence.profile?.name}
+            profileId={presence.profile?.id}
             size="lg"
             showArrows={true}
             showDots={true}
+            enableSharedTransition={false}
           />
           
           {/* KIKI Now boost badge */}
@@ -253,7 +256,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
+        </SharedPhotoTransition>
 
         {/* Info section - improved mobile legibility */}
         <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">

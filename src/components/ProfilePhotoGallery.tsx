@@ -3,16 +3,18 @@ import { ChevronLeft, ChevronRight, Images, Camera, Plus } from "lucide-react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { cn } from "@/lib/utils";
 import ImageLightbox from "@/components/ImageLightbox";
+import SharedPhotoTransition from "@/components/SharedPhotoTransition";
 import { useNavigate } from "react-router-dom";
 
 interface ProfilePhotoGalleryProps {
   photos: string[];
   avatarUrl?: string | null;
   name?: string | null;
+  profileId?: string;
   isOwnProfile?: boolean;
 }
 
-const ProfilePhotoGallery = ({ photos, avatarUrl, name, isOwnProfile = false }: ProfilePhotoGalleryProps) => {
+const ProfilePhotoGallery = ({ photos, avatarUrl, name, profileId, isOwnProfile = false }: ProfilePhotoGalleryProps) => {
   const navigate = useNavigate();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,13 +28,14 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, isOwnProfile = false }: 
     // If it's own profile, show CTA to add photos
     if (isOwnProfile) {
       return (
-        <motion.button
-          onClick={() => navigate('/profile')}
-          className="w-full aspect-[4/5] rounded-2xl overflow-hidden relative flex flex-col items-center justify-center ring-2 ring-primary/30 animate-glow group transition-all hover:ring-primary/50"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
+        <SharedPhotoTransition profileId={profileId || ""} enabled={!!profileId}>
+          <motion.button
+            onClick={() => navigate('/profile')}
+            className="w-full aspect-[4/5] rounded-2xl overflow-hidden relative flex flex-col items-center justify-center ring-2 ring-primary/30 animate-glow group transition-all hover:ring-primary/50"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
           <div 
             className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
           />
@@ -146,19 +149,22 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, isOwnProfile = false }: 
             </div>
           </motion.div>
         </motion.button>
+        </SharedPhotoTransition>
       );
     }
     
     // Regular placeholder for other users
     return (
-      <div className="aspect-[4/5] rounded-2xl overflow-hidden relative flex items-center justify-center ring-2 ring-primary/30 animate-glow">
-        <div 
-          className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
-        />
-        <span className="text-card-foreground/70 font-display font-semibold text-6xl relative z-10 drop-shadow-sm">
-          {(name?.[0] || "?").toUpperCase()}
-        </span>
-      </div>
+      <SharedPhotoTransition profileId={profileId || ""} enabled={!!profileId}>
+        <div className="aspect-[4/5] rounded-2xl overflow-hidden relative flex items-center justify-center ring-2 ring-primary/30 animate-glow">
+          <div 
+            className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-accent/30 bg-[length:200%_200%] animate-gradient-shift"
+          />
+          <span className="text-card-foreground/70 font-display font-semibold text-6xl relative z-10 drop-shadow-sm">
+            {(name?.[0] || "?").toUpperCase()}
+          </span>
+        </div>
+      </SharedPhotoTransition>
     );
   }
 
@@ -218,9 +224,10 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, isOwnProfile = false }: 
 
   return (
     <>
-      <div className="space-y-3">
-        {/* Main image display with swipe */}
-        <div className="relative aspect-[4/5] rounded-2xl overflow-hidden cursor-pointer group">
+      <SharedPhotoTransition profileId={profileId || ""} enabled={!!profileId}>
+        <div className="space-y-3">
+          {/* Main image display with swipe */}
+          <div className="relative aspect-[4/5] rounded-2xl overflow-hidden cursor-pointer group">
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.img
               key={currentIndex}
@@ -329,7 +336,8 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, isOwnProfile = false }: 
             ))}
           </div>
         )}
-      </div>
+        </div>
+      </SharedPhotoTransition>
 
       {/* Lightbox */}
       <ImageLightbox 

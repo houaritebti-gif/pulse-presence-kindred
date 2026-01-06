@@ -171,12 +171,13 @@ const PublicProfile = () => {
 
       {/* Profile content */}
       <div className="flex-1 px-6 max-w-lg mx-auto w-full">
-        {/* Photo Gallery */}
+        {/* Photo Gallery with shared element transition */}
         <div className="mb-6 animate-fade-up">
           <ProfilePhotoGallery
             photos={profilePhotos?.map(p => p.photo_url) || []}
             avatarUrl={profile.avatar_url}
             name={profile.name}
+            profileId={profileId}
             isOwnProfile={myProfile?.id === profileId}
           />
         </div>

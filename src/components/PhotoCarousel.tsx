@@ -289,6 +289,7 @@ interface PhotoCarouselProps {
   photos: string[];
   avatarUrl?: string | null;
   name?: string | null;
+  profileId?: string;
   size?: "sm" | "md" | "lg";
   showDots?: boolean;
   showArrows?: boolean;
@@ -298,6 +299,7 @@ interface PhotoCarouselProps {
   enableZoom?: boolean;
   enableGallery?: boolean;
   enableSlideshow?: boolean;
+  enableSharedTransition?: boolean;
   slideshowInterval?: number;
   slideshowTransition?: SlideshowTransition;
 }
@@ -475,6 +477,7 @@ const PhotoCarousel = memo(({
   photos,
   avatarUrl,
   name,
+  profileId,
   size = "md",
   showDots = true,
   showArrows = true,
@@ -484,6 +487,7 @@ const PhotoCarousel = memo(({
   enableZoom = true,
   enableGallery = true,
   enableSlideshow = true,
+  enableSharedTransition = true,
   slideshowInterval = 4000,
   slideshowTransition = "crossfade",
 }: PhotoCarouselProps) => {
