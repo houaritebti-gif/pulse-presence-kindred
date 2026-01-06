@@ -61,3 +61,62 @@ export const fireSparkConfetti = () => {
     });
   }, 250);
 };
+
+/**
+ * Fires a celebratory confetti animation when user completes their photo gallery.
+ * Uses camera/photo themed celebration with purple and pink colors.
+ */
+export const fireGalleryCompleteConfetti = () => {
+  // Photo gallery colors: purples, pinks, and golds for achievement
+  const galleryColors = ['#A855F7', '#EC4899', '#F472B6', '#C084FC', '#FFD700', '#FCD34D'];
+  
+  // Main celebration burst from bottom
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { x: 0.5, y: 0.9 },
+    colors: galleryColors,
+    startVelocity: 45,
+    gravity: 0.9,
+    scalar: 1.3,
+    shapes: ['circle', 'square'],
+    ticks: 120,
+  });
+  
+  // Star-like bursts from sides
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.7 },
+      colors: galleryColors,
+      startVelocity: 40,
+      gravity: 0.8,
+    });
+    confetti({
+      particleCount: 50,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.7 },
+      colors: galleryColors,
+      startVelocity: 40,
+      gravity: 0.8,
+    });
+  }, 150);
+  
+  // Final golden rain from top
+  setTimeout(() => {
+    confetti({
+      particleCount: 80,
+      spread: 120,
+      origin: { x: 0.5, y: 0 },
+      colors: ['#FFD700', '#FCD34D', '#F59E0B'],
+      startVelocity: 20,
+      gravity: 1.2,
+      scalar: 1.1,
+      ticks: 100,
+      drift: 0,
+    });
+  }, 300);
+};

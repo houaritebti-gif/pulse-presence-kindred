@@ -9,6 +9,7 @@ import ImageCropModal from "./ImageCropModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PhotoSourceSelector } from "./PhotoSourceSelector";
+import { fireGalleryCompleteConfetti } from "@/utils/sparkConfetti";
 
 interface ProfilePhotoManagerProps {
   profileId: string;
@@ -107,7 +108,17 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
       
       // Haptic feedback on successful upload
       triggerHapticFeedback([50, 30, 50]);
-      toast.success("Foto añadida correctamente");
+      
+      // Check if gallery is now complete (photoCount was before upload, so +1)
+      const newPhotoCount = photoCount + 1;
+      if (newPhotoCount >= MAX_PHOTOS) {
+        fireGalleryCompleteConfetti();
+        toast.success("🎉 ¡Galería completada! Tu perfil está listo", {
+          duration: 4000,
+        });
+      } else {
+        toast.success("Foto añadida correctamente");
+      }
     } finally {
       setUploadingIndex(null);
       setUploadProgress(0);
