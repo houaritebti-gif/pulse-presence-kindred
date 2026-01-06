@@ -480,7 +480,7 @@ const Profile = () => {
 
       <div className="flex-1 max-w-lg mx-auto w-full">
         {/* Header */}
-        <div className="text-center mb-10 animate-fade-up">
+        <div className="text-center mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
           <h1 className="text-3xl font-bold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Tu perfil
           </h1>
@@ -507,7 +507,7 @@ const Profile = () => {
         </div>
 
         {/* Photo - Avatar circular (se mantiene para foto principal) */}
-        <div className="flex justify-center mb-6 animate-fade-up animate-delay-100">
+        <div className="flex justify-center mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
           <input
             ref={fileInputRef}
             type="file"
@@ -552,24 +552,24 @@ const Profile = () => {
           </button>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mb-6 font-body">
+        <p className="text-center text-xs text-muted-foreground mb-6 font-body opacity-0 animate-fade-up" style={{ animationDelay: '125ms', animationFillMode: 'forwards' }}>
           Esta foto se mostrará como tu avatar en chats
         </p>
 
         {/* Photo Gallery Manager */}
         {profile && (
-          <div className="mb-10 animate-fade-up animate-delay-150">
+          <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '150ms', animationFillMode: 'forwards' }}>
             <ProfilePhotoManager profileId={profile.id} />
           </div>
         )}
 
         {/* Identity Verification */}
-        <div className="mb-10 animate-fade-up animate-delay-160">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '175ms', animationFillMode: 'forwards' }}>
           <IdentityVerificationCard />
         </div>
 
         {/* Name & City */}
-        <div className="space-y-4 mb-10 animate-fade-up animate-delay-200">
+        <div className="space-y-4 mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
           <Input
             type="text"
             placeholder="Tu nombre (o como quieras que te llamen)"
@@ -587,7 +587,7 @@ const Profile = () => {
         </div>
 
         {/* Gender Selection */}
-        <div className="mb-10 animate-fade-up animate-delay-220">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '225ms', animationFillMode: 'forwards' }}>
           <GenderSelector
             value={selectedGender}
             onChange={(val) => { setSelectedGender(val); setHasChanges(true); }}
@@ -595,7 +595,7 @@ const Profile = () => {
         </div>
 
         {/* Birthdate Selection */}
-        <div className="mb-10 animate-fade-up animate-delay-225">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '250ms', animationFillMode: 'forwards' }}>
           <BirthdateSelector
             value={birthdate}
             onChange={(val) => { setBirthdate(val); setHasChanges(true); }}
@@ -603,14 +603,14 @@ const Profile = () => {
         </div>
 
         {/* Gender Preferences - Who to meet */}
-        <div className="mb-10 animate-fade-up animate-delay-230">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '275ms', animationFillMode: 'forwards' }}>
           <GenderPreferencesSelector
             values={selectedGenderPreferences}
             onChange={(vals) => { setSelectedGenderPreferences(vals); setHasChanges(true); }}
           />
         </div>
 
-        <div className="mb-10 animate-fade-up animate-delay-250">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>
           <h2 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Sobre ti
           </h2>
@@ -645,7 +645,7 @@ const Profile = () => {
         </div>
 
         {/* Looking for */}
-        <div className="mb-10 animate-fade-up animate-delay-280">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '325ms', animationFillMode: 'forwards' }}>
           <h2 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             ¿Qué buscas en KIKI?
           </h2>
@@ -678,7 +678,7 @@ const Profile = () => {
         </div>
 
         {/* Vibe */}
-        <div className="mb-10 animate-fade-up animate-delay-300">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '350ms', animationFillMode: 'forwards' }}>
           <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Tu vibra
           </h2>
@@ -701,7 +701,7 @@ const Profile = () => {
         </div>
 
         {/* Tribes */}
-        <div className="mb-10 animate-fade-up animate-delay-400">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '375ms', animationFillMode: 'forwards' }}>
           <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Tus tribus
           </h2>
@@ -723,7 +723,7 @@ const Profile = () => {
         </div>
 
         {/* Music Styles */}
-        <div className="mb-10 animate-fade-up animate-delay-500">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>
           <button
             onClick={() => setMusicExpanded(!musicExpanded)}
             className="w-full flex items-center justify-between mb-4"
@@ -786,7 +786,7 @@ const Profile = () => {
         </div>
 
         {/* Optional Details */}
-        <div className="mb-10 animate-fade-up animate-delay-500">
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '425ms', animationFillMode: 'forwards' }}>
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
@@ -811,7 +811,7 @@ const Profile = () => {
         </div>
 
         {/* Subscription Section */}
-        <div className="mb-6 animate-fade-up animate-delay-500">
+        <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '450ms', animationFillMode: 'forwards' }}>
           <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Suscripción
           </h2>
@@ -849,7 +849,7 @@ const Profile = () => {
         <OfflineQueueManager />
 
         {/* Privacy Settings */}
-        <div className="mb-6 animate-fade-up animate-delay-600">
+        <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '550ms', animationFillMode: 'forwards' }}>
           <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Privacidad del chat
           </h2>
@@ -878,7 +878,7 @@ const Profile = () => {
         </div>
 
         {/* Sound Settings */}
-        <div className="mb-6 animate-fade-up animate-delay-600">
+        <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '575ms', animationFillMode: 'forwards' }}>
           <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Sonidos y notificaciones
           </h2>
@@ -1090,7 +1090,7 @@ const Profile = () => {
         </div>
 
         {/* Continue */}
-        <div className="mt-6 animate-fade-up animate-delay-700">
+        <div className="mt-6 opacity-0 animate-fade-up" style={{ animationDelay: '650ms', animationFillMode: 'forwards' }}>
           <Button 
             variant="kiki" 
             size="lg" 
@@ -1113,7 +1113,7 @@ const Profile = () => {
       />
 
       {/* Footer */}
-      <div className="mt-10 text-center animate-fade-up animate-delay-500 pb-4">
+      <div className="mt-10 text-center opacity-0 animate-fade-up pb-4" style={{ animationDelay: '700ms', animationFillMode: 'forwards' }}>
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/30 border border-border/20">
           <User className="w-3.5 h-3.5 text-primary/60" />
           <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -1136,7 +1136,7 @@ const BlockedUsersSection = () => {
   const hasBlocked = blockedUsers && blockedUsers.length > 0;
 
   return (
-    <div className="mb-10 animate-fade-up animate-delay-550">
+    <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '475ms', animationFillMode: 'forwards' }}>
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between mb-4"
@@ -1251,7 +1251,7 @@ const MyReportsHistorySection = () => {
   };
 
   return (
-    <div className="mb-10 animate-fade-up animate-delay-550">
+    <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}>
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between mb-4"
