@@ -19,18 +19,21 @@ interface SparkChatItemProps {
     last_message_content?: string | null;
     unread_count?: number | null;
   };
-  animationDelay: number;
+  animationDelay?: number;
+  animationStyle?: React.CSSProperties;
 }
 
-const SparkChatItem = ({ chat, animationDelay }: SparkChatItemProps) => {
+const SparkChatItem = ({ chat, animationDelay = 0, animationStyle }: SparkChatItemProps) => {
   const navigate = useNavigate();
   const { data: subscriptionTier } = useUserSubscription(chat.other_profile?.id);
+
+  const computedStyle = animationStyle || { animationDelay: `${animationDelay}ms` };
 
   return (
     <button
       onClick={() => navigate(`/spark/${chat.id}`)}
-      className="w-full bg-card rounded-2xl p-5 sm:p-6 text-left transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg hover:shadow-primary/20 animate-fade-up flex items-center gap-4 sm:gap-5 group border border-transparent hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-      style={{ animationDelay: `${animationDelay}ms` }}
+      className="w-full bg-card rounded-2xl p-5 sm:p-6 text-left transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg hover:shadow-primary/20 opacity-0 animate-fade-up flex items-center gap-4 sm:gap-5 group border border-transparent hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      style={computedStyle}
       aria-label={`Chat con ${chat.other_profile?.name || "Anónima"}${chat.unread_count && chat.unread_count > 0 ? `, ${chat.unread_count} mensajes sin leer` : ""}`}
     >
       {/* Avatar with spark indicator */}
