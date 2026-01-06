@@ -130,6 +130,24 @@ export default {
           "0%, 100%": { boxShadow: "0 0 0 0 hsl(45 93% 47% / 0)" },
           "50%": { boxShadow: "0 0 20px 8px hsl(45 93% 47% / 0.4)" },
         },
+        "press": {
+          "0%": { transform: "scale(1)" },
+          "50%": { transform: "scale(0.95)" },
+          "100%": { transform: "scale(1)" },
+        },
+        "tap": {
+          "0%, 100%": { transform: "scale(1)", opacity: "1" },
+          "50%": { transform: "scale(0.97)", opacity: "0.9" },
+        },
+        "bounce-subtle": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-3px)" },
+        },
+        "wiggle": {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "25%": { transform: "rotate(-2deg)" },
+          "75%": { transform: "rotate(2deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -144,6 +162,10 @@ export default {
         "shimmer": "shimmer 2s linear infinite",
         "invisible-activate": "invisible-activate 0.6s ease-out",
         "invisible-glow": "invisible-glow 1.5s ease-out",
+        "press": "press 0.15s ease-out",
+        "tap": "tap 0.1s ease-out",
+        "bounce-subtle": "bounce-subtle 0.3s ease-out",
+        "wiggle": "wiggle 0.3s ease-in-out",
       },
     },
   },
