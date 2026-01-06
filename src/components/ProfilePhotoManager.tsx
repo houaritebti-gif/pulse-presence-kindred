@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, GripVertical, Camera, Sparkles, Crop, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, X, GripVertical, Camera, Sparkles, Crop, ArrowUp, ArrowDown, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProfilePhotos, useUploadProfilePhoto, useDeleteProfilePhoto, useReorderProfilePhotos } from "@/hooks/useProfilePhotos";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import ImageCropModal from "./ImageCropModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PhotoSourceSelector } from "./PhotoSourceSelector";
+
 interface ProfilePhotoManagerProps {
   profileId: string;
 }
@@ -37,6 +38,9 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   
   // Photo source selector state
   const [photoSourceOpen, setPhotoSourceOpen] = useState(false);
+  
+  // Shake animation state for max photos reached
+  const [isShaking, setIsShaking] = useState(false);
 
   const photoCount = photos?.length || 0;
   const emptySlots = MAX_PHOTOS - photoCount;
@@ -129,12 +133,23 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   };
 
   const handleAddClick = useCallback(() => {
+    // Check if max photos reached
+    if (emptySlots <= 0) {
+      setIsShaking(true);
+      triggerHapticFeedback([100, 50, 100]);
+      toast.error(`Máximo ${MAX_PHOTOS} fotos permitidas`, {
+        icon: <AlertCircle className="w-4 h-4" />,
+      });
+      setTimeout(() => setIsShaking(false), 500);
+      return;
+    }
+    
     if (isMobile) {
       setPhotoSourceOpen(true);
     } else {
       fileInputRef.current?.click();
     }
-  }, [isMobile]);
+  }, [isMobile, emptySlots, triggerHapticFeedback]);
   
   // Handle file input change for desktop
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,7 +265,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className={cn("space-y-4", isShaking && "animate-shake")}>
       {/* Header with prominent title */}
       <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-4 border border-primary/20">
         <div className="flex items-center justify-between">
