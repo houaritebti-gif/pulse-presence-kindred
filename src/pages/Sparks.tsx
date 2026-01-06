@@ -7,6 +7,7 @@ import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useListKeyboardNavigation } from "@/hooks/useListKeyboardNavigation";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
+import { useUndoableAction } from "@/hooks/useUndoableAction";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
@@ -22,6 +23,7 @@ const Sparks = () => {
   const location = useLocation();
   const { data: chats, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useSparkChats();
   const extinguishSpark = useExtinguishSpark();
+  const { execute: executeUndoable, isPending: isUndoPending, pendingIds } = useUndoableAction();
   
   // Track sparks being extinguished with exit animation
   const [exitingSparks, setExitingSparks] = useState<Set<string>>(new Set());
@@ -64,14 +66,35 @@ const Sparks = () => {
     await refetch();
   }, [refetch]);
 
-  const handleExtinguishSwipe = useCallback(async (chatId: string) => {
-    try {
-      await extinguishSpark.mutateAsync(chatId);
-      toast.success("Chispa apagada");
-    } catch (error: any) {
-      toast.error("Error: " + error.message);
-    }
-  }, [extinguishSpark]);
+  const handleExtinguishSwipe = useCallback((chatId: string, chatName?: string) => {
+    // Add to exiting set for visual feedback
+    setExitingSparks(prev => new Set(prev).add(chatId));
+    
+    // Execute with undo capability
+    executeUndoable(chatId, {
+      timeout: 5000,
+      message: `Apagando chispa${chatName ? ` con ${chatName}` : ""}...`,
+      onConfirm: async () => {
+        await extinguishSpark.mutateAsync(chatId);
+      },
+      onUndo: () => {
+        // Remove from exiting set to restore visibility
+        setExitingSparks(prev => {
+          const next = new Set(prev);
+          next.delete(chatId);
+          return next;
+        });
+      },
+      onError: () => {
+        // On error, also restore visibility
+        setExitingSparks(prev => {
+          const next = new Set(prev);
+          next.delete(chatId);
+          return next;
+        });
+      },
+    });
+  }, [extinguishSpark, executeUndoable]);
 
   // Determine current state for transitions
   const currentState = useMemo(() => {
@@ -162,8 +185,8 @@ const Sparks = () => {
                     icon: <X className="w-5 h-5" />,
                     color: "hsl(var(--destructive))",
                   }}
-                  onLeftAction={() => handleExtinguishSwipe(chat.id)}
-                  disabled={isExiting}
+                  onLeftAction={() => handleExtinguishSwipe(chat.id, chat.other_profile?.name)}
+                  disabled={isExiting || pendingIds.has(chat.id)}
                   className={`transition-all duration-400 ${
                     isExiting 
                       ? 'opacity-0 scale-95 translate-x-8 pointer-events-none' 
