@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, GripVertical, Camera, Sparkles, Crop, ArrowUp, ArrowDown, AlertCircle } from "lucide-react";
+import { Plus, X, GripVertical, Camera, Sparkles, Crop, ArrowUp, ArrowDown, AlertCircle, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProfilePhotos, useUploadProfilePhoto, useDeleteProfilePhoto, useReorderProfilePhotos } from "@/hooks/useProfilePhotos";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PhotoSourceSelector } from "./PhotoSourceSelector";
 import { fireGalleryCompleteConfetti } from "@/utils/sparkConfetti";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ProfilePhotoManagerProps {
   profileId: string;
@@ -276,6 +282,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
   }
 
   return (
+    <TooltipProvider delayDuration={300}>
     <div className={cn("space-y-4", isShaking && "animate-shake")}>
       {/* Header with prominent title */}
       <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl p-4 border border-primary/20">
@@ -345,17 +352,26 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
             
             {/* Prominent add button - larger on mobile */}
             {emptySlots > 0 && (
-              <Button
-                onClick={handleAddClick}
-                size={isMobile ? "lg" : "sm"}
-                className={cn(
-                  "gap-2 shadow-lg shadow-primary/25 font-semibold",
-                  isMobile && "px-6 py-3 text-base animate-pulse-soft"
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleAddClick}
+                    size={isMobile ? "lg" : "sm"}
+                    className={cn(
+                      "gap-2 shadow-lg shadow-primary/25 font-semibold",
+                      isMobile && "px-6 py-3 text-base animate-pulse-soft"
+                    )}
+                  >
+                    <Plus className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
+                    {isMobile ? "Añadir foto" : "Añadir"}
+                  </Button>
+                </TooltipTrigger>
+                {!isMobile && (
+                  <TooltipContent side="bottom">
+                    <p>Sube una nueva foto a tu galería</p>
+                  </TooltipContent>
                 )}
-              >
-                <Plus className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
-                {isMobile ? "Añadir foto" : "Añadir"}
-              </Button>
+              </Tooltip>
             )}
           </div>
         </div>
@@ -407,19 +423,29 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
               />
               
               {/* Delete button - always visible on mobile */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(photo.id, photo.photo_url);
-                }}
-                className={cn(
-                  "absolute top-1.5 right-1.5 w-8 h-8 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center z-10 shadow-lg transition-opacity",
-                  isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(photo.id, photo.photo_url);
+                    }}
+                    className={cn(
+                      "absolute top-1.5 right-1.5 w-8 h-8 rounded-full bg-destructive/90 backdrop-blur-sm flex items-center justify-center z-10 shadow-lg transition-opacity",
+                      isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                    )}
+                    disabled={deletePhoto.isPending}
+                    aria-label="Eliminar foto"
+                  >
+                    <X className="w-4 h-4 text-destructive-foreground" />
+                  </button>
+                </TooltipTrigger>
+                {!isMobile && (
+                  <TooltipContent side="left">
+                    <p>Eliminar esta foto</p>
+                  </TooltipContent>
                 )}
-                disabled={deletePhoto.isPending}
-              >
-                <X className="w-4 h-4 text-destructive-foreground" />
-              </button>
+              </Tooltip>
 
               {/* Mobile reorder buttons */}
               {isMobile && photos && photos.length > 1 && (
@@ -461,11 +487,20 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 </div>
               )}
 
-              {/* Order badge */}
+              {/* Order badge with tooltip */}
               {index === 0 && (
-                <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md">
-                  Principal
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md cursor-help">
+                      Principal
+                    </div>
+                  </TooltipTrigger>
+                  {!isMobile && (
+                    <TooltipContent side="right">
+                      <p>Esta es tu foto de perfil principal</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
               )}
             </motion.div>
           ))}
@@ -547,6 +582,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
         />
       )}
     </div>
+    </TooltipProvider>
   );
 };
 
