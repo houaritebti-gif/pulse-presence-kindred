@@ -624,12 +624,34 @@
   background: hsl(var(--destructive)) !important;
 }
 
-/* Staggered animations */
+/* Staggered animations - extended range for profile sections */
+.animate-delay-50 { animation-delay: 50ms; }
+.animate-delay-75 { animation-delay: 75ms; }
 .animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-125 { animation-delay: 125ms; }
+.animate-delay-150 { animation-delay: 150ms; }
+.animate-delay-175 { animation-delay: 175ms; }
 .animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-225 { animation-delay: 225ms; }
+.animate-delay-250 { animation-delay: 250ms; }
+.animate-delay-275 { animation-delay: 275ms; }
 .animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-325 { animation-delay: 325ms; }
+.animate-delay-350 { animation-delay: 350ms; }
+.animate-delay-375 { animation-delay: 375ms; }
 .animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-425 { animation-delay: 425ms; }
+.animate-delay-450 { animation-delay: 450ms; }
+.animate-delay-475 { animation-delay: 475ms; }
 .animate-delay-500 { animation-delay: 500ms; }
+.animate-delay-525 { animation-delay: 525ms; }
+.animate-delay-550 { animation-delay: 550ms; }
+.animate-delay-575 { animation-delay: 575ms; }
+.animate-delay-600 { animation-delay: 600ms; }
+.animate-delay-650 { animation-delay: 650ms; }
+.animate-delay-700 { animation-delay: 700ms; }
+.animate-delay-750 { animation-delay: 750ms; }
+.animate-delay-800 { animation-delay: 800ms; }
 
 /* Gradient text */
 .gradient-text {
