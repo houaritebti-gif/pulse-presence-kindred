@@ -148,6 +148,10 @@ export default {
           "25%": { transform: "rotate(-2deg)" },
           "75%": { transform: "rotate(2deg)" },
         },
+        "ripple": {
+          "0%": { transform: "scale(0)", opacity: "0.6" },
+          "100%": { transform: "scale(1)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -166,6 +170,7 @@ export default {
         "tap": "tap 0.1s ease-out",
         "bounce-subtle": "bounce-subtle 0.3s ease-out",
         "wiggle": "wiggle 0.3s ease-in-out",
+        "ripple": "ripple 0.6s ease-out forwards",
       },
     },
   },
