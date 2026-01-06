@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { useQueryClient } from "@tanstack/react-query";
 import { vibrateDevice, playNotificationSound } from "@/utils/notificationSound";
+import { fireSparkConfetti } from "@/utils/sparkConfetti";
 
 interface SparkDetectionResult {
   sparkDetected: boolean;
@@ -47,9 +48,10 @@ export const useSparkDetection = (): SparkDetectionResult => {
         setSparkDetected(true);
         setSparkChatId(sparkChat.id);
         
-        // Haptic and sound feedback for spark match!
+        // Haptic, sound, and visual feedback for spark match!
         vibrateDevice("spark");
         playNotificationSound("spark");
+        fireSparkConfetti();
         
         // Get other profile's name
         const otherProfile = sparkChat.profile_a?.id === profile.id 
@@ -106,6 +108,11 @@ export const useSparkDetection = (): SparkDetectionResult => {
             setSparkDetected(true);
             setSparkChatId(newChat.id);
             setOtherProfileName(otherProfile?.name || null);
+            
+            // Trigger celebration for realtime spark detection
+            vibrateDevice("spark");
+            playNotificationSound("spark");
+            fireSparkConfetti();
             
             // Invalidate queries
             queryClient.invalidateQueries({ queryKey: ["spark_chats", profile.id] });
