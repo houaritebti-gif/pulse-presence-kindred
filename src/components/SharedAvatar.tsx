@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import LazyImage from "@/components/LazyImage";
 
 interface SharedAvatarProps {
@@ -46,6 +47,7 @@ const SharedAvatar = forwardRef<HTMLDivElement, SharedAvatarProps>(
     },
     ref
   ) => {
+    const [isLoaded, setIsLoaded] = useState(false);
     const layoutId = enableTransition ? `avatar-${profileId}` : undefined;
     const initial = name?.[0]?.toUpperCase() || "?";
 
@@ -55,14 +57,28 @@ const SharedAvatar = forwardRef<HTMLDivElement, SharedAvatarProps>(
           src={avatarUrl}
           alt={name || "Avatar"}
           className="w-full h-full object-cover"
-          placeholderClassName="w-full h-full"
+          placeholderClassName="w-full h-full rounded-full"
+          isCircular
         />
       ) : (
-        <img
-          src={avatarUrl}
-          alt={name || "Avatar"}
-          className="w-full h-full object-cover"
-        />
+        <>
+          {/* Shimmer skeleton while loading */}
+          {!isLoaded && (
+            <Skeleton 
+              variant="circular" 
+              className="absolute inset-0 w-full h-full" 
+            />
+          )}
+          <img
+            src={avatarUrl}
+            alt={name || "Avatar"}
+            className={cn(
+              "w-full h-full object-cover transition-opacity duration-300",
+              isLoaded ? "opacity-100" : "opacity-0"
+            )}
+            onLoad={() => setIsLoaded(true)}
+          />
+        </>
       )
     ) : showFallback ? (
       <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
@@ -75,7 +91,7 @@ const SharedAvatar = forwardRef<HTMLDivElement, SharedAvatarProps>(
     ) : null;
 
     const containerClasses = cn(
-      "rounded-full overflow-hidden flex-shrink-0",
+      "rounded-full overflow-hidden flex-shrink-0 relative",
       sizeClasses[size],
       ringClassName,
       className
