@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircl
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import QuedadasListSkeleton from "@/components/QuedadasListSkeleton";
@@ -36,6 +37,13 @@ const Quedadas = () => {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
+  });
+
+  const { getAnimationStyle } = useStaggerAnimation({
+    itemCount: quedadas?.length || 0,
+    baseDelay: 50,
+    staggerDelay: 70,
+    duration: 450,
   });
 
   const [showCreate, setShowCreate] = useState(false);
@@ -299,8 +307,8 @@ const Quedadas = () => {
                 return (
                   <div
                     key={quedada.id}
-                    className="bg-card rounded-2xl p-5 sm:p-6 animate-fade-up border border-transparent hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 cursor-pointer"
-                    style={{ animationDelay: `${index * 100}ms` }}
+                    className="bg-card rounded-2xl p-5 sm:p-6 opacity-0 animate-fade-up border border-transparent hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 cursor-pointer"
+                    style={getAnimationStyle(index)}
                   >
                     {/* Header */}
                     <QuedadaCreatorHeader creator={quedada.creator} title={quedada.title} />
