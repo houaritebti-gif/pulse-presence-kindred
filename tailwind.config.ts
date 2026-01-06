@@ -167,6 +167,11 @@ export default {
           "25%": { transform: "rotate(-2deg)" },
           "75%": { transform: "rotate(2deg)" },
         },
+        "shake": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-4px)" },
+          "20%, 40%, 60%, 80%": { transform: "translateX(4px)" },
+        },
         "ripple": {
           "0%": { transform: "scale(0)", opacity: "0.6" },
           "100%": { transform: "scale(1)", opacity: "0" },
@@ -193,6 +198,7 @@ export default {
         "bounce-press": "bounce-press 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "pop": "pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "wiggle": "wiggle 0.3s ease-in-out",
+        "shake": "shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97)",
         "ripple": "ripple 0.6s ease-out forwards",
       },
       // Granular animation delays for staggered lists
