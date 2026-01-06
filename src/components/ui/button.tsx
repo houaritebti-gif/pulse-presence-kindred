@@ -4,6 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 import { useRipple } from "@/hooks/useRipple";
+import { triggerHaptic } from "@/utils/haptics";
 
 const buttonVariants = cva(
   cn(
@@ -17,8 +18,7 @@ const buttonVariants = cva(
     "disabled:pointer-events-none disabled:opacity-50",
     // SVG handling
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-    // Base micro-interactions - more pronounced
-    "active:scale-[0.95] active:translate-y-[1px]",
+    // Hover lift effect
     "hover:translate-y-[-2px]",
     // Touch device optimizations
     "touch-manipulation",
@@ -107,12 +107,27 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   enableRipple?: boolean;
+  enableHaptic?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, enableRipple = true, onMouseDown, onTouchStart, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, enableRipple = true, enableHaptic = true, onMouseDown, onTouchStart, onClick, children, ...props }, ref) => {
     const { ripples, createRipple } = useRipple();
+    const [isAnimating, setIsAnimating] = React.useState(false);
     const Comp = asChild ? Slot : "button";
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      // Trigger bounce animation
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 350);
+      
+      // Trigger haptic feedback
+      if (enableHaptic) {
+        triggerHaptic('light');
+      }
+      
+      onClick?.(e);
+    };
 
     const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
       if (enableRipple && !asChild) {
@@ -134,8 +149,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <Comp 
-        className={cn(buttonVariants({ variant, size, className }))} 
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          isAnimating && "animate-bounce-tap"
+        )} 
         ref={ref} 
+        onClick={handleClick}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
         {...props}
