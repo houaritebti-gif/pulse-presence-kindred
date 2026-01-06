@@ -279,25 +279,74 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 <Sparkles className="w-4 h-4 text-primary" />
               </h3>
               <p className="text-xs font-body text-muted-foreground">
-                {photoCount}/{MAX_PHOTOS} fotos • {isMobile ? "Usa las flechas para reordenar" : "Arrastra para reordenar"}
+                {isMobile ? "Usa las flechas para reordenar" : "Arrastra para reordenar"}
               </p>
             </div>
           </div>
           
-          {/* Prominent add button - larger on mobile */}
-          {emptySlots > 0 && (
-            <Button
-              onClick={handleAddClick}
-              size={isMobile ? "lg" : "sm"}
-              className={cn(
-                "gap-2 shadow-lg shadow-primary/25 font-semibold",
-                isMobile && "px-6 py-3 text-base animate-pulse-soft"
-              )}
-            >
-              <Plus className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
-              {isMobile ? "Añadir foto" : "Añadir"}
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Animated photo counter */}
+            <div className="flex items-center gap-1.5">
+              <div className="flex -space-x-1">
+                {[...Array(MAX_PHOTOS)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ 
+                      scale: 1, 
+                      opacity: 1,
+                    }}
+                    transition={{ 
+                      delay: i * 0.05,
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 20
+                    }}
+                    className={cn(
+                      "w-3 h-3 rounded-full border-2 border-background transition-colors duration-300",
+                      i < photoCount 
+                        ? "bg-primary" 
+                        : "bg-muted-foreground/20"
+                    )}
+                  />
+                ))}
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={emptySlots}
+                  initial={{ opacity: 0, y: -10, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className={cn(
+                    "text-xs font-bold tabular-nums min-w-[3ch] text-center",
+                    emptySlots === 0 
+                      ? "text-destructive" 
+                      : emptySlots <= 2 
+                        ? "text-amber-500" 
+                        : "text-primary"
+                  )}
+                >
+                  {emptySlots > 0 ? `+${emptySlots}` : "Lleno"}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+            
+            {/* Prominent add button - larger on mobile */}
+            {emptySlots > 0 && (
+              <Button
+                onClick={handleAddClick}
+                size={isMobile ? "lg" : "sm"}
+                className={cn(
+                  "gap-2 shadow-lg shadow-primary/25 font-semibold",
+                  isMobile && "px-6 py-3 text-base animate-pulse-soft"
+                )}
+              >
+                <Plus className={cn("w-4 h-4", isMobile && "w-5 h-5")} />
+                {isMobile ? "Añadir foto" : "Añadir"}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
