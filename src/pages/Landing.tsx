@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
 import FAQSection from "@/components/FAQSection";
 import { useRef, useEffect, useState } from "react";
+import ParallaxBackground from "@/components/ParallaxBackground";
 
 const fadeInUp: Variants = {
   hidden: {
@@ -267,6 +268,7 @@ const Landing = () => {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-background overflow-x-hidden relative">
+      <ParallaxBackground variant="landing" />
       <MouseFollower />
       
       {/* Hero Section */}

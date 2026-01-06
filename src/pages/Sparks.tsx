@@ -13,6 +13,7 @@ import EmptyState from "@/components/EmptyState";
 import SparkChatItem from "@/components/SparkChatItem";
 import SparksListSkeleton from "@/components/SparksListSkeleton";
 import StateTransition from "@/components/StateTransition";
+import ParallaxBackground from "@/components/ParallaxBackground";
 
 const Sparks = () => {
   const navigate = useNavigate();
@@ -71,9 +72,8 @@ const Sparks = () => {
   return (
     <PullToRefresh onRefresh={handleRefresh} accentColor="primary">
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24 relative overflow-hidden">
-      {/* Ambient glow backgrounds */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-20 right-0 w-[300px] h-[300px] bg-accent/5 blur-[100px] rounded-full pointer-events-none" />
+      {/* Parallax ambient glow backgrounds */}
+      <ParallaxBackground variant="list" />
       
       {/* Header */}
       <div className="relative z-10 flex items-center justify-between mb-8">
