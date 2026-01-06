@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
+import ProfileSkeleton from "@/components/ProfileSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
@@ -429,11 +430,7 @@ const Profile = () => {
   };
 
   if (profileLoading) {
-    return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </main>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (profileError) {
