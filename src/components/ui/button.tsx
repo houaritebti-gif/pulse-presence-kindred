@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
+import { useRipple } from "@/hooks/useRipple";
 
 const buttonVariants = cva(
   cn(
@@ -20,7 +21,9 @@ const buttonVariants = cva(
     "active:scale-[0.95] active:translate-y-[1px]",
     "hover:translate-y-[-2px]",
     // Touch device optimizations
-    "touch-manipulation"
+    "touch-manipulation",
+    // Position for ripple
+    "relative overflow-hidden"
   ),
   {
     variants: {
@@ -103,12 +106,56 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  enableRipple?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, enableRipple = true, onMouseDown, onTouchStart, children, ...props }, ref) => {
+    const { ripples, createRipple } = useRipple();
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+
+    const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (enableRipple && !asChild) {
+        createRipple(e);
+      }
+      onMouseDown?.(e);
+    };
+
+    const handleTouchStart = (e: React.TouchEvent<HTMLButtonElement>) => {
+      if (enableRipple && !asChild) {
+        createRipple(e);
+      }
+      onTouchStart?.(e);
+    };
+
+    if (asChild) {
+      return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props}>{children}</Comp>;
+    }
+
+    return (
+      <Comp 
+        className={cn(buttonVariants({ variant, size, className }))} 
+        ref={ref} 
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        {...props}
+      >
+        {children}
+        {/* Ripple effects */}
+        {enableRipple && ripples.map(ripple => (
+          <span
+            key={ripple.id}
+            className="absolute rounded-full bg-white/30 pointer-events-none animate-ripple"
+            style={{
+              left: ripple.x,
+              top: ripple.y,
+              width: ripple.size,
+              height: ripple.size,
+            }}
+          />
+        ))}
+      </Comp>
+    );
   },
 );
 Button.displayName = "Button";
