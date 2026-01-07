@@ -35,6 +35,12 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
 
+interface CompatibilityBreakdown {
+  tribes: number;
+  music: number;
+  lookingFor: number;
+}
+
 interface AnonymousPresenceCardProps {
   presence: {
     id: string;
@@ -55,6 +61,7 @@ interface AnonymousPresenceCardProps {
   isBoosted?: boolean;
   canSeeRealtimePresence?: boolean;
   compatibility?: number;
+  compatibilityBreakdown?: CompatibilityBreakdown;
 }
 
 // Ghost message options - same as Chat page
@@ -90,7 +97,7 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealti
   }
 };
 
-const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, canSeeRealtimePresence = true, compatibility = 0 }: AnonymousPresenceCardProps) => {
+const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, canSeeRealtimePresence = true, compatibility = 0, compatibilityBreakdown }: AnonymousPresenceCardProps) => {
   const { data: myProfile } = useProfile();
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
@@ -257,22 +264,48 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             </DropdownMenu>
           </div>
 
-          {/* Compatibility badge - bottom left */}
+          {/* Compatibility badge - bottom left with tooltip */}
           {!isBoosted && (
-            <div className={`absolute bottom-2 left-2 sm:bottom-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm shadow-lg z-20 ${
-              compatibility >= 4 
-                ? "bg-gradient-to-r from-primary to-accent shadow-primary/30 animate-pulse" 
-                : "bg-background/80"
-            }`}>
-              <Heart className={`w-3 h-3 transition-transform ${
-                compatibility >= 4 
-                  ? "text-primary-foreground fill-primary-foreground" 
-                  : "text-primary fill-primary"
-              } ${compatibility >= 5 ? "animate-bounce" : ""}`} />
-              <span className={`text-[11px] sm:text-xs font-bold ${compatibility >= 4 ? "text-primary-foreground" : "text-foreground"}`}>
-                {Math.min(compatibility, 5)}/5
-              </span>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={`absolute bottom-2 left-2 sm:bottom-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm shadow-lg z-20 cursor-help transition-all ${
+                    compatibility >= 4 
+                      ? "bg-gradient-to-r from-primary to-accent shadow-primary/30 animate-pulse" 
+                      : "bg-background/80"
+                  }`}>
+                    <Heart className={`w-3 h-3 transition-transform ${
+                      compatibility >= 4 
+                        ? "text-primary-foreground fill-primary-foreground" 
+                        : "text-primary fill-primary"
+                    } ${compatibility >= 5 ? "animate-bounce" : ""}`} />
+                    <span className={`text-[11px] sm:text-xs font-bold ${compatibility >= 4 ? "text-primary-foreground" : "text-foreground"}`}>
+                      {Math.min(compatibility, 5)}/5
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {compatibilityBreakdown ? (
+                    <div className="space-y-1">
+                      {compatibility >= 4 && (
+                        <p className="text-primary font-semibold">✨ ¡Alta compatibilidad!</p>
+                      )}
+                      {compatibilityBreakdown.tribes > 0 && (
+                        <p>🏴 {compatibilityBreakdown.tribes} {compatibilityBreakdown.tribes === 1 ? "tribu" : "tribus"}</p>
+                      )}
+                      {compatibilityBreakdown.music > 0 && (
+                        <p>🎵 {compatibilityBreakdown.music} {compatibilityBreakdown.music === 1 ? "estilo" : "estilos"}</p>
+                      )}
+                      {compatibilityBreakdown.lookingFor > 0 && (
+                        <p>🔍 {compatibilityBreakdown.lookingFor} {compatibilityBreakdown.lookingFor === 1 ? "interés" : "intereses"}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p>{compatibility} coincidencias</p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           {/* City badge - top left when not boosted */}

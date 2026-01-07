@@ -101,6 +101,7 @@ const Row = ({
           isBoosted={!!isBoosted}
           canSeeRealtimePresence={canSeeRealtimePresence}
           compatibility={getCompatibility(presence)}
+          compatibilityBreakdown={getCompatibilityBreakdown(presence)}
         />
       )}
     </div>
@@ -236,6 +237,7 @@ export const VirtualizedPresenceList = memo(({
                         isBoosted={!!isBoosted}
                         canSeeRealtimePresence={canSeeRealtimePresence}
                         compatibility={getCompatibility(presence)}
+                        compatibilityBreakdown={getCompatibilityBreakdown(presence)}
                       />
                     )}
                   </div>
@@ -316,6 +318,7 @@ export const VirtualizedPresenceList = memo(({
                     isBoosted={!!isBoosted}
                     canSeeRealtimePresence={canSeeRealtimePresence}
                     compatibility={getCompatibility(presence)}
+                    compatibilityBreakdown={getCompatibilityBreakdown(presence)}
                   />
                 )}
               </div>
