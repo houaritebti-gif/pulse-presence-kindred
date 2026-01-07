@@ -121,6 +121,10 @@ export default {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" },
         },
+        "shimmer-badge": {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
         "invisible-activate": {
           "0%": { opacity: "1", transform: "scale(1)" },
           "25%": { opacity: "0.5", transform: "scale(0.95)" },
@@ -191,6 +195,7 @@ export default {
         "glow": "glow 2s ease-in-out infinite",
         "gradient-shift": "gradient-shift 4s ease infinite",
         "shimmer": "shimmer 2s linear infinite",
+        "shimmer-badge": "shimmer-badge 3s ease-in-out infinite",
         "invisible-activate": "invisible-activate 0.6s ease-out",
         "invisible-glow": "invisible-glow 1.5s ease-out",
         "press": "press 0.15s ease-out",

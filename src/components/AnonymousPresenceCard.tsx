@@ -270,7 +270,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
               <TooltipTrigger asChild>
                 <div className={`absolute top-2 left-2 sm:top-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm shadow-lg z-20 cursor-help transition-all ${
                   compatibility >= 4 
-                    ? "bg-gradient-to-r from-primary to-accent shadow-primary/30 animate-pulse" 
+                    ? "bg-[length:400%_100%] bg-gradient-to-r from-primary via-accent to-primary shadow-primary/30 animate-shimmer-badge" 
                     : "bg-background/80"
                 }`}>
                   <Heart className={`w-3 h-3 transition-transform ${
