@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar } from "lucide-react";
+import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users } from "lucide-react";
 import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
+import { useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
 import { toast } from "sonner";
-import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS } from "@/constants/profileOptions";
+import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GENDERS_MAIN, GENDERS_EXTENDED, GenderType } from "@/constants/profileOptions";
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { playCelebrationSound } from "@/utils/notificationSound";
@@ -20,13 +21,15 @@ const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
   { id: 2, title: "¿Cuál es tu ciudad?", subtitle: "Donde conectas" },
   { id: 3, title: "¿Cuándo naciste?", subtitle: "Solo mostraremos tu edad" },
-  { id: 4, title: "Elige tu vibra", subtitle: "¿Cómo te sientes hoy?" },
-  { id: 5, title: "Tus tribus", subtitle: "¿Con quién conectas?" },
-  { id: 6, title: "Tu música", subtitle: "Hasta 5 estilos" },
-  { id: 7, title: "¿Qué buscas?", subtitle: "En KIKI" },
-  { id: 8, title: "Sobre ti", subtitle: "Breve descripción (opcional)" },
-  { id: 9, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
-  { id: 10, title: "Tu foto", subtitle: "Opcional pero recomendado" },
+  { id: 4, title: "¿Cómo te identificas?", subtitle: "Tu género" },
+  { id: 5, title: "¿Con quién conectas?", subtitle: "Selección múltiple" },
+  { id: 6, title: "Elige tu vibra", subtitle: "¿Cómo te sientes hoy?" },
+  { id: 7, title: "Tus tribus", subtitle: "¿Con quién vibras?" },
+  { id: 8, title: "Tu música", subtitle: "Hasta 5 estilos" },
+  { id: 9, title: "¿Qué buscas?", subtitle: "En KIKI" },
+  { id: 10, title: "Sobre ti", subtitle: "Breve descripción (opcional)" },
+  { id: 11, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
+  { id: 12, title: "Tu foto", subtitle: "Opcional pero recomendado" },
 ];
 
 const Onboarding = () => {
@@ -35,6 +38,7 @@ const Onboarding = () => {
   const updateProfile = useUpdateProfile();
   const updateTribes = useUpdateTribes();
   const updateMusicStyles = useUpdateMusicStyles();
+  const updateGenderPreferences = useUpdateGenderPreferences();
   const { uploadAvatar, isUploading, uploadPhase, uploadProgress } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,6 +48,9 @@ const Onboarding = () => {
   const [name, setName] = useState("");
   const [city, setCity] = useState("Madrid");
   const [birthdate, setBirthdate] = useState<string | null>(null);
+  const [selectedGender, setSelectedGender] = useState<GenderType | null>(null);
+  const [showExtendedGenders, setShowExtendedGenders] = useState(false);
+  const [selectedGenderPreferences, setSelectedGenderPreferences] = useState<GenderType[]>([]);
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
   const [selectedMusicStyles, setSelectedMusicStyles] = useState<string[]>([]);
@@ -212,18 +219,28 @@ const Onboarding = () => {
     });
   };
 
+  const toggleGenderPreference = (gender: GenderType) => {
+    setSelectedGenderPreferences(prev => 
+      prev.includes(gender) 
+        ? prev.filter(g => g !== gender)
+        : [...prev, gender]
+    );
+  };
+
   const canProceed = () => {
     switch (step) {
       case 1: return name.trim().length > 0;
       case 2: return city.trim().length > 0;
       case 3: return isValidAge; // Must be 18+
-      case 4: return selectedVibe !== null;
-      case 5: return true; // Tribes are optional
-      case 6: return true; // Music is optional
-      case 7: return true; // Looking for is optional
-      case 8: return true; // Bio is optional
-      case 9: return true; // Details are optional
-      case 10: return true; // Photo is optional
+      case 4: return selectedGender !== null;
+      case 5: return selectedGenderPreferences.length > 0;
+      case 6: return selectedVibe !== null;
+      case 7: return true; // Tribes are optional
+      case 8: return true; // Music is optional
+      case 9: return true; // Looking for is optional
+      case 10: return true; // Bio is optional
+      case 11: return true; // Details are optional
+      case 12: return true; // Photo is optional
       default: return true;
     }
   };
@@ -282,7 +299,7 @@ const Onboarding = () => {
     if (!profile?.id) return;
 
     try {
-      // Update profile
+      // Update profile with gender
       await updateProfile.mutateAsync({
         name,
         city,
@@ -298,7 +315,16 @@ const Onboarding = () => {
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
         birthdate: birthdate && !birthdate.includes("0000") ? birthdate : null,
+        gender: selectedGender,
       } as any);
+
+      // Update gender preferences
+      if (selectedGenderPreferences.length > 0) {
+        await updateGenderPreferences.mutateAsync({
+          profileId: profile.id,
+          preferences: selectedGenderPreferences,
+        });
+      }
 
       // Update tribes
       if (selectedTribes.length > 0) {
@@ -425,7 +451,177 @@ const Onboarding = () => {
       case 4:
         return (
           <motion.div 
-            key="step-4" 
+            key="step-4-gender" 
+            className="space-y-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div 
+              className="flex items-center gap-2 text-muted-foreground mb-2"
+              variants={itemVariants}
+            >
+              <User className="w-4 h-4" />
+              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Elige cómo te identificas</span>
+            </motion.div>
+            
+            {/* Main genders */}
+            <div className="space-y-2">
+              {GENDERS_MAIN.map((gender) => (
+                <motion.button
+                  key={gender.value}
+                  onClick={() => { 
+                    triggerHaptic('selection'); 
+                    setSelectedGender(gender.value);
+                    setShowExtendedGenders(false);
+                  }}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`w-full p-4 rounded-2xl text-base transition-colors flex items-center justify-between ${
+                    selectedGender === gender.value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-card-foreground hover:bg-card/80"
+                  }`}
+                  style={{ fontFamily: 'Arial, sans-serif' }}
+                >
+                  <span>{gender.label}</span>
+                  {selectedGender === gender.value && <Check className="w-5 h-5" />}
+                </motion.button>
+              ))}
+              
+              {/* "Otra identidad" button */}
+              <motion.button
+                onClick={() => { 
+                  triggerHaptic('selection'); 
+                  setShowExtendedGenders(!showExtendedGenders);
+                }}
+                variants={itemVariants}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`w-full p-4 rounded-2xl text-base transition-colors flex items-center justify-between ${
+                  showExtendedGenders || GENDERS_EXTENDED.some(g => g.value === selectedGender)
+                    ? "bg-accent text-accent-foreground"
+                    : "bg-card text-card-foreground hover:bg-card/80"
+                }`}
+                style={{ fontFamily: 'Arial, sans-serif' }}
+              >
+                <span>Otra identidad...</span>
+                <motion.span
+                  animate={{ rotate: showExtendedGenders ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  ▼
+                </motion.span>
+              </motion.button>
+            </div>
+
+            {/* Extended genders (collapsible) */}
+            <AnimatePresence>
+              {showExtendedGenders && (
+                <motion.div 
+                  className="space-y-2 pl-4 border-l-2 border-primary/30"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                >
+                  {GENDERS_EXTENDED.map((gender) => (
+                    <motion.button
+                      key={gender.value}
+                      onClick={() => { 
+                        triggerHaptic('selection'); 
+                        setSelectedGender(gender.value);
+                      }}
+                      variants={itemVariants}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`w-full p-3 rounded-xl text-sm transition-colors flex items-center justify-between ${
+                        selectedGender === gender.value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card/50 text-card-foreground hover:bg-card/80"
+                      }`}
+                      style={{ fontFamily: 'Arial, sans-serif' }}
+                    >
+                      <span>{gender.label}</span>
+                      {selectedGender === gender.value && <Check className="w-4 h-4" />}
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        );
+
+      case 5:
+        return (
+          <motion.div 
+            key="step-5-preferences" 
+            className="space-y-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div 
+              className="flex items-center gap-2 text-muted-foreground mb-2"
+              variants={itemVariants}
+            >
+              <Heart className="w-4 h-4" />
+              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Puedes elegir varias opciones</span>
+            </motion.div>
+            
+            {/* Main preferences */}
+            <div className="space-y-2">
+              {[
+                { value: "woman" as GenderType, label: "Mujeres", emoji: "👩" },
+                { value: "man" as GenderType, label: "Hombres", emoji: "👨" },
+                { value: "non_binary" as GenderType, label: "Personas no binarias", emoji: "🌈" },
+              ].map((option) => (
+                <motion.button
+                  key={option.value}
+                  onClick={() => { 
+                    triggerHaptic('selection'); 
+                    toggleGenderPreference(option.value);
+                  }}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`w-full p-4 rounded-2xl text-base transition-colors flex items-center justify-between ${
+                    selectedGenderPreferences.includes(option.value)
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-card-foreground hover:bg-card/80"
+                  }`}
+                  style={{ fontFamily: 'Arial, sans-serif' }}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="text-xl">{option.emoji}</span>
+                    <span>{option.label}</span>
+                  </span>
+                  {selectedGenderPreferences.includes(option.value) && <Check className="w-5 h-5" />}
+                </motion.button>
+              ))}
+            </div>
+
+            <AnimatePresence>
+              {selectedGenderPreferences.length > 0 && (
+                <motion.p 
+                  className="text-center text-sm text-muted-foreground pt-2"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  {selectedGenderPreferences.length} seleccionada{selectedGenderPreferences.length > 1 ? "s" : ""}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        );
+
+      case 6:
+        return (
+          <motion.div 
+            key="step-6-vibe" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -455,10 +651,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 5:
+      case 7:
         return (
           <motion.div 
-            key="step-4" 
+            key="step-7-tribes" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -499,10 +695,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 6:
+      case 8:
         return (
           <motion.div 
-            key="step-5" 
+            key="step-8-music" 
             className="space-y-6 max-h-[50vh] overflow-y-auto"
             variants={containerVariants}
             initial="hidden"
@@ -553,10 +749,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 7:
+      case 9:
         return (
           <motion.div 
-            key="step-6" 
+            key="step-9-looking" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -611,10 +807,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 8:
+      case 10:
         return (
           <motion.div 
-            key="step-7" 
+            key="step-10-bio" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -646,10 +842,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 9:
+      case 11:
         return (
           <motion.div 
-            key="step-8" 
+            key="step-11-details" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -725,10 +921,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 10:
+      case 12:
         return (
           <motion.div 
-            key="step-9" 
+            key="step-12-photo" 
             className="space-y-6 flex flex-col items-center"
             variants={containerVariants}
             initial="hidden"
@@ -891,8 +1087,8 @@ const Onboarding = () => {
         )}
       </div>
 
-      {/* Skip option for optional steps */}
-      {step >= 4 && step < STEPS.length && (
+      {/* Skip option for optional steps (after required gender/preferences) */}
+      {step >= 6 && step < STEPS.length && (
         <button
           onClick={handleNext}
           className="mt-4 text-center text-sm text-muted-foreground hover:text-foreground transition-colors"

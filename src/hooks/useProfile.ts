@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { GenderType } from "@/constants/profileOptions";
 
 export interface Profile {
   id: string;
@@ -22,6 +23,7 @@ export interface Profile {
   email_verified: boolean | null;
   identity_verified: boolean | null;
   birthdate: string | null;
+  gender: GenderType | null;
   created_at: string;
   updated_at: string;
 }
@@ -101,7 +103,7 @@ export const useUpdateProfile = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "bio" | "looking_for" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic" | "colored_hair" | "shaved_head" | "vintage_style" | "gothic_style" | "share_typing_status" | "birthdate">>) => {
+    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "bio" | "looking_for" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic" | "colored_hair" | "shaved_head" | "vintage_style" | "gothic_style" | "share_typing_status" | "birthdate" | "gender">>) => {
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
