@@ -55,6 +55,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   };
 
   const toggleTribe = (tribe: string) => {
+    triggerHaptic('light');
     const currentTribes = filters.tribes ?? [];
     const newTribes = currentTribes.includes(tribe)
       ? currentTribes.filter(t => t !== tribe)
@@ -63,6 +64,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   };
 
   const toggleMusicStyle = (style: string) => {
+    triggerHaptic('light');
     const currentStyles = filters.musicStyles ?? [];
     const newStyles = currentStyles.includes(style)
       ? currentStyles.filter(s => s !== style)
@@ -71,6 +73,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   };
 
   const toggleDetail = (detail: string) => {
+    triggerHaptic('light');
     const currentDetails = filters.details ?? [];
     const newDetails = currentDetails.includes(detail)
       ? currentDetails.filter(d => d !== detail)
@@ -79,6 +82,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   };
 
   const toggleLookingFor = (option: string) => {
+    triggerHaptic('light');
     const currentLookingFor = filters.lookingFor ?? [];
     const newLookingFor = currentLookingFor.includes(option)
       ? currentLookingFor.filter(l => l !== option)
@@ -87,6 +91,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   };
 
   const toggleGender = (gender: GenderType) => {
+    triggerHaptic('light');
     const currentGenders = filters.genders ?? [];
     const newGenders = currentGenders.includes(gender)
       ? currentGenders.filter(g => g !== gender)
@@ -95,6 +100,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   };
 
   const toggleCity = (city: string) => {
+    triggerHaptic('light');
     const currentCities = filters.cities ?? [];
     const newCities = currentCities.includes(city)
       ? currentCities.filter(c => c !== city)
@@ -107,6 +113,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   };
 
   const clearFilters = () => {
+    triggerHaptic('medium');
     onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], ageRange: undefined });
   };
 
