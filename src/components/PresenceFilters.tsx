@@ -334,23 +334,33 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 <ChevronDown className="w-5 h-5 text-muted-foreground" />
               </motion.div>
             </button>
-            {expandedSection === "tribes" && (
-              <div className="flex flex-wrap gap-2 animate-fade-up">
-                {TRIBES.map(tribe => (
-                  <button
-                    key={tribe.value}
-                    onClick={() => toggleTribe(tribe.value)}
-                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
-                      (filters.tribes ?? []).includes(tribe.value)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
-                    }`}
-                  >
-                    {tribe.emoji} {tribe.value}
-                  </button>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {expandedSection === "tribes" && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-wrap gap-2 overflow-hidden"
+                >
+                  {TRIBES.map((tribe, index) => (
+                    <motion.button
+                      key={tribe.value}
+                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: index * 0.03, duration: 0.2 }}
+                      onClick={() => toggleTribe(tribe.value)}
+                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                        (filters.tribes ?? []).includes(tribe.value)
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                      }`}
+                    >
+                      {tribe.emoji} {tribe.value}
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Music section */}
@@ -379,30 +389,45 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 <ChevronDown className="w-5 h-5 text-muted-foreground" />
               </motion.div>
             </button>
-            {expandedSection === "music" && (
-              <div className="space-y-3 animate-fade-up">
-                {MUSIC_CATEGORIES.map(category => (
-                  <div key={category.name}>
-                    <p className="font-body text-xs text-card-foreground/50 mb-1.5">{category.name}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {category.styles.map(style => (
-                        <button
-                          key={style}
-                          onClick={() => toggleMusicStyle(style)}
-                          className={`px-2.5 py-1 rounded-full font-body text-xs transition-all active:scale-95 ${
-                            (filters.musicStyles ?? []).includes(style)
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
-                          }`}
-                        >
-                          {style}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {expandedSection === "music" && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-3 overflow-hidden"
+                >
+                  {MUSIC_CATEGORIES.map((category, catIndex) => (
+                    <motion.div 
+                      key={category.name}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: catIndex * 0.05 }}
+                    >
+                      <p className="font-body text-xs text-card-foreground/50 mb-1.5">{category.name}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {category.styles.map((style, styleIndex) => (
+                          <motion.button
+                            key={style}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: catIndex * 0.05 + styleIndex * 0.02, duration: 0.15 }}
+                            onClick={() => toggleMusicStyle(style)}
+                            className={`px-2.5 py-1 rounded-full font-body text-xs transition-all active:scale-95 ${
+                              (filters.musicStyles ?? []).includes(style)
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                            }`}
+                          >
+                            {style}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Looking for section */}
@@ -431,23 +456,33 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 <ChevronDown className="w-5 h-5 text-muted-foreground" />
               </motion.div>
             </button>
-            {expandedSection === "lookingFor" && (
-              <div className="flex flex-wrap gap-2 animate-fade-up">
-                {LOOKING_FOR_OPTIONS.map(option => (
-                  <button
-                    key={option.value}
-                    onClick={() => toggleLookingFor(option.value)}
-                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
-                      (filters.lookingFor ?? []).includes(option.value)
-                        ? "bg-secondary text-secondary-foreground"
-                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
-                    }`}
-                  >
-                    {option.emoji} {option.value}
-                  </button>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {expandedSection === "lookingFor" && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-wrap gap-2 overflow-hidden"
+                >
+                  {LOOKING_FOR_OPTIONS.map((option, index) => (
+                    <motion.button
+                      key={option.value}
+                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: index * 0.04, duration: 0.2 }}
+                      onClick={() => toggleLookingFor(option.value)}
+                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
+                        (filters.lookingFor ?? []).includes(option.value)
+                          ? "bg-secondary text-secondary-foreground"
+                          : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                      }`}
+                    >
+                      {option.emoji} {option.value}
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Details section */}
@@ -476,23 +511,33 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 <ChevronDown className="w-5 h-5 text-muted-foreground" />
               </motion.div>
             </button>
-            {expandedSection === "details" && (
-              <div className="flex flex-wrap gap-2 animate-fade-up">
-                {OPTIONAL_DETAILS.map(detail => (
-                  <button
-                    key={detail.key}
-                    onClick={() => toggleDetail(detail.key)}
-                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
-                      (filters.details ?? []).includes(detail.key)
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
-                    }`}
-                  >
-                    {detail.label}
-                  </button>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {expandedSection === "details" && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-wrap gap-2 overflow-hidden"
+                >
+                  {OPTIONAL_DETAILS.map((detail, index) => (
+                    <motion.button
+                      key={detail.key}
+                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: index * 0.04, duration: 0.2 }}
+                      onClick={() => toggleDetail(detail.key)}
+                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
+                        (filters.details ?? []).includes(detail.key)
+                          ? "bg-accent text-accent-foreground"
+                          : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                      }`}
+                    >
+                      {detail.label}
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Gender section */}
@@ -521,23 +566,33 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 <ChevronDown className="w-5 h-5 text-muted-foreground" />
               </motion.div>
             </button>
-            {expandedSection === "gender" && (
-              <div className="flex flex-wrap gap-2 animate-fade-up">
-                {ALL_GENDERS.map(gender => (
-                  <button
-                    key={gender.value}
-                    onClick={() => toggleGender(gender.value)}
-                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
-                      (filters.genders ?? []).includes(gender.value)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
-                    }`}
-                  >
-                    {gender.label}
-                  </button>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {expandedSection === "gender" && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-wrap gap-2 overflow-hidden"
+                >
+                  {ALL_GENDERS.map((gender, index) => (
+                    <motion.button
+                      key={gender.value}
+                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ delay: index * 0.03, duration: 0.2 }}
+                      onClick={() => toggleGender(gender.value)}
+                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
+                        (filters.genders ?? []).includes(gender.value)
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                      }`}
+                    >
+                      {gender.label}
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* City section */}
@@ -567,23 +622,33 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                   <ChevronDown className="w-5 h-5 text-muted-foreground" />
                 </motion.div>
               </button>
-              {expandedSection === "city" && (
-                <div className="flex flex-wrap gap-2 animate-fade-up">
-                  {sortedCities.map(city => (
-                    <button
-                      key={city}
-                      onClick={() => toggleCity(city)}
-                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
-                        (filters.cities ?? []).includes(city)
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
-                      }`}
-                    >
-                      {city}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence>
+                {expandedSection === "city" && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="flex flex-wrap gap-2 overflow-hidden"
+                  >
+                    {sortedCities.map((city, index) => (
+                      <motion.button
+                        key={city}
+                        initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ delay: index * 0.03, duration: 0.2 }}
+                        onClick={() => toggleCity(city)}
+                        className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
+                          (filters.cities ?? []).includes(city)
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                        }`}
+                      >
+                        {city}
+                      </motion.button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
 
