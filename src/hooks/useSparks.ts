@@ -212,6 +212,16 @@ export const useHasSparkWith = (otherProfileId: string | undefined) => {
   );
 };
 
+// Get the spark chat ID with a specific profile (if exists)
+export const useSparkChatWith = (otherProfileId: string | undefined) => {
+  const { data: chats } = useSparkChats();
+  
+  if (!otherProfileId || !chats) return null;
+  
+  const chat = chats.find(c => c.other_profile?.id === otherProfileId);
+  return chat?.id || null;
+};
+
 // Get chat messages for a specific chat
 export const useChatMessages = (chatId: string | undefined) => {
   const queryClient = useQueryClient();
