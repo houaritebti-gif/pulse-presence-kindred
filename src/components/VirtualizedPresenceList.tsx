@@ -7,6 +7,7 @@ import { PresenceWithProfile } from "@/hooks/usePresence";
 import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useListKeyboardNavigation } from "@/hooks/useListKeyboardNavigation";
+import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 interface CompatibilityBreakdown {
   tribes: number;
   music: number;
@@ -166,8 +167,26 @@ export const VirtualizedPresenceList = memo(({
     ? [...activeProfiles, ...inactiveProfiles]
     : profiles;
 
-  const { getContainerProps, getItemProps } = useListKeyboardNavigation({
+  const { getContainerProps, getItemProps: getNavItemProps } = useListKeyboardNavigation({
     itemCount: allProfilesForNav.length,
+  });
+
+  // Stagger animation for active profiles
+  const { getItemProps: getActiveAnimProps } = useStaggerAnimation({
+    itemCount: activeProfiles.length,
+    baseDelay: 80,
+    staggerDelay: 70,
+    useSpring: true,
+  });
+
+  // Stagger animation for inactive profiles (offset by active count)
+  const { getItemProps: getInactiveAnimProps } = useStaggerAnimation({
+    itemCount: inactiveProfiles.length,
+    baseDelay: canSeeRealtimePresence && activeProfiles.length > 0 
+      ? (activeProfiles.length + 2) * 70 
+      : 80,
+    staggerDelay: 70,
+    useSpring: true,
   });
 
   // For small lists or when showing separator, don't virtualize
@@ -200,9 +219,8 @@ export const VirtualizedPresenceList = memo(({
                 return (
                   <div 
                     key={presence.id}
-                    {...getItemProps(index)}
-                    className="opacity-0 animate-stagger-fade-up transition-all duration-300"
-                    style={{ animationDelay: `${(index + 1) * 60}ms` }}
+                    {...getNavItemProps(index)}
+                    {...getActiveAnimProps(index)}
                   >
                     {isConnected ? (
                       <PresenceCard
@@ -274,16 +292,12 @@ export const VirtualizedPresenceList = memo(({
             const profileId = presence.profile?.id;
             const isConnected = profileId && connectedProfileIds.has(profileId);
             const isBoosted = profileId && boostedIds.has(profileId);
-            const baseDelay = canSeeRealtimePresence && activeProfiles.length > 0 
-              ? (activeProfiles.length + 2) * 80 
-              : 0;
             
             return (
               <div 
                 key={presence.id}
-                {...getItemProps(activeProfiles.length + index)}
-                className="opacity-0 animate-stagger-fade-up transition-all duration-300"
-                style={{ animationDelay: `${baseDelay + (index * 60)}ms` }}
+                {...getNavItemProps(activeProfiles.length + index)}
+                {...getInactiveAnimProps(index)}
               >
                 {isConnected ? (
                   <PresenceCard
