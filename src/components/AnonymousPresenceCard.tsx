@@ -196,7 +196,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
   return (
     <>
       <div
-        className={`w-full bg-card rounded-2xl sm:rounded-3xl overflow-hidden text-left transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/10 active:scale-[0.98] animate-fade-up focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+        className={`w-full bg-card rounded-2xl sm:rounded-3xl overflow-hidden text-left transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20 active:scale-[0.98] active:shadow-md animate-fade-up focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
           isBoosted ? "ring-2 ring-primary/50 shadow-lg shadow-primary/20" : "shadow-md"
         }`}
         style={{ animationDelay: `${animationDelay}ms` }}
