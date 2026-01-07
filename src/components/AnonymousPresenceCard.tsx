@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart } from "lucide-react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User } from "lucide-react";
+import { ALL_GENDERS } from "@/constants/profileOptions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +52,8 @@ interface AnonymousPresenceCardProps {
       city?: string | null;
       vibe?: string | null;
       looking_for?: string[] | null;
+      gender?: string | null;
+      birthdate?: string | null;
     } | null;
     tribes: string[];
     musicStyles: string[];
@@ -63,6 +66,26 @@ interface AnonymousPresenceCardProps {
   compatibility?: number;
   compatibilityBreakdown?: CompatibilityBreakdown;
 }
+
+// Helper to get gender label from value
+const getGenderLabel = (genderValue: string | null | undefined): string | null => {
+  if (!genderValue) return null;
+  const gender = ALL_GENDERS.find(g => g.value === genderValue);
+  return gender?.label || null;
+};
+
+// Helper to calculate age from birthdate
+const calculateAge = (birthdate: string | null | undefined): number | null => {
+  if (!birthdate) return null;
+  const today = new Date();
+  const birth = new Date(birthdate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
 
 // Ghost message options - same as Chat page
 const GHOST_MESSAGES = [
@@ -310,12 +333,29 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             </Tooltip>
           </TooltipProvider>
 
-          {/* City badge - bottom left */}
-          {presence.profile?.city && (
-            <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-20 px-2 py-1 sm:px-2.5 rounded-full bg-background/80 backdrop-blur-sm">
-              <span className="text-xs font-body text-foreground">{presence.profile.city}</span>
+          {/* Profile info badge - bottom left (name, age, gender) */}
+          <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-20 flex flex-col gap-1">
+            {/* Name, age, gender */}
+            <div className="flex items-center gap-1.5 px-2 py-1 sm:px-2.5 rounded-full bg-background/80 backdrop-blur-sm">
+              <User className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs font-medium text-foreground">
+                {presence.profile?.name || "Anónima"}
+                {(presence.profile?.birthdate || presence.profile?.gender) && (
+                  <span className="font-normal text-muted-foreground ml-1">
+                    {presence.profile?.birthdate && calculateAge(presence.profile.birthdate)}
+                    {presence.profile?.birthdate && presence.profile?.gender && ", "}
+                    {presence.profile?.gender && getGenderLabel(presence.profile.gender)}
+                  </span>
+                )}
+              </span>
             </div>
-          )}
+            {/* City badge */}
+            {presence.profile?.city && (
+              <div className="px-2 py-1 sm:px-2.5 rounded-full bg-background/80 backdrop-blur-sm">
+                <span className="text-xs font-body text-foreground">📍 {presence.profile.city}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Info section - fixed height for consistent cards */}
@@ -340,10 +380,16 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             );
           })()}
 
-          {/* 2. Name - MIDDLE */}
-          <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground/90 mb-2">
-            Perfil privado
-          </h3>
+          {/* 2. Looking for - MIDDLE */}
+          {presence.profile?.looking_for && presence.profile.looking_for.length > 0 && (
+            <div className="mb-2">
+              <span className="text-xs text-muted-foreground">Busca: </span>
+              <span className="text-xs text-card-foreground/80">
+                {presence.profile.looking_for.slice(0, 2).join(", ")}
+                {presence.profile.looking_for.length > 2 && ` +${presence.profile.looking_for.length - 2}`}
+              </span>
+            </div>
+          )}
           
           {/* 3. Interests/Tags - BOTTOM with tooltip */}
           <TooltipProvider>
