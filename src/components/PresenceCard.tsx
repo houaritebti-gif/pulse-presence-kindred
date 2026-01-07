@@ -258,51 +258,37 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
 
         {/* Info section - fixed height for consistent cards */}
         <div className="p-3 sm:p-4 h-[140px] sm:h-[130px] flex flex-col">
-          {/* Name row with badges */}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-1.5">
-            <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground leading-tight">
-              {presence.profile?.name || "Anónima"}
-              {presence.profile?.birthdate && (
-                <span className="font-normal text-muted-foreground ml-1.5">
-                  {calculateAge(presence.profile.birthdate)}
-                </span>
-              )}
-            </h3>
-            {presence.profile?.email_verified && <VerifiedBadge type="email" size="sm" />}
-            {presence.profile?.identity_verified && <VerifiedBadge type="identity" size="sm" />}
-            {subscriptionTier === 'premium' && <PremiumBadge size="sm" />}
-            
-            {/* Activity indicator */}
-            <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
-              <div className={`w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse shadow-sm shadow-green-500/50" : ""}`} />
-              {!activityStatus.isActive && (
-                <span className="text-[11px] sm:text-[10px] text-muted-foreground font-body font-medium">
-                  {activityStatus.label}
-                </span>
-              )}
+          {/* Activity status - top */}
+          <div className="flex items-center gap-1.5 mb-2">
+            <div className={`w-2 h-2 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse shadow-sm shadow-green-500/50" : ""}`} />
+            <span className={`text-xs font-body ${activityStatus.isActive ? "text-green-500 font-medium" : "text-muted-foreground"}`}>
+              {activityStatus.isActive ? "Activo ahora" : activityStatus.label}
+            </span>
+            {/* Badges */}
+            <div className="flex items-center gap-1 ml-auto">
+              {presence.profile?.email_verified && <VerifiedBadge type="email" size="sm" />}
+              {presence.profile?.identity_verified && <VerifiedBadge type="identity" size="sm" />}
+              {subscriptionTier === 'premium' && <PremiumBadge size="sm" />}
             </div>
           </div>
 
-          {/* Compact info - gender + vibe in one line */}
-          <div className="flex items-center gap-2 text-sm text-card-foreground/90 mb-2">
-            {presence.profile?.gender && (
-              <span className="font-body">{getGenderLabel(presence.profile.gender)}</span>
+          {/* Name + Age */}
+          <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground leading-tight mb-2">
+            {presence.profile?.name || "Anónima"}
+            {presence.profile?.birthdate && (
+              <span className="font-normal text-muted-foreground ml-1.5">
+                {calculateAge(presence.profile.birthdate)}
+              </span>
             )}
-            {presence.profile?.gender && presence.profile?.vibe && (
-              <span className="text-muted-foreground/50">·</span>
-            )}
-            {presence.profile?.vibe && (
-              <span className="font-body">Vibra {presence.profile.vibe.toLowerCase()}</span>
-            )}
-          </div>
+          </h3>
           
-          {/* Compact tags - limited to 2 lines max with fade and tooltip */}
+          {/* Interests tags */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex-1 overflow-hidden relative cursor-default">
-                  <div className="flex flex-wrap gap-1.5 max-h-[52px] overflow-hidden">
-                    {/* Show max 3 tribes */}
+                  <div className="flex flex-wrap gap-1.5 max-h-[44px] overflow-hidden">
+                    {/* Show tribes first */}
                     {presence.tribes.slice(0, 3).map(tribe => (
                       <span 
                         key={tribe}
@@ -311,13 +297,8 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
                         {tribe}
                       </span>
                     ))}
-                    {presence.tribes.length > 3 && (
-                      <span className="px-2 py-0.5 rounded-full bg-card-foreground/10 font-body text-xs text-muted-foreground">
-                        +{presence.tribes.length - 3}
-                      </span>
-                    )}
-                    {/* Show max 2 music styles if space */}
-                    {presence.tribes.length < 3 && presence.musicStyles.slice(0, 2).map(style => (
+                    {/* Then music styles */}
+                    {presence.musicStyles.slice(0, 2).map(style => (
                       <span 
                         key={style}
                         className="px-2 py-0.5 rounded-full bg-primary/10 font-body text-xs text-primary"
@@ -325,9 +306,15 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
                         {style}
                       </span>
                     ))}
+                    {/* Show +N if more */}
+                    {(presence.tribes.length + presence.musicStyles.length > 5) && (
+                      <span className="px-2 py-0.5 rounded-full bg-card-foreground/10 font-body text-xs text-muted-foreground">
+                        +{presence.tribes.length + presence.musicStyles.length - 5}
+                      </span>
+                    )}
                   </div>
                   {/* Fade gradient overlay */}
-                  {(presence.tribes.length > 3 || (presence.tribes.length < 3 && presence.musicStyles.length > 2)) && (
+                  {(presence.tribes.length + presence.musicStyles.length > 4) && (
                     <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none" />
                   )}
                 </div>
@@ -364,13 +351,6 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
               )}
             </Tooltip>
           </TooltipProvider>
-
-          {/* View profile hint */}
-          <div className="mt-auto pt-1">
-            <span className="text-[10px] text-muted-foreground/70 font-body">
-              Toca para ver perfil completo
-            </span>
-          </div>
         </div>
       </div>
 
