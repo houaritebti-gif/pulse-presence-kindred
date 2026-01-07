@@ -280,8 +280,8 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             })()}
           </div>
           
-          {/* Compact tags - limited height */}
-          <div className="flex-1 overflow-hidden mb-2">
+          {/* Compact tags - limited height with fade */}
+          <div className="flex-1 overflow-hidden mb-2 relative">
             <div className="flex flex-wrap gap-1.5 max-h-[44px] overflow-hidden">
               {/* Show max 3 tribes */}
               {presence.tribes.slice(0, 3).map(tribe => (
@@ -307,6 +307,10 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                 </span>
               ))}
             </div>
+            {/* Fade gradient overlay */}
+            {(presence.tribes.length > 3 || (presence.tribes.length < 3 && presence.musicStyles.length > 2)) && (
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+            )}
           </div>
 
           {/* Ghost message button */}
