@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Music, Sparkles, MoreVertical, Flag, Ban, Calendar, Search, Star, Zap, User } from "lucide-react";
-import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
+import { Heart, Sparkles, MoreVertical, Flag, Ban, Star, Zap, User } from "lucide-react";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import PremiumBadge from "@/components/PremiumBadge";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -124,7 +123,6 @@ interface PresenceCardProps {
 
 const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false, canSeeRealtimePresence = true }: PresenceCardProps) => {
   const navigate = useNavigate();
-  const { data: organizedCount } = useOrganizedQuedadasCount(presence.profile?.id);
   const { data: subscriptionTier } = useUserSubscription(presence.profile?.id);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
@@ -258,10 +256,10 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
           </div>
         </SharedPhotoTransition>
 
-        {/* Info section - improved mobile legibility */}
-        <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+        {/* Info section - fixed height for consistent cards */}
+        <div className="p-3 sm:p-4 h-[140px] sm:h-[130px] flex flex-col">
           {/* Name row with badges */}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-1.5">
             <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground leading-tight">
               {presence.profile?.name || "Anónima"}
               {presence.profile?.birthdate && (
@@ -274,117 +272,65 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             {presence.profile?.identity_verified && <VerifiedBadge type="identity" size="sm" />}
             {subscriptionTier === 'premium' && <PremiumBadge size="sm" />}
             
-            {/* Activity indicator - more visible on mobile */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1.5 cursor-help ml-auto sm:ml-0">
-                    <div className={`w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse shadow-sm shadow-green-500/50" : ""}`} />
-                    {!activityStatus.isActive && (
-                      <span className="text-[11px] sm:text-[10px] text-muted-foreground font-body font-medium">
-                        {activityStatus.label}
-                      </span>
-                    )}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{activityStatus.isActive ? "Conectado ahora mismo" : `Última conexión: ${activityStatus.label}`}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {/* Activity indicator */}
+            <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+              <div className={`w-2.5 h-2.5 sm:w-2 sm:h-2 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse shadow-sm shadow-green-500/50" : ""}`} />
+              {!activityStatus.isActive && (
+                <span className="text-[11px] sm:text-[10px] text-muted-foreground font-body font-medium">
+                  {activityStatus.label}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Organized quedadas badge - separate row for visibility */}
-          {organizedCount && organizedCount > 0 && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-[10px] font-body font-medium text-accent bg-accent/15 px-2.5 py-1 rounded-full cursor-help">
-                    <Calendar className="w-3 h-3 sm:w-2.5 sm:h-2.5" />
-                    {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Ha organizado {organizedCount} {organizedCount === 1 ? "quedada" : "quedadas"}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+          {/* Compact info - gender + vibe in one line */}
+          <div className="flex items-center gap-2 text-sm text-card-foreground/90 mb-2">
+            {presence.profile?.gender && (
+              <span className="font-body">{getGenderLabel(presence.profile.gender)}</span>
+            )}
+            {presence.profile?.gender && presence.profile?.vibe && (
+              <span className="text-muted-foreground/50">·</span>
+            )}
+            {presence.profile?.vibe && (
+              <span className="font-body">Vibra {presence.profile.vibe.toLowerCase()}</span>
+            )}
+          </div>
           
-          {/* Gender */}
-          {presence.profile?.gender && (
-            <div className="flex items-center gap-1.5">
-              <User className="w-4 h-4 sm:w-3 sm:h-3 text-muted-foreground flex-shrink-0" />
-              <span className="font-body text-sm sm:text-xs text-card-foreground/80">
-                {getGenderLabel(presence.profile.gender)}
-              </span>
-            </div>
-          )}
-          
-          {/* Vibe */}
-          <p className="font-body text-sm text-card-foreground/90">
-            Vibra <span className="font-medium">{presence.profile?.vibe?.toLowerCase() || "misteriosa"}</span>
-          </p>
-          
-          {/* Tribes - improved touch targets */}
-          {presence.tribes.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 sm:gap-1.5">
-              {presence.tribes.map(tribe => (
+          {/* Compact tags - limited to 2 lines max */}
+          <div className="flex-1 overflow-hidden">
+            <div className="flex flex-wrap gap-1.5 max-h-[52px] overflow-hidden">
+              {/* Show max 3 tribes */}
+              {presence.tribes.slice(0, 3).map(tribe => (
                 <span 
                   key={tribe}
-                  className="px-2.5 sm:px-2.5 py-1.5 sm:py-1 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground font-medium"
+                  className="px-2 py-0.5 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground"
                 >
                   {tribe}
                 </span>
               ))}
+              {presence.tribes.length > 3 && (
+                <span className="px-2 py-0.5 rounded-full bg-card-foreground/10 font-body text-xs text-muted-foreground">
+                  +{presence.tribes.length - 3}
+                </span>
+              )}
+              {/* Show max 2 music styles if space */}
+              {presence.tribes.length < 3 && presence.musicStyles.slice(0, 2).map(style => (
+                <span 
+                  key={style}
+                  className="px-2 py-0.5 rounded-full bg-primary/10 font-body text-xs text-primary"
+                >
+                  {style}
+                </span>
+              ))}
             </div>
-          )}
+          </div>
 
-          {/* Music styles - better contrast */}
-          {presence.musicStyles.length > 0 && (
-            <div className="flex items-center gap-2 sm:gap-1.5">
-              <Music className="w-4 h-4 sm:w-3 sm:h-3 text-primary flex-shrink-0" />
-              <p className="font-body text-sm sm:text-xs text-card-foreground/90 truncate">
-                {presence.musicStyles.slice(0, 3).join(" · ")}
-                {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
-              </p>
-            </div>
-          )}
-
-          {/* Looking for - better contrast */}
-          {presence.profile?.looking_for && presence.profile.looking_for.length > 0 && (
-            <div className="flex items-center gap-2 sm:gap-1.5">
-              <Search className="w-4 h-4 sm:w-3 sm:h-3 text-primary/80 flex-shrink-0" />
-              <p className="font-body text-sm sm:text-xs text-card-foreground/90">
-                Busca: {presence.profile.looking_for.slice(0, 2).join(", ")}
-                {presence.profile.looking_for.length > 2 && ` +${presence.profile.looking_for.length - 2}`}
-              </p>
-            </div>
-          )}
-
-          {/* Optional details - larger touch targets */}
-          {(presence.profile?.has_tattoos || presence.profile?.has_piercings || presence.profile?.alternative_aesthetic) && (
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 sm:w-3 sm:h-3 text-accent/80 flex-shrink-0" />
-              <div className="flex flex-wrap gap-1.5 sm:gap-1">
-                {presence.profile?.has_tattoos && (
-                  <span className="px-2.5 py-1 sm:px-2 sm:py-0.5 rounded-full bg-accent/15 font-body text-[11px] sm:text-[10px] text-accent font-medium">
-                    Tatuajes
-                  </span>
-                )}
-                {presence.profile?.has_piercings && (
-                  <span className="px-2.5 py-1 sm:px-2 sm:py-0.5 rounded-full bg-accent/15 font-body text-[11px] sm:text-[10px] text-accent font-medium">
-                    Piercings
-                  </span>
-                )}
-                {presence.profile?.alternative_aesthetic && (
-                  <span className="px-2.5 py-1 sm:px-2 sm:py-0.5 rounded-full bg-accent/15 font-body text-[11px] sm:text-[10px] text-accent font-medium">
-                    Estética alt
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
+          {/* View profile hint */}
+          <div className="mt-auto pt-1">
+            <span className="text-[10px] text-muted-foreground/70 font-body">
+              Toca para ver perfil completo
+            </span>
+          </div>
         </div>
       </div>
 

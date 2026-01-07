@@ -106,7 +106,7 @@ const Row = ({
   );
 };
 
-const ITEM_HEIGHT = 400; // Approximate card height + gap for proper spacing
+const ITEM_HEIGHT = 380; // Fixed card height + gap for consistent spacing
 
 export const VirtualizedPresenceList = memo(({
   profiles,

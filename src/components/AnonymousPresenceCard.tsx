@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Search, Music, Zap } from "lucide-react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -258,8 +258,8 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           )}
         </div>
 
-        {/* Info section */}
-        <div className="p-3 sm:p-4">
+        {/* Info section - fixed height for consistent cards */}
+        <div className="p-3 sm:p-4 h-[140px] sm:h-[130px] flex flex-col">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground/90">
               Perfil privado
@@ -280,68 +280,57 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             })()}
           </div>
           
-          <p className="font-body text-sm text-card-foreground/80 mb-3">
-            Envía un mensaje ghost para conectar
-          </p>
-          
-          {/* Tribes - visible */}
-          {presence.tribes.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
-              {presence.tribes.map(tribe => (
+          {/* Compact tags - limited height */}
+          <div className="flex-1 overflow-hidden mb-2">
+            <div className="flex flex-wrap gap-1.5 max-h-[44px] overflow-hidden">
+              {/* Show max 3 tribes */}
+              {presence.tribes.slice(0, 3).map(tribe => (
                 <span 
                   key={tribe}
-                  className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground/90"
+                  className="px-2 py-0.5 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground/90"
                 >
                   {tribe}
                 </span>
               ))}
+              {presence.tribes.length > 3 && (
+                <span className="px-2 py-0.5 rounded-full bg-card-foreground/10 font-body text-xs text-muted-foreground">
+                  +{presence.tribes.length - 3}
+                </span>
+              )}
+              {/* Show max 2 music styles if space */}
+              {presence.tribes.length < 3 && presence.musicStyles.slice(0, 2).map(style => (
+                <span 
+                  key={style}
+                  className="px-2 py-0.5 rounded-full bg-primary/10 font-body text-xs text-primary"
+                >
+                  {style}
+                </span>
+              ))}
             </div>
-          )}
-
-          {/* Music styles */}
-          {presence.musicStyles.length > 0 && (
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-3">
-              <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
-              <p className="font-body text-xs sm:text-sm text-card-foreground/85 truncate">
-                {presence.musicStyles.slice(0, 3).join(" · ")}
-                {presence.musicStyles.length > 3 && ` +${presence.musicStyles.length - 3}`}
-              </p>
-            </div>
-          )}
-
-          {/* Looking for */}
-          {presence.profile?.looking_for && presence.profile.looking_for.length > 0 && (
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary/80 flex-shrink-0" />
-              <p className="font-body text-xs sm:text-sm text-card-foreground/85">
-                Busca: {presence.profile.looking_for.slice(0, 2).join(", ")}
-                {presence.profile.looking_for.length > 2 && ` +${presence.profile.looking_for.length - 2}`}
-              </p>
-            </div>
-          )}
+          </div>
 
           {/* Ghost message button */}
-          <div className="mt-3 sm:mt-2">
+          <div className="mt-auto">
             {messageSent ? (
               <Button
                 variant="secondary"
                 disabled
-                className="w-full gap-2 h-11 sm:h-10 text-sm sm:text-base transition-all duration-300"
+                className="w-full gap-2 h-10 text-sm transition-all duration-300"
               >
-                <Check className="w-4 h-4 sm:w-5 sm:h-5 animate-scale-in" />
+                <Check className="w-4 h-4 animate-scale-in" />
                 Mensaje enviado
               </Button>
             ) : (
               <Button
                 onClick={handleOpenDialog}
                 disabled={sending || !limitData?.canSend}
-                className="group w-full gap-2 h-11 sm:h-10 text-sm sm:text-base active:scale-[0.96] hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
+                className="group w-full gap-2 h-10 text-sm active:scale-[0.96] hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
                 variant="default"
               >
-                <Ghost className="w-4 h-4 sm:w-5 sm:h-5 group-hover:animate-bounce transition-transform" />
-                <span className="group-hover:tracking-wide transition-all duration-200">Enviar mensaje ghost</span>
+                <Ghost className="w-4 h-4 group-hover:animate-bounce transition-transform" />
+                <span>Enviar ghost</span>
                 {limitData && (
-                  <span className="text-xs opacity-80 ml-1 group-hover:opacity-100 transition-opacity">
+                  <span className="text-xs opacity-80 ml-1">
                     ({limitData.remaining}/5)
                   </span>
                 )}
