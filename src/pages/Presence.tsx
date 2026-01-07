@@ -427,7 +427,9 @@ const Presence = () => {
         <button
           onClick={() => {
             markAllAsSeen();
-            navigate("/sparks");
+            // Navigate to first spark's profile (profile-first flow)
+            const firstSparkProfileId = newSparks[0]?.other_profile?.id;
+            navigate(firstSparkProfileId ? `/user/${firstSparkProfileId}` : "/sparks");
           }}
           className="mb-6 bg-gradient-to-r from-primary/20 to-accent/10 rounded-2xl p-4 flex items-center gap-3 animate-fade-up hover:scale-[1.02] transition-all border border-primary/30 shadow-lg shadow-primary/10"
         >
