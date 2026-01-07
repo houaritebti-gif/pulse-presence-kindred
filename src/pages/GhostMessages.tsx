@@ -183,7 +183,7 @@ const GhostMessageCard = ({
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/profile/${message.from_profile?.id}`);
+                  navigate(`/user/${message.from_profile?.id}`);
                 }}
                 className="gap-1.5 text-muted-foreground hover:text-foreground"
               >
@@ -195,7 +195,7 @@ const GhostMessageCard = ({
                 <Button
                   variant="kiki"
                   size="sm"
-                  onClick={() => navigate(`/profile/${message.from_profile?.id}`)}
+                  onClick={() => navigate(`/user/${message.from_profile?.id}`)}
                   className="gap-1.5"
                 >
                   <Flame className="w-3.5 h-3.5" />

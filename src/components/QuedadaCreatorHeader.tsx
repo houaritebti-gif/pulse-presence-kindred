@@ -41,7 +41,7 @@ const QuedadaCreatorHeader = ({ creator, title }: QuedadaCreatorHeaderProps) => 
 
   const handleViewProfile = () => {
     if (creator?.id) {
-      navigate(`/profile/${creator.id}`);
+      navigate(`/user/${creator.id}`);
     }
   };
 
