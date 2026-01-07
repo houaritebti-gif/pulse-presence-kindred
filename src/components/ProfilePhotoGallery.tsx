@@ -313,29 +313,7 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, profileId, isOwnProfile 
           )}
         </div>
 
-        {/* Thumbnail row (only if multiple photos) */}
-        {allPhotos.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {allPhotos.map((photo, index) => (
-              <button
-                key={index}
-                onClick={() => handleThumbnailClick(index)}
-                className={cn(
-                  "flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden transition-all",
-                  index === currentIndex
-                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                    : "opacity-60 hover:opacity-100"
-                )}
-              >
-                <img
-                  src={photo}
-                  alt={`Miniatura ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Thumbnails removed - dots are enough for navigation */}
         </div>
       </SharedPhotoTransition>
 

@@ -169,10 +169,10 @@ const PublicProfile = () => {
         </DropdownMenu>
       </div>
 
-      {/* Profile content */}
-      <div className="flex-1 px-6 max-w-lg mx-auto w-full">
-        {/* Photo Gallery with shared element transition */}
-        <div className="mb-6 animate-fade-up">
+      {/* Profile content - Compact for mobile */}
+      <div className="flex-1 px-4 md:px-6 max-w-lg mx-auto w-full">
+        {/* Photo Gallery - slightly smaller on mobile */}
+        <div className="mb-4 animate-fade-up">
           <ProfilePhotoGallery
             photos={profilePhotos?.map(p => p.photo_url) || []}
             avatarUrl={profile.avatar_url}
@@ -182,75 +182,80 @@ const PublicProfile = () => {
           />
         </div>
 
-        {/* Name and vibe */}
-        <div className="text-center mb-8 animate-fade-up animate-delay-100">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <h1 className="font-display text-2xl font-bold text-foreground">
+        {/* Compact name row with badges */}
+        <div className="text-center mb-4 animate-fade-up animate-delay-100">
+          <div className="flex items-center justify-center gap-1.5 flex-wrap">
+            <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">
               {profile.name || "Anónima"}
               {(profile as any).birthdate && (
-                <span className="font-normal text-muted-foreground ml-2">
+                <span className="font-normal text-muted-foreground ml-1.5">
                   {calculateAge((profile as any).birthdate)}
                 </span>
               )}
             </h1>
-            {(profile as any).email_verified && <VerifiedBadge type="email" size="md" />}
-            {(profile as any).identity_verified && <VerifiedBadge type="identity" size="md" />}
-            {subscriptionTier === 'premium' && <PremiumBadge size="lg" />}
+            {(profile as any).email_verified && <VerifiedBadge type="email" size="sm" />}
+            {(profile as any).identity_verified && <VerifiedBadge type="identity" size="sm" />}
+            {subscriptionTier === 'premium' && <PremiumBadge size="md" />}
           </div>
           
-          {/* Organizer badge */}
-          {organizedCount && organizedCount > 0 && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-2 cursor-help animate-pulse-soft">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span className="font-body text-xs font-medium">
-                      {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
-                    </span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Esta persona organiza eventos para la comunidad</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          
-          {profile.vibe && (
-            <p className="font-body text-primary text-lg">
-              Vibra {profile.vibe.toLowerCase()}
-            </p>
-          )}
-          {profile.city && (
-            <div className="flex items-center justify-center gap-1.5 mt-2 text-muted-foreground">
-              <MapPin className="w-3.5 h-3.5" />
-              <span className="font-body text-sm">{profile.city}</span>
-            </div>
-          )}
+          {/* Compact info row: vibe + city + organizer */}
+          <div className="flex items-center justify-center gap-2 flex-wrap mt-1.5">
+            {profile.vibe && (
+              <span className="font-body text-primary text-sm">
+                Vibra {profile.vibe.toLowerCase()}
+              </span>
+            )}
+            {profile.vibe && profile.city && (
+              <span className="text-muted-foreground/50">·</span>
+            )}
+            {profile.city && (
+              <span className="flex items-center gap-1 text-muted-foreground text-sm">
+                <MapPin className="w-3 h-3" />
+                {profile.city}
+              </span>
+            )}
+            {organizedCount && organizedCount > 0 && (
+              <>
+                <span className="text-muted-foreground/50">·</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center gap-1 text-accent text-sm cursor-help">
+                        <Calendar className="w-3 h-3" />
+                        {organizedCount} {organizedCount === 1 ? "quedada" : "quedadas"}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Esta persona organiza eventos para la comunidad</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Bio / Description */}
+        {/* Bio / Description - More compact */}
         {(profile as any).bio && (
-          <div className="mb-8 animate-fade-up animate-delay-120">
-            <div className="p-4 rounded-2xl bg-card border border-border">
-              <p className={`font-body text-card-foreground ${!bioExpanded && (profile as any).bio.length > 150 ? "line-clamp-3" : ""}`}>
+          <div className="mb-5 animate-fade-up animate-delay-120">
+            <div className="p-3 rounded-xl bg-card border border-border">
+              <p className={`font-body text-sm text-card-foreground ${!bioExpanded && (profile as any).bio.length > 120 ? "line-clamp-2" : ""}`}>
                 {(profile as any).bio}
               </p>
-              {(profile as any).bio.length > 150 && (
+              {(profile as any).bio.length > 120 && (
                 <button
                   onClick={() => setBioExpanded(!bioExpanded)}
-                  className="mt-2 flex items-center gap-1 text-primary font-body text-sm hover:underline"
+                  className="mt-1.5 flex items-center gap-1 text-primary font-body text-xs hover:underline"
                 >
                   {bioExpanded ? (
                     <>
                       <ChevronUp className="w-3 h-3" />
-                      Ver menos
+                      Menos
                     </>
                   ) : (
                     <>
                       <ChevronDown className="w-3 h-3" />
-                      Ver más
+                      Más
                     </>
                   )}
                 </button>
@@ -259,20 +264,20 @@ const PublicProfile = () => {
           </div>
         )}
 
-        {/* Looking for */}
+        {/* Looking for - Compact tags */}
         {(profile as any).looking_for && (profile as any).looking_for.length > 0 && (
-          <div className="mb-8 animate-fade-up animate-delay-130">
-            <h2 className="font-display text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-              <Target className="w-4 h-4" />
+          <div className="mb-5 animate-fade-up animate-delay-130">
+            <h2 className="font-display text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5" />
               Busca en KIKI
             </h2>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {((profile as any).looking_for as string[]).map((item: string) => {
                 const isShared = compatibility.sharedLookingFor.includes(item);
                 return (
                   <span 
                     key={item}
-                    className={`px-3 py-1.5 rounded-full font-body text-sm ${
+                    className={`px-2.5 py-1 rounded-full font-body text-xs ${
                       isShared 
                         ? "bg-secondary/80 text-secondary-foreground ring-1 ring-secondary" 
                         : "bg-secondary/40 text-secondary-foreground"
@@ -285,140 +290,126 @@ const PublicProfile = () => {
             </div>
           </div>
         )}
+        {/* Compatibility - Compact card */}
         {compatibility.totalShared > 0 && (
-          <div className={`mb-8 p-4 rounded-2xl border animate-fade-up animate-delay-150 ${
+          <div className={`mb-5 p-3 rounded-xl border animate-fade-up animate-delay-150 ${
             compatibility.totalShared >= 5 
               ? "bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 border-primary/30" 
               : "bg-primary/10 border-primary/20"
           }`}>
-            <div className="flex items-center gap-2 mb-3">
-              <Heart className={`w-4 h-4 text-primary ${compatibility.totalShared >= 5 ? "animate-pulse" : ""}`} />
-              <span className="font-display text-sm font-semibold text-primary">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Heart className={`w-3.5 h-3.5 text-primary ${compatibility.totalShared >= 5 ? "animate-pulse" : ""}`} />
+              <span className="font-display text-xs font-semibold text-primary">
                 {compatibility.totalShared >= 5 && "✨ "}
                 {compatibility.totalShared} {compatibility.totalShared === 1 ? "cosa en común" : "cosas en común"}
               </span>
             </div>
-            
-            {compatibility.sharedTribes.length > 0 && (
-              <div className="mb-2">
-                <span className="font-body text-xs text-muted-foreground">🏴 Tribus: </span>
-                <span className="font-body text-sm text-foreground">
-                  {compatibility.sharedTribes.join(", ")}
-                </span>
-              </div>
-            )}
-            
-            {compatibility.sharedMusic.length > 0 && (
-              <div className="mb-2">
-                <span className="font-body text-xs text-muted-foreground">🎵 Música: </span>
-                <span className="font-body text-sm text-foreground">
-                  {compatibility.sharedMusic.join(", ")}
-                </span>
-              </div>
-            )}
-
-            {compatibility.sharedLookingFor.length > 0 && (
-              <div>
-                <span className="font-body text-xs text-muted-foreground">🔍 Buscan: </span>
-                <span className="font-body text-sm text-foreground">
-                  {compatibility.sharedLookingFor.join(", ")}
-                </span>
-              </div>
-            )}
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+              {compatibility.sharedTribes.length > 0 && (
+                <span className="text-foreground">🏴 {compatibility.sharedTribes.join(", ")}</span>
+              )}
+              {compatibility.sharedMusic.length > 0 && (
+                <span className="text-foreground">🎵 {compatibility.sharedMusic.join(", ")}</span>
+              )}
+              {compatibility.sharedLookingFor.length > 0 && (
+                <span className="text-foreground">🔍 {compatibility.sharedLookingFor.join(", ")}</span>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Tribes */}
-        {publicProfile.tribes.length > 0 && (
-          <div className="mb-6 animate-fade-up animate-delay-200">
-            <h2 className="font-display text-sm font-semibold text-muted-foreground mb-3">
-              Tribus
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {publicProfile.tribes.map(tribe => {
-                const isShared = compatibility.sharedTribes.includes(tribe);
-                return (
-                  <span 
-                    key={tribe}
-                    className={`px-3 py-1.5 rounded-full font-body text-sm ${
-                      isShared 
-                        ? "bg-primary/20 text-primary ring-1 ring-primary/30" 
-                        : "bg-card text-card-foreground"
-                    }`}
-                  >
-                    {tribe}
+        {/* Tribes + Music + Details - Collapsed into single row sections */}
+        <div className="space-y-4 animate-fade-up animate-delay-200">
+          {/* Tribes */}
+          {publicProfile.tribes.length > 0 && (
+            <div>
+              <h2 className="font-display text-xs font-semibold text-muted-foreground mb-1.5">Tribus</h2>
+              <div className="flex flex-wrap gap-1.5">
+                {publicProfile.tribes.map(tribe => {
+                  const isShared = compatibility.sharedTribes.includes(tribe);
+                  return (
+                    <span 
+                      key={tribe}
+                      className={`px-2.5 py-1 rounded-full font-body text-xs ${
+                        isShared 
+                          ? "bg-primary/20 text-primary ring-1 ring-primary/30" 
+                          : "bg-card text-card-foreground"
+                      }`}
+                    >
+                      {tribe}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Music styles */}
+          {publicProfile.musicStyles.length > 0 && (
+            <div>
+              <h2 className="font-display text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
+                <Music className="w-3 h-3" />
+                Música
+              </h2>
+              <div className="flex flex-wrap gap-1.5">
+                {publicProfile.musicStyles.map(style => {
+                  const isShared = compatibility.sharedMusic.includes(style);
+                  return (
+                    <span 
+                      key={style}
+                      className={`px-2.5 py-1 rounded-full font-body text-xs ${
+                        isShared 
+                          ? "bg-primary/30 text-primary ring-1 ring-primary/40" 
+                          : "bg-primary/10 text-primary"
+                      }`}
+                    >
+                      {style}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Optional details - inline */}
+          {(profile.has_tattoos || profile.has_piercings || profile.alternative_aesthetic) && (
+            <div>
+              <h2 className="font-display text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                Detalles
+              </h2>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.has_tattoos && (
+                  <span className="px-2.5 py-1 rounded-full bg-accent/10 font-body text-xs text-accent">
+                    Tatuajes
                   </span>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Music styles */}
-        {publicProfile.musicStyles.length > 0 && (
-          <div className="mb-6 animate-fade-up animate-delay-300">
-            <h2 className="font-display text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-              <Music className="w-4 h-4" />
-              Estilos de música
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {publicProfile.musicStyles.map(style => {
-                const isShared = compatibility.sharedMusic.includes(style);
-                return (
-                  <span 
-                    key={style}
-                    className={`px-3 py-1.5 rounded-full font-body text-sm ${
-                      isShared 
-                        ? "bg-primary/30 text-primary ring-1 ring-primary/40" 
-                        : "bg-primary/10 text-primary"
-                    }`}
-                  >
-                    {style}
+                )}
+                {profile.has_piercings && (
+                  <span className="px-2.5 py-1 rounded-full bg-accent/10 font-body text-xs text-accent">
+                    Piercings
                   </span>
-                );
-              })}
+                )}
+                {profile.alternative_aesthetic && (
+                  <span className="px-2.5 py-1 rounded-full bg-accent/10 font-body text-xs text-accent">
+                    Alternativa
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Optional details */}
-        {(profile.has_tattoos || profile.has_piercings || profile.alternative_aesthetic) && (
-          <div className="mb-8 animate-fade-up animate-delay-400">
-            <h2 className="font-display text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              Detalles
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {profile.has_tattoos && (
-                <span className="px-3 py-1.5 rounded-full bg-accent/10 font-body text-sm text-accent">
-                  Tatuajes
-                </span>
-              )}
-              {profile.has_piercings && (
-                <span className="px-3 py-1.5 rounded-full bg-accent/10 font-body text-sm text-accent">
-                  Piercings
-                </span>
-              )}
-              {profile.alternative_aesthetic && (
-                <span className="px-3 py-1.5 rounded-full bg-accent/10 font-body text-sm text-accent">
-                  Estética alternativa
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Ghost message CTA */}
+        {/* Ghost message CTA - Compact */}
         {!isBlocked && (
-          <div className="mt-auto pt-8 animate-fade-up animate-delay-500">
+          <div className="mt-6 pt-4 animate-fade-up animate-delay-500">
             <Button
               onClick={() => { triggerHaptic('selection'); navigate(`/chat/${profileId}`); }}
-              className="w-full h-14 rounded-2xl font-display text-base font-semibold"
+              className="w-full h-12 rounded-xl font-display text-sm font-semibold"
             >
-              <MessageCircle className="w-5 h-5 mr-2" />
+              <MessageCircle className="w-4 h-4 mr-2" />
               Enviar mensaje ghost
             </Button>
-            <p className="text-center font-body text-xs text-muted-foreground mt-3">
+            <p className="text-center font-body text-[11px] text-muted-foreground mt-2">
               Un mensaje valiente. Sin obligación de respuesta.
             </p>
           </div>
