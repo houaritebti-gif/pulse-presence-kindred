@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { compressProfilePhoto, CompressionProgressCallback } from "@/utils/imageCompression";
+import { validateImageQuality } from "@/utils/imageBlurDetection";
 
 const MAX_PHOTOS = 6;
 
@@ -95,6 +96,12 @@ export const useUploadProfilePhoto = () => {
 
       if (count !== null && count >= MAX_PHOTOS) {
         throw new Error(`Máximo ${MAX_PHOTOS} fotos permitidas`);
+      }
+
+      // Validate image quality (blur detection)
+      const qualityError = await validateImageQuality(file);
+      if (qualityError) {
+        throw new Error(qualityError);
       }
 
       // Compress image before upload with progress reporting
