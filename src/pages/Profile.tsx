@@ -795,9 +795,30 @@ const Profile = () => {
               ({selectedInterests.length}/7)
             </span>
           </div>
-          <p className="text-xs text-muted-foreground mb-4">
-            Selecciona entre 3 y 7 intereses
-          </p>
+          
+          {/* Progress indicator */}
+          {selectedInterests.length < 3 && (
+            <div className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary transition-all duration-300 ease-out"
+                    style={{ width: `${(selectedInterests.length / 3) * 100}%` }}
+                  />
+                </div>
+                <span className="text-xs text-destructive font-medium whitespace-nowrap">
+                  Faltan {3 - selectedInterests.length}
+                </span>
+              </div>
+            </div>
+          )}
+          
+          {selectedInterests.length >= 3 && (
+            <p className="text-xs text-primary mb-4 font-medium">
+              ✓ Mínimo alcanzado
+            </p>
+          )}
+          
           <div className="flex flex-wrap gap-2">
             {CULTURAL_INTERESTS.map(interest => (
               <button
