@@ -17,7 +17,7 @@ import { sendPushNotification } from "@/utils/pushNotifications";
 import { isVibrationEnabled, setVibrationEnabled, isDndEnabled, setDndEnabled, getDndHours, setDndHours } from "@/utils/notificationSound";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GenderType } from "@/constants/profileOptions";
+import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GenderType, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import { Textarea } from "@/components/ui/textarea";
 import { useBlockedUsersList, useUnblockUser, useMyReportHistory, REPORT_REASONS, REPORT_STATUS_LABELS } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -33,6 +33,7 @@ import GenderSelector from "@/components/GenderSelector";
 import GenderPreferencesSelector from "@/components/GenderPreferencesSelector";
 import BirthdateSelector from "@/components/BirthdateSelector";
 import { useProfileGenderPreferences, useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
+import { useProfileInterests, useUpdateInterests } from "@/hooks/useInterests";
 import { useCheckBlacklistedWords } from "@/hooks/useBioBlacklist";
 import { triggerHaptic } from "@/utils/haptics";
 
@@ -44,10 +45,12 @@ const Profile = () => {
   const { data: musicStyles } = useProfileMusicStyles(profile?.id);
   const { data: organizedCount } = useOrganizedQuedadasCount(profile?.id);
   const { data: genderPreferences } = useProfileGenderPreferences(profile?.id);
+  const { data: interests } = useProfileInterests(profile?.id);
   const updateProfile = useUpdateProfile();
   const updateTribes = useUpdateTribes();
   const updateMusicStyles = useUpdateMusicStyles();
   const updateGenderPreferences = useUpdateGenderPreferences();
+  const updateInterests = useUpdateInterests();
   const { uploadAvatar, isUploading, uploadPhase, uploadProgress } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,6 +88,9 @@ const Profile = () => {
   
   // Music section collapsed state
   const [musicExpanded, setMusicExpanded] = useState(false);
+  
+  // Interests state
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   
   const [soundMuted, setSoundMutedState] = useState(() => {
     return localStorage.getItem("kiki_sound_muted") === "true";
@@ -296,6 +302,12 @@ const Profile = () => {
     }
   }, [musicStyles]);
 
+  useEffect(() => {
+    if (interests) {
+      setSelectedInterests(interests.map(i => i.interest));
+    }
+  }, [interests]);
+
   const toggleTribe = (tribe: string) => {
     setHasChanges(true);
     setSelectedTribes(prev => 
@@ -317,6 +329,21 @@ const Profile = () => {
         return prev;
       }
       return [...prev, style];
+    });
+  };
+
+  const toggleInterest = (interest: string) => {
+    setHasChanges(true);
+    setSelectedInterests(prev => {
+      if (prev.includes(interest)) {
+        return prev.filter(i => i !== interest);
+      }
+      // Max 7 interests
+      if (prev.length >= 7) {
+        toast.error("Máximo 7 intereses");
+        return prev;
+      }
+      return [...prev, interest];
     });
   };
 
@@ -439,6 +466,11 @@ const Profile = () => {
       await updateGenderPreferences.mutateAsync({
         profileId: profile.id,
         preferences: selectedGenderPreferences,
+      });
+
+      await updateInterests.mutateAsync({
+        profileId: profile.id,
+        interests: selectedInterests,
       });
 
       toast.success("Perfil guardado");
@@ -747,7 +779,33 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Music Styles */}
+        {/* Interests */}
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '387ms', animationFillMode: 'forwards' }}>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+              Tus intereses
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              ({selectedInterests.length}/7)
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {CULTURAL_INTERESTS.map(interest => (
+              <button
+                key={interest.value}
+                onClick={() => { triggerHaptic('selection'); toggleInterest(interest.value); }}
+                className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
+                  selectedInterests.includes(interest.value)
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                }`}
+              >
+                {interest.emoji} {interest.value}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>
           <button
             onClick={() => setMusicExpanded(!musicExpanded)}
