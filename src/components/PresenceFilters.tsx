@@ -32,10 +32,10 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const hasAgeFilter = filters.ageRange && (filters.ageRange[0] !== 18 || filters.ageRange[1] !== 99);
-  const hasGenderFilter = filters.genders && filters.genders.length > 0;
-  const hasCityFilter = filters.cities && filters.cities.length > 0;
-  const hasActiveFilters = filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter;
-  const activeCount = filters.tribes.length + filters.musicStyles.length + filters.details.length + filters.lookingFor.length + filters.genders.length + filters.cities.length + (hasAgeFilter ? 1 : 0);
+  const hasGenderFilter = filters.genders?.length > 0;
+  const hasCityFilter = filters.cities?.length > 0;
+  const hasActiveFilters = (filters.tribes?.length ?? 0) > 0 || (filters.musicStyles?.length ?? 0) > 0 || (filters.details?.length ?? 0) > 0 || (filters.lookingFor?.length ?? 0) > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter;
+  const activeCount = (filters.tribes?.length ?? 0) + (filters.musicStyles?.length ?? 0) + (filters.details?.length ?? 0) + (filters.lookingFor?.length ?? 0) + (filters.genders?.length ?? 0) + (filters.cities?.length ?? 0) + (hasAgeFilter ? 1 : 0);
 
   // Sort cities alphabetically
   const sortedCities = useMemo(() => 
