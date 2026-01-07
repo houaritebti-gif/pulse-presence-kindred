@@ -483,6 +483,50 @@ export type Database = {
           },
         ]
       }
+      profile_spark_energy: {
+        Row: {
+          created_at: string
+          current_energy: number
+          current_streak: number
+          id: string
+          last_activity_date: string | null
+          longest_streak: number
+          profile_id: string
+          total_earned: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_energy?: number
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          profile_id: string
+          total_earned?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_energy?: number
+          current_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
+          profile_id?: string
+          total_earned?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_spark_energy_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_tribes: {
         Row: {
           created_at: string | null
@@ -882,6 +926,47 @@ export type Database = {
         }
         Relationships: []
       }
+      spark_transactions: {
+        Row: {
+          action: string
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          profile_id: string
+          type: string
+        }
+        Insert: {
+          action: string
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          profile_id: string
+          type: string
+        }
+        Update: {
+          action?: string
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          profile_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_transactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sparks: {
         Row: {
           created_at: string | null
@@ -1091,6 +1176,11 @@ export type Database = {
       get_connection_status: {
         Args: { target_profile_id: string; viewer_user_id: string }
         Returns: string
+      }
+      get_spark_level: { Args: { p_total_earned: number }; Returns: number }
+      get_today_earned_energy: {
+        Args: { p_profile_id: string }
+        Returns: number
       }
       get_user_subscription_tier: {
         Args: { p_profile_id: string }
