@@ -277,9 +277,11 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
           <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground leading-tight mb-2 flex items-center gap-1.5">
             <span>
               {presence.profile?.name || "Anónima"}
-              {presence.profile?.birthdate && (
+              {(presence.profile?.birthdate || presence.profile?.gender) && (
                 <span className="font-normal text-muted-foreground ml-1.5">
-                  {calculateAge(presence.profile.birthdate)}
+                  {presence.profile?.birthdate && calculateAge(presence.profile.birthdate)}
+                  {presence.profile?.birthdate && presence.profile?.gender && ", "}
+                  {presence.profile?.gender && getGenderLabel(presence.profile.gender)}
                 </span>
               )}
             </span>
