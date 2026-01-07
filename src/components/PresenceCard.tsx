@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Sparkles, MoreVertical, Flag, Ban, Star, Zap, User } from "lucide-react";
-import { useUserSubscription } from "@/hooks/useUserSubscription";
-import PremiumBadge from "@/components/PremiumBadge";
+import { Heart, MoreVertical, Flag, Ban, Zap } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { ALL_GENDERS } from "@/constants/profileOptions";
 import {
@@ -123,7 +121,6 @@ interface PresenceCardProps {
 
 const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false, canSeeRealtimePresence = true }: PresenceCardProps) => {
   const navigate = useNavigate();
-  const { data: subscriptionTier } = useUserSubscription(presence.profile?.id);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
 
@@ -184,52 +181,43 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             </div>
           )}
           
-          {/* Compatibility badge overlay with tooltip */}
-          {compatibility > 0 && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className={`absolute top-2 sm:top-3 left-2 sm:left-3 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full backdrop-blur-sm shadow-lg cursor-help transition-all ${
-                    compatibility >= 5 
-                      ? "bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-[shimmer_2s_linear_infinite] shadow-primary/40 shadow-lg" 
-                      : "bg-primary/90"
-                  }`}>
-                    {compatibility >= 5 ? (
-                      <Star className="w-3 h-3 text-primary-foreground fill-primary-foreground animate-pulse" />
-                    ) : (
-                      <Heart className="w-3 h-3 text-primary-foreground fill-primary-foreground" />
+          {/* Compatibility badge overlay - simplified X/5 format */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`absolute top-2 sm:top-3 left-2 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm shadow-lg cursor-help transition-all ${
+                  compatibility >= 4 
+                    ? "bg-gradient-to-r from-primary to-accent shadow-primary/30" 
+                    : "bg-background/80"
+                }`}>
+                  <Heart className={`w-3 h-3 ${compatibility >= 4 ? "text-primary-foreground fill-primary-foreground" : "text-primary fill-primary"}`} />
+                  <span className={`text-[11px] sm:text-xs font-bold ${compatibility >= 4 ? "text-primary-foreground" : "text-foreground"}`}>
+                    {Math.min(compatibility, 5)}/5
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                {compatibilityBreakdown ? (
+                  <div className="space-y-1">
+                    {compatibility >= 4 && (
+                      <p className="text-primary font-semibold">✨ ¡Alta compatibilidad!</p>
                     )}
-                    <span className="text-[11px] sm:text-xs font-bold text-primary-foreground">
-                      {compatibility} en común
-                    </span>
-                    {compatibility >= 5 && (
-                      <Sparkles className="w-3 h-3 text-primary-foreground animate-pulse" />
+                    {compatibilityBreakdown.tribes > 0 && (
+                      <p>🏴 {compatibilityBreakdown.tribes} {compatibilityBreakdown.tribes === 1 ? "tribu" : "tribus"}</p>
+                    )}
+                    {compatibilityBreakdown.music > 0 && (
+                      <p>🎵 {compatibilityBreakdown.music} {compatibilityBreakdown.music === 1 ? "estilo" : "estilos"}</p>
+                    )}
+                    {compatibilityBreakdown.lookingFor > 0 && (
+                      <p>🔍 {compatibilityBreakdown.lookingFor} {compatibilityBreakdown.lookingFor === 1 ? "interés" : "intereses"}</p>
                     )}
                   </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">
-                  {compatibilityBreakdown ? (
-                    <div className="space-y-1">
-                      {compatibility >= 5 && (
-                        <p className="text-primary font-semibold">✨ ¡Alta compatibilidad!</p>
-                      )}
-                      {compatibilityBreakdown.tribes > 0 && (
-                        <p>🏴 {compatibilityBreakdown.tribes} {compatibilityBreakdown.tribes === 1 ? "tribu" : "tribus"}</p>
-                      )}
-                      {compatibilityBreakdown.music > 0 && (
-                        <p>🎵 {compatibilityBreakdown.music} {compatibilityBreakdown.music === 1 ? "estilo" : "estilos"}</p>
-                      )}
-                      {compatibilityBreakdown.lookingFor > 0 && (
-                        <p>🔍 {compatibilityBreakdown.lookingFor} {compatibilityBreakdown.lookingFor === 1 ? "interés" : "intereses"}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <p>{compatibility} coincidencias</p>
-                  )}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+                ) : (
+                  <p>{compatibility} coincidencias</p>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Options menu overlay */}
           <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
@@ -264,22 +252,19 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             <span className={`text-xs font-body ${activityStatus.isActive ? "text-green-500 font-medium" : "text-muted-foreground"}`}>
               {activityStatus.isActive ? "Activo ahora" : activityStatus.label}
             </span>
-            {/* Badges */}
-            <div className="flex items-center gap-1 ml-auto">
-              {presence.profile?.email_verified && <VerifiedBadge type="email" size="sm" />}
-              {presence.profile?.identity_verified && <VerifiedBadge type="identity" size="sm" />}
-              {subscriptionTier === 'premium' && <PremiumBadge size="sm" />}
-            </div>
           </div>
 
-          {/* Name + Age */}
-          <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground leading-tight mb-2">
-            {presence.profile?.name || "Anónima"}
-            {presence.profile?.birthdate && (
-              <span className="font-normal text-muted-foreground ml-1.5">
-                {calculateAge(presence.profile.birthdate)}
-              </span>
-            )}
+          {/* Name + Age + Verified badge */}
+          <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground leading-tight mb-2 flex items-center gap-1.5">
+            <span>
+              {presence.profile?.name || "Anónima"}
+              {presence.profile?.birthdate && (
+                <span className="font-normal text-muted-foreground ml-1.5">
+                  {calculateAge(presence.profile.birthdate)}
+                </span>
+              )}
+            </span>
+            {presence.profile?.identity_verified && <VerifiedBadge type="identity" size="sm" />}
           </h3>
           
           {/* Interests tags */}
