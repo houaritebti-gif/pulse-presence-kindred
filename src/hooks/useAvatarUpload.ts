@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUpdateProfile } from "./useProfile";
 import { compressAvatar, CompressionProgressCallback } from "@/utils/imageCompression";
+import { validateImageQuality } from "@/utils/imageBlurDetection";
 
 export type AvatarUploadPhase = "compressing" | "uploading" | "complete";
 export type AvatarProgressCallback = (phase: AvatarUploadPhase, progress: number) => void;
@@ -36,6 +37,12 @@ export const useAvatarUpload = () => {
       // Validate file size (max 10MB before compression)
       if (file.size > 10 * 1024 * 1024) {
         throw new Error("La imagen no puede superar 10MB");
+      }
+
+      // Validate image quality (blur detection)
+      const qualityError = await validateImageQuality(file);
+      if (qualityError) {
+        throw new Error(qualityError);
       }
 
       // Compress image before upload
