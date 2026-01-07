@@ -64,7 +64,7 @@ export const GenderPreferencesSelector = ({ values, onChange, className }: Gende
               "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
               values.includes(option.value)
                 ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/25 scale-[1.02]"
-                : "bg-card text-foreground border-border/60 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md"
+                : "bg-card text-card-foreground border-border hover:border-primary/50 hover:bg-primary/5 hover:shadow-md dark:border-border/60"
             )}
           >
             {values.includes(option.value) && (
