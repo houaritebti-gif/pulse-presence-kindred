@@ -54,44 +54,50 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   };
 
   const toggleTribe = (tribe: string) => {
-    const newTribes = filters.tribes.includes(tribe)
-      ? filters.tribes.filter(t => t !== tribe)
-      : [...filters.tribes, tribe];
+    const currentTribes = filters.tribes ?? [];
+    const newTribes = currentTribes.includes(tribe)
+      ? currentTribes.filter(t => t !== tribe)
+      : [...currentTribes, tribe];
     onChange({ ...filters, tribes: newTribes });
   };
 
   const toggleMusicStyle = (style: string) => {
-    const newStyles = filters.musicStyles.includes(style)
-      ? filters.musicStyles.filter(s => s !== style)
-      : [...filters.musicStyles, style];
+    const currentStyles = filters.musicStyles ?? [];
+    const newStyles = currentStyles.includes(style)
+      ? currentStyles.filter(s => s !== style)
+      : [...currentStyles, style];
     onChange({ ...filters, musicStyles: newStyles });
   };
 
   const toggleDetail = (detail: string) => {
-    const newDetails = filters.details.includes(detail)
-      ? filters.details.filter(d => d !== detail)
-      : [...filters.details, detail];
+    const currentDetails = filters.details ?? [];
+    const newDetails = currentDetails.includes(detail)
+      ? currentDetails.filter(d => d !== detail)
+      : [...currentDetails, detail];
     onChange({ ...filters, details: newDetails });
   };
 
   const toggleLookingFor = (option: string) => {
-    const newLookingFor = filters.lookingFor.includes(option)
-      ? filters.lookingFor.filter(l => l !== option)
-      : [...filters.lookingFor, option];
+    const currentLookingFor = filters.lookingFor ?? [];
+    const newLookingFor = currentLookingFor.includes(option)
+      ? currentLookingFor.filter(l => l !== option)
+      : [...currentLookingFor, option];
     onChange({ ...filters, lookingFor: newLookingFor });
   };
 
   const toggleGender = (gender: GenderType) => {
-    const newGenders = filters.genders.includes(gender)
-      ? filters.genders.filter(g => g !== gender)
-      : [...filters.genders, gender];
+    const currentGenders = filters.genders ?? [];
+    const newGenders = currentGenders.includes(gender)
+      ? currentGenders.filter(g => g !== gender)
+      : [...currentGenders, gender];
     onChange({ ...filters, genders: newGenders });
   };
 
   const toggleCity = (city: string) => {
-    const newCities = filters.cities.includes(city)
-      ? filters.cities.filter(c => c !== city)
-      : [...filters.cities, city];
+    const currentCities = filters.cities ?? [];
+    const newCities = currentCities.includes(city)
+      ? currentCities.filter(c => c !== city)
+      : [...currentCities, city];
     onChange({ ...filters, cities: newCities });
   };
 
@@ -172,8 +178,8 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="font-body text-xs text-muted-foreground font-medium">Tribus</span>
-            {filters.tribes.length > 0 && (
-              <span className="text-[10px] text-primary font-bold">({filters.tribes.length})</span>
+            {(filters.tribes?.length ?? 0) > 0 && (
+              <span className="text-[10px] text-primary font-bold">({filters.tribes?.length})</span>
             )}
           </div>
           <div 
@@ -192,7 +198,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                   "shrink-0 px-3 py-1.5 rounded-full font-body text-xs transition-all duration-200",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                   "active:scale-95 hover:scale-[1.02]",
-                  filters.tribes.includes(tribe.value)
+                  (filters.tribes ?? []).includes(tribe.value)
                     ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                     : "bg-card-foreground/10 text-card-foreground/80 hover:bg-card-foreground/15 border border-transparent hover:border-card-foreground/10"
                 )}
@@ -220,8 +226,8 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           <div className="flex items-center gap-2 mb-2">
             <Music className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="font-body text-xs text-muted-foreground font-medium">Música</span>
-            {filters.musicStyles.length > 0 && (
-              <span className="text-[10px] text-primary font-bold">({filters.musicStyles.length})</span>
+            {(filters.musicStyles?.length ?? 0) > 0 && (
+              <span className="text-[10px] text-primary font-bold">({filters.musicStyles?.length})</span>
             )}
           </div>
           <div 
@@ -239,7 +245,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                   "shrink-0 px-3 py-1.5 rounded-full font-body text-xs transition-all duration-200",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                   "active:scale-95 hover:scale-[1.02]",
-                  filters.musicStyles.includes(style)
+                  (filters.musicStyles ?? []).includes(style)
                     ? "bg-accent text-accent-foreground shadow-sm shadow-accent/20"
                     : "bg-card-foreground/10 text-card-foreground/80 hover:bg-card-foreground/15 border border-transparent hover:border-card-foreground/10"
                 )}
@@ -265,7 +271,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
         {hasActiveFilters && (
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-muted-foreground">Activos:</span>
-            {filters.tribes.filter(t => !QUICK_TRIBE_VALUES.includes(t)).map(tribe => (
+            {(filters.tribes ?? []).filter(t => !QUICK_TRIBE_VALUES.includes(t)).map(tribe => (
               <button
                 key={tribe}
                 onClick={() => {
@@ -278,7 +284,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 <X className="w-3 h-3" />
               </button>
             ))}
-            {filters.musicStyles.filter(s => !QUICK_MUSIC.includes(s)).map(style => (
+            {(filters.musicStyles ?? []).filter(s => !QUICK_MUSIC.includes(s)).map(style => (
               <button
                 key={style}
                 onClick={() => {
@@ -291,7 +297,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 <X className="w-3 h-3" />
               </button>
             ))}
-            {filters.lookingFor.map(lf => (
+            {(filters.lookingFor ?? []).map(lf => (
               <button
                 key={lf}
                 onClick={() => {
@@ -304,7 +310,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 <X className="w-3 h-3" />
               </button>
             ))}
-            {filters.genders.map(g => {
+            {(filters.genders ?? []).map(g => {
               const genderLabel = ALL_GENDERS.find(ag => ag.value === g)?.label || g;
               return (
                 <button
@@ -320,7 +326,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 </button>
               );
             })}
-            {filters.cities.map(city => (
+            {(filters.cities ?? []).map(city => (
               <button
                 key={city}
                 onClick={() => {
@@ -380,7 +386,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
               className="flex items-center justify-between w-full text-left mb-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
               <span className="font-display text-sm font-semibold text-card-foreground">
-                Tribus {filters.tribes.length > 0 && `(${filters.tribes.length})`}
+                Tribus {(filters.tribes?.length ?? 0) > 0 && `(${filters.tribes?.length})`}
               </span>
               {expandedSection === "tribes" ? (
                 <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -395,7 +401,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                     key={tribe.value}
                     onClick={() => toggleTribe(tribe.value)}
                     className={`px-3 py-1.5 rounded-full font-body text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
-                      filters.tribes.includes(tribe.value)
+                      (filters.tribes ?? []).includes(tribe.value)
                         ? "bg-primary text-primary-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
                     }`}
@@ -414,7 +420,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
               className="flex items-center justify-between w-full text-left mb-2"
             >
               <span className="font-display text-sm font-semibold text-card-foreground">
-                Música {filters.musicStyles.length > 0 && `(${filters.musicStyles.length})`}
+                Música {(filters.musicStyles?.length ?? 0) > 0 && `(${filters.musicStyles?.length})`}
               </span>
               {expandedSection === "music" ? (
                 <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -433,7 +439,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                           key={style}
                           onClick={() => toggleMusicStyle(style)}
                           className={`px-2.5 py-1 rounded-full font-body text-xs transition-all ${
-                            filters.musicStyles.includes(style)
+                            (filters.musicStyles ?? []).includes(style)
                               ? "bg-primary text-primary-foreground"
                               : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
                           }`}
@@ -455,7 +461,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
               className="flex items-center justify-between w-full text-left mb-2"
             >
               <span className="font-display text-sm font-semibold text-card-foreground">
-                Busca {filters.lookingFor.length > 0 && `(${filters.lookingFor.length})`}
+                Busca {(filters.lookingFor?.length ?? 0) > 0 && `(${filters.lookingFor?.length})`}
               </span>
               {expandedSection === "lookingFor" ? (
                 <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -470,7 +476,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                     key={option.value}
                     onClick={() => toggleLookingFor(option.value)}
                     className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
-                      filters.lookingFor.includes(option.value)
+                      (filters.lookingFor ?? []).includes(option.value)
                         ? "bg-secondary text-secondary-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
                     }`}
@@ -489,7 +495,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
               className="flex items-center justify-between w-full text-left mb-2"
             >
               <span className="font-display text-sm font-semibold text-card-foreground">
-                Detalles {filters.details.length > 0 && `(${filters.details.length})`}
+                Detalles {(filters.details?.length ?? 0) > 0 && `(${filters.details?.length})`}
               </span>
               {expandedSection === "details" ? (
                 <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -504,7 +510,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                     key={detail.key}
                     onClick={() => toggleDetail(detail.key)}
                     className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
-                      filters.details.includes(detail.key)
+                      (filters.details ?? []).includes(detail.key)
                         ? "bg-accent text-accent-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
                     }`}
@@ -524,7 +530,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
             >
               <span className="font-display text-sm font-semibold text-card-foreground flex items-center gap-2">
                 <User className="w-4 h-4" />
-                Género {filters.genders.length > 0 && `(${filters.genders.length})`}
+                Género {(filters.genders?.length ?? 0) > 0 && `(${filters.genders?.length})`}
               </span>
               {expandedSection === "gender" ? (
                 <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -539,7 +545,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                     key={gender.value}
                     onClick={() => toggleGender(gender.value)}
                     className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
-                      filters.genders.includes(gender.value)
+                      (filters.genders ?? []).includes(gender.value)
                         ? "bg-primary text-primary-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
                     }`}
@@ -560,7 +566,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
               >
                 <span className="font-display text-sm font-semibold text-card-foreground flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  Ciudad {filters.cities.length > 0 && `(${filters.cities.length})`}
+                  Ciudad {(filters.cities?.length ?? 0) > 0 && `(${filters.cities?.length})`}
                 </span>
                 {expandedSection === "city" ? (
                   <ChevronUp className="w-4 h-4 text-muted-foreground" />
@@ -575,7 +581,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                       key={city}
                       onClick={() => toggleCity(city)}
                       className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
-                        filters.cities.includes(city)
+                        (filters.cities ?? []).includes(city)
                           ? "bg-primary text-primary-foreground"
                           : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
                       }`}
