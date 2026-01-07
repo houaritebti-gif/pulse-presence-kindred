@@ -378,7 +378,7 @@ const Landing = () => {
               <span className="relative -ml-1 md:-ml-2">
                 {/* Heart positioned above the I */}
                 <motion.div 
-                  className="absolute -top-6 md:-top-8 lg:-top-10 left-1/2 -translate-x-1/2"
+                  className="absolute -top-6 md:-top-8 lg:-top-10 left-1/2 -translate-x-[calc(50%+6px)]"
                   animate={{ 
                     scale: [1, 1.15, 1],
                   }}
