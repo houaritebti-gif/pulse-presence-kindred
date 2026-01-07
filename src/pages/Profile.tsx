@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag } from "lucide-react";
+import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag, Flame, ChevronRight } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
 import ProfileSkeleton from "@/components/ProfileSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,6 +36,58 @@ import { useProfileGenderPreferences, useUpdateGenderPreferences } from "@/hooks
 import { useProfileInterests, useUpdateInterests } from "@/hooks/useInterests";
 import { useCheckBlacklistedWords } from "@/hooks/useBioBlacklist";
 import { triggerHaptic } from "@/utils/haptics";
+import { SparkFlame } from "@/components/SparkFlame";
+import { useSparkEnergy } from "@/hooks/useSparkEnergy";
+
+// Spark Energy Card Component for Profile
+const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
+  const { sparkEnergy, currentLevel, progressToNext, isLoading } = useSparkEnergy();
+
+  if (isLoading) {
+    return (
+      <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '185ms', animationFillMode: 'forwards' }}>
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 animate-pulse">
+          <div className="h-16 bg-muted/30 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '185ms', animationFillMode: 'forwards' }}>
+      <button
+        onClick={() => navigate("/spark-energy")}
+        className="w-full p-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 hover:border-primary/40 transition-all duration-200 group"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <SparkFlame level={currentLevel.level} size="md" animate />
+            <div className="text-left">
+              <p className="text-sm text-muted-foreground">Tu Chispa</p>
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-bold text-foreground">
+                  {sparkEnergy?.current_energy || 0}🔥
+                </span>
+                <span className="text-xs text-primary font-medium">
+                  {currentLevel.emoji} {currentLevel.name}
+                </span>
+              </div>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+        </div>
+        
+        {/* Progress bar */}
+        <div className="mt-3 h-1.5 bg-muted/30 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
+            style={{ width: `${progressToNext}%` }}
+          />
+        </div>
+      </button>
+    </div>
+  );
+};
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -630,6 +682,9 @@ const Profile = () => {
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '175ms', animationFillMode: 'forwards' }}>
           <IdentityVerificationCard />
         </div>
+
+        {/* Spark Energy Card */}
+        <SparkEnergyCard navigate={navigate} />
 
         {/* Name & City */}
         <div className="space-y-4 mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
