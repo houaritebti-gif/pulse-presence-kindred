@@ -94,12 +94,18 @@ export const VIBES = [
   { value: "Libre", emoji: "🦋" },
 ] as const;
 
-// Optional details
+// Optional details / Aesthetic options
 export const OPTIONAL_DETAILS = [
-  { key: "has_tattoos", label: "Tatuajes" },
-  { key: "has_piercings", label: "Piercings" },
-  { key: "alternative_aesthetic", label: "Estética alternativa" },
+  { key: "has_tattoos", label: "Tatuajes", emoji: "🖋️" },
+  { key: "has_piercings", label: "Piercings", emoji: "💎" },
+  { key: "alternative_aesthetic", label: "Estética alternativa", emoji: "🖤" },
+  { key: "colored_hair", label: "Pelo de colores", emoji: "🌈" },
+  { key: "shaved_head", label: "Cabeza rapada / Undercut", emoji: "💈" },
+  { key: "vintage_style", label: "Ropa vintage / Thrift", emoji: "👗" },
+  { key: "gothic_style", label: "Estilo gótico / Dark", emoji: "🦇" },
 ] as const;
+
+export type OptionalDetailKey = typeof OPTIONAL_DETAILS[number]["key"];
 
 // Looking for options with emojis
 export const LOOKING_FOR_OPTIONS = [
