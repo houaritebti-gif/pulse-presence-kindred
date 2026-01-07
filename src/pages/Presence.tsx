@@ -10,6 +10,7 @@ import { useLocalStorage, STORAGE_KEYS } from "@/hooks/useLocalStorage";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
+import { useProfileInterests } from "@/hooks/useInterests";
 import { useNewSparks } from "@/hooks/useNewSparks";
 import { useQuedadas } from "@/hooks/useQuedadas";
 import { useUnreadNotificationCount } from "@/hooks/useNotificationCenter";
@@ -108,10 +109,12 @@ const Presence = () => {
     return connected;
   }, [sentRequests]);
 
-  // My tribes, music and looking_for for compatibility calculation
+  // My tribes, music, looking_for and interests for compatibility calculation
   const myTribeNames = useMemo(() => myTribes?.map(t => t.tribe) || [], [myTribes]);
   const myStyleNames = useMemo(() => myMusicStyles?.map(m => m.style) || [], [myMusicStyles]);
   const myLookingFor = useMemo(() => profile?.looking_for || [], [profile?.looking_for]);
+  const { data: myInterests } = useProfileInterests(profile?.id);
+  const myInterestNames = useMemo(() => myInterests?.map(i => i.interest) || [], [myInterests]);
 
   // Filters now defined earlier to use in usePresenceList
 
@@ -179,13 +182,14 @@ const Presence = () => {
   // Fetch all photos in one query
   const { data: photosMap } = useMultipleProfilePhotos(profileIds);
 
-  // Calculate compatibility for each presence (tribes + music + looking_for)
+  // Calculate compatibility for each presence (tribes + music + looking_for + interests)
   const getCompatibility = (presence: typeof otherProfiles[0]) => {
     const sharedTribes = presence.tribes.filter(t => myTribeNames.includes(t));
     const sharedMusic = presence.musicStyles.filter(m => myStyleNames.includes(m));
     const theirLookingFor = presence.profile?.looking_for || [];
     const sharedLookingFor = theirLookingFor.filter(l => myLookingFor.includes(l));
-    return sharedTribes.length + sharedMusic.length + sharedLookingFor.length;
+    const sharedInterests = presence.interests.filter(i => myInterestNames.includes(i));
+    return sharedTribes.length + sharedMusic.length + sharedLookingFor.length + sharedInterests.length;
   };
 
   // Get compatibility breakdown for tooltip
@@ -194,10 +198,12 @@ const Presence = () => {
     const sharedMusic = presence.musicStyles.filter(m => myStyleNames.includes(m));
     const theirLookingFor = presence.profile?.looking_for || [];
     const sharedLookingFor = theirLookingFor.filter(l => myLookingFor.includes(l));
+    const sharedInterests = presence.interests.filter(i => myInterestNames.includes(i));
     return {
       tribes: sharedTribes.length,
       music: sharedMusic.length,
       lookingFor: sharedLookingFor.length,
+      interests: sharedInterests.length,
     };
   };
 

@@ -12,6 +12,7 @@ interface CompatibilityBreakdown {
   tribes: number;
   music: number;
   lookingFor: number;
+  interests: number;
 }
 
 interface VirtualizedPresenceListProps {

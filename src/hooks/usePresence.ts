@@ -27,6 +27,7 @@ export interface PresenceWithProfile {
   };
   tribes: string[];
   musicStyles: string[];
+  interests: string[];
 }
 
 const PRESENCE_PAGE_SIZE = 20;
@@ -68,9 +69,10 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
       
       let tribesMap: Record<string, string[]> = {};
       let musicMap: Record<string, string[]> = {};
+      let interestsMap: Record<string, string[]> = {};
       
       if (profileIds.length > 0) {
-        const [tribesResult, musicResult] = await Promise.all([
+        const [tribesResult, musicResult, interestsResult] = await Promise.all([
           supabase
             .from("profile_tribes")
             .select("profile_id, tribe")
@@ -78,6 +80,10 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
           supabase
             .from("profile_music_styles")
             .select("profile_id, style")
+            .in("profile_id", profileIds),
+          supabase
+            .from("profile_interests")
+            .select("profile_id, interest")
             .in("profile_id", profileIds)
         ]);
 
@@ -92,12 +98,19 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
           acc[m.profile_id].push(m.style);
           return acc;
         }, {} as Record<string, string[]>);
+
+        interestsMap = (interestsResult.data || []).reduce((acc, i) => {
+          if (!acc[i.profile_id]) acc[i.profile_id] = [];
+          acc[i.profile_id].push(i.interest);
+          return acc;
+        }, {} as Record<string, string[]>);
       }
 
       const items = (presenceData || []).map(p => ({
         ...p,
         tribes: tribesMap[p.profile?.id] || [],
         musicStyles: musicMap[p.profile?.id] || [],
+        interests: interestsMap[p.profile?.id] || [],
       })) as PresenceWithProfile[];
 
       return {

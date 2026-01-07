@@ -5,6 +5,7 @@ import ErrorState from "@/components/ErrorState";
 import PublicProfileSkeleton from "@/components/PublicProfileSkeleton";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
+import { useProfileInterests } from "@/hooks/useInterests";
 import { useIsBlocked } from "@/hooks/useUserModeration";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { useProfilePhotos } from "@/hooks/useProfilePhotos";
@@ -59,21 +60,26 @@ const PublicProfile = () => {
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
   const [bioExpanded, setBioExpanded] = useState(false);
 
-  // Find shared tribes, music styles and looking_for
+  // Fetch my interests for compatibility
+  const { data: myInterests } = useProfileInterests(myProfile?.id);
+
+  // Find shared tribes, music styles, looking_for and interests
   const compatibility = useMemo(() => {
     const myTribeNames = myTribes?.map(t => t.tribe) || [];
     const myStyleNames = myMusicStyles?.map(m => m.style) || [];
     const myLookingFor = myProfile?.looking_for || [];
+    const myInterestNames = myInterests?.map(i => i.interest) || [];
     
     const sharedTribes = publicProfile?.tribes.filter(t => myTribeNames.includes(t)) || [];
     const sharedMusic = publicProfile?.musicStyles.filter(m => myStyleNames.includes(m)) || [];
     const theirLookingFor = (publicProfile?.profile as any)?.looking_for || [];
     const sharedLookingFor = theirLookingFor.filter((l: string) => myLookingFor.includes(l));
+    const sharedInterests = publicProfile?.interests.filter(i => myInterestNames.includes(i)) || [];
     
-    const totalShared = sharedTribes.length + sharedMusic.length + sharedLookingFor.length;
+    const totalShared = sharedTribes.length + sharedMusic.length + sharedLookingFor.length + sharedInterests.length;
     
-    return { sharedTribes, sharedMusic, sharedLookingFor, totalShared };
-  }, [publicProfile, myTribes, myMusicStyles, myProfile?.looking_for]);
+    return { sharedTribes, sharedMusic, sharedLookingFor, sharedInterests, totalShared };
+  }, [publicProfile, myTribes, myMusicStyles, myProfile?.looking_for, myInterests]);
 
   if (isLoading) {
     return <PublicProfileSkeleton />;
@@ -315,6 +321,9 @@ const PublicProfile = () => {
               )}
               {compatibility.sharedLookingFor.length > 0 && (
                 <span className="text-foreground">🔍 {compatibility.sharedLookingFor.join(", ")}</span>
+              )}
+              {compatibility.sharedInterests.length > 0 && (
+                <span className="text-foreground">⭐ {compatibility.sharedInterests.join(", ")}</span>
               )}
             </div>
           </div>
