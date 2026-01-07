@@ -264,53 +264,51 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             </DropdownMenu>
           </div>
 
-          {/* Compatibility badge - bottom left with tooltip */}
-          {!isBoosted && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className={`absolute bottom-2 left-2 sm:bottom-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm shadow-lg z-20 cursor-help transition-all ${
+          {/* Compatibility badge - top left with tooltip (consistent with PresenceCard) */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className={`absolute top-2 left-2 sm:top-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm shadow-lg z-20 cursor-help transition-all ${
+                  compatibility >= 4 
+                    ? "bg-gradient-to-r from-primary to-accent shadow-primary/30 animate-pulse" 
+                    : "bg-background/80"
+                }`}>
+                  <Heart className={`w-3 h-3 transition-transform ${
                     compatibility >= 4 
-                      ? "bg-gradient-to-r from-primary to-accent shadow-primary/30 animate-pulse" 
-                      : "bg-background/80"
-                  }`}>
-                    <Heart className={`w-3 h-3 transition-transform ${
-                      compatibility >= 4 
-                        ? "text-primary-foreground fill-primary-foreground" 
-                        : "text-primary fill-primary"
-                    } ${compatibility >= 5 ? "animate-bounce" : ""}`} />
-                    <span className={`text-[11px] sm:text-xs font-bold ${compatibility >= 4 ? "text-primary-foreground" : "text-foreground"}`}>
-                      {Math.min(compatibility, 5)}/5
-                    </span>
+                      ? "text-primary-foreground fill-primary-foreground" 
+                      : "text-primary fill-primary"
+                  } ${compatibility >= 5 ? "animate-bounce" : ""}`} />
+                  <span className={`text-[11px] sm:text-xs font-bold ${compatibility >= 4 ? "text-primary-foreground" : "text-foreground"}`}>
+                    {Math.min(compatibility, 5)}/5
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                {compatibilityBreakdown ? (
+                  <div className="space-y-1">
+                    {compatibility >= 4 && (
+                      <p className="text-primary font-semibold">✨ ¡Alta compatibilidad!</p>
+                    )}
+                    {compatibilityBreakdown.tribes > 0 && (
+                      <p>🏴 {compatibilityBreakdown.tribes} {compatibilityBreakdown.tribes === 1 ? "tribu" : "tribus"}</p>
+                    )}
+                    {compatibilityBreakdown.music > 0 && (
+                      <p>🎵 {compatibilityBreakdown.music} {compatibilityBreakdown.music === 1 ? "estilo" : "estilos"}</p>
+                    )}
+                    {compatibilityBreakdown.lookingFor > 0 && (
+                      <p>🔍 {compatibilityBreakdown.lookingFor} {compatibilityBreakdown.lookingFor === 1 ? "interés" : "intereses"}</p>
+                    )}
                   </div>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">
-                  {compatibilityBreakdown ? (
-                    <div className="space-y-1">
-                      {compatibility >= 4 && (
-                        <p className="text-primary font-semibold">✨ ¡Alta compatibilidad!</p>
-                      )}
-                      {compatibilityBreakdown.tribes > 0 && (
-                        <p>🏴 {compatibilityBreakdown.tribes} {compatibilityBreakdown.tribes === 1 ? "tribu" : "tribus"}</p>
-                      )}
-                      {compatibilityBreakdown.music > 0 && (
-                        <p>🎵 {compatibilityBreakdown.music} {compatibilityBreakdown.music === 1 ? "estilo" : "estilos"}</p>
-                      )}
-                      {compatibilityBreakdown.lookingFor > 0 && (
-                        <p>🔍 {compatibilityBreakdown.lookingFor} {compatibilityBreakdown.lookingFor === 1 ? "interés" : "intereses"}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <p>{compatibility} coincidencias</p>
-                  )}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+                ) : (
+                  <p>{compatibility} coincidencias</p>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-          {/* City badge - top left when not boosted */}
-          {presence.profile?.city && !isBoosted && (
-            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-20 px-2 py-1 sm:px-2.5 rounded-full bg-background/80 backdrop-blur-sm">
+          {/* City badge - bottom left */}
+          {presence.profile?.city && (
+            <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-20 px-2 py-1 sm:px-2.5 rounded-full bg-background/80 backdrop-blur-sm">
               <span className="text-xs font-body text-foreground">{presence.profile.city}</span>
             </div>
           )}
