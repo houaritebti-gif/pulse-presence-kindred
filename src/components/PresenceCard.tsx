@@ -296,38 +296,74 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             )}
           </div>
           
-          {/* Compact tags - limited to 2 lines max with fade */}
-          <div className="flex-1 overflow-hidden relative">
-            <div className="flex flex-wrap gap-1.5 max-h-[52px] overflow-hidden">
-              {/* Show max 3 tribes */}
-              {presence.tribes.slice(0, 3).map(tribe => (
-                <span 
-                  key={tribe}
-                  className="px-2 py-0.5 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground"
-                >
-                  {tribe}
-                </span>
-              ))}
-              {presence.tribes.length > 3 && (
-                <span className="px-2 py-0.5 rounded-full bg-card-foreground/10 font-body text-xs text-muted-foreground">
-                  +{presence.tribes.length - 3}
-                </span>
+          {/* Compact tags - limited to 2 lines max with fade and tooltip */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex-1 overflow-hidden relative cursor-default">
+                  <div className="flex flex-wrap gap-1.5 max-h-[52px] overflow-hidden">
+                    {/* Show max 3 tribes */}
+                    {presence.tribes.slice(0, 3).map(tribe => (
+                      <span 
+                        key={tribe}
+                        className="px-2 py-0.5 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground"
+                      >
+                        {tribe}
+                      </span>
+                    ))}
+                    {presence.tribes.length > 3 && (
+                      <span className="px-2 py-0.5 rounded-full bg-card-foreground/10 font-body text-xs text-muted-foreground">
+                        +{presence.tribes.length - 3}
+                      </span>
+                    )}
+                    {/* Show max 2 music styles if space */}
+                    {presence.tribes.length < 3 && presence.musicStyles.slice(0, 2).map(style => (
+                      <span 
+                        key={style}
+                        className="px-2 py-0.5 rounded-full bg-primary/10 font-body text-xs text-primary"
+                      >
+                        {style}
+                      </span>
+                    ))}
+                  </div>
+                  {/* Fade gradient overlay */}
+                  {(presence.tribes.length > 3 || (presence.tribes.length < 3 && presence.musicStyles.length > 2)) && (
+                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                  )}
+                </div>
+              </TooltipTrigger>
+              {(presence.tribes.length > 0 || presence.musicStyles.length > 0) && (
+                <TooltipContent side="top" className="max-w-[280px]">
+                  <div className="space-y-2">
+                    {presence.tribes.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">Tribus</p>
+                        <div className="flex flex-wrap gap-1">
+                          {presence.tribes.map(tribe => (
+                            <span key={tribe} className="px-1.5 py-0.5 rounded bg-card-foreground/15 text-xs">
+                              {tribe}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {presence.musicStyles.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">Música</p>
+                        <div className="flex flex-wrap gap-1">
+                          {presence.musicStyles.map(style => (
+                            <span key={style} className="px-1.5 py-0.5 rounded bg-primary/10 text-xs text-primary">
+                              {style}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </TooltipContent>
               )}
-              {/* Show max 2 music styles if space */}
-              {presence.tribes.length < 3 && presence.musicStyles.slice(0, 2).map(style => (
-                <span 
-                  key={style}
-                  className="px-2 py-0.5 rounded-full bg-primary/10 font-body text-xs text-primary"
-                >
-                  {style}
-                </span>
-              ))}
-            </div>
-            {/* Fade gradient overlay */}
-            {(presence.tribes.length > 3 || (presence.tribes.length < 3 && presence.musicStyles.length > 2)) && (
-              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none" />
-            )}
-          </div>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* View profile hint */}
           <div className="mt-auto pt-1">
