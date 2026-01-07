@@ -100,6 +100,7 @@ const Row = ({
           animationDelay={0}
           isBoosted={!!isBoosted}
           canSeeRealtimePresence={canSeeRealtimePresence}
+          compatibility={getCompatibility(presence)}
         />
       )}
     </div>
@@ -234,6 +235,7 @@ export const VirtualizedPresenceList = memo(({
                         animationDelay={0}
                         isBoosted={!!isBoosted}
                         canSeeRealtimePresence={canSeeRealtimePresence}
+                        compatibility={getCompatibility(presence)}
                       />
                     )}
                   </div>
@@ -313,6 +315,7 @@ export const VirtualizedPresenceList = memo(({
                     animationDelay={0}
                     isBoosted={!!isBoosted}
                     canSeeRealtimePresence={canSeeRealtimePresence}
+                    compatibility={getCompatibility(presence)}
                   />
                 )}
               </div>
