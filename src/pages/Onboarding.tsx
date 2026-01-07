@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users } from "lucide-react";
+import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users, Star } from "lucide-react";
 import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
+import { useUpdateInterests } from "@/hooks/useInterests";
 import { toast } from "sonner";
-import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GENDERS_MAIN, GENDERS_EXTENDED, GenderType } from "@/constants/profileOptions";
+import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GENDERS_MAIN, GENDERS_EXTENDED, GenderType, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { playCelebrationSound } from "@/utils/notificationSound";
@@ -23,13 +24,14 @@ const STEPS = [
   { id: 3, title: "¿Cuándo naciste?", subtitle: "Solo mostraremos tu edad" },
   { id: 4, title: "¿Cómo te identificas?", subtitle: "Tu género" },
   { id: 5, title: "¿Con quién conectas?", subtitle: "Selección múltiple" },
-  { id: 6, title: "Elige tu vibra", subtitle: "¿Cómo te sientes hoy?" },
-  { id: 7, title: "Tus tribus", subtitle: "¿Con quién vibras?" },
-  { id: 8, title: "Tu música", subtitle: "Hasta 5 estilos" },
-  { id: 9, title: "¿Qué buscas?", subtitle: "En KIKI" },
-  { id: 10, title: "Sobre ti", subtitle: "Breve descripción (opcional)" },
-  { id: 11, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
-  { id: 12, title: "Tu foto", subtitle: "Opcional pero recomendado" },
+  { id: 6, title: "Tus intereses", subtitle: "Elige de 3 a 7" },
+  { id: 7, title: "Elige tu vibra", subtitle: "¿Cómo te sientes hoy?" },
+  { id: 8, title: "Tus tribus", subtitle: "¿Con quién vibras?" },
+  { id: 9, title: "Tu música", subtitle: "Hasta 5 estilos" },
+  { id: 10, title: "¿Qué buscas?", subtitle: "En KIKI" },
+  { id: 11, title: "Sobre ti", subtitle: "Breve descripción (opcional)" },
+  { id: 12, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
+  { id: 13, title: "Tu foto", subtitle: "Opcional pero recomendado" },
 ];
 
 const Onboarding = () => {
@@ -39,6 +41,7 @@ const Onboarding = () => {
   const updateTribes = useUpdateTribes();
   const updateMusicStyles = useUpdateMusicStyles();
   const updateGenderPreferences = useUpdateGenderPreferences();
+  const updateInterests = useUpdateInterests();
   const { uploadAvatar, isUploading, uploadPhase, uploadProgress } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,6 +54,7 @@ const Onboarding = () => {
   const [selectedGender, setSelectedGender] = useState<GenderType | null>(null);
   const [showExtendedGenders, setShowExtendedGenders] = useState(false);
   const [selectedGenderPreferences, setSelectedGenderPreferences] = useState<GenderType[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
   const [selectedMusicStyles, setSelectedMusicStyles] = useState<string[]>([]);
@@ -227,6 +231,19 @@ const Onboarding = () => {
     );
   };
 
+  const toggleInterest = (interest: string) => {
+    setSelectedInterests(prev => {
+      if (prev.includes(interest)) {
+        return prev.filter(i => i !== interest);
+      }
+      if (prev.length >= 7) {
+        toast.error("Máximo 7 intereses");
+        return prev;
+      }
+      return [...prev, interest];
+    });
+  };
+
   const canProceed = () => {
     switch (step) {
       case 1: return name.trim().length > 0;
@@ -234,13 +251,14 @@ const Onboarding = () => {
       case 3: return isValidAge; // Must be 18+
       case 4: return selectedGender !== null;
       case 5: return selectedGenderPreferences.length > 0;
-      case 6: return selectedVibe !== null;
-      case 7: return true; // Tribes are optional
-      case 8: return true; // Music is optional
-      case 9: return true; // Looking for is optional
-      case 10: return true; // Bio is optional
-      case 11: return true; // Details are optional
-      case 12: return true; // Photo is optional
+      case 6: return selectedInterests.length >= 3 && selectedInterests.length <= 7;
+      case 7: return selectedVibe !== null;
+      case 8: return true; // Tribes are optional
+      case 9: return true; // Music is optional
+      case 10: return true; // Looking for is optional
+      case 11: return true; // Bio is optional
+      case 12: return true; // Details are optional
+      case 13: return true; // Photo is optional
       default: return true;
     }
   };
@@ -339,6 +357,14 @@ const Onboarding = () => {
         await updateMusicStyles.mutateAsync({
           profileId: profile.id,
           styles: selectedMusicStyles,
+        });
+      }
+
+      // Update interests
+      if (selectedInterests.length > 0) {
+        await updateInterests.mutateAsync({
+          profileId: profile.id,
+          interests: selectedInterests,
         });
       }
 
@@ -621,7 +647,64 @@ const Onboarding = () => {
       case 6:
         return (
           <motion.div 
-            key="step-6-vibe" 
+            key="step-6-interests" 
+            className="space-y-4 max-h-[55vh] overflow-y-auto"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <motion.div 
+              className="flex items-center gap-2 text-muted-foreground mb-2"
+              variants={itemVariants}
+            >
+              <Star className="w-4 h-4" />
+              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
+                Selecciona entre 3 y 7 intereses
+              </span>
+            </motion.div>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {CULTURAL_INTERESTS.map((interest) => (
+                <motion.button
+                  key={interest.value}
+                  onClick={() => { triggerHaptic('selection'); toggleInterest(interest.value); }}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`px-3 py-2 rounded-full text-sm transition-colors flex items-center gap-1.5 ${
+                    selectedInterests.includes(interest.value)
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-card-foreground hover:bg-card/80"
+                  }`}
+                  style={{ fontFamily: 'Arial, sans-serif' }}
+                >
+                  <span>{interest.emoji}</span>
+                  <span>{interest.value}</span>
+                </motion.button>
+              ))}
+            </div>
+            <AnimatePresence>
+              {selectedInterests.length > 0 && (
+                <motion.p 
+                  className={`text-center text-sm sticky bottom-0 bg-background py-2 ${
+                    selectedInterests.length >= 3 ? "text-primary" : "text-muted-foreground"
+                  }`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  {selectedInterests.length}/7 intereses
+                  {selectedInterests.length < 3 && " (mínimo 3)"}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        );
+
+      case 7:
+        return (
+          <motion.div 
+            key="step-7-vibe" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -651,10 +734,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 7:
+      case 8:
         return (
           <motion.div 
-            key="step-7-tribes" 
+            key="step-8-tribes" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -695,10 +778,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 8:
+      case 9:
         return (
           <motion.div 
-            key="step-8-music" 
+            key="step-9-music" 
             className="space-y-6 max-h-[50vh] overflow-y-auto"
             variants={containerVariants}
             initial="hidden"
@@ -749,10 +832,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 9:
+      case 10:
         return (
           <motion.div 
-            key="step-9-looking" 
+            key="step-10-looking" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -807,10 +890,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 10:
+      case 11:
         return (
           <motion.div 
-            key="step-10-bio" 
+            key="step-11-bio" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -842,10 +925,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 11:
+      case 12:
         return (
           <motion.div 
-            key="step-11-details" 
+            key="step-12-details" 
             className="space-y-4"
             variants={containerVariants}
             initial="hidden"
@@ -921,10 +1004,10 @@ const Onboarding = () => {
           </motion.div>
         );
 
-      case 12:
+      case 13:
         return (
           <motion.div 
-            key="step-12-photo" 
+            key="step-13-photo" 
             className="space-y-6 flex flex-col items-center"
             variants={containerVariants}
             initial="hidden"
@@ -1087,8 +1170,8 @@ const Onboarding = () => {
         )}
       </div>
 
-      {/* Skip option for optional steps (after required gender/preferences) */}
-      {step >= 6 && step < STEPS.length && (
+      {/* Skip option for optional steps (after required gender/preferences/interests) */}
+      {step >= 7 && step < STEPS.length && (
         <button
           onClick={handleNext}
           className="mt-4 text-center text-sm text-muted-foreground hover:text-foreground transition-colors"

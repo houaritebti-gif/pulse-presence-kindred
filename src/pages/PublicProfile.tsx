@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame } from "lucide-react";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
 import PublicProfileSkeleton from "@/components/PublicProfileSkeleton";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
@@ -320,8 +320,28 @@ const PublicProfile = () => {
           </div>
         )}
 
-        {/* Tribes + Music + Details - Collapsed into single row sections */}
+        {/* Tribes + Music + Interests + Details - Collapsed into single row sections */}
         <div className="space-y-4 animate-fade-up animate-delay-200">
+          {/* Cultural Interests */}
+          {publicProfile.interests.length > 0 && (
+            <div>
+              <h2 className="font-display text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
+                <Star className="w-3 h-3" />
+                Intereses
+              </h2>
+              <div className="flex flex-wrap gap-1.5">
+                {publicProfile.interests.map(interest => (
+                  <span 
+                    key={interest}
+                    className="px-2.5 py-1 rounded-full font-body text-xs bg-secondary/60 text-secondary-foreground"
+                  >
+                    {interest}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Tribes */}
           {publicProfile.tribes.length > 0 && (
             <div>

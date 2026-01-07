@@ -117,6 +117,33 @@ export const LOOKING_FOR_OPTIONS = [
   { value: "Lo que surja", emoji: "🌊" },
 ] as const;
 
+// Cultural interests MVP - 21 tags
+export const CULTURAL_INTERESTS = [
+  { value: "Conciertos en directo", emoji: "🎤" },
+  { value: "Cultura club", emoji: "🌃" },
+  { value: "Vinilos", emoji: "💿" },
+  { value: "Arte", emoji: "🎨" },
+  { value: "Cine independiente", emoji: "🎬" },
+  { value: "Cine de terror y fantástico", emoji: "👻" },
+  { value: "Anime", emoji: "🎌" },
+  { value: "Libros", emoji: "📚" },
+  { value: "Cómics / novela gráfica", emoji: "💬" },
+  { value: "Diseño", emoji: "✏️" },
+  { value: "Arquitectura", emoji: "🏛️" },
+  { value: "Moda", emoji: "👗" },
+  { value: "Estética underground", emoji: "🖤" },
+  { value: "Salir de noche", emoji: "🌙" },
+  { value: "Bares con personalidad", emoji: "🍸" },
+  { value: "Viajes", emoji: "✈️" },
+  { value: "Vida urbana", emoji: "🏙️" },
+  { value: "Cuidado interior", emoji: "🧘" },
+  { value: "Yoga / meditación", emoji: "🪷" },
+  { value: "Humor irónico", emoji: "😏" },
+  { value: "Deportes", emoji: "⚽" },
+] as const;
+
+export type CulturalInterestType = typeof CULTURAL_INTERESTS[number]["value"];
+
 export type MusicStyleType = typeof ALL_MUSIC_STYLES[number];
 export type VibeType = typeof VIBES[number]["value"];
 export type LookingForType = typeof LOOKING_FOR_OPTIONS[number]["value"];
