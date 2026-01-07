@@ -374,31 +374,33 @@ const Landing = () => {
               >
                 K
               </span>
-              {/* Heart between K and I */}
-              <motion.div 
-                className="relative -ml-2 md:-ml-3 lg:-ml-4 -mr-1 md:-mr-2 lg:-mr-3"
-                animate={{ 
-                  scale: [1, 1.15, 1],
-                }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <div className="relative">
-                  <motion.div 
-                    className="absolute inset-0 bg-primary/40 blur-xl rounded-full scale-150"
-                    animate={{ 
-                      opacity: [0.4, 0.7, 0.4],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  />
-                  <Heart className="relative w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 text-primary fill-primary drop-shadow-[0_0_15px_hsl(var(--primary)/0.5)]" />
-                </div>
-              </motion.div>
-              {/* I */}
-              <span 
-                className="text-8xl md:text-9xl lg:text-[10rem] font-bold text-foreground"
-                style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
-              >
-                I
+              {/* I with heart above it */}
+              <span className="relative -ml-1 md:-ml-2">
+                {/* Heart positioned above the I */}
+                <motion.div 
+                  className="absolute -top-6 md:-top-8 lg:-top-10 left-1/2 -translate-x-1/2"
+                  animate={{ 
+                    scale: [1, 1.15, 1],
+                  }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <div className="relative">
+                    <motion.div 
+                      className="absolute inset-0 bg-primary/40 blur-xl rounded-full scale-150"
+                      animate={{ 
+                        opacity: [0.4, 0.7, 0.4],
+                      }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <Heart className="relative w-7 h-7 md:w-10 md:h-10 lg:w-14 lg:h-14 text-primary fill-primary drop-shadow-[0_0_15px_hsl(var(--primary)/0.5)]" />
+                  </div>
+                </motion.div>
+                <span 
+                  className="text-8xl md:text-9xl lg:text-[10rem] font-bold text-foreground"
+                  style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+                >
+                  I
+                </span>
               </span>
             </div>
           </motion.div>
