@@ -513,7 +513,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                   <p className="font-display text-lg text-primary">¡Chispa mutua!</p>
                   <p className="text-sm text-muted-foreground">Mira su perfil antes de chatear</p>
                   <Button
-                    onClick={() => navigate(`/profile/${presence.profile?.id}`)}
+                    onClick={() => navigate(`/user/${presence.profile?.id}`)}
                     className="gap-2"
                   >
                     <Ghost className="w-4 h-4" />
