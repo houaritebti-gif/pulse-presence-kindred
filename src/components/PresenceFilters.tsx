@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin } from "lucide-react";
+import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin, Sparkles, Music, Heart, Search, Palette } from "lucide-react";
 import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, ALL_GENDERS } from "@/constants/profileOptions";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
@@ -152,17 +152,19 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           </button>
         </div>
 
-        {/* Filter button */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-body text-sm transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+        {/* Filter button - enhanced design */}
+        <motion.button
+          onClick={() => { triggerHaptic('light'); setIsOpen(!isOpen); }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className={`flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl font-body text-sm font-medium transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             hasActiveFilters
-              ? "bg-primary text-primary-foreground border-primary"
-              : "bg-card text-card-foreground hover:bg-card/80 border-border"
+              ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-primary/25"
+              : "bg-card text-card-foreground hover:bg-card/90 border border-border hover:border-primary/30"
           }`}
         >
-          <Filter className="w-4 h-4" />
-          <span>Más filtros</span>
+          <Filter className={`w-4 h-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+          <span className="font-semibold">Filtros</span>
           <AnimatePresence mode="wait">
             {activeCount > 0 && (
               <motion.span
@@ -171,14 +173,19 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
                 transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                className="w-5 h-5 rounded-full bg-primary-foreground/20 text-xs flex items-center justify-center font-bold"
+                className="min-w-5 h-5 px-1.5 rounded-full bg-white/20 text-xs flex items-center justify-center font-bold"
               >
                 {activeCount}
               </motion.span>
             )}
           </AnimatePresence>
-          {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+          <motion.div
+            animate={{ rotate: isOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronDown className="w-4 h-4" />
+          </motion.div>
+        </motion.button>
       </div>
 
 
@@ -302,19 +309,30 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           )}
 
           {/* Tribes section */}
-          <div className="mb-4">
+          <div className="mb-5">
             <button
-              onClick={() => toggleSection("tribes")}
-              className="flex items-center justify-between w-full text-left mb-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              onClick={() => { triggerHaptic('light'); toggleSection("tribes"); }}
+              className="flex items-center justify-between w-full text-left mb-3 p-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              <span className="font-display text-sm font-semibold text-card-foreground">
-                Tribus {(filters.tribes?.length ?? 0) > 0 && `(${filters.tribes?.length})`}
-              </span>
-              {expandedSection === "tribes" ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <span className="font-display text-sm font-semibold text-card-foreground block">
+                    Tribus
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {(filters.tribes?.length ?? 0) > 0 ? `${filters.tribes?.length} seleccionadas` : "Encuentra tu gente"}
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                animate={{ rotate: expandedSection === "tribes" ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              </motion.div>
             </button>
             {expandedSection === "tribes" && (
               <div className="flex flex-wrap gap-2 animate-fade-up">
@@ -336,19 +354,30 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           </div>
 
           {/* Music section */}
-          <div className="mb-4">
+          <div className="mb-5">
             <button
-              onClick={() => toggleSection("music")}
-              className="flex items-center justify-between w-full text-left mb-2"
+              onClick={() => { triggerHaptic('light'); toggleSection("music"); }}
+              className="flex items-center justify-between w-full text-left mb-3 p-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              <span className="font-display text-sm font-semibold text-card-foreground">
-                Música {(filters.musicStyles?.length ?? 0) > 0 && `(${filters.musicStyles?.length})`}
-              </span>
-              {expandedSection === "music" ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                  <Music className="w-4 h-4 text-accent-foreground" />
+                </div>
+                <div>
+                  <span className="font-display text-sm font-semibold text-card-foreground block">
+                    Música
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {(filters.musicStyles?.length ?? 0) > 0 ? `${filters.musicStyles?.length} estilos` : "¿Qué escuchas?"}
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                animate={{ rotate: expandedSection === "music" ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              </motion.div>
             </button>
             {expandedSection === "music" && (
               <div className="space-y-3 animate-fade-up">
@@ -377,19 +406,30 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           </div>
 
           {/* Looking for section */}
-          <div className="mb-4">
+          <div className="mb-5">
             <button
-              onClick={() => toggleSection("lookingFor")}
-              className="flex items-center justify-between w-full text-left mb-2"
+              onClick={() => { triggerHaptic('light'); toggleSection("lookingFor"); }}
+              className="flex items-center justify-between w-full text-left mb-3 p-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              <span className="font-display text-sm font-semibold text-card-foreground">
-                Busca {(filters.lookingFor?.length ?? 0) > 0 && `(${filters.lookingFor?.length})`}
-              </span>
-              {expandedSection === "lookingFor" ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center">
+                  <Search className="w-4 h-4 text-secondary-foreground" />
+                </div>
+                <div>
+                  <span className="font-display text-sm font-semibold text-card-foreground block">
+                    Busca
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {(filters.lookingFor?.length ?? 0) > 0 ? `${filters.lookingFor?.length} intereses` : "¿Qué buscas aquí?"}
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                animate={{ rotate: expandedSection === "lookingFor" ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              </motion.div>
             </button>
             {expandedSection === "lookingFor" && (
               <div className="flex flex-wrap gap-2 animate-fade-up">
@@ -411,19 +451,30 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           </div>
 
           {/* Details section */}
-          <div className="mb-4">
+          <div className="mb-5">
             <button
-              onClick={() => toggleSection("details")}
-              className="flex items-center justify-between w-full text-left mb-2"
+              onClick={() => { triggerHaptic('light'); toggleSection("details"); }}
+              className="flex items-center justify-between w-full text-left mb-3 p-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              <span className="font-display text-sm font-semibold text-card-foreground">
-                Detalles {(filters.details?.length ?? 0) > 0 && `(${filters.details?.length})`}
-              </span>
-              {expandedSection === "details" ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                  <Palette className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div>
+                  <span className="font-display text-sm font-semibold text-card-foreground block">
+                    Estética
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {(filters.details?.length ?? 0) > 0 ? `${filters.details?.length} detalles` : "Tattoos, piercings..."}
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                animate={{ rotate: expandedSection === "details" ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              </motion.div>
             </button>
             {expandedSection === "details" && (
               <div className="flex flex-wrap gap-2 animate-fade-up">
@@ -445,20 +496,30 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           </div>
 
           {/* Gender section */}
-          <div className="mb-4">
+          <div className="mb-5">
             <button
-              onClick={() => toggleSection("gender")}
-              className="flex items-center justify-between w-full text-left mb-2"
+              onClick={() => { triggerHaptic('light'); toggleSection("gender"); }}
+              className="flex items-center justify-between w-full text-left mb-3 p-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              <span className="font-display text-sm font-semibold text-card-foreground flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Género {(filters.genders?.length ?? 0) > 0 && `(${filters.genders?.length})`}
-              </span>
-              {expandedSection === "gender" ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <User className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <span className="font-display text-sm font-semibold text-card-foreground block">
+                    Género
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {(filters.genders?.length ?? 0) > 0 ? `${filters.genders?.length} seleccionados` : "Identidad de género"}
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                animate={{ rotate: expandedSection === "gender" ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              </motion.div>
             </button>
             {expandedSection === "gender" && (
               <div className="flex flex-wrap gap-2 animate-fade-up">
@@ -481,20 +542,30 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
 
           {/* City section */}
           {sortedCities.length > 0 && (
-            <div className="mb-4">
+            <div className="mb-5">
               <button
-                onClick={() => toggleSection("city")}
-                className="flex items-center justify-between w-full text-left mb-2"
+                onClick={() => { triggerHaptic('light'); toggleSection("city"); }}
+                className="flex items-center justify-between w-full text-left mb-3 p-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
-                <span className="font-display text-sm font-semibold text-card-foreground flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  Ciudad {(filters.cities?.length ?? 0) > 0 && `(${filters.cities?.length})`}
-                </span>
-                {expandedSection === "city" ? (
-                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                )}
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-accent-foreground" />
+                  </div>
+                  <div>
+                    <span className="font-display text-sm font-semibold text-card-foreground block">
+                      Ciudad
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {(filters.cities?.length ?? 0) > 0 ? `${filters.cities?.length} ciudades` : "¿Dónde buscas?"}
+                    </span>
+                  </div>
+                </div>
+                <motion.div
+                  animate={{ rotate: expandedSection === "city" ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                </motion.div>
               </button>
               {expandedSection === "city" && (
                 <div className="flex flex-wrap gap-2 animate-fade-up">
@@ -519,18 +590,28 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           {/* Age range section */}
           <div>
             <button
-              onClick={() => toggleSection("age")}
-              className="flex items-center justify-between w-full text-left mb-2"
+              onClick={() => { triggerHaptic('light'); toggleSection("age"); }}
+              className="flex items-center justify-between w-full text-left mb-3 p-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
             >
-              <span className="font-display text-sm font-semibold text-card-foreground flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Edad {hasAgeFilter && `(${filters.ageRange?.[0]}-${filters.ageRange?.[1]})`}
-              </span>
-              {expandedSection === "age" ? (
-                <ChevronUp className="w-4 h-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              )}
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-secondary/50 flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-secondary-foreground" />
+                </div>
+                <div>
+                  <span className="font-display text-sm font-semibold text-card-foreground block">
+                    Edad
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {hasAgeFilter ? `${filters.ageRange?.[0]} - ${filters.ageRange?.[1]} años` : "Rango de edad"}
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                animate={{ rotate: expandedSection === "age" ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              </motion.div>
             </button>
             {expandedSection === "age" && (
               <div className="space-y-4 animate-fade-up px-1">
