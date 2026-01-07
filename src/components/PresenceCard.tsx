@@ -296,8 +296,8 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             )}
           </div>
           
-          {/* Compact tags - limited to 2 lines max */}
-          <div className="flex-1 overflow-hidden">
+          {/* Compact tags - limited to 2 lines max with fade */}
+          <div className="flex-1 overflow-hidden relative">
             <div className="flex flex-wrap gap-1.5 max-h-[52px] overflow-hidden">
               {/* Show max 3 tribes */}
               {presence.tribes.slice(0, 3).map(tribe => (
@@ -323,6 +323,10 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
                 </span>
               ))}
             </div>
+            {/* Fade gradient overlay */}
+            {(presence.tribes.length > 3 || (presence.tribes.length < 3 && presence.musicStyles.length > 2)) && (
+              <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+            )}
           </div>
 
           {/* View profile hint */}
