@@ -52,12 +52,15 @@ export const useAppNotifications = () => {
               ? newChat.profile_b_id 
               : newChat.profile_a_id;
             
+            // Profile-first navigation URL
+            const profileUrl = `/user/${otherProfileId}`;
+            
             // Send push to the other user (they might have the app closed)
             sendPushNotification({
               profileId: otherProfileId,
               title: "✨ ¡Nueva chispa!",
               body: "Alguien conectó contigo",
-              url: "/sparks",
+              url: profileUrl,
               tag: `spark-${newChat.id}`,
             });
             
@@ -67,23 +70,23 @@ export const useAppNotifications = () => {
               type: "spark",
               title: "✨ ¡Nueva chispa!",
               description: "Alguien conectó contigo",
-              link: "/sparks",
+              link: profileUrl,
             });
             
-            if (location.pathname !== "/sparks") {
+            if (location.pathname !== "/sparks" && !location.pathname.startsWith("/user/")) {
               notifyUser("spark");
               announce("Nueva chispa: Alguien conectó contigo", "assertive");
               toast("✨ ¡Nueva chispa!", {
                 description: "Alguien conectó contigo",
                 action: {
-                  label: "Ver",
-                  onClick: () => navigate("/sparks"),
+                  label: "Ver perfil",
+                  onClick: () => navigate(profileUrl),
                 },
               });
               showBrowserNotification("✨ ¡Nueva chispa!", {
                 body: "Alguien conectó contigo",
                 tag: "spark-" + newChat.id,
-                onClick: () => navigate("/sparks"),
+                onClick: () => navigate(profileUrl),
               });
             }
           }

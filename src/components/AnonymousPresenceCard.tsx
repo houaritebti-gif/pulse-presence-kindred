@@ -184,10 +184,10 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           
           if (hasNewSpark) {
             setSparkCreated(true);
-            toast.success("🔥 ¡Chispa mutua! Se ha creado un chat", {
+            toast.success("🔥 ¡Chispa mutua!", {
               action: {
-                label: "Ver chats",
-                onClick: () => navigate("/sparks"),
+                label: "Ver perfil",
+                onClick: () => navigate(`/user/${presence.profile!.id}`),
               },
             });
           } else {
