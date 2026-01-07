@@ -427,6 +427,12 @@ const Profile = () => {
       }
     }
 
+    // Check minimum 3 interests
+    if (selectedInterests.length < 3) {
+      toast.error("Selecciona al menos 3 intereses culturales");
+      return;
+    }
+
     // Check blacklist before saving
     const blockedWords = checkBlacklistedWords(bio);
     if (blockedWords.length > 0) {
@@ -781,14 +787,17 @@ const Profile = () => {
 
         {/* Interests */}
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '387ms', animationFillMode: 'forwards' }}>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               Tus intereses
             </h2>
-            <span className="text-xs text-muted-foreground">
+            <span className={`text-xs ${selectedInterests.length < 3 ? "text-destructive font-medium" : "text-muted-foreground"}`}>
               ({selectedInterests.length}/7)
             </span>
           </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Selecciona entre 3 y 7 intereses
+          </p>
           <div className="flex flex-wrap gap-2">
             {CULTURAL_INTERESTS.map(interest => (
               <button
