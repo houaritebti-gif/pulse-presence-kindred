@@ -1,9 +1,11 @@
-import { useState, useMemo } from "react";
-import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin } from "lucide-react";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin, Music, Sparkles } from "lucide-react";
 import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, ALL_GENDERS } from "@/constants/profileOptions";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { GenderType } from "@/constants/profileOptions";
+import { triggerHaptic } from "@/utils/haptics";
+import { cn } from "@/lib/utils";
 
 export interface PresenceFilters {
   tribes: string[];
@@ -105,6 +107,14 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
     setExpandedSection(expandedSection === section ? null : section);
   };
 
+  // Quick filter chips - most popular tribes and music styles
+  const QUICK_TRIBE_VALUES: string[] = TRIBES.slice(0, 6).map(t => t.value);
+  const QUICK_TRIBES = TRIBES.slice(0, 6);
+  const QUICK_MUSIC: string[] = ["Techno", "Post-punk", "Indie rock", "House", "Darkwave", "Punk"];
+
+  // Ref for horizontal scroll
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className="mb-6 animate-fade-up space-y-4">
       {/* Primary toggle - Active now vs All profiles - ALWAYS VISIBLE */}
@@ -145,7 +155,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           }`}
         >
           <Filter className="w-4 h-4" />
-          <span>Filtrar</span>
+          <span>Más filtros</span>
           {activeCount > 0 && (
             <span className="w-5 h-5 rounded-full bg-primary-foreground/20 text-xs flex items-center justify-center font-bold">
               {activeCount}
@@ -153,6 +163,199 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           )}
           {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
+      </div>
+
+      {/* Quick filter chips - Always visible */}
+      <div className="space-y-3">
+        {/* Tribes quick chips */}
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-body text-xs text-muted-foreground font-medium">Tribus</span>
+            {filters.tribes.length > 0 && (
+              <span className="text-[10px] text-primary font-bold">({filters.tribes.length})</span>
+            )}
+          </div>
+          <div 
+            ref={scrollRef}
+            className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {QUICK_TRIBES.map(tribe => (
+              <button
+                key={tribe.value}
+                onClick={() => {
+                  triggerHaptic('selection');
+                  toggleTribe(tribe.value);
+                }}
+                className={cn(
+                  "shrink-0 px-3 py-1.5 rounded-full font-body text-xs transition-all duration-200",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                  "active:scale-95 hover:scale-[1.02]",
+                  filters.tribes.includes(tribe.value)
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                    : "bg-card-foreground/10 text-card-foreground/80 hover:bg-card-foreground/15 border border-transparent hover:border-card-foreground/10"
+                )}
+              >
+                <span className="mr-1">{tribe.emoji}</span>
+                {tribe.value}
+              </button>
+            ))}
+            {/* Show more tribes indicator */}
+            <button
+              onClick={() => {
+                triggerHaptic('light');
+                setIsOpen(true);
+                setExpandedSection("tribes");
+              }}
+              className="shrink-0 px-3 py-1.5 rounded-full font-body text-xs text-muted-foreground hover:text-card-foreground bg-card-foreground/5 hover:bg-card-foreground/10 transition-all border border-dashed border-card-foreground/20"
+            >
+              +{TRIBES.length - 6} más
+            </button>
+          </div>
+        </div>
+
+        {/* Music quick chips */}
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-2">
+            <Music className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="font-body text-xs text-muted-foreground font-medium">Música</span>
+            {filters.musicStyles.length > 0 && (
+              <span className="text-[10px] text-primary font-bold">({filters.musicStyles.length})</span>
+            )}
+          </div>
+          <div 
+            className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {QUICK_MUSIC.map(style => (
+              <button
+                key={style}
+                onClick={() => {
+                  triggerHaptic('selection');
+                  toggleMusicStyle(style);
+                }}
+                className={cn(
+                  "shrink-0 px-3 py-1.5 rounded-full font-body text-xs transition-all duration-200",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                  "active:scale-95 hover:scale-[1.02]",
+                  filters.musicStyles.includes(style)
+                    ? "bg-accent text-accent-foreground shadow-sm shadow-accent/20"
+                    : "bg-card-foreground/10 text-card-foreground/80 hover:bg-card-foreground/15 border border-transparent hover:border-card-foreground/10"
+                )}
+              >
+                {style}
+              </button>
+            ))}
+            {/* Show more music indicator */}
+            <button
+              onClick={() => {
+                triggerHaptic('light');
+                setIsOpen(true);
+                setExpandedSection("music");
+              }}
+              className="shrink-0 px-3 py-1.5 rounded-full font-body text-xs text-muted-foreground hover:text-card-foreground bg-card-foreground/5 hover:bg-card-foreground/10 transition-all border border-dashed border-card-foreground/20"
+            >
+              +más estilos
+            </button>
+          </div>
+        </div>
+
+        {/* Active filters summary - show when filters are active */}
+        {hasActiveFilters && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground">Activos:</span>
+            {filters.tribes.filter(t => !QUICK_TRIBE_VALUES.includes(t)).map(tribe => (
+              <button
+                key={tribe}
+                onClick={() => {
+                  triggerHaptic('light');
+                  toggleTribe(tribe);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[11px] font-medium hover:bg-primary/30 transition-colors"
+              >
+                {tribe}
+                <X className="w-3 h-3" />
+              </button>
+            ))}
+            {filters.musicStyles.filter(s => !QUICK_MUSIC.includes(s)).map(style => (
+              <button
+                key={style}
+                onClick={() => {
+                  triggerHaptic('light');
+                  toggleMusicStyle(style);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground text-[11px] font-medium hover:bg-accent/30 transition-colors"
+              >
+                {style}
+                <X className="w-3 h-3" />
+              </button>
+            ))}
+            {filters.lookingFor.map(lf => (
+              <button
+                key={lf}
+                onClick={() => {
+                  triggerHaptic('light');
+                  toggleLookingFor(lf);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/50 text-secondary-foreground text-[11px] font-medium hover:bg-secondary/70 transition-colors"
+              >
+                {lf}
+                <X className="w-3 h-3" />
+              </button>
+            ))}
+            {filters.genders.map(g => {
+              const genderLabel = ALL_GENDERS.find(ag => ag.value === g)?.label || g;
+              return (
+                <button
+                  key={g}
+                  onClick={() => {
+                    triggerHaptic('light');
+                    toggleGender(g);
+                  }}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[11px] font-medium hover:bg-muted/80 transition-colors"
+                >
+                  {genderLabel}
+                  <X className="w-3 h-3" />
+                </button>
+              );
+            })}
+            {filters.cities.map(city => (
+              <button
+                key={city}
+                onClick={() => {
+                  triggerHaptic('light');
+                  toggleCity(city);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[11px] font-medium hover:bg-muted/80 transition-colors"
+              >
+                📍 {city}
+                <X className="w-3 h-3" />
+              </button>
+            ))}
+            {hasAgeFilter && (
+              <button
+                onClick={() => {
+                  triggerHaptic('light');
+                  onChange({ ...filters, ageRange: undefined });
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[11px] font-medium hover:bg-muted/80 transition-colors"
+              >
+                {filters.ageRange?.[0]}-{filters.ageRange?.[1]} años
+                <X className="w-3 h-3" />
+              </button>
+            )}
+            <button
+              onClick={() => {
+                triggerHaptic('medium');
+                clearFilters();
+              }}
+              className="text-xs text-destructive hover:text-destructive/80 font-medium transition-colors"
+            >
+              Limpiar todo
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Filter panel */}
