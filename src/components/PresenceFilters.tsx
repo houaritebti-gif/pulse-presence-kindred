@@ -532,7 +532,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                           : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
                       }`}
                     >
-                      {detail.label}
+                      {detail.emoji} {detail.label}
                     </motion.button>
                   ))}
                 </motion.div>
