@@ -401,6 +401,27 @@ export type Database = {
           },
         ]
       }
+      profile_interests: {
+        Row: {
+          created_at: string | null
+          id: string
+          interest: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          interest: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          interest?: string
+          profile_id?: string
+        }
+        Relationships: []
+      }
       profile_music_styles: {
         Row: {
           created_at: string | null
