@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target } from "lucide-react";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
 import PublicProfileSkeleton from "@/components/PublicProfileSkeleton";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
@@ -9,6 +9,7 @@ import { useIsBlocked } from "@/hooks/useUserModeration";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
+import { useSparkChatWith } from "@/hooks/useSparks";
 import { Button } from "@/components/ui/button";
 import PremiumBadge from "@/components/PremiumBadge";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -53,6 +54,7 @@ const PublicProfile = () => {
   const { data: organizedCount } = useOrganizedQuedadasCount(profileId);
   const { data: profilePhotos } = useProfilePhotos(profileId);
   const { data: subscriptionTier } = useUserSubscription(profileId);
+  const sparkChatId = useSparkChatWith(profileId);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
   const [bioExpanded, setBioExpanded] = useState(false);
@@ -399,19 +401,37 @@ const PublicProfile = () => {
           )}
         </div>
 
-        {/* Ghost message CTA - Compact */}
+        {/* CTA buttons - Spark chat or Ghost message */}
         {!isBlocked && (
-          <div className="mt-6 pt-4 animate-fade-up animate-delay-500">
-            <Button
-              onClick={() => { triggerHaptic('selection'); navigate(`/chat/${profileId}`); }}
-              className="w-full h-12 rounded-xl font-display text-sm font-semibold"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Enviar mensaje ghost
-            </Button>
-            <p className="text-center font-body text-[11px] text-muted-foreground mt-2">
-              Un mensaje valiente. Sin obligación de respuesta.
-            </p>
+          <div className="mt-6 pt-4 animate-fade-up animate-delay-500 space-y-3">
+            {sparkChatId ? (
+              <>
+                <Button
+                  onClick={() => { triggerHaptic('success'); navigate(`/spark/${sparkChatId}`); }}
+                  variant="kiki"
+                  className="w-full h-12 rounded-xl font-display text-sm font-semibold"
+                >
+                  <Flame className="w-4 h-4 mr-2" />
+                  Ir al chat
+                </Button>
+                <p className="text-center font-body text-[11px] text-primary/80">
+                  ¡Tenéis una chispa mutua! 🔥
+                </p>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => { triggerHaptic('selection'); navigate(`/chat/${profileId}`); }}
+                  className="w-full h-12 rounded-xl font-display text-sm font-semibold"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Enviar mensaje ghost
+                </Button>
+                <p className="text-center font-body text-[11px] text-muted-foreground">
+                  Un mensaje valiente. Sin obligación de respuesta.
+                </p>
+              </>
+            )}
           </div>
         )}
 
