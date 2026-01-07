@@ -135,7 +135,7 @@ export const BottomNavigation = () => {
     },
     {
       icon: <Flame className="w-5 h-5" />,
-      label: "Sparks",
+      label: "Chispas",
       path: "/sparks",
       badge: unreadSparkCount > 0 ? unreadSparkCount : undefined,
     },

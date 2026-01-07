@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&display=swap');
+/* KIKI Design System - Paleta Final */
 
 @tailwind base;
 @tailwind components;
@@ -6,55 +6,63 @@
 
 @layer base {
   :root {
-    /* KIKI Design System - Pink Chicle + Black Cards */
-    --background: 350 100% 96%;
-    --foreground: 0 0% 5%;
+    /* KIKI Design System - Paleta Final CERRADA */
+    /* ❤️ KIKI Red #E63946 = 355 82% 56% */
+    /* 💗 KIKI Pink #F6B1C3 = 346 73% 83% */
+    /* 🖤 KIKI Black #111111 = 0 0% 7% */
+    /* 🤍 KIKI Milk #FFF6F2 = 17 100% 97% */
+    /* 🌫 KIKI Grey #9A9A9A = 0 0% 60% */
 
-    --card: 0 0% 5%;
+    --background: 17 100% 97%;
+    --foreground: 0 0% 7%;
+
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 350 100% 96%;
-    --popover-foreground: 0 0% 5%;
+    --popover: 17 100% 97%;
+    --popover-foreground: 0 0% 7%;
 
-    --primary: 340 100% 65%;
+    --primary: 355 82% 56%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 340 40% 90%;
-    --secondary-foreground: 0 0% 5%;
+    --secondary: 346 73% 83%;
+    --secondary-foreground: 0 0% 7%;
 
-    --muted: 340 30% 92%;
-    --muted-foreground: 340 15% 35%;
+    --muted: 346 50% 92%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 340 100% 70%;
+    --accent: 355 82% 56%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 340 30% 85%;
-    --input: 340 30% 88%;
-    --ring: 340 100% 65%;
+    --border: 346 40% 85%;
+    --input: 346 40% 90%;
+    --ring: 355 82% 56%;
 
     --radius: 1rem;
 
     /* Custom KIKI tokens */
-    --kiki-pink: 340 100% 65%;
-    --kiki-pink-soft: 350 100% 96%;
-    --kiki-black: 0 0% 5%;
+    --kiki-red: 355 82% 56%;
+    --kiki-pink: 346 73% 83%;
+    --kiki-pink-soft: 17 100% 97%;
+    --kiki-black: 0 0% 7%;
     --kiki-white: 0 0% 98%;
-    --kiki-glow: 340 100% 75%;
+    --kiki-grey: 0 0% 60%;
+    --kiki-glow: 355 82% 65%;
 
-    --font-display: 'Syne', sans-serif;
-    --font-body: 'DM Sans', sans-serif;
+    --font-display: 'Arial Black', 'Arial', sans-serif;
+    --font-body: 'Arial', sans-serif;
 
-    --sidebar-background: 350 100% 96%;
-    --sidebar-foreground: 0 0% 5%;
-    --sidebar-primary: 340 100% 65%;
+    --sidebar-background: 17 100% 97%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 355 82% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 340 40% 90%;
-    --sidebar-accent-foreground: 0 0% 5%;
-    --sidebar-border: 340 30% 85%;
-    --sidebar-ring: 340 100% 65%;
+    --sidebar-accent: 346 73% 83%;
+    --sidebar-accent-foreground: 0 0% 7%;
+    --sidebar-border: 346 40% 85%;
+    --sidebar-ring: 355 82% 56%;
   }
 
   .dark {
@@ -67,7 +75,7 @@
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 340 100% 65%;
+    --primary: 355 82% 56%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 18%;
@@ -76,7 +84,7 @@
     --muted: 0 0% 22%;
     --muted-foreground: 0 0% 70%;
 
-    --accent: 340 100% 70%;
+    --accent: 355 82% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 45%;
@@ -84,23 +92,25 @@
 
     --border: 0 0% 25%;
     --input: 0 0% 20%;
-    --ring: 340 100% 65%;
+    --ring: 355 82% 56%;
 
     /* Dark mode specific tokens */
-    --kiki-pink: 340 100% 65%;
-    --kiki-pink-soft: 340 30% 20%;
+    --kiki-red: 355 82% 56%;
+    --kiki-pink: 346 60% 70%;
+    --kiki-pink-soft: 346 30% 20%;
     --kiki-black: 0 0% 8%;
     --kiki-white: 0 0% 98%;
-    --kiki-glow: 340 100% 75%;
+    --kiki-grey: 0 0% 60%;
+    --kiki-glow: 355 82% 65%;
 
     --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 340 100% 65%;
+    --sidebar-primary: 355 82% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 18%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 340 100% 65%;
+    --sidebar-ring: 355 82% 56%;
   }
 
   /* Admin Panel Dark Mode - Softer colors for reduced eye strain */
