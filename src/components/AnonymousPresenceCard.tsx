@@ -178,11 +178,6 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
     setShowModerationModal(true);
   };
 
-  // Create blurred avatar style
-  const blurredAvatarStyle = {
-    filter: "blur(8px)",
-    transform: "scale(1.1)",
-  };
 
   return (
     <>
@@ -195,13 +190,10 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
         role="article"
         aria-label={`Perfil anónimo${presence.profile?.city ? ` de ${presence.profile.city}` : ""}`}
       >
-        {/* Blurred photo section */}
+        {/* Photo section - visible from the start */}
         <div className="relative h-40 sm:h-48 bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center overflow-hidden">
           {presence.profile?.avatar_url ? (
-            <div 
-              className="absolute inset-0"
-              style={blurredAvatarStyle}
-            >
+            <div className="absolute inset-0">
               <LazyImage 
                 src={presence.profile.avatar_url} 
                 alt=""
@@ -213,16 +205,13 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             <div className="absolute inset-0 bg-gradient-to-br from-secondary to-muted" />
           )}
           
-          {/* Overlay for better contrast */}
-          <div className="absolute inset-0 bg-background/30 backdrop-blur-sm" />
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent" />
           
-          {/* Anonymous avatar */}
+          {/* Profile avatar - clear, not blurred */}
           <div className="relative z-10">
             <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-background/50 shadow-lg">
-              <AvatarImage 
-                src={presence.profile?.avatar_url || undefined} 
-                style={blurredAvatarStyle}
-              />
+              <AvatarImage src={presence.profile?.avatar_url || undefined} />
               <AvatarFallback className="text-xl sm:text-2xl bg-secondary text-secondary-foreground">
                 ?
               </AvatarFallback>
