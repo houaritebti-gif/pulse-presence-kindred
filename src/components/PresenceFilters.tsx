@@ -193,7 +193,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 triggerHaptic('light');
                 toggleTribe(tribe);
               }}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[11px] font-medium hover:bg-primary/30 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[11px] font-medium hover:bg-primary/30 transition-all active:scale-95"
             >
               {tribe}
               <X className="w-3 h-3" />
@@ -206,7 +206,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 triggerHaptic('light');
                 toggleMusicStyle(style);
               }}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground text-[11px] font-medium hover:bg-accent/30 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground text-[11px] font-medium hover:bg-accent/30 transition-all active:scale-95"
             >
               {style}
               <X className="w-3 h-3" />
@@ -219,7 +219,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 triggerHaptic('light');
                 toggleLookingFor(lf);
               }}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/50 text-secondary-foreground text-[11px] font-medium hover:bg-secondary/70 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/50 text-secondary-foreground text-[11px] font-medium hover:bg-secondary/70 transition-all active:scale-95"
             >
               {lf}
               <X className="w-3 h-3" />
@@ -234,7 +234,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                   triggerHaptic('light');
                   toggleGender(g);
                 }}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[11px] font-medium hover:bg-muted/80 transition-colors"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[11px] font-medium hover:bg-muted/80 transition-all active:scale-95"
               >
                 {genderLabel}
                 <X className="w-3 h-3" />
@@ -248,7 +248,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 triggerHaptic('light');
                 toggleCity(city);
               }}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[11px] font-medium hover:bg-muted/80 transition-colors"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[11px] font-medium hover:bg-muted/80 transition-all active:scale-95"
             >
               📍 {city}
               <X className="w-3 h-3" />
@@ -322,7 +322,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                   <button
                     key={tribe.value}
                     onClick={() => toggleTribe(tribe.value)}
-                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                       (filters.tribes ?? []).includes(tribe.value)
                         ? "bg-primary text-primary-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
@@ -360,7 +360,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                         <button
                           key={style}
                           onClick={() => toggleMusicStyle(style)}
-                          className={`px-2.5 py-1 rounded-full font-body text-xs transition-all ${
+                          className={`px-2.5 py-1 rounded-full font-body text-xs transition-all active:scale-95 ${
                             (filters.musicStyles ?? []).includes(style)
                               ? "bg-primary text-primary-foreground"
                               : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
@@ -397,7 +397,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                   <button
                     key={option.value}
                     onClick={() => toggleLookingFor(option.value)}
-                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
                       (filters.lookingFor ?? []).includes(option.value)
                         ? "bg-secondary text-secondary-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
@@ -431,7 +431,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                   <button
                     key={detail.key}
                     onClick={() => toggleDetail(detail.key)}
-                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
                       (filters.details ?? []).includes(detail.key)
                         ? "bg-accent text-accent-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
@@ -466,7 +466,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                   <button
                     key={gender.value}
                     onClick={() => toggleGender(gender.value)}
-                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                    className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
                       (filters.genders ?? []).includes(gender.value)
                         ? "bg-primary text-primary-foreground"
                         : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
@@ -502,7 +502,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                     <button
                       key={city}
                       onClick={() => toggleCity(city)}
-                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
                         (filters.cities ?? []).includes(city)
                           ? "bg-primary text-primary-foreground"
                           : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
