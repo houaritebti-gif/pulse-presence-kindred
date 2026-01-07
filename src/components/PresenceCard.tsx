@@ -187,10 +187,14 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
               <TooltipTrigger asChild>
                 <div className={`absolute top-2 sm:top-3 left-2 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm shadow-lg cursor-help transition-all ${
                   compatibility >= 4 
-                    ? "bg-gradient-to-r from-primary to-accent shadow-primary/30" 
+                    ? "bg-gradient-to-r from-primary to-accent shadow-primary/30 animate-pulse" 
                     : "bg-background/80"
                 }`}>
-                  <Heart className={`w-3 h-3 ${compatibility >= 4 ? "text-primary-foreground fill-primary-foreground" : "text-primary fill-primary"}`} />
+                  <Heart className={`w-3 h-3 transition-transform ${
+                    compatibility >= 4 
+                      ? "text-primary-foreground fill-primary-foreground" 
+                      : "text-primary fill-primary"
+                  } ${compatibility >= 5 ? "animate-bounce" : ""}`} />
                   <span className={`text-[11px] sm:text-xs font-bold ${compatibility >= 4 ? "text-primary-foreground" : "text-foreground"}`}>
                     {Math.min(compatibility, 5)}/5
                   </span>
