@@ -60,6 +60,7 @@ interface CompatibilityBreakdown {
   tribes: number;
   music: number;
   lookingFor: number;
+  interests: number;
 }
 
 interface PresenceCardProps {
@@ -218,7 +219,10 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
                       <p>🎵 {compatibilityBreakdown.music} {compatibilityBreakdown.music === 1 ? "estilo" : "estilos"}</p>
                     )}
                     {compatibilityBreakdown.lookingFor > 0 && (
-                      <p>🔍 {compatibilityBreakdown.lookingFor} {compatibilityBreakdown.lookingFor === 1 ? "interés" : "intereses"}</p>
+                      <p>🔍 {compatibilityBreakdown.lookingFor} {compatibilityBreakdown.lookingFor === 1 ? "interés común" : "intereses comunes"}</p>
+                    )}
+                    {compatibilityBreakdown.interests > 0 && (
+                      <p>⭐ {compatibilityBreakdown.interests} {compatibilityBreakdown.interests === 1 ? "interés cultural" : "intereses culturales"}</p>
                     )}
                   </div>
                 ) : (
