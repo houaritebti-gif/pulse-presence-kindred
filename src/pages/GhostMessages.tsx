@@ -195,11 +195,11 @@ const GhostMessageCard = ({
                 <Button
                   variant="kiki"
                   size="sm"
-                  onClick={onNavigateToSpark}
+                  onClick={() => navigate(`/profile/${message.from_profile?.id}`)}
                   className="gap-1.5"
                 >
                   <Flame className="w-3.5 h-3.5" />
-                  Ir al chat
+                  Ver chispa
                 </Button>
               ) : message.hasSentBack ? (
                 <span className="text-xs text-primary flex items-center gap-1" style={{ fontFamily: 'Arial, sans-serif' }}>

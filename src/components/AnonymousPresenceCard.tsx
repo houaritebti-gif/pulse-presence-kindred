@@ -368,10 +368,17 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           {messageSent ? (
             <div className="py-8 text-center">
               {sparkCreated ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <Sparkles className="w-12 h-12 mx-auto text-primary animate-pulse" />
                   <p className="font-display text-lg text-primary">¡Chispa mutua!</p>
-                  <p className="text-sm text-muted-foreground">Se ha creado un chat</p>
+                  <p className="text-sm text-muted-foreground">Mira su perfil antes de chatear</p>
+                  <Button
+                    onClick={() => navigate(`/profile/${presence.profile?.id}`)}
+                    className="gap-2"
+                  >
+                    <Ghost className="w-4 h-4" />
+                    Ver perfil
+                  </Button>
                 </div>
               ) : (
                 <div className="space-y-3">
