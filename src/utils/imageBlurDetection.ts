@@ -12,11 +12,12 @@ export interface BlurDetectionResult {
 }
 
 // Threshold for considering an image blurry (lower variance = more blur)
-// This value has been calibrated for typical profile photos
-const BLUR_THRESHOLD = 100;
+// More permissive threshold - only reject very blurry images
+const BLUR_THRESHOLD = 50;
 
 // Minimum acceptable sharpness score (0-100)
-const MIN_SHARPNESS_SCORE = 25;
+// Lowered to be more permissive
+const MIN_SHARPNESS_SCORE = 15;
 
 /**
  * Detect if an image is blurry using Laplacian variance method
