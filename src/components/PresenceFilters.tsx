@@ -279,15 +279,23 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
       )}
 
       {/* Filter panel */}
-      {isOpen && (
-        <div className="bg-card rounded-2xl p-4 animate-fade-up border border-border">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, scale: 0.95 }}
+            animate={{ opacity: 1, height: "auto", scale: 1 }}
+            exit={{ opacity: 0, height: 0, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="bg-card rounded-2xl p-4 border border-border">
 
-          {/* Clear filters */}
-          {hasActiveFilters && (
-            <button
-              onClick={clearFilters}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors px-2 py-1 rounded-lg hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
+              {/* Clear filters */}
+              {hasActiveFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors px-2 py-1 rounded-lg hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
               <X className="w-3 h-3" />
               Limpiar filtros
             </button>
@@ -583,8 +591,10 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
               </div>
             )}
           </div>
-        </div>
-      )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
