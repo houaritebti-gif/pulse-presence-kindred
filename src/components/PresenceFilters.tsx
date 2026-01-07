@@ -5,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { GenderType } from "@/constants/profileOptions";
 import { triggerHaptic } from "@/utils/haptics";
+import { motion, AnimatePresence } from "framer-motion";
 
 
 export interface PresenceFilters {
@@ -155,11 +156,20 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
         >
           <Filter className="w-4 h-4" />
           <span>Más filtros</span>
-          {activeCount > 0 && (
-            <span className="w-5 h-5 rounded-full bg-primary-foreground/20 text-xs flex items-center justify-center font-bold">
-              {activeCount}
-            </span>
-          )}
+          <AnimatePresence mode="wait">
+            {activeCount > 0 && (
+              <motion.span
+                key={activeCount}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                className="w-5 h-5 rounded-full bg-primary-foreground/20 text-xs flex items-center justify-center font-bold"
+              >
+                {activeCount}
+              </motion.span>
+            )}
+          </AnimatePresence>
           {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>
