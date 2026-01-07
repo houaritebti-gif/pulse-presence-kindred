@@ -1188,7 +1188,7 @@ const Profile = () => {
             size="lg" 
             className="w-full"
             onClick={handleContinue}
-            disabled={updateProfile.isPending || updateTribes.isPending || updateMusicStyles.isPending}
+            disabled={updateProfile.isPending || updateTribes.isPending || updateMusicStyles.isPending || selectedInterests.length < 3}
           >
             {updateProfile.isPending || updateMusicStyles.isPending ? "Guardando..." : "Guardar y continuar"}
           </Button>
