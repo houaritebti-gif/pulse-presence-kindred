@@ -191,7 +191,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
         aria-label={`Perfil anónimo${presence.profile?.city ? ` de ${presence.profile.city}` : ""}`}
       >
         {/* Photo section - visible from the start */}
-        <div className="relative h-40 sm:h-48 bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center overflow-hidden">
+        <div className="relative h-36 sm:h-48 bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center overflow-hidden">
           {presence.profile?.avatar_url ? (
             <div className="absolute inset-0">
               <LazyImage 
