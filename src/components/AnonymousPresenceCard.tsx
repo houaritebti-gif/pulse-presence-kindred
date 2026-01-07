@@ -266,31 +266,36 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
 
         {/* Info section - fixed height for consistent cards */}
         <div className="p-3 sm:p-4 h-[140px] sm:h-[130px] flex flex-col">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground/90">
-              Perfil privado
-            </h3>
-            {/* Activity indicator */}
-            {(() => {
-              const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
-              return (
-                <div className="flex items-center gap-1.5">
-                  <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse" : ""}`} />
-                  {!activityStatus.isActive && (
-                    <span className="text-[11px] sm:text-xs text-muted-foreground/90 font-body">
-                      {activityStatus.label}
-                    </span>
-                  )}
-                </div>
-              );
-            })()}
-          </div>
+          {/* 1. Activity status - TOP */}
+          {(() => {
+            const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
+            return (
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <div className={cn(
+                  "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full",
+                  activityStatus.color,
+                  activityStatus.isActive && "animate-pulse shadow-sm shadow-green-500/50"
+                )} />
+                <span className={cn(
+                  "text-[11px] sm:text-xs font-body",
+                  activityStatus.isActive ? "text-green-600 dark:text-green-400 font-medium" : "text-muted-foreground/90"
+                )}>
+                  {activityStatus.label}
+                </span>
+              </div>
+            );
+          })()}
+
+          {/* 2. Name - MIDDLE */}
+          <h3 className="font-display text-base sm:text-lg font-semibold text-card-foreground/90 mb-2">
+            Perfil privado
+          </h3>
           
-          {/* Compact tags - limited height with fade and tooltip */}
+          {/* 3. Interests/Tags - BOTTOM with tooltip */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex-1 overflow-hidden mb-2 relative cursor-default">
+                <div className="flex-1 overflow-hidden relative cursor-default">
                   <div className="flex flex-wrap gap-1.5 max-h-[44px] overflow-hidden">
                     {/* Show max 3 tribes */}
                     {presence.tribes.slice(0, 3).map(tribe => (
@@ -356,7 +361,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           </TooltipProvider>
 
           {/* Ghost message button */}
-          <div className="mt-auto">
+          <div className="mt-auto pt-2">
             {messageSent ? (
               <Button
                 variant="secondary"
