@@ -106,7 +106,7 @@ const Row = ({
   );
 };
 
-const ITEM_HEIGHT = 380; // Fixed card height + gap for consistent spacing
+const ITEM_HEIGHT = 340; // Fixed card height + gap for consistent spacing (compact mobile)
 
 export const VirtualizedPresenceList = memo(({
   profiles,

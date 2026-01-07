@@ -460,7 +460,7 @@ PhotoCounter.displayName = "PhotoCounter";
 const SIZE_CLASSES = {
   sm: "w-16 h-16",
   md: "w-32 h-40",
-  lg: "w-full aspect-[4/5]",
+  lg: "w-full aspect-[3/4] sm:aspect-[4/5]",
 } as const;
 
 const SIZE_TEXT_CLASSES = {
