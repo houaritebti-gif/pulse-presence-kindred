@@ -67,6 +67,10 @@ const Row = ({
           key={presence.id}
           presence={{
             ...presence,
+            profile: presence.profile ? {
+              ...presence.profile,
+              city: presence.profile.city,
+            } : null,
             last_pulse: presence.last_pulse,
             is_present: presence.is_present,
           }}

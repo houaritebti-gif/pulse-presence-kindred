@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, MoreVertical, Flag, Ban, Zap } from "lucide-react";
+import { Heart, MoreVertical, Flag, Ban, Zap, MapPin } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { ALL_GENDERS } from "@/constants/profileOptions";
 import {
@@ -33,6 +33,7 @@ interface PresenceProfile {
   identity_verified: boolean | null;
   birthdate?: string | null;
   gender?: string | null;
+  city?: string | null;
 }
 
 // Helper to get gender label from value
@@ -220,8 +221,18 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
                   <p>{compatibility} coincidencias</p>
                 )}
               </TooltipContent>
-            </Tooltip>
+          </Tooltip>
           </TooltipProvider>
+
+          {/* City badge - bottom left */}
+          {presence.profile?.city && (
+            <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 backdrop-blur-sm shadow-md z-10">
+              <MapPin className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[10px] sm:text-xs font-medium text-foreground">
+                {presence.profile.city}
+              </span>
+            </div>
+          )}
 
           {/* Options menu overlay */}
           <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
