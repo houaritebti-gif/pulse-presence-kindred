@@ -288,9 +288,11 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
               <TooltipContent side="bottom" className="text-xs">
                 {compatibilityBreakdown ? (
                   <div className="space-y-1">
-                    {compatibility >= 4 && (
+                    {compatibility >= 5 ? (
+                      <p className="text-primary font-semibold">💫 ¡Compatibilidad perfecta!</p>
+                    ) : compatibility >= 4 ? (
                       <p className="text-primary font-semibold">✨ ¡Alta compatibilidad!</p>
-                    )}
+                    ) : null}
                     {compatibilityBreakdown.tribes > 0 && (
                       <p>🏴 {compatibilityBreakdown.tribes} {compatibilityBreakdown.tribes === 1 ? "tribu" : "tribus"}</p>
                     )}
