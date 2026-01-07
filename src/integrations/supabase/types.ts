@@ -498,9 +498,11 @@ export type Database = {
           bio: string | null
           birthdate: string | null
           city: string | null
+          colored_hair: boolean | null
           created_at: string | null
           email_verified: boolean | null
           gender: Database["public"]["Enums"]["gender_type"] | null
+          gothic_style: boolean | null
           has_piercings: boolean | null
           has_tattoos: boolean | null
           id: string
@@ -508,9 +510,11 @@ export type Database = {
           looking_for: string[] | null
           name: string | null
           share_typing_status: boolean | null
+          shaved_head: boolean | null
           updated_at: string | null
           user_id: string
           vibe: string | null
+          vintage_style: boolean | null
         }
         Insert: {
           alternative_aesthetic?: boolean | null
@@ -518,9 +522,11 @@ export type Database = {
           bio?: string | null
           birthdate?: string | null
           city?: string | null
+          colored_hair?: boolean | null
           created_at?: string | null
           email_verified?: boolean | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          gothic_style?: boolean | null
           has_piercings?: boolean | null
           has_tattoos?: boolean | null
           id?: string
@@ -528,9 +534,11 @@ export type Database = {
           looking_for?: string[] | null
           name?: string | null
           share_typing_status?: boolean | null
+          shaved_head?: boolean | null
           updated_at?: string | null
           user_id: string
           vibe?: string | null
+          vintage_style?: boolean | null
         }
         Update: {
           alternative_aesthetic?: boolean | null
@@ -538,9 +546,11 @@ export type Database = {
           bio?: string | null
           birthdate?: string | null
           city?: string | null
+          colored_hair?: boolean | null
           created_at?: string | null
           email_verified?: boolean | null
           gender?: Database["public"]["Enums"]["gender_type"] | null
+          gothic_style?: boolean | null
           has_piercings?: boolean | null
           has_tattoos?: boolean | null
           id?: string
@@ -548,9 +558,11 @@ export type Database = {
           looking_for?: string[] | null
           name?: string | null
           share_typing_status?: boolean | null
+          shaved_head?: boolean | null
           updated_at?: string | null
           user_id?: string
           vibe?: string | null
+          vintage_style?: boolean | null
         }
         Relationships: []
       }

@@ -50,6 +50,10 @@ const Onboarding = () => {
   const [hasTattoos, setHasTattoos] = useState(false);
   const [hasPiercings, setHasPiercings] = useState(false);
   const [alternativeAesthetic, setAlternativeAesthetic] = useState(false);
+  const [coloredHair, setColoredHair] = useState(false);
+  const [shavedHead, setShavedHead] = useState(false);
+  const [vintageStyle, setVintageStyle] = useState(false);
+  const [gothicStyle, setGothicStyle] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [bio, setBio] = useState("");
   const [selectedLookingFor, setSelectedLookingFor] = useState<string[]>([]);
@@ -287,6 +291,10 @@ const Onboarding = () => {
         has_tattoos: hasTattoos,
         has_piercings: hasPiercings,
         alternative_aesthetic: alternativeAesthetic,
+        colored_hair: coloredHair,
+        shaved_head: shavedHead,
+        vintage_style: vintageStyle,
+        gothic_style: gothicStyle,
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
         birthdate: birthdate && !birthdate.includes("0000") ? birthdate : null,
@@ -656,16 +664,33 @@ const Onboarding = () => {
               <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Comparte lo que quieras</span>
             </motion.div>
             {OPTIONAL_DETAILS.map((detail) => {
-              const isSelected = 
-                detail.key === "has_tattoos" ? hasTattoos :
-                detail.key === "has_piercings" ? hasPiercings :
-                alternativeAesthetic;
+              const getIsSelected = () => {
+                switch (detail.key) {
+                  case "has_tattoos": return hasTattoos;
+                  case "has_piercings": return hasPiercings;
+                  case "alternative_aesthetic": return alternativeAesthetic;
+                  case "colored_hair": return coloredHair;
+                  case "shaved_head": return shavedHead;
+                  case "vintage_style": return vintageStyle;
+                  case "gothic_style": return gothicStyle;
+                  default: return false;
+                }
+              };
               
               const toggle = () => {
-                if (detail.key === "has_tattoos") setHasTattoos(!hasTattoos);
-                else if (detail.key === "has_piercings") setHasPiercings(!hasPiercings);
-                else setAlternativeAesthetic(!alternativeAesthetic);
+                triggerHaptic('selection');
+                switch (detail.key) {
+                  case "has_tattoos": setHasTattoos(!hasTattoos); break;
+                  case "has_piercings": setHasPiercings(!hasPiercings); break;
+                  case "alternative_aesthetic": setAlternativeAesthetic(!alternativeAesthetic); break;
+                  case "colored_hair": setColoredHair(!coloredHair); break;
+                  case "shaved_head": setShavedHead(!shavedHead); break;
+                  case "vintage_style": setVintageStyle(!vintageStyle); break;
+                  case "gothic_style": setGothicStyle(!gothicStyle); break;
+                }
               };
+
+              const isSelected = getIsSelected();
 
               return (
                 <motion.button
@@ -681,7 +706,7 @@ const Onboarding = () => {
                   }`}
                   style={{ fontFamily: 'Arial, sans-serif' }}
                 >
-                  <span>{detail.label}</span>
+                  <span>{detail.emoji} {detail.label}</span>
                   <AnimatePresence>
                     {isSelected && (
                       <motion.div

@@ -59,10 +59,14 @@ const Profile = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
-  // Optional details
+  // Optional details / aesthetic options
   const [hasTattoos, setHasTattoos] = useState<boolean | null>(null);
   const [hasPiercings, setHasPiercings] = useState<boolean | null>(null);
   const [alternativeAesthetic, setAlternativeAesthetic] = useState<boolean | null>(null);
+  const [coloredHair, setColoredHair] = useState<boolean | null>(null);
+  const [shavedHead, setShavedHead] = useState<boolean | null>(null);
+  const [vintageStyle, setVintageStyle] = useState<boolean | null>(null);
+  const [gothicStyle, setGothicStyle] = useState<boolean | null>(null);
   
   // Bio and looking for
   const [bio, setBio] = useState("");
@@ -198,6 +202,10 @@ const Profile = () => {
       setHasTattoos(profile.has_tattoos);
       setHasPiercings(profile.has_piercings);
       setAlternativeAesthetic(profile.alternative_aesthetic);
+      setColoredHair((profile as any).colored_hair);
+      setShavedHead((profile as any).shaved_head);
+      setVintageStyle((profile as any).vintage_style);
+      setGothicStyle((profile as any).gothic_style);
       setShareTypingStatus(profile.share_typing_status !== false);
       setBio((profile as any).bio || "");
       setSelectedLookingFor((profile as any).looking_for || []);
@@ -324,6 +332,18 @@ const Profile = () => {
       case "alternative_aesthetic":
         setAlternativeAesthetic(prev => prev === true ? null : true);
         break;
+      case "colored_hair":
+        setColoredHair(prev => prev === true ? null : true);
+        break;
+      case "shaved_head":
+        setShavedHead(prev => prev === true ? null : true);
+        break;
+      case "vintage_style":
+        setVintageStyle(prev => prev === true ? null : true);
+        break;
+      case "gothic_style":
+        setGothicStyle(prev => prev === true ? null : true);
+        break;
     }
   };
 
@@ -332,6 +352,10 @@ const Profile = () => {
       case "has_tattoos": return hasTattoos;
       case "has_piercings": return hasPiercings;
       case "alternative_aesthetic": return alternativeAesthetic;
+      case "colored_hair": return coloredHair;
+      case "shaved_head": return shavedHead;
+      case "vintage_style": return vintageStyle;
+      case "gothic_style": return gothicStyle;
       default: return null;
     }
   };
@@ -391,6 +415,10 @@ const Profile = () => {
         has_tattoos: hasTattoos,
         has_piercings: hasPiercings,
         alternative_aesthetic: alternativeAesthetic,
+        colored_hair: coloredHair,
+        shaved_head: shavedHead,
+        vintage_style: vintageStyle,
+        gothic_style: gothicStyle,
         share_typing_status: shareTypingStatus,
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
