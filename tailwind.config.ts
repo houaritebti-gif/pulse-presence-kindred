@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Syne', 'sans-serif'],
-        body: ['DM Sans', 'sans-serif'],
+        display: ['Arial Black', 'Arial', 'sans-serif'],
+        body: ['Arial', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -52,10 +52,12 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         kiki: {
+          red: "hsl(var(--kiki-red))",
           pink: "hsl(var(--kiki-pink))",
           "pink-soft": "hsl(var(--kiki-pink-soft))",
           black: "hsl(var(--kiki-black))",
           white: "hsl(var(--kiki-white))",
+          grey: "hsl(var(--kiki-grey))",
           glow: "hsl(var(--kiki-glow))",
         },
         sidebar: {
