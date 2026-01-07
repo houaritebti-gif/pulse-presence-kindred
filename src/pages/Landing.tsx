@@ -345,31 +345,65 @@ const Landing = () => {
           className="relative z-10 max-w-2xl w-full text-center space-y-8" 
           style={{ opacity, scale }}
         >
-          {/* Flame icon with enhanced glow */}
+          {/* Logo KIKI with heart as dot of second I */}
           <motion.div 
-            className="flex justify-center" 
-            initial={{ opacity: 0, scale: 0.5, rotateY: -180 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            className="flex justify-center items-end" 
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut", type: "spring" }}
           >
-            <div className="relative">
-              <motion.div 
-                className="absolute inset-0 bg-primary/40 blur-3xl rounded-full scale-150"
-                animate={{ 
-                  opacity: [0.4, 0.8, 0.4],
-                  scale: [1.5, 2, 1.5],
-                }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <Heart className="relative w-16 h-16 md:w-20 md:h-20 text-primary fill-primary animate-heartbeat drop-shadow-[0_0_30px_hsl(var(--primary)/0.5)]" />
+            <div className="relative inline-flex items-baseline leading-none tracking-tight">
+              {/* K */}
+              <span 
+                className="text-8xl md:text-9xl lg:text-[10rem] font-bold text-foreground"
+                style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+              >
+                K
+              </span>
+              {/* I */}
+              <span 
+                className="text-8xl md:text-9xl lg:text-[10rem] font-bold text-foreground"
+                style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+              >
+                I
+              </span>
+              {/* K */}
+              <span 
+                className="text-8xl md:text-9xl lg:text-[10rem] font-bold text-foreground"
+                style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+              >
+                K
+              </span>
+              {/* I with heart as its dot */}
+              <span className="relative">
+                {/* Heart positioned as the dot of the I */}
+                <motion.div 
+                  className="absolute -top-2 md:-top-3 lg:-top-4 left-1/2 -translate-x-1/2"
+                  animate={{ 
+                    scale: [1, 1.15, 1],
+                  }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <div className="relative">
+                    <motion.div 
+                      className="absolute inset-0 bg-primary/40 blur-xl rounded-full scale-150"
+                      animate={{ 
+                        opacity: [0.4, 0.7, 0.4],
+                      }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <Heart className="relative w-5 h-5 md:w-7 md:h-7 lg:w-9 lg:h-9 text-primary fill-primary drop-shadow-[0_0_15px_hsl(var(--primary)/0.5)]" />
+                  </div>
+                </motion.div>
+                <span 
+                  className="text-8xl md:text-9xl lg:text-[10rem] font-bold text-foreground"
+                  style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+                >
+                  I
+                </span>
+              </span>
             </div>
           </motion.div>
-
-          {/* Logo with dramatic typography - letter by letter animation */}
-          <AnimatedTitle 
-            text="KIKI"
-            className="text-8xl md:text-9xl lg:text-[10rem] font-bold tracking-tighter text-foreground leading-none"
-          />
 
           {/* Tagline with emphasis */}
           <motion.div 
