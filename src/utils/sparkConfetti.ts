@@ -278,3 +278,76 @@ export const fireLegendaryAchievementConfetti = () => {
     });
   }, 400);
 };
+
+/**
+ * Fires a welcoming confetti animation when a new user signs up.
+ * Uses KIKI brand colors (pink, red) with heart-shaped celebration vibes.
+ */
+export const fireWelcomeConfetti = () => {
+  // KIKI brand colors: pinks, reds, and warm accents
+  const welcomeColors = ['#F6B1C3', '#E63946', '#FF69B4', '#FF1493', '#FFB6C1', '#FF85A2'];
+  
+  // Initial burst from bottom center - welcoming explosion
+  confetti({
+    particleCount: 120,
+    spread: 80,
+    origin: { x: 0.5, y: 0.8 },
+    colors: welcomeColors,
+    startVelocity: 50,
+    gravity: 0.9,
+    scalar: 1.3,
+    shapes: ['circle', 'square'],
+    ticks: 130,
+  });
+  
+  // Side bursts for extra celebration
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      angle: 60,
+      spread: 50,
+      origin: { x: 0, y: 0.7 },
+      colors: welcomeColors,
+      startVelocity: 40,
+      gravity: 0.8,
+    });
+    confetti({
+      particleCount: 50,
+      angle: 120,
+      spread: 50,
+      origin: { x: 1, y: 0.7 },
+      colors: welcomeColors,
+      startVelocity: 40,
+      gravity: 0.8,
+    });
+  }, 150);
+  
+  // Gentle pink rain from top
+  setTimeout(() => {
+    confetti({
+      particleCount: 80,
+      spread: 120,
+      origin: { x: 0.5, y: 0 },
+      colors: ['#F6B1C3', '#FFB6C1', '#FF69B4'],
+      startVelocity: 20,
+      gravity: 1.1,
+      scalar: 1.2,
+      ticks: 100,
+      drift: 0.5,
+    });
+  }, 300);
+  
+  // Final heart-colored burst
+  setTimeout(() => {
+    confetti({
+      particleCount: 60,
+      spread: 100,
+      origin: { x: 0.5, y: 0.5 },
+      colors: ['#E63946', '#FF1493', '#F6B1C3'],
+      startVelocity: 30,
+      gravity: 1,
+      scalar: 1.4,
+      ticks: 90,
+    });
+  }, 450);
+};
