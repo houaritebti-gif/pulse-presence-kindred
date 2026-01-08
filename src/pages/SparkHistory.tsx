@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ArrowLeft, 
   History, 
   ShoppingBag,
   Trophy,
@@ -42,6 +41,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { triggerHaptic } from "@/utils/haptics";
+import PageHeader from "@/components/PageHeader";
 
 // Transaction type icons
 const getTransactionIcon = (action: string, type: string) => {
@@ -195,22 +195,12 @@ export default function SparkHistory() {
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border/50">
-        <div className="flex items-center justify-between px-4 py-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="rounded-full"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          
-          <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
-            <History className="w-5 h-5 text-primary" />
-            Historial
-          </h1>
-          
-          <div className="w-10" />
+        <div className="px-4 py-3">
+          <PageHeader 
+            backLabel="Volver"
+            showThemeToggle={false}
+            className="mb-0"
+          />
         </div>
 
         {/* Filter bar */}

@@ -151,53 +151,57 @@ const PublicProfile = () => {
       <ParallaxBackground variant="profile" />
       
       {/* Header */}
-      {/* Header */}
-      <div className="px-6 py-4 flex items-center justify-between">
-        <button 
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
-          aria-label="Volver atrás"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Volver</span>
-        </button>
-        <KikiLogo size="md" />
-        
-        {/* Actions menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button 
-              className="text-muted-foreground hover:text-foreground transition-colors p-2"
-              aria-label="Más opciones"
-              title="Más opciones"
-            >
-              <MoreVertical className="w-5 h-5" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem 
-              onClick={() => {
-                setModerationMode("report");
-                setShowModerationModal(true);
-              }}
-              className="gap-2"
-            >
-              <Flag className="w-4 h-4" />
-              Reportar
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => {
-                setModerationMode("block");
-                setShowModerationModal(true);
-              }}
-              className="gap-2 text-destructive focus:text-destructive"
-            >
-              <Shield className="w-4 h-4" />
-              Bloquear
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <header className="px-6 py-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <div className="flex items-center justify-start">
+          <button 
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
+            aria-label="Volver atrás"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Volver</span>
+          </button>
+        </div>
+        <div className="flex items-center justify-center">
+          <KikiLogo size="md" />
+        </div>
+        <div className="flex items-center justify-end">
+          {/* Actions menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button 
+                className="text-muted-foreground hover:text-foreground transition-colors p-2"
+                aria-label="Más opciones"
+                title="Más opciones"
+              >
+                <MoreVertical className="w-5 h-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem 
+                onClick={() => {
+                  setModerationMode("report");
+                  setShowModerationModal(true);
+                }}
+                className="gap-2"
+              >
+                <Flag className="w-4 h-4" />
+                Reportar
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => {
+                  setModerationMode("block");
+                  setShowModerationModal(true);
+                }}
+                className="gap-2 text-destructive focus:text-destructive"
+              >
+                <Shield className="w-4 h-4" />
+                Bloquear
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
 
       {/* Profile content - Compact for mobile */}
       <div className="flex-1 px-4 md:px-6 max-w-lg mx-auto w-full">
