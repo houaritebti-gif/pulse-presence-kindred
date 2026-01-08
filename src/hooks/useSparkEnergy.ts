@@ -326,6 +326,8 @@ export function useSparkEnergy() {
       if (data.streakBonus > 0) {
         toast.success(`+${data.amount}🔥 (incluye +${data.streakBonus} bonus racha día ${data.newStreak})`);
       }
+      
+      // Check achievements will be done by calling component to avoid circular deps
     },
     onError: (error) => {
       console.error("Error earning energy:", error);

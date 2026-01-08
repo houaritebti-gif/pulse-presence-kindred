@@ -31,6 +31,7 @@ const Cookies = lazy(() => import("@/pages/Cookies"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Landing = lazy(() => import("@/pages/Landing"));
+const Achievements = lazy(() => import("@/pages/Achievements"));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -234,6 +235,16 @@ export const AnimatedRoutes = () => {
                 <PageTransition>
                   <Cookies />
                 </PageTransition>
+              }
+            />
+            <Route
+              path="/achievements"
+              element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <Achievements />
+                  </PageTransition>
+                </ProtectedRoute>
               }
             />
             <Route

@@ -1044,6 +1044,38 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_key: string
+          id: string
+          metadata: Json | null
+          profile_id: string
+          unlocked_at: string
+        }
+        Insert: {
+          achievement_key: string
+          id?: string
+          metadata?: Json | null
+          profile_id: string
+          unlocked_at?: string
+        }
+        Update: {
+          achievement_key?: string
+          id?: string
+          metadata?: Json | null
+          profile_id?: string
+          unlocked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_blocks: {
         Row: {
           blocked_profile_id: string
