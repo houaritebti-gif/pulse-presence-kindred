@@ -51,7 +51,7 @@ const Connections = () => {
   };
 
   const ReceivedRequestCard = ({ request }: { request: ConnectionRequestWithProfile }) => (
-    <div className="bg-card rounded-xl p-4 animate-fade-up">
+    <div className="bg-card rounded-xl p-4 animate-fade-up border border-foreground/5 dark:border-transparent shadow-md shadow-foreground/10 dark:shadow-foreground/5">
       <div className="flex items-start gap-3">
         <Avatar className="w-14 h-14 border-2 border-primary/20">
           <AvatarImage 
@@ -126,7 +126,7 @@ const Connections = () => {
   );
 
   const SentRequestCard = ({ request }: { request: ConnectionRequestWithProfile }) => (
-    <div className="bg-card rounded-xl p-4 animate-fade-up">
+    <div className="bg-card rounded-xl p-4 animate-fade-up border border-foreground/5 dark:border-transparent shadow-md shadow-foreground/10 dark:shadow-foreground/5">
       <div className="flex items-center gap-3">
         <Avatar className="w-12 h-12 border-2 border-muted">
           <AvatarImage 
