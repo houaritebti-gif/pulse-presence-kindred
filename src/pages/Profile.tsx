@@ -588,16 +588,16 @@ const Profile = () => {
       />
 
       <div className="flex-1 max-w-lg mx-auto w-full">
-        {/* Header */}
-        <div className="text-center mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
-          <h1 className="text-3xl font-bold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+        {/* Header - enlarged for mobile */}
+        <div className="text-center mb-12 opacity-0 animate-fade-up" style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Tu perfil
           </h1>
           {organizedCount && organizedCount > 0 && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-2 cursor-help animate-pulse-soft">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-3 cursor-help animate-pulse-soft">
                     <Calendar className="w-3.5 h-3.5" />
                     <span className="font-body text-xs font-medium">
                       {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
@@ -610,7 +610,7 @@ const Profile = () => {
               </Tooltip>
             </TooltipProvider>
           )}
-          <p className="text-muted-foreground text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-base sm:text-lg text-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
             Solo lo esencial. Nada más.
           </p>
         </div>
