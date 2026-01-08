@@ -617,8 +617,8 @@ const Subscription = () => {
           </div>
         </div>
 
-        {/* Manage Subscription */}
-        {subscription?.stripe_subscription_id && (
+        {/* Manage Subscription - show for paid users (not on trial) */}
+        {(tier === 'plus' || tier === 'premium') && !isOnTrial && (
           <div className="space-y-3">
             <Button 
               variant="outline" 

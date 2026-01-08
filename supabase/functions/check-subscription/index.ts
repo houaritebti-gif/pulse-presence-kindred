@@ -101,14 +101,12 @@ serve(async (req) => {
         tier 
       });
 
-      // Update user_subscriptions table
+      // Update user_subscriptions table (without Stripe IDs)
       const { error: upsertError } = await supabaseClient
         .from('user_subscriptions')
         .upsert({
           profile_id: profile.id,
           tier: tier,
-          stripe_customer_id: customerId,
-          stripe_subscription_id: stripeSubscriptionId,
           expires_at: subscriptionEnd,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'profile_id' });
@@ -117,6 +115,20 @@ serve(async (req) => {
         logStep("Error upserting subscription", { error: upsertError.message });
       } else {
         logStep("Subscription record updated in database");
+      }
+
+      // Store Stripe IDs in separate restricted table
+      const { error: stripeError } = await supabaseClient
+        .from('stripe_customer_data')
+        .upsert({
+          profile_id: profile.id,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: stripeSubscriptionId,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'profile_id' });
+      
+      if (stripeError) {
+        logStep("Error upserting stripe data", { error: stripeError.message });
       }
     } else {
       logStep("No active subscription found");
@@ -138,11 +150,11 @@ serve(async (req) => {
       }
     }
 
+    // Don't expose stripe_subscription_id to client for security
     return new Response(JSON.stringify({
       subscribed: tier !== "free",
       tier,
       subscription_end: subscriptionEnd,
-      stripe_subscription_id: stripeSubscriptionId,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
