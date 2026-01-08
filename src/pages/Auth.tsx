@@ -150,9 +150,47 @@ const Auth = () => {
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/8 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-20 right-0 w-[300px] h-[300px] bg-accent/8 blur-[100px] rounded-full pointer-events-none" />
+      {/* Animated ambient glow */}
+      <motion.div 
+        className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/15 blur-[150px] rounded-full pointer-events-none"
+        animate={{
+          scale: [1, 1.15, 1],
+          opacity: [0.15, 0.25, 0.15],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+      <motion.div 
+        className="absolute bottom-10 right-0 w-[400px] h-[400px] bg-accent/12 blur-[120px] rounded-full pointer-events-none"
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.12, 0.2, 0.12],
+          x: [0, 20, 0],
+        }}
+        transition={{
+          duration: 5,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 1,
+        }}
+      />
+      <motion.div 
+        className="absolute top-1/2 left-0 -translate-y-1/2 w-[300px] h-[300px] bg-primary/10 blur-[100px] rounded-full pointer-events-none"
+        animate={{
+          scale: [1, 1.1, 1],
+          opacity: [0.1, 0.18, 0.1],
+          y: [0, -30, 0],
+        }}
+        transition={{
+          duration: 6,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 2,
+        }}
+      />
       
       {/* Header with back button */}
       <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-6">
