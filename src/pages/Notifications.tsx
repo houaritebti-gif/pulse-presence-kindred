@@ -170,10 +170,10 @@ const Notifications = () => {
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all shadow-sm ${
                   filter === f.key
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-card-foreground/70 hover:bg-card/80"
+                    ? "bg-primary text-primary-foreground shadow-primary/20"
+                    : "bg-card text-card-foreground/70 hover:bg-card/80 border border-foreground/5 dark:border-transparent shadow-foreground/10 dark:shadow-foreground/5"
                 }`}
                 style={{ fontFamily: 'Arial, sans-serif' }}
               >
