@@ -417,33 +417,37 @@ const Landing = () => {
                         {/* Mini spark particles on the final period */}
                         {isLastChar && (
                           <>
-                            {[...Array(6)].map((_, i) => (
-                              <motion.span
-                                key={i}
-                                className="absolute w-1 h-1 rounded-full bg-primary"
-                                style={{
-                                  left: '50%',
-                                  top: '50%',
-                                }}
-                                initial={{ 
-                                  opacity: 0, 
-                                  scale: 0,
-                                  x: 0,
-                                  y: 0
-                                }}
-                                animate={{ 
-                                  opacity: [0, 1, 0],
-                                  scale: [0, 1.5, 0],
-                                  x: Math.cos(i * 60 * Math.PI / 180) * 12,
-                                  y: Math.sin(i * 60 * Math.PI / 180) * 12
-                                }}
-                                transition={{
-                                  delay: 2.44 + i * 0.03,
-                                  duration: 0.5,
-                                  ease: "easeOut"
-                                }}
-                              />
-                            ))}
+                            {[...Array(8)].map((_, i) => {
+                              const sparkColors = ['#E63946', '#FF6B6B', '#FF8C42', '#FFD93D', '#F6B1C3', '#FFA500', '#FF69B4', '#FCD34D'];
+                              return (
+                                <motion.span
+                                  key={i}
+                                  className="absolute w-1 h-1 rounded-full"
+                                  style={{
+                                    left: '50%',
+                                    top: '50%',
+                                    backgroundColor: sparkColors[i % sparkColors.length],
+                                  }}
+                                  initial={{ 
+                                    opacity: 0, 
+                                    scale: 0,
+                                    x: 0,
+                                    y: 0
+                                  }}
+                                  animate={{ 
+                                    opacity: [0, 1, 0],
+                                    scale: [0, 1.8, 0],
+                                    x: Math.cos(i * 45 * Math.PI / 180) * 14,
+                                    y: Math.sin(i * 45 * Math.PI / 180) * 14
+                                  }}
+                                  transition={{
+                                    delay: 2.44 + i * 0.025,
+                                    duration: 0.6,
+                                    ease: "easeOut"
+                                  }}
+                                />
+                              );
+                            })}
                           </>
                         )}
                       </motion.span>
