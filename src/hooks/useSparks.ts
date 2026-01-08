@@ -396,21 +396,22 @@ const GHOST_MESSAGE_LIMITS = {
   premium: Infinity,
 } as const;
 
-// Check daily ghost message limit based on subscription tier
+// Check daily ghost message limit based on subscription tier + purchased extras
 export const useGhostMessageLimit = () => {
   const { data: profile } = useProfile();
   const { tier } = useSubscriptionTier(profile?.id);
 
-  const dailyLimit = GHOST_MESSAGE_LIMITS[tier] || 5;
+  const baseDailyLimit = GHOST_MESSAGE_LIMITS[tier] || 5;
 
   return useQuery({
     queryKey: ["ghost_message_count", profile?.id, tier],
     queryFn: async () => {
-      if (!profile) return { count: 0, remaining: dailyLimit, canSend: true, limit: dailyLimit, tier };
+      if (!profile) return { count: 0, remaining: baseDailyLimit, canSend: true, limit: baseDailyLimit, tier, extraAvailable: 0 };
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
+      // Get today's sent messages count
       const { count, error } = await supabase
         .from("ghost_messages")
         .select("*", { count: "exact", head: true })
@@ -419,32 +420,68 @@ export const useGhostMessageLimit = () => {
 
       if (error) throw error;
 
+      // Get available purchased extra messages
+      const { data: purchasedItems } = await supabase
+        .from("spark_purchased_items")
+        .select("quantity, used_quantity, expires_at")
+        .eq("profile_id", profile.id)
+        .in("item_key", ["ghost_message_1", "ghost_message_3"])
+        .or("expires_at.is.null,expires_at.gt.now()");
+
+      const extraAvailable = (purchasedItems || []).reduce((sum, item) => {
+        const available = item.quantity - item.used_quantity;
+        return sum + Math.max(0, available);
+      }, 0);
+
       const sentToday = count || 0;
-      const remaining = dailyLimit === Infinity ? Infinity : Math.max(0, dailyLimit - sentToday);
-      const canSend = dailyLimit === Infinity || sentToday < dailyLimit;
+      const totalLimit = baseDailyLimit === Infinity ? Infinity : baseDailyLimit + extraAvailable;
+      const remaining = totalLimit === Infinity ? Infinity : Math.max(0, totalLimit - sentToday);
+      const canSend = totalLimit === Infinity || sentToday < totalLimit;
 
       return {
         count: sentToday,
         remaining,
         canSend,
-        limit: dailyLimit,
+        limit: baseDailyLimit,
+        totalLimit,
         tier,
+        extraAvailable,
+        usedExtras: Math.max(0, sentToday - baseDailyLimit),
       };
     },
     enabled: !!profile?.id,
   });
 };
 
-// Check if user can send a second chance message (Premium only, after 7 days)
+// Check if user can send a second chance message (Premium OR purchased with energy)
 export const useCanSendSecondChance = (targetProfileId: string | undefined) => {
   const { data: profile } = useProfile();
   const { tier } = useSubscriptionTier(profile?.id);
 
   return useQuery({
-    queryKey: ["can_second_chance", profile?.id, targetProfileId],
+    queryKey: ["can_second_chance", profile?.id, targetProfileId, tier],
     queryFn: async () => {
-      if (!profile?.id || !targetProfileId || tier !== 'premium') {
-        return { canSend: false, reason: tier !== 'premium' ? 'premium_required' : 'no_target' };
+      if (!profile?.id || !targetProfileId) {
+        return { canSend: false, reason: 'no_target', hasPurchased: false };
+      }
+
+      // Check if user has premium OR purchased second_chance item
+      const { data: purchasedItems } = await supabase
+        .from("spark_purchased_items")
+        .select("quantity, used_quantity, expires_at")
+        .eq("profile_id", profile.id)
+        .eq("item_key", "second_chance")
+        .or("expires_at.is.null,expires_at.gt.now()");
+
+      const availableSecondChances = (purchasedItems || []).reduce((sum, item) => {
+        return sum + Math.max(0, item.quantity - item.used_quantity);
+      }, 0);
+
+      const hasPurchasedSecondChance = availableSecondChances > 0;
+      const canUseSecondChance = tier === 'premium' || hasPurchasedSecondChance;
+
+      if (!canUseSecondChance) {
+        return { canSend: false, reason: 'premium_or_purchase_required', hasPurchased: false };
       }
 
       // Check if we already sent a message to this person
@@ -458,27 +495,30 @@ export const useCanSendSecondChance = (targetProfileId: string | undefined) => {
       if (error) throw error;
 
       if (!existingMessages || existingMessages.length === 0) {
-        return { canSend: false, reason: 'no_first_message' };
+        return { canSend: false, reason: 'no_first_message', hasPurchased: hasPurchasedSecondChance };
       }
 
       // Already sent a second chance
       if (existingMessages.some(m => m.is_second_chance)) {
-        return { canSend: false, reason: 'already_sent_second' };
+        return { canSend: false, reason: 'already_sent_second', hasPurchased: hasPurchasedSecondChance };
       }
 
-      // Check if 7 days have passed since the first message
-      const firstMessage = existingMessages[existingMessages.length - 1];
-      const daysSinceFirst = Math.floor(
-        (Date.now() - new Date(firstMessage.created_at).getTime()) / (1000 * 60 * 60 * 24)
-      );
+      // Check if 7 days have passed since the first message (for premium users)
+      // Purchased second chances bypass the 7 day wait
+      if (!hasPurchasedSecondChance) {
+        const firstMessage = existingMessages[existingMessages.length - 1];
+        const daysSinceFirst = Math.floor(
+          (Date.now() - new Date(firstMessage.created_at).getTime()) / (1000 * 60 * 60 * 24)
+        );
 
-      if (daysSinceFirst < 7) {
-        return { canSend: false, reason: 'too_soon', daysRemaining: 7 - daysSinceFirst };
+        if (daysSinceFirst < 7) {
+          return { canSend: false, reason: 'too_soon', daysRemaining: 7 - daysSinceFirst, hasPurchased: false };
+        }
       }
 
-      return { canSend: true, reason: null };
+      return { canSend: true, reason: null, hasPurchased: hasPurchasedSecondChance, availableSecondChances };
     },
-    enabled: !!profile?.id && !!targetProfileId && tier === 'premium',
+    enabled: !!profile?.id && !!targetProfileId,
   });
 };
 

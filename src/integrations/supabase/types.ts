@@ -905,6 +905,47 @@ export type Database = {
           },
         ]
       }
+      spark_purchased_items: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          item_key: string
+          metadata: Json | null
+          profile_id: string
+          quantity: number
+          used_quantity: number
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          item_key: string
+          metadata?: Json | null
+          profile_id: string
+          quantity?: number
+          used_quantity?: number
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          item_key?: string
+          metadata?: Json | null
+          profile_id?: string
+          quantity?: number
+          used_quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spark_purchased_items_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spark_read_status: {
         Row: {
           chat_id: string
@@ -1169,6 +1210,10 @@ export type Database = {
         Args: { text_to_check: string }
         Returns: boolean
       }
+      get_available_item_quantity: {
+        Args: { p_item_key: string; p_profile_id: string }
+        Returns: number
+      }
       get_blacklisted_matches: {
         Args: { text_to_check: string }
         Returns: string[]
@@ -1195,6 +1240,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      use_purchased_item: {
+        Args: { p_item_key: string; p_profile_id: string }
         Returns: boolean
       }
     }
