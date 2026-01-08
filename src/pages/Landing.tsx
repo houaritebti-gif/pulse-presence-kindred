@@ -397,7 +397,7 @@ const Landing = () => {
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                 initial={{ opacity: 1 }}
               >
-                <span className="relative">
+                <span className="relative inline-block">
                   {"y punto.".split("").map((char, index) => (
                     <motion.span
                       key={index}
@@ -413,6 +413,17 @@ const Landing = () => {
                       {char}
                     </motion.span>
                   ))}
+                  {/* Shine effect overlay */}
+                  <motion.span
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12 pointer-events-none"
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "200%" }}
+                    transition={{ 
+                      delay: 3,
+                      duration: 0.8,
+                      ease: "easeInOut"
+                    }}
+                  />
                   {/* Animated underline */}
                   <motion.span
                     className="absolute -bottom-1 left-0 h-0.5 bg-primary rounded-full"
