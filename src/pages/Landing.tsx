@@ -413,15 +413,18 @@ const Landing = () => {
                       {char}
                     </motion.span>
                   ))}
-                  {/* Shine effect overlay */}
+                  {/* Shine effect overlay - repeating */}
                   <motion.span
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12 pointer-events-none"
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 pointer-events-none"
                     initial={{ x: "-100%" }}
-                    animate={{ x: "200%" }}
+                    animate={{ x: ["−100%", "200%", "200%"] }}
                     transition={{ 
                       delay: 3,
-                      duration: 0.8,
-                      ease: "easeInOut"
+                      duration: 4,
+                      ease: "easeInOut",
+                      repeat: Infinity,
+                      repeatDelay: 3,
+                      times: [0, 0.2, 1]
                     }}
                   />
                   {/* Animated underline */}
