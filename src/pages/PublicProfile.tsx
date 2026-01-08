@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star } from "lucide-react";
+import { KikiLogo } from "@/components/KikiLogo";
 import ErrorState from "@/components/ErrorState";
 import PublicProfileSkeleton from "@/components/PublicProfileSkeleton";
 import { usePublicProfile } from "@/hooks/usePublicProfile";
@@ -160,7 +161,7 @@ const PublicProfile = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Volver</span>
         </button>
-        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+        <KikiLogo size="md" />
         
         {/* Actions menu */}
         <DropdownMenu>

@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2, X } from "lucide-react";
+import { KikiLogo } from "@/components/KikiLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSparkChats, useExtinguishSpark } from "@/hooks/useSparks";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
@@ -120,7 +121,7 @@ const Sparks = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
         </button>
-        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+        <KikiLogo size="md" />
         <ThemeToggle />
       </div>
 

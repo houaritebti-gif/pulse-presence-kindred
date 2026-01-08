@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { KikiLogo } from "@/components/KikiLogo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock, Zap } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -331,7 +332,7 @@ const Presence = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm sm:text-base" style={{ fontFamily: 'Arial, sans-serif' }}>Perfil</span>
         </button>
-        <span className="text-lg sm:text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+        <KikiLogo size="md" />
         <div className="flex items-center gap-1.5 sm:gap-2">
           <ThemeToggle />
           {/* Connection requests button */}
