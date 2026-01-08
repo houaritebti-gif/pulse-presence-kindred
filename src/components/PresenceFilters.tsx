@@ -127,7 +127,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
       {/* Primary toggle - Active now vs All profiles - ALWAYS VISIBLE */}
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
         {/* Segmented control for Active/All toggle */}
-        <div className="flex bg-card rounded-xl p-1 border border-border w-full sm:w-auto">
+        <div className="flex bg-card rounded-xl p-1 border border-foreground/5 dark:border-border shadow-md shadow-foreground/10 dark:shadow-foreground/5 w-full sm:w-auto">
           <button
             onClick={() => !filters.showAllProfiles || toggleShowAllProfiles()}
             className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
@@ -157,10 +157,10 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
           onClick={() => { triggerHaptic('light'); setIsOpen(!isOpen); }}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className={`flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl font-body text-sm font-medium transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+          className={`flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl font-body text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
             hasActiveFilters
-              ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-primary/25"
-              : "bg-card text-card-foreground hover:bg-card/90 border border-border hover:border-primary/30"
+              ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md shadow-primary/25"
+              : "bg-card text-card-foreground hover:bg-card/90 border border-foreground/5 dark:border-border hover:border-primary/30 shadow-md shadow-foreground/10 dark:shadow-foreground/5"
           }`}
         >
           <Filter className={`w-4 h-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
@@ -295,7 +295,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="bg-card rounded-2xl p-4 border border-border">
+            <div className="bg-card rounded-2xl p-4 border border-foreground/5 dark:border-border shadow-md shadow-foreground/10 dark:shadow-foreground/5">
 
               {/* Clear filters */}
               {hasActiveFilters && (
