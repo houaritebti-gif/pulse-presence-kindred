@@ -11,6 +11,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile } from "@/hooks/useProfile";
 import { ACHIEVEMENTS, AchievementDefinition } from "@/hooks/useAchievements";
+import { getSparkLevel } from "@/hooks/useSparkEnergy";
 
 type CategoryFilter = AchievementDefinition['category'] | 'all';
 type SortOption = 'achievements' | 'energy';
@@ -71,6 +72,7 @@ function LeaderboardSkeleton() {
 function LeaderboardCard({ entry, rank, isCurrentUser }: { entry: LeaderboardEntry; rank: number; isCurrentUser: boolean }) {
   const navigate = useNavigate();
   const RankIcon = rank <= 3 ? RANK_ICONS[rank - 1] : null;
+  const sparkLevel = getSparkLevel(entry.totalEnergy);
 
   return (
     <motion.div
@@ -130,12 +132,16 @@ function LeaderboardCard({ entry, rank, isCurrentUser }: { entry: LeaderboardEnt
       </div>
 
       {/* Stats */}
-      <div className="text-right">
-        <div className="flex items-center gap-1 text-foreground font-bold">
+      <div className="text-right space-y-0.5">
+        <div className="flex items-center justify-end gap-1 text-foreground font-bold">
           <Trophy className="w-4 h-4 text-primary" />
           {entry.achievementCount}
         </div>
-        <div className="flex items-center gap-0.5 text-xs text-muted-foreground">
+        <div className="flex items-center justify-end gap-1 text-xs">
+          <span className="text-base leading-none">{sparkLevel.emoji}</span>
+          <span className="text-muted-foreground">{sparkLevel.name}</span>
+        </div>
+        <div className="flex items-center justify-end gap-0.5 text-xs text-muted-foreground">
           <Zap className="w-3 h-3 text-amber-500" />
           {entry.totalEnergy}
         </div>
