@@ -581,7 +581,7 @@ const Profile = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
         </button>
-        <KikiLogo size="md" />
+        <KikiLogo size="lg" />
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <button
