@@ -174,27 +174,29 @@ export const BottomNavigation = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/50 safe-area-bottom">
-      <div className="flex items-center justify-around max-w-md mx-auto px-1">
-        {navItems.map((item) => (
-          <NavItem
-            key={item.path}
-            icon={item.icon}
-            label={item.label}
-            path={item.path}
-            badge={item.badge}
-            isActive={location.pathname === item.path}
-            onClick={() => navigate(item.path)}
-            onPrefetch={() => prefetchRoute(item.path)}
-            isOfflineBadge={item.isOfflineBadge}
-          />
-        ))}
+      <div className="flex items-center justify-between max-w-md mx-auto px-2">
+        <div className="flex items-center justify-around flex-1">
+          {navItems.map((item) => (
+            <NavItem
+              key={item.path}
+              icon={item.icon}
+              label={item.label}
+              path={item.path}
+              badge={item.badge}
+              isActive={location.pathname === item.path}
+              onClick={() => navigate(item.path)}
+              onPrefetch={() => prefetchRoute(item.path)}
+              isOfflineBadge={item.isOfflineBadge}
+            />
+          ))}
+        </div>
         
-        {/* Spark Energy indicator */}
+        {/* Spark Energy indicator - properly sized */}
         <SparkFlameCompact
           level={currentLevel.level}
           energy={sparkEnergy?.current_energy || 0}
           onClick={() => navigate("/spark-energy")}
-          className="ml-1"
+          className="ml-1 mr-1"
         />
       </div>
     </nav>

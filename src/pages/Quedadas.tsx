@@ -327,20 +327,20 @@ const Quedadas = () => {
       />
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
-        {/* Hero */}
-        <div className="text-center mb-10 animate-fade-up">
-          <div className="relative w-20 h-20 mx-auto mb-6">
-            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full animate-pulse-soft" />
+        {/* Hero - enlarged for mobile */}
+        <div className="text-center mb-12 animate-fade-up">
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-8">
+            <div className="absolute inset-0 bg-accent/20 blur-3xl rounded-full animate-pulse-soft" />
             <div className="relative w-full h-full rounded-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center ring-2 ring-accent/20 ring-offset-4 ring-offset-background">
-              <Calendar className="w-9 h-9 text-accent" />
+              <Calendar className="w-11 h-11 sm:w-13 sm:h-13 text-accent" />
             </div>
-            <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-accent/60 animate-pulse-soft" />
+            <Sparkles className="absolute -top-1 -right-1 w-6 h-6 text-accent/60 animate-pulse-soft" />
           </div>
           
-          <h1 className="text-3xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Quedadas
           </h1>
-          <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-base sm:text-lg text-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
             Eventos efímeros en {profile?.city || "tu ciudad"}.
           </p>
         </div>

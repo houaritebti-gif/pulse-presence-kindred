@@ -114,26 +114,26 @@ const Sparks = () => {
       <PageHeader backLabel="Presencia" backTo="/presence" />
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
-        {/* Hero section */}
-        <div className="text-center mb-10 animate-fade-up">
-          {/* Animated spark icon */}
-          <div className="relative w-20 h-20 mx-auto mb-6">
-            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full animate-pulse-soft" />
+        {/* Hero section - enlarged for mobile */}
+        <div className="text-center mb-12 animate-fade-up">
+          {/* Animated spark icon - larger */}
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-8">
+            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse-soft" />
             <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center ring-2 ring-primary/20 ring-offset-4 ring-offset-background">
-              <Flame className="w-10 h-10 text-primary animate-spark-flame" />
+              <Flame className="w-12 h-12 sm:w-14 sm:h-14 text-primary animate-spark-flame" />
             </div>
-            <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-primary/60 animate-pulse-soft" />
-            <Sparkles className="absolute -bottom-2 -left-2 w-4 h-4 text-accent/50 animate-pulse-soft animate-delay-300" />
+            <Sparkles className="absolute -top-1 -right-1 w-6 h-6 text-primary/60 animate-pulse-soft" />
+            <Sparkles className="absolute -bottom-2 -left-2 w-5 h-5 text-accent/50 animate-pulse-soft animate-delay-300" />
           </div>
           
-          <h1 className="text-3xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Tus chispas
           </h1>
-          <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-base sm:text-lg text-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
             Conexiones mutuas. Conversaciones reales.
           </p>
           {/* Swipe hint */}
-          <p className="text-xs text-muted-foreground/60 mt-2" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-xs sm:text-sm text-muted-foreground/60 mt-3" style={{ fontFamily: 'Arial, sans-serif' }}>
             Desliza hacia la izquierda para apagar
           </p>
         </div>

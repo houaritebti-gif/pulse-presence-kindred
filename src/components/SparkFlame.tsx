@@ -331,17 +331,29 @@ export function SparkFlameCompact({
     <motion.button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full",
+        "flex items-center gap-1 px-2 py-1 rounded-full",
         "bg-gradient-to-r from-primary/10 to-primary/5",
         "border border-primary/20 hover:border-primary/40",
         "transition-colors duration-200",
+        "min-w-0 flex-shrink-0", // Prevent clipping
         className
       )}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
-      <SparkFlame level={level} size="sm" animate showLabel={false} />
-      <span className="text-sm font-bold text-foreground">{energy}</span>
+      {/* Simplified flame icon for compact view */}
+      <div 
+        className="w-5 h-5 flex items-center justify-center flex-shrink-0"
+        style={{ 
+          background: `linear-gradient(135deg, ${config.colors[0]}, ${config.colors[1]})`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+        }}
+      >
+        <span className="text-sm">🔥</span>
+      </div>
+      <span className="text-xs font-bold text-foreground tabular-nums">{energy}</span>
     </motion.button>
   );
 }
