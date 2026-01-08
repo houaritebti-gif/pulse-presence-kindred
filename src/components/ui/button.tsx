@@ -116,6 +116,28 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const [isAnimating, setIsAnimating] = React.useState(false);
     const Comp = asChild ? Slot : "button";
 
+    // Dynamic ripple color based on variant
+    const getRippleColor = () => {
+      switch (variant) {
+        case "default":
+        case "destructive":
+        case "kiki":
+        case "kiki-glow":
+          return "bg-white/40"; // Light ripple for dark buttons
+        case "outline":
+        case "ghost":
+        case "kiki-ghost":
+          return "bg-primary/25"; // Primary tinted ripple for transparent buttons
+        case "secondary":
+        case "kiki-soft":
+          return "bg-foreground/20"; // Subtle dark ripple for light buttons
+        case "link":
+          return "bg-primary/30";
+        default:
+          return "bg-white/30";
+      }
+    };
+
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       // Trigger bounce animation
       setIsAnimating(true);
@@ -160,11 +182,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {children}
-        {/* Ripple effects */}
+        {/* Ripple effects - dynamic color based on variant */}
         {enableRipple && ripples.map(ripple => (
           <span
             key={ripple.id}
-            className="absolute rounded-full bg-white/30 pointer-events-none animate-ripple"
+            className={cn(
+              "absolute rounded-full pointer-events-none animate-ripple",
+              getRippleColor()
+            )}
             style={{
               left: ripple.x,
               top: ripple.y,
