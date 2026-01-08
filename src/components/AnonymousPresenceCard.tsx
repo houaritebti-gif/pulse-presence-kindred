@@ -67,6 +67,7 @@ interface AnonymousPresenceCardProps {
   canSeeRealtimePresence?: boolean;
   compatibility?: number;
   compatibilityBreakdown?: CompatibilityBreakdown;
+  hasVisibilityBoost?: boolean;
 }
 
 // Helper to get gender label from value
@@ -122,7 +123,7 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealti
   }
 };
 
-const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, canSeeRealtimePresence = true, compatibility = 0, compatibilityBreakdown }: AnonymousPresenceCardProps) => {
+const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, canSeeRealtimePresence = true, compatibility = 0, compatibilityBreakdown, hasVisibilityBoost = false }: AnonymousPresenceCardProps) => {
   const { data: myProfile } = useProfile();
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
@@ -287,6 +288,14 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg animate-pulse z-20">
               <Zap className="w-3 h-3 text-white fill-white" />
               <span className="text-[10px] font-bold text-white uppercase tracking-wide">Now</span>
+            </div>
+          )}
+
+          {/* Visibility boost badge */}
+          {hasVisibilityBoost && !isBoosted && (
+            <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg z-20">
+              <Sparkles className="w-3 h-3 text-white" />
+              <span className="text-[10px] font-bold text-white uppercase tracking-wide">Boost</span>
             </div>
           )}
 
