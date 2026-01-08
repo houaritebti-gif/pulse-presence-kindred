@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
+import { emitEnergyGain } from "@/components/EnergyGainAnimation";
 
 // =============================================
 // TYPES
@@ -316,6 +317,9 @@ export function useSparkEnergy() {
       queryClient.invalidateQueries({ queryKey: ["spark-energy", profileId] });
       queryClient.invalidateQueries({ queryKey: ["spark-transactions-today", profileId] });
       queryClient.invalidateQueries({ queryKey: ["spark-transactions-recent", profileId] });
+      
+      // Emit global event for floating +X animation
+      emitEnergyGain(data.amount);
       
       if (data.streakBonus > 0) {
         toast.success(`+${data.amount}🔥 (incluye +${data.streakBonus} bonus racha día ${data.newStreak})`);

@@ -1,16 +1,15 @@
 import { useEffect, useRef } from "react";
 import { useSparkEnergy } from "./useSparkEnergy";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEnergyGainAnimation } from "@/components/EnergyGainAnimation";
 
 /**
  * Hook to automatically award daily login energy
  * Should be used once at the app root level
+ * Animation is triggered automatically via emitEnergyGain in useSparkEnergy
  */
 export function useDailyLoginReward() {
   const { user } = useAuth();
   const { sparkEnergy, earnEnergy, canDoAction, isLoading } = useSparkEnergy();
-  const { showEnergyGain } = useEnergyGainAnimation();
   const hasCheckedRef = useRef(false);
 
   useEffect(() => {
@@ -32,10 +31,6 @@ export function useDailyLoginReward() {
         });
         
         if (result && result.amount > 0) {
-          // Show floating animation after a slight delay for visibility
-          setTimeout(() => {
-            showEnergyGain(result.amount);
-          }, 500);
           console.log("[SparkEnergy] Daily login reward awarded:", result.amount);
         }
       } catch (error) {
@@ -46,7 +41,7 @@ export function useDailyLoginReward() {
     // Small delay to ensure everything is loaded
     const timer = setTimeout(checkLogin, 2000);
     return () => clearTimeout(timer);
-  }, [user, isLoading, sparkEnergy, earnEnergy, canDoAction, showEnergyGain]);
+  }, [user, isLoading, sparkEnergy, earnEnergy, canDoAction]);
 }
 
 export default useDailyLoginReward;
