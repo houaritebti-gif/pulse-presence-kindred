@@ -17,6 +17,7 @@ import OfflineIndicator from "@/components/OfflineIndicator";
 import { CookieConsent } from "@/components/CookieConsent";
 import { ScreenReaderAnnouncerProvider } from "@/components/ScreenReaderAnnouncer";
 import { AnimatedRoutes } from "@/components/AnimatedRoutes";
+import { useDailyLoginReward } from "@/hooks/useDailyLoginReward";
 
 // Lazy load heavy components
 const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
@@ -67,6 +68,7 @@ const queryClient = new QueryClient({
 const KeyboardNavigationWrapper = ({ children }: { children: React.ReactNode }) => {
   useKeyboardShortcuts();
   useScrollToTop();
+  useDailyLoginReward(); // Award energy on daily login
   const location = useLocation();
   
   // Show shortcuts help only on main pages (not landing/auth)

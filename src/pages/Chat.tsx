@@ -8,6 +8,7 @@ import { useGhostMessageLimit, useHasSparkWith, useCanSendSecondChance } from "@
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useHasActiveKikiNowBoost } from "@/hooks/useKikiNow";
+import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { sendPushNotification } from "@/utils/pushNotifications";
 import { toast } from "sonner";
@@ -36,6 +37,7 @@ const Chat = () => {
   const { isPremium, canSendPremiumMessages } = useSubscription();
   const { data: secondChanceData } = useCanSendSecondChance(profileId);
   const { data: hasKikiNowBoost } = useHasActiveKikiNowBoost();
+  const { earnEnergy, canDoAction } = useSparkEnergy();
   
   const [targetProfile, setTargetProfile] = useState<TargetProfile | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
@@ -131,6 +133,18 @@ const Chat = () => {
       } else {
         setSent(true);
         
+        // Award spark energy for sending ghost message
+        if (canDoAction("send_ghost")) {
+          try {
+            await earnEnergy({ 
+              action: "send_ghost", 
+              description: "Ghost message enviado" 
+            });
+          } catch (e) {
+            console.log("[SparkEnergy] Could not award energy:", e);
+          }
+        }
+        
         // Send special notification if sender has KIKI Now boost active
         if (hasKikiNowBoost) {
           sendPushNotification({
@@ -148,6 +162,17 @@ const Chat = () => {
           
           if (sparkCreated) {
             setNewSparkCreated(true);
+            
+            // Award bonus energy for mutual spark
+            try {
+              await earnEnergy({ 
+                action: "mutual_spark", 
+                description: "¡Chispa mutua!" 
+              });
+            } catch (e) {
+              console.log("[SparkEnergy] Could not award mutual spark energy:", e);
+            }
+            
             // Send push notification to the other person about the match
             sendPushNotification({
               profileId: profileId,

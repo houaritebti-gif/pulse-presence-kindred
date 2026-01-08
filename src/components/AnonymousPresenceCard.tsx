@@ -29,6 +29,7 @@ import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
+import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -125,6 +126,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
   const { data: myProfile } = useProfile();
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
+  const { earnEnergy, canDoAction } = useSparkEnergy();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
@@ -178,12 +180,36 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
         refetchLimit();
         queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
         
+        // Award spark energy for sending ghost message
+        if (canDoAction("send_ghost")) {
+          try {
+            await earnEnergy({ 
+              action: "send_ghost", 
+              description: "Ghost message enviado" 
+            });
+          } catch (e) {
+            // Silent fail - don't block the main flow
+            console.log("[SparkEnergy] Could not award energy:", e);
+          }
+        }
+        
         // Check for spark after a brief delay
         setTimeout(async () => {
           const hasNewSpark = await checkForNewSpark(presence.profile!.id);
           
           if (hasNewSpark) {
             setSparkCreated(true);
+            
+            // Award bonus energy for mutual spark
+            try {
+              await earnEnergy({ 
+                action: "mutual_spark", 
+                description: "¡Chispa mutua!" 
+              });
+            } catch (e) {
+              console.log("[SparkEnergy] Could not award mutual spark energy:", e);
+            }
+            
             toast.success("🔥 ¡Chispa mutua!", {
               action: {
                 label: "Ver perfil",

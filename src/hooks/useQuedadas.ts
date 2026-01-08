@@ -1,5 +1,5 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { sendPushNotification } from "@/utils/pushNotifications";
@@ -236,7 +236,17 @@ export const useJoinQuedada = () => {
   const { data: profile } = useProfile();
 
   return useMutation({
-    mutationFn: async ({ quedadaId, creatorProfileId, quedadaTitle }: { quedadaId: string; creatorProfileId?: string; quedadaTitle?: string }) => {
+    mutationFn: async ({ 
+      quedadaId, 
+      creatorProfileId, 
+      quedadaTitle,
+      onEarnEnergy 
+    }: { 
+      quedadaId: string; 
+      creatorProfileId?: string; 
+      quedadaTitle?: string;
+      onEarnEnergy?: () => Promise<void>;
+    }) => {
       if (!profile) throw new Error("No profile");
 
       const { error } = await supabase
@@ -247,6 +257,15 @@ export const useJoinQuedada = () => {
         });
 
       if (error) throw error;
+      
+      // Award spark energy for joining
+      if (onEarnEnergy) {
+        try {
+          await onEarnEnergy();
+        } catch (e) {
+          console.log("[SparkEnergy] Could not award join quedada energy:", e);
+        }
+      }
       
       // Send push notification to creator
       if (creatorProfileId && creatorProfileId !== profile.id) {
