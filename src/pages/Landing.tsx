@@ -9,6 +9,7 @@ import { useRef, useEffect, useState } from "react";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import { KikiLogo } from "@/components/KikiLogo";
 import { FloatingParticles as LogoParticles } from "@/components/FloatingParticles";
+import { landingConfig } from "@/config/landingConfig";
 
 const fadeInUp: Variants = {
   hidden: {
@@ -368,9 +369,11 @@ const Landing = () => {
           >
             {/* Floating particles around hero logo */}
             <div className="relative">
-              <div className="absolute -inset-20 sm:-inset-24 md:-inset-32">
-                <LogoParticles count={24} />
-              </div>
+              {landingConfig.showFloatingParticles && (
+                <div className="absolute -inset-20 sm:-inset-24 md:-inset-32">
+                  <LogoParticles count={landingConfig.particleCount} />
+                </div>
+              )}
               <KikiLogo size="hero" animate={true} />
             </div>
             
@@ -415,7 +418,7 @@ const Landing = () => {
                       >
                         {char}
                         {/* Mini spark particles on the final period */}
-                        {isLastChar && (
+                        {isLastChar && landingConfig.showPeriodSparkles && (
                           <>
                             {[...Array(8)].map((_, i) => {
                               const sparkColors = ['#E63946', '#FF6B6B', '#FF8C42', '#FFD93D', '#F6B1C3', '#FFA500', '#FF69B4', '#FCD34D'];
@@ -454,30 +457,34 @@ const Landing = () => {
                     );
                   })}
                   {/* Shine effect overlay - repeating */}
-                  <motion.span
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 pointer-events-none"
-                    initial={{ x: "-100%" }}
-                    animate={{ x: ["-100%", "200%", "200%"] }}
-                    transition={{ 
-                      delay: 2.8,
-                      duration: 4,
-                      ease: "easeInOut",
-                      repeat: Infinity,
-                      repeatDelay: 3,
-                      times: [0, 0.2, 1]
-                    }}
-                  />
+                  {landingConfig.showShineEffect && (
+                    <motion.span
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 pointer-events-none"
+                      initial={{ x: "-100%" }}
+                      animate={{ x: ["-100%", "200%", "200%"] }}
+                      transition={{ 
+                        delay: 2.8,
+                        duration: 4,
+                        ease: "easeInOut",
+                        repeat: Infinity,
+                        repeatDelay: 3,
+                        times: [0, 0.2, 1]
+                      }}
+                    />
+                  )}
                   {/* Animated underline */}
-                  <motion.span
-                    className="absolute -bottom-1 left-0 h-0.5 bg-foreground rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                    transition={{ 
-                      delay: 2.3,
-                      duration: 0.4,
-                      ease: "easeOut"
-                    }}
-                  />
+                  {landingConfig.showUnderline && (
+                    <motion.span
+                      className="absolute -bottom-1 left-0 h-0.5 bg-foreground rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: "100%" }}
+                      transition={{ 
+                        delay: 2.3,
+                        duration: 0.4,
+                        ease: "easeOut"
+                      }}
+                    />
+                  )}
                 </span>
                 {/* Blinking cursor */}
                 <motion.span
