@@ -374,26 +374,46 @@ const Landing = () => {
               <KikiLogo size="hero" animate={true} />
             </div>
             
-            {/* Slogan - Para gente diferente y punto */}
-            <motion.div 
-              className="flex flex-col items-center mt-2"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-            >
-              <span 
+            {/* Slogan - Para gente diferente y punto - Typewriter effect */}
+            <div className="flex flex-col items-center mt-2">
+              <motion.span 
                 className="text-lg md:text-xl text-foreground/90 tracking-wide"
                 style={{ fontFamily: 'Arial, sans-serif' }}
+                initial={{ opacity: 1 }}
               >
-                Para gente diferente
-              </span>
-              <span 
+                {"Para gente diferente".split("").map((char, index) => (
+                  <motion.span
+                    key={index}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.8 + index * 0.05, duration: 0.1 }}
+                  >
+                    {char}
+                  </motion.span>
+                ))}
+              </motion.span>
+              <motion.span 
                 className="text-lg md:text-xl font-bold text-primary tracking-wide"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+                initial={{ opacity: 1 }}
               >
-                y punto.
-              </span>
-            </motion.div>
+                {"y punto.".split("").map((char, index) => (
+                  <motion.span
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ 
+                      delay: 1.8 + index * 0.08, 
+                      duration: 0.15,
+                      type: "spring",
+                      stiffness: 200
+                    }}
+                  >
+                    {char}
+                  </motion.span>
+                ))}
+              </motion.span>
+            </div>
           </motion.div>
 
           {/* Tagline with emphasis */}
