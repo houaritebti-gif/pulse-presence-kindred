@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Heart, MessageCircle, Zap, Eye, Shield, Star, Quote } from "lucide-react";
+import { Sparkles, Heart, MessageCircle, Zap, Eye, Shield, Star, Quote, ChevronDown } from "lucide-react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring, type Variants } from "framer-motion";
 import Footer from "@/components/Footer";
 import TestimonialsCarousel from "@/components/TestimonialsCarousel";
@@ -552,7 +552,7 @@ const Landing = () => {
 
           {/* Microcopy + CTA Button - tightly grouped */}
           <motion.div
-            className="pt-5 flex flex-col items-center"
+            className="pt-4 flex flex-col items-center"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 2.3 }}
@@ -563,13 +563,13 @@ const Landing = () => {
             >
               ¿A qué esperas?
             </p>
-            <motion.span
-              className="text-primary text-2xl md:text-3xl my-2"
-              animate={{ y: [0, 6, 0] }}
+            <motion.div
+              className="text-primary my-1"
+              animate={{ y: [0, 5, 0] }}
               transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
             >
-              ↓
-            </motion.span>
+              <ChevronDown className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
+            </motion.div>
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
@@ -594,32 +594,32 @@ const Landing = () => {
             </motion.div>
           </motion.div>
 
-          {/* Tagline with emphasis */}
+          {/* Tagline with emphasis - moved closer */}
           <motion.div 
-            className="space-y-1 pt-6"
+            className="space-y-1 pt-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 2.8, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 2.6, ease: "easeOut" }}
           >
             <motion.p 
               className="text-lg md:text-xl text-foreground/80 leading-tight font-medium tracking-wide"
               style={{ fontFamily: 'Arial, sans-serif' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 3, duration: 0.5 }}
+              transition={{ delay: 2.8, duration: 0.5 }}
             >
               Aquí no hay <motion.span 
                 className="line-through decoration-primary/50 decoration-2"
                 initial={{ backgroundSize: "0% 2px" }}
                 animate={{ backgroundSize: "100% 2px" }}
-                transition={{ delay: 3.3, duration: 0.4 }}
+                transition={{ delay: 3, duration: 0.4 }}
               >match</motion.span>,
             </motion.p>
             <motion.div 
               className="relative inline-flex items-center gap-1.5"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 3.2, duration: 0.5 }}
+              transition={{ delay: 3, duration: 0.5 }}
             >
               <motion.p 
                 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-primary"
@@ -640,12 +640,12 @@ const Landing = () => {
             </motion.div>
           </motion.div>
 
-          {/* Elegant description with decorative styling */}
+          {/* Elegant description - moved closer */}
           <motion.div
-            className="pt-5"
+            className="pt-3"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 3.5 }}
+            transition={{ duration: 0.8, delay: 3.2 }}
           >
             <motion.p 
               className="text-base md:text-lg text-foreground/70 max-w-xs mx-auto leading-relaxed relative"
