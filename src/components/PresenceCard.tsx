@@ -284,7 +284,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
           {/* Activity status - top */}
           <div className="flex items-center gap-1.5 mb-2">
             <div className={`w-2 h-2 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse shadow-sm shadow-green-500/50" : ""}`} />
-            <span className={`text-xs font-body ${activityStatus.isActive ? "text-green-500 font-medium" : "text-muted-foreground"}`}>
+            <span className={`text-xs font-body ${activityStatus.isActive ? "text-green-600 dark:text-green-500 font-medium" : "text-foreground/70"}`}>
               {activityStatus.isActive ? "Activo ahora" : activityStatus.label}
             </span>
           </div>
@@ -294,7 +294,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             <span>
               {presence.profile?.name || "Anónima"}
               {(presence.profile?.birthdate || presence.profile?.gender) && (
-                <span className="font-normal text-muted-foreground ml-1.5">
+                <span className="font-normal text-foreground/70 ml-1.5">
                   {presence.profile?.birthdate && calculateAge(presence.profile.birthdate)}
                   {presence.profile?.birthdate && presence.profile?.gender && ", "}
                   {presence.profile?.gender && getGenderLabel(presence.profile.gender)}
@@ -330,7 +330,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
                     ))}
                     {/* Show +N if more */}
                     {(presence.tribes.length + presence.musicStyles.length > 5) && (
-                      <span className="px-2 py-0.5 rounded-full bg-card-foreground/10 font-body text-xs text-muted-foreground">
+                      <span className="px-2 py-0.5 rounded-full bg-card-foreground/10 font-body text-xs text-foreground/60">
                         +{presence.tribes.length + presence.musicStyles.length - 5}
                       </span>
                     )}
