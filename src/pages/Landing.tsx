@@ -550,32 +550,26 @@ const Landing = () => {
             </div>
           </motion.div>
 
-          {/* Microcopy with animated arrow */}
+          {/* Microcopy + CTA Button - tightly grouped */}
           <motion.div
-            className="pt-4 flex flex-col items-center gap-1"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 2.3 }}
+            className="pt-5 flex flex-col items-center"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 2.3 }}
           >
-            <p className="text-sm text-foreground/50" style={{ fontFamily: 'Arial, sans-serif' }}>
+            <p 
+              className="text-base md:text-lg text-foreground/60 font-medium tracking-wide"
+              style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}
+            >
               ¿A qué esperas?
             </p>
             <motion.span
-              className="text-primary text-lg"
-              animate={{ y: [0, 4, 0] }}
-              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+              className="text-primary text-2xl md:text-3xl my-2"
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
             >
               ↓
             </motion.span>
-          </motion.div>
-
-          {/* CTA Button - prominent position right after slogan */}
-          <motion.div 
-            className="pt-6" 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 2.5 }}
-          >
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
