@@ -40,10 +40,18 @@ import { triggerHaptic } from "@/utils/haptics";
 import { SparkFlame } from "@/components/SparkFlame";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { AchievementsDisplay } from "@/components/AchievementsDisplay";
+import { useRipple } from "@/hooks/useRipple";
 
-// Spark Energy Card Component for Profile
+// Spark Energy Card Component for Profile with ripple effect
 const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
   const { sparkEnergy, currentLevel, progressToNext, isLoading } = useSparkEnergy();
+  const { ripples, createRipple } = useRipple();
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    createRipple(e);
+    triggerHaptic('light');
+    navigate("/spark-energy");
+  };
 
   if (isLoading) {
     return (
@@ -58,10 +66,24 @@ const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => 
   return (
     <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '185ms', animationFillMode: 'forwards' }}>
       <button
-        onClick={() => navigate("/spark-energy")}
-        className="w-full p-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 hover:border-primary/40 transition-all duration-200 group"
+        onClick={handleClick}
+        className="relative w-full p-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 hover:border-primary/40 transition-all duration-200 group overflow-hidden"
       >
-        <div className="flex items-center justify-between">
+        {/* Ripple effects */}
+        {ripples.map((ripple) => (
+          <span
+            key={ripple.id}
+            className="absolute rounded-full bg-primary/30 animate-ripple pointer-events-none"
+            style={{
+              left: ripple.x,
+              top: ripple.y,
+              width: ripple.size,
+              height: ripple.size,
+            }}
+          />
+        ))}
+        
+        <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <SparkFlame level={currentLevel.level} size="md" animate />
             <div className="text-left">
@@ -80,7 +102,7 @@ const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => 
         </div>
         
         {/* Progress bar */}
-        <div className="mt-3 h-1.5 bg-muted/30 rounded-full overflow-hidden">
+        <div className="relative z-10 mt-3 h-1.5 bg-muted/30 rounded-full overflow-hidden">
           <div 
             className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
             style={{ width: `${progressToNext}%` }}
