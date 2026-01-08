@@ -36,38 +36,48 @@ export interface AchievementDefinition {
   emoji: string;
   category: 'social' | 'streak' | 'energy' | 'milestone' | 'special';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  energyReward: number; // Energy awarded when unlocked
 }
+
+// Energy rewards by rarity
+const RARITY_ENERGY_REWARDS = {
+  common: 10,
+  uncommon: 25,
+  rare: 50,
+  epic: 100,
+  legendary: 200,
+} as const;
 
 export const ACHIEVEMENTS: AchievementDefinition[] = [
   // Social achievements
-  { key: 'first_spark_sent', name: 'Primera Chispa', description: 'Envía tu primera chispa', emoji: '✨', category: 'social', rarity: 'common' },
-  { key: 'first_match', name: 'Conexión', description: 'Consigue tu primer match', emoji: '🔥', category: 'social', rarity: 'common' },
-  { key: 'first_ghost_message', name: 'Mensaje Fantasma', description: 'Envía tu primer mensaje fantasma', emoji: '👻', category: 'social', rarity: 'common' },
-  { key: 'first_quedada_joined', name: 'Sociable', description: 'Únete a tu primera quedada', emoji: '🎉', category: 'social', rarity: 'common' },
+  { key: 'first_spark_sent', name: 'Primera Chispa', description: 'Envía tu primera chispa', emoji: '✨', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_match', name: 'Conexión', description: 'Consigue tu primer match', emoji: '🔥', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_ghost_message', name: 'Mensaje Fantasma', description: 'Envía tu primer mensaje fantasma', emoji: '👻', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_quedada_joined', name: 'Sociable', description: 'Únete a tu primera quedada', emoji: '🎉', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
   
   // Streak achievements
-  { key: 'streak_3_days', name: 'En Racha', description: 'Mantén una racha de 3 días', emoji: '🔥', category: 'streak', rarity: 'common' },
-  { key: 'streak_7_days', name: 'Semana Ardiente', description: 'Mantén una racha de 7 días', emoji: '🌟', category: 'streak', rarity: 'uncommon' },
-  { key: 'streak_14_days', name: 'Imparable', description: 'Mantén una racha de 14 días', emoji: '💫', category: 'streak', rarity: 'rare' },
-  { key: 'streak_30_days', name: 'Leyenda', description: 'Mantén una racha de 30 días', emoji: '👑', category: 'streak', rarity: 'legendary' },
+  { key: 'streak_3_days', name: 'En Racha', description: 'Mantén una racha de 3 días', emoji: '🔥', category: 'streak', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'streak_7_days', name: 'Semana Ardiente', description: 'Mantén una racha de 7 días', emoji: '🌟', category: 'streak', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'streak_14_days', name: 'Imparable', description: 'Mantén una racha de 14 días', emoji: '💫', category: 'streak', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'streak_30_days', name: 'Leyenda', description: 'Mantén una racha de 30 días', emoji: '👑', category: 'streak', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
   
-  // Energy achievements
-  { key: 'energy_100', name: 'Chispazo', description: 'Acumula 100 de energía total', emoji: '⚡', category: 'energy', rarity: 'common' },
-  { key: 'energy_500', name: 'Electrizante', description: 'Acumula 500 de energía total', emoji: '💥', category: 'energy', rarity: 'uncommon' },
-  { key: 'energy_1000', name: 'Alta Tensión', description: 'Acumula 1000 de energía total', emoji: '🌩️', category: 'energy', rarity: 'rare' },
-  { key: 'energy_2500', name: 'Supernova', description: 'Acumula 2500 de energía total', emoji: '☀️', category: 'energy', rarity: 'epic' },
-  { key: 'energy_5000', name: 'Energía Infinita', description: 'Acumula 5000 de energía total', emoji: '🌌', category: 'energy', rarity: 'legendary' },
+  // Energy achievements (no energy reward to avoid circular loop)
+  { key: 'energy_100', name: 'Chispazo', description: 'Acumula 100 de energía total', emoji: '⚡', category: 'energy', rarity: 'common', energyReward: 0 },
+  { key: 'energy_500', name: 'Electrizante', description: 'Acumula 500 de energía total', emoji: '💥', category: 'energy', rarity: 'uncommon', energyReward: 0 },
+  { key: 'energy_1000', name: 'Alta Tensión', description: 'Acumula 1000 de energía total', emoji: '🌩️', category: 'energy', rarity: 'rare', energyReward: 0 },
+  { key: 'energy_2500', name: 'Supernova', description: 'Acumula 2500 de energía total', emoji: '☀️', category: 'energy', rarity: 'epic', energyReward: 0 },
+  { key: 'energy_5000', name: 'Energía Infinita', description: 'Acumula 5000 de energía total', emoji: '🌌', category: 'energy', rarity: 'legendary', energyReward: 0 },
   
   // Milestone achievements
-  { key: 'sparks_10', name: 'Encendido', description: 'Envía 10 chispas', emoji: '🕯️', category: 'milestone', rarity: 'common' },
-  { key: 'sparks_50', name: 'Fogonero', description: 'Envía 50 chispas', emoji: '🔥', category: 'milestone', rarity: 'uncommon' },
-  { key: 'sparks_100', name: 'Pirotécnico', description: 'Envía 100 chispas', emoji: '🎆', category: 'milestone', rarity: 'rare' },
-  { key: 'sparks_250', name: 'Maestro del Fuego', description: 'Envía 250 chispas', emoji: '🐉', category: 'milestone', rarity: 'epic' },
+  { key: 'sparks_10', name: 'Encendido', description: 'Envía 10 chispas', emoji: '🕯️', category: 'milestone', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'sparks_50', name: 'Fogonero', description: 'Envía 50 chispas', emoji: '🔥', category: 'milestone', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'sparks_100', name: 'Pirotécnico', description: 'Envía 100 chispas', emoji: '🎆', category: 'milestone', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'sparks_250', name: 'Maestro del Fuego', description: 'Envía 250 chispas', emoji: '🐉', category: 'milestone', rarity: 'epic', energyReward: RARITY_ENERGY_REWARDS.epic },
   
   // Special achievements
-  { key: 'profile_complete', name: 'Perfil Completo', description: 'Completa todos los campos de tu perfil', emoji: '📝', category: 'special', rarity: 'uncommon' },
-  { key: 'identity_verified', name: 'Verificado', description: 'Verifica tu identidad', emoji: '✅', category: 'special', rarity: 'rare' },
-  { key: 'early_adopter', name: 'Early Adopter', description: 'Uno de los primeros usuarios', emoji: '🚀', category: 'special', rarity: 'legendary' },
+  { key: 'profile_complete', name: 'Perfil Completo', description: 'Completa todos los campos de tu perfil', emoji: '📝', category: 'special', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'identity_verified', name: 'Verificado', description: 'Verifica tu identidad', emoji: '✅', category: 'special', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'early_adopter', name: 'Early Adopter', description: 'Uno de los primeros usuarios', emoji: '🚀', category: 'special', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
 ];
 
 export const getAchievementDefinition = (key: AchievementKey): AchievementDefinition | undefined => {
@@ -176,8 +186,61 @@ export const useAchievements = () => {
             fireEpicAchievementConfetti();
           }
           
+          // Award energy if the achievement has a reward
+          if (achievement.energyReward > 0) {
+            try {
+              // First ensure energy record exists
+              await supabase
+                .from('profile_spark_energy')
+                .upsert({
+                  profile_id: profile.id,
+                  current_energy: 0,
+                  total_earned: 0,
+                  current_streak: 0,
+                  longest_streak: 0,
+                }, { onConflict: 'profile_id', ignoreDuplicates: true });
+              
+              // Get current energy
+              const { data: current } = await supabase
+                .from('profile_spark_energy')
+                .select('current_energy, total_earned')
+                .eq('profile_id', profile.id)
+                .single();
+              
+              if (current) {
+                // Update energy
+                await supabase
+                  .from('profile_spark_energy')
+                  .update({
+                    current_energy: current.current_energy + achievement.energyReward,
+                    total_earned: current.total_earned + achievement.energyReward,
+                  })
+                  .eq('profile_id', profile.id);
+                
+                // Log transaction
+                await supabase.from('spark_transactions').insert({
+                  profile_id: profile.id,
+                  type: 'earn',
+                  amount: achievement.energyReward,
+                  action: 'achievement_unlock',
+                  description: `Logro desbloqueado: ${achievement.name}`,
+                  metadata: { achievement_key: achievementKey },
+                });
+              }
+              
+              // Invalidate energy queries to refresh UI
+              queryClient.invalidateQueries({ queryKey: ['spark_energy'] });
+            } catch (error) {
+              console.error('Error awarding achievement energy:', error);
+            }
+          }
+          
+          const energyText = achievement.energyReward > 0 
+            ? ` (+${achievement.energyReward} ⚡)` 
+            : '';
+          
           toast.success(
-            `🏆 ¡Logro desbloqueado!`,
+            `🏆 ¡Logro desbloqueado!${energyText}`,
             { 
               description: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
               duration: 5000,
@@ -187,7 +250,7 @@ export const useAchievements = () => {
           // Send push notification for users not active in app
           sendPushNotification({
             profileId: profile.id,
-            title: `🏆 ¡Logro desbloqueado!`,
+            title: `🏆 ¡Logro desbloqueado!${energyText}`,
             body: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
             url: '/achievements',
             tag: `achievement-${achievementKey}`,
