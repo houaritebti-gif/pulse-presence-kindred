@@ -4,6 +4,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { triggerHaptic } from "@/utils/haptics";
 import { sendPushNotification } from "@/utils/pushNotifications";
+import { fireEpicAchievementConfetti, fireLegendaryAchievementConfetti } from "@/utils/sparkConfetti";
 
 // Achievement definitions
 export type AchievementKey = 
@@ -167,6 +168,14 @@ export const useAchievements = () => {
         const achievement = getAchievementDefinition(achievementKey);
         if (achievement && profile?.id) {
           triggerHaptic('success');
+          
+          // Fire special confetti for epic and legendary achievements
+          if (achievement.rarity === 'legendary') {
+            fireLegendaryAchievementConfetti();
+          } else if (achievement.rarity === 'epic') {
+            fireEpicAchievementConfetti();
+          }
+          
           toast.success(
             `🏆 ¡Logro desbloqueado!`,
             { 
