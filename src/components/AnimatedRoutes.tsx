@@ -18,6 +18,7 @@ const Chat = lazy(() => import("@/pages/Chat"));
 const Sparks = lazy(() => import("@/pages/Sparks"));
 const SparkChat = lazy(() => import("@/pages/SparkChat"));
 const SparkEnergy = lazy(() => import("@/pages/Spark"));
+const SparkHistory = lazy(() => import("@/pages/SparkHistory"));
 const GhostMessages = lazy(() => import("@/pages/GhostMessages"));
 const Connections = lazy(() => import("@/pages/Connections"));
 const Quedadas = lazy(() => import("@/pages/Quedadas"));
@@ -137,6 +138,16 @@ export const AnimatedRoutes = () => {
                 <ProtectedRoute>
                   <PageTransition>
                     <SparkEnergy />
+                  </PageTransition>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/spark-history"
+              element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <SparkHistory />
                   </PageTransition>
                 </ProtectedRoute>
               }

@@ -254,6 +254,7 @@ function LevelsOverview() {
 }
 
 function TransactionHistory() {
+  const navigate = useNavigate();
   const { recentTransactions, isLoading } = useSparkEnergy();
 
   if (isLoading) {
@@ -278,9 +279,10 @@ function TransactionHistory() {
     );
   }
 
-  // Group by date
+  // Group by date (only show first 20 for preview)
+  const previewTransactions = recentTransactions.slice(0, 20);
   const groupedByDate: Record<string, typeof recentTransactions> = {};
-  recentTransactions.forEach((tx) => {
+  previewTransactions.forEach((tx) => {
     const dateKey = format(new Date(tx.created_at), "yyyy-MM-dd");
     if (!groupedByDate[dateKey]) {
       groupedByDate[dateKey] = [];
@@ -340,6 +342,18 @@ function TransactionHistory() {
           </div>
         </div>
       ))}
+
+      {/* View all button */}
+      {recentTransactions.length > 20 && (
+        <Button
+          variant="outline"
+          className="w-full rounded-xl"
+          onClick={() => navigate("/spark-history")}
+        >
+          <ChevronRight className="w-4 h-4 mr-2" />
+          Ver historial completo
+        </Button>
+      )}
     </div>
   );
 }
