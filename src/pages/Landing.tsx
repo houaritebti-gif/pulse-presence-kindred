@@ -393,7 +393,7 @@ const Landing = () => {
                 ))}
               </motion.span>
               <motion.span 
-                className="text-lg md:text-xl font-bold text-primary tracking-wide"
+                className="text-lg md:text-xl font-bold text-primary tracking-wide inline-flex items-center"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                 initial={{ opacity: 1 }}
               >
@@ -412,6 +412,21 @@ const Landing = () => {
                     {char}
                   </motion.span>
                 ))}
+                {/* Blinking cursor */}
+                <motion.span
+                  className="inline-block w-0.5 h-5 md:h-6 bg-primary ml-0.5"
+                  initial={{ opacity: 0 }}
+                  animate={{ 
+                    opacity: [0, 1, 1, 0],
+                  }}
+                  transition={{
+                    delay: 1.8,
+                    duration: 0.8,
+                    repeat: 4,
+                    repeatType: "loop",
+                    times: [0, 0.1, 0.5, 0.6]
+                  }}
+                />
               </motion.span>
             </div>
           </motion.div>
