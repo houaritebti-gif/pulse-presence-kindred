@@ -311,32 +311,44 @@ const Landing = () => {
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           />
           
-          {/* Floating accent orbs with enhanced animations */}
+          {/* Animated ambient glow orbs - matching Auth page style */}
           <motion.div 
-            className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/15 rounded-full blur-2xl"
+            className="absolute top-1/4 left-1/4 w-[500px] h-[400px] bg-primary/15 rounded-full blur-[150px]"
             animate={{
+              scale: [1, 1.15, 1],
+              opacity: [0.15, 0.25, 0.15],
               y: [0, -30, 0],
               x: [0, 20, 0],
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div 
+            className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] bg-accent/12 rounded-full blur-[120px]"
+            animate={{
               scale: [1, 1.2, 1],
-            }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div 
-            className="absolute bottom-1/3 right-1/4 w-48 h-48 bg-accent/15 rounded-full blur-2xl"
-            animate={{
-              y: [0, 40, 0],
+              opacity: [0.12, 0.22, 0.12],
               x: [0, -30, 0],
-              scale: [1.2, 1, 1.2],
+              y: [0, 40, 0],
             }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           />
           <motion.div 
-            className="absolute top-2/3 left-1/3 w-24 h-24 bg-primary/20 rounded-full blur-xl"
+            className="absolute top-1/2 left-0 w-[350px] h-[350px] bg-primary/10 rounded-full blur-[100px]"
             animate={{
-              y: [0, -50, 0],
-              opacity: [0.5, 1, 0.5],
+              scale: [1, 1.1, 1],
+              opacity: [0.1, 0.18, 0.1],
+              y: [0, -40, 0],
             }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          />
+          <motion.div 
+            className="absolute bottom-1/3 right-0 w-[300px] h-[300px] bg-accent/10 rounded-full blur-[100px]"
+            animate={{
+              scale: [1, 1.15, 1],
+              opacity: [0.1, 0.2, 0.1],
+              x: [0, 20, 0],
+            }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 3 }}
           />
           
           {/* Subtle grid pattern */}
