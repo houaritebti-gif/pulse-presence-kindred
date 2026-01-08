@@ -86,23 +86,23 @@ export const getAchievementDefinition = (key: AchievementKey): AchievementDefini
 
 export const getRarityColor = (rarity: AchievementDefinition['rarity']): string => {
   switch (rarity) {
-    case 'common': return 'text-muted-foreground';
-    case 'uncommon': return 'text-green-500';
-    case 'rare': return 'text-blue-500';
-    case 'epic': return 'text-purple-500';
-    case 'legendary': return 'text-amber-500';
-    default: return 'text-muted-foreground';
+    case 'common': return 'text-slate-600 dark:text-slate-400';
+    case 'uncommon': return 'text-green-600 dark:text-green-500';
+    case 'rare': return 'text-blue-600 dark:text-blue-500';
+    case 'epic': return 'text-purple-600 dark:text-purple-500';
+    case 'legendary': return 'text-amber-600 dark:text-amber-500';
+    default: return 'text-slate-600 dark:text-slate-400';
   }
 };
 
 export const getRarityBgColor = (rarity: AchievementDefinition['rarity']): string => {
   switch (rarity) {
-    case 'common': return 'bg-muted/50';
-    case 'uncommon': return 'bg-green-500/10';
-    case 'rare': return 'bg-blue-500/10';
-    case 'epic': return 'bg-purple-500/10';
-    case 'legendary': return 'bg-amber-500/10 ring-1 ring-amber-500/30';
-    default: return 'bg-muted/50';
+    case 'common': return 'bg-slate-100 dark:bg-slate-800/50';
+    case 'uncommon': return 'bg-green-100 dark:bg-green-900/30';
+    case 'rare': return 'bg-blue-100 dark:bg-blue-900/30';
+    case 'epic': return 'bg-purple-100 dark:bg-purple-900/30';
+    case 'legendary': return 'bg-amber-100 dark:bg-amber-900/30 ring-1 ring-amber-500/40';
+    default: return 'bg-slate-100 dark:bg-slate-800/50';
   }
 };
 
