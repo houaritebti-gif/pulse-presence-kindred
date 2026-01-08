@@ -1,7 +1,8 @@
 import { Heart } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface KikiLogoProps {
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "hero";
   animate?: boolean;
   className?: string;
 }
@@ -12,29 +13,68 @@ const sizeClasses = {
     heart: "w-2.5 h-2.5",
     heartPos: "-top-1 -left-1",
     marginLeft: "-ml-0.5",
+    glow: false,
   },
   md: {
     text: "text-xl",
     heart: "w-3 h-3",
     heartPos: "-top-1.5 -left-1.5",
     marginLeft: "-ml-0.5",
+    glow: false,
   },
   lg: {
     text: "text-2xl",
     heart: "w-4 h-4",
     heartPos: "-top-2 -left-2",
     marginLeft: "-ml-1",
+    glow: false,
   },
   xl: {
     text: "text-3xl",
     heart: "w-5 h-5",
     heartPos: "-top-2.5 -left-2.5",
     marginLeft: "-ml-1",
+    glow: false,
+  },
+  hero: {
+    text: "text-8xl md:text-9xl lg:text-[10rem]",
+    heart: "w-7 h-7 md:w-10 md:h-10 lg:w-14 lg:h-14",
+    heartPos: "-top-6 md:-top-8 lg:-top-10 -left-4 md:-left-5 lg:-left-6",
+    marginLeft: "-ml-1 md:-ml-2",
+    glow: true,
   },
 };
 
 export const KikiLogo = ({ size = "md", animate = true, className = "" }: KikiLogoProps) => {
   const s = sizeClasses[size];
+  const isHero = size === "hero";
+  
+  const heartElement = isHero ? (
+    <motion.div 
+      className={`absolute ${s.heartPos}`}
+      animate={animate ? { scale: [1, 1.15, 1] } : undefined}
+      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <div className="relative">
+        {s.glow && (
+          <motion.div 
+            className="absolute inset-0 bg-primary/40 blur-xl rounded-full scale-150"
+            animate={animate ? { opacity: [0.4, 0.7, 0.4] } : undefined}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
+        <Heart 
+          className={`relative ${s.heart} text-primary fill-primary drop-shadow-[0_0_15px_hsl(var(--primary)/0.5)]`} 
+        />
+      </div>
+    </motion.div>
+  ) : (
+    <span className={`absolute ${s.heartPos}`}>
+      <Heart 
+        className={`${s.heart} text-primary fill-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.4)] ${animate ? "animate-pulse-soft" : ""}`} 
+      />
+    </span>
+  );
   
   return (
     <span 
@@ -45,13 +85,7 @@ export const KikiLogo = ({ size = "md", animate = true, className = "" }: KikiLo
       <span className={s.text}>I</span>
       <span className={s.text}>K</span>
       <span className={`relative ${s.marginLeft}`}>
-        <span 
-          className={`absolute ${s.heartPos}`}
-        >
-          <Heart 
-            className={`${s.heart} text-primary fill-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.4)] ${animate ? "animate-pulse-soft" : ""}`} 
-          />
-        </span>
+        {heartElement}
         <span className={s.text}>I</span>
       </span>
     </span>
