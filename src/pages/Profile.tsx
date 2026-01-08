@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { KikiLogo } from "@/components/KikiLogo";
+import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag, Flame, ChevronRight } from "lucide-react";
+import { Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag, Flame, ChevronRight } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
 import ProfileSkeleton from "@/components/ProfileSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -572,18 +572,10 @@ const Profile = () => {
       <ParallaxBackground variant="profile" />
       
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between mb-8">
-        <button 
-          onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
-          aria-label="Volver a Presencia"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
-        </button>
-        <KikiLogo size="lg" />
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
+      <PageHeader 
+        backLabel="Presencia" 
+        backTo="/presence" 
+        rightContent={
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors font-body"
@@ -592,8 +584,8 @@ const Profile = () => {
           >
             <LogOut className="w-4 h-4" />
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex-1 max-w-lg mx-auto w-full">
         {/* Header */}

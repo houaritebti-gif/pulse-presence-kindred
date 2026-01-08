@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban, User, Zap, ChevronDown } from "lucide-react";
-import { KikiLogo } from "@/components/KikiLogo";
+import { Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban, User, Zap, ChevronDown } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
@@ -266,19 +266,12 @@ const GhostMessages = () => {
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
       
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-10">
-        <button 
-          onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
-          style={{ fontFamily: 'Arial, sans-serif' }}
-          aria-label="Volver a Presencia"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Presencia</span>
-        </button>
-        <KikiLogo size="lg" />
-        <div className="w-16" />
-      </div>
+      <PageHeader 
+        backLabel="Presencia" 
+        backTo="/presence" 
+        showThemeToggle={false}
+        className="max-w-lg mx-auto w-full mb-10"
+      />
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
         {/* Hero section */}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { KikiLogo } from "@/components/KikiLogo";
+import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock, Zap } from "lucide-react";
+import { Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock, Zap } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
@@ -323,105 +323,99 @@ const Presence = () => {
     <PullToRefresh onRefresh={handleRefresh}>
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24">
       {/* Header - optimized for mobile */}
-      <div className="flex items-center justify-between mb-6 sm:mb-8">
-        <button 
-          onClick={() => navigate("/profile")}
-          className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body p-1 -ml-1 group"
-          aria-label="Ir a Perfil"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm sm:text-base" style={{ fontFamily: 'Arial, sans-serif' }}>Perfil</span>
-        </button>
-        <KikiLogo size="lg" />
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <ThemeToggle />
-          {/* Connection requests button */}
-          <button
-            onClick={() => navigate("/connections")}
-            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            title="Solicitudes de conexión"
-            aria-label="Solicitudes de conexión"
-          >
-            <UserPlus className={`w-5 h-5 ${pendingConnectionCount > 0 ? "text-primary" : ""}`} />
-            {pendingConnectionCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
-                {pendingConnectionCount > 9 ? "9+" : pendingConnectionCount}
-              </span>
-            )}
-          </button>
-          {/* Ghost messages button */}
-          <button
-            onClick={() => navigate("/ghost-messages")}
-            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            title="Mensajes fantasma"
-            aria-label="Mensajes fantasma"
-          >
-            <Ghost className={`w-5 h-5 ${unreadGhostCount > 0 ? "text-primary" : ""}`} />
-            {unreadGhostCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
-                {unreadGhostCount > 9 ? "9+" : unreadGhostCount}
-              </span>
-            )}
-          </button>
-          {/* Notifications button */}
-          <button
-            onClick={() => navigate("/notifications")}
-            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            title="Notificaciones"
-            aria-label="Notificaciones"
-          >
-            <Bell className={`w-5 h-5 ${unreadCount > 0 ? "text-primary" : ""}`} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </button>
-          {/* Quedadas button */}
-          <button
-            onClick={() => navigate("/quedadas")}
-            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            title="Quedadas"
-            aria-label="Quedadas"
-          >
-            <Calendar className={`w-5 h-5 ${quedadaCount > 0 ? "text-accent" : ""}`} />
-            {quedadaCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center">
-                {quedadaCount}
-              </span>
-            )}
-          </button>
-          {/* Sparks button with badge */}
-          <button
-            onClick={() => {
-              markAllAsSeen();
-              navigate("/sparks");
-            }}
-            className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            title="Tus chispas"
-            aria-label="Tus chispas"
-          >
-            <Flame className={`w-5 h-5 ${totalSparkCount > 0 ? "text-primary" : ""}`} />
-            {hasNewSparks && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
-                {newSparkCount}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={toggleVisibility}
-            className="text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            title={myPresence?.visible_to_others ? "Modo visible" : "Modo invisible"}
-            aria-label={myPresence?.visible_to_others ? "Cambiar a modo invisible" : "Cambiar a modo visible"}
-          >
-            {myPresence?.visible_to_others ? (
-              <Eye className="w-4 h-4" />
-            ) : (
-              <EyeOff className="w-4 h-4" />
-            )}
-          </button>
-        </div>
-      </div>
+      <PageHeader 
+        backLabel="Perfil" 
+        backTo="/profile" 
+        rightContent={
+          <>
+            {/* Connection requests button */}
+            <button
+              onClick={() => navigate("/connections")}
+              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              title="Solicitudes de conexión"
+              aria-label="Solicitudes de conexión"
+            >
+              <UserPlus className={`w-5 h-5 ${pendingConnectionCount > 0 ? "text-primary" : ""}`} />
+              {pendingConnectionCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
+                  {pendingConnectionCount > 9 ? "9+" : pendingConnectionCount}
+                </span>
+              )}
+            </button>
+            {/* Ghost messages button */}
+            <button
+              onClick={() => navigate("/ghost-messages")}
+              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              title="Mensajes fantasma"
+              aria-label="Mensajes fantasma"
+            >
+              <Ghost className={`w-5 h-5 ${unreadGhostCount > 0 ? "text-primary" : ""}`} />
+              {unreadGhostCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
+                  {unreadGhostCount > 9 ? "9+" : unreadGhostCount}
+                </span>
+              )}
+            </button>
+            {/* Notifications button */}
+            <button
+              onClick={() => navigate("/notifications")}
+              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              title="Notificaciones"
+              aria-label="Notificaciones"
+            >
+              <Bell className={`w-5 h-5 ${unreadCount > 0 ? "text-primary" : ""}`} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+            {/* Quedadas button */}
+            <button
+              onClick={() => navigate("/quedadas")}
+              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              title="Quedadas"
+              aria-label="Quedadas"
+            >
+              <Calendar className={`w-5 h-5 ${quedadaCount > 0 ? "text-accent" : ""}`} />
+              {quedadaCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center">
+                  {quedadaCount}
+                </span>
+              )}
+            </button>
+            {/* Sparks button with badge */}
+            <button
+              onClick={() => {
+                markAllAsSeen();
+                navigate("/sparks");
+              }}
+              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              title="Tus chispas"
+              aria-label="Tus chispas"
+            >
+              <Flame className={`w-5 h-5 ${totalSparkCount > 0 ? "text-primary" : ""}`} />
+              {hasNewSparks && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
+                  {newSparkCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={toggleVisibility}
+              className="text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              title={myPresence?.visible_to_others ? "Modo visible" : "Modo invisible"}
+              aria-label={myPresence?.visible_to_others ? "Cambiar a modo invisible" : "Cambiar a modo visible"}
+            >
+              {myPresence?.visible_to_others ? (
+                <Eye className="w-4 h-4" />
+              ) : (
+                <EyeOff className="w-4 h-4" />
+              )}
+            </button>
+          </>
+        }
+      />
 
       {/* NEW Spark notification banner - only show when there are new unseen sparks */}
       {hasNewSparks && (

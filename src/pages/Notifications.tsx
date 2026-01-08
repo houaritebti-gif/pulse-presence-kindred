@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KikiLogo } from "@/components/KikiLogo";
+import { PageHeader } from "@/components/PageHeader";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,8 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Bell, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Bell, CheckCheck, Sparkles, MessageCircle, Calendar, Users, Trash2 } from "lucide-react";
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification, useDeleteReadNotifications } from "@/hooks/useNotificationCenter";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
@@ -101,45 +100,38 @@ const Notifications = () => {
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
         
         {/* Header */}
-        <div className="relative z-10 flex items-center justify-between mb-8">
-        <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
-            style={{ fontFamily: 'Arial, sans-serif' }}
-            aria-label="Volver atrás"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>Volver</span>
-          </button>
-          <KikiLogo size="lg" />
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            {readCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowDeleteReadDialog(true)}
-                className="text-xs text-destructive hover:text-destructive"
-                aria-label="Limpiar notificaciones leídas"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Limpiar
-              </Button>
-            )}
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => markAllRead.mutate()}
-                className="text-xs"
-                aria-label="Marcar todas como leídas"
-              >
-                <CheckCheck className="w-4 h-4 mr-1" />
-                Leer todo
-              </Button>
-            )}
-          </div>
-        </div>
+        <PageHeader 
+          backLabel="Volver" 
+          backTo={-1}
+          rightContent={
+            <>
+              {readCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDeleteReadDialog(true)}
+                  className="text-xs text-destructive hover:text-destructive"
+                  aria-label="Limpiar notificaciones leídas"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Limpiar
+                </Button>
+              )}
+              {unreadCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => markAllRead.mutate()}
+                  className="text-xs"
+                  aria-label="Marcar todas como leídas"
+                >
+                  <CheckCheck className="w-4 h-4 mr-1" />
+                  Leer todo
+                </Button>
+              )}
+            </>
+          }
+        />
 
         <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
           {/* Hero */}

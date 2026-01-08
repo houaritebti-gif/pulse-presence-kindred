@@ -1,12 +1,11 @@
 import { useState, useCallback, useRef, useMemo } from "react";
-import { KikiLogo } from "@/components/KikiLogo";
+import { PageHeader } from "@/components/PageHeader";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff, Loader2 } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
@@ -312,19 +311,10 @@ const Quedadas = () => {
       <ParallaxBackground variant="list" />
       
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between mb-8">
-        <button 
-          onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
-          style={{ fontFamily: 'Arial, sans-serif' }}
-          aria-label="Volver a Presencia"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Presencia</span>
-        </button>
-        <KikiLogo size="lg" />
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
+      <PageHeader 
+        backLabel="Presencia" 
+        backTo="/presence" 
+        rightContent={
           <button
             onClick={() => setShowCreate(true)}
             className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground hover:scale-110 transition-transform shadow-lg shadow-primary/30"
@@ -333,8 +323,8 @@ const Quedadas = () => {
           >
             <Plus className="w-4 h-4" />
           </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
         {/* Hero */}
