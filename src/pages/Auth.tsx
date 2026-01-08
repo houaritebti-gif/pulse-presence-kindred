@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Check, X, AlertTriangle, Shield, Loader2 } from "lucide-react";
 import { KikiLogo } from "@/components/KikiLogo";
+import { FloatingParticles } from "@/components/FloatingParticles";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -167,9 +168,9 @@ const Auth = () => {
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-        {/* Logo prominente con animación de entrada */}
+        {/* Logo prominente con animación de entrada y partículas */}
         <motion.div 
-          className="mb-8"
+          className="mb-8 relative"
           initial={{ opacity: 0, scale: 0.5, y: -30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ 
@@ -178,7 +179,13 @@ const Auth = () => {
             delay: 0.1
           }}
         >
+          {/* Floating particles around logo */}
+          <div className="absolute -inset-16 sm:-inset-20">
+            <FloatingParticles count={16} />
+          </div>
+          
           <motion.div
+            className="relative z-10"
             animate={{ 
               scale: [1, 1.02, 1],
             }}
