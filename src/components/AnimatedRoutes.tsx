@@ -32,6 +32,7 @@ const Admin = lazy(() => import("@/pages/Admin"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Landing = lazy(() => import("@/pages/Landing"));
 const Achievements = lazy(() => import("@/pages/Achievements"));
+const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -243,6 +244,16 @@ export const AnimatedRoutes = () => {
                 <ProtectedRoute>
                   <PageTransition>
                     <Achievements />
+                  </PageTransition>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/leaderboard"
+              element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <Leaderboard />
                   </PageTransition>
                 </ProtectedRoute>
               }
