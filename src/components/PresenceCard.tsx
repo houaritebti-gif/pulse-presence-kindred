@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, MoreVertical, Flag, Ban, Zap, MapPin } from "lucide-react";
+import { Heart, MoreVertical, Flag, Ban, Zap, MapPin, Sparkles } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { ALL_GENDERS } from "@/constants/profileOptions";
 import {
@@ -119,9 +119,10 @@ interface PresenceCardProps {
   photos?: string[];
   isBoosted?: boolean;
   canSeeRealtimePresence?: boolean;
+  hasVisibilityBoost?: boolean;
 }
 
-const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false, canSeeRealtimePresence = true }: PresenceCardProps) => {
+const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false, canSeeRealtimePresence = true, hasVisibilityBoost = false }: PresenceCardProps) => {
   const navigate = useNavigate();
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
@@ -180,6 +181,14 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
             <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg animate-pulse z-10">
               <Zap className="w-3 h-3 text-white fill-white" />
               <span className="text-[10px] font-bold text-white uppercase tracking-wide">Now</span>
+            </div>
+          )}
+
+          {/* Visibility boost badge */}
+          {hasVisibilityBoost && !isBoosted && (
+            <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 shadow-lg z-10">
+              <Sparkles className="w-3 h-3 text-white" />
+              <span className="text-[10px] font-bold text-white uppercase tracking-wide">Boost</span>
             </div>
           )}
           

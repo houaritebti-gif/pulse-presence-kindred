@@ -85,6 +85,7 @@ const Row = ({
           }
           isBoosted={!!isBoosted}
           canSeeRealtimePresence={canSeeRealtimePresence}
+          hasVisibilityBoost={presence.hasVisibilityBoost}
         />
       ) : (
         <AnonymousPresenceCard
@@ -110,6 +111,7 @@ const Row = ({
           canSeeRealtimePresence={canSeeRealtimePresence}
           compatibility={getCompatibility(presence)}
           compatibilityBreakdown={getCompatibilityBreakdown(presence)}
+          hasVisibilityBoost={presence.hasVisibilityBoost}
         />
       )}
     </div>
@@ -241,6 +243,7 @@ export const VirtualizedPresenceList = memo(({
                         }
                         isBoosted={!!isBoosted}
                         canSeeRealtimePresence={canSeeRealtimePresence}
+                        hasVisibilityBoost={presence.hasVisibilityBoost}
                       />
                     ) : (
                       <AnonymousPresenceCard
@@ -265,6 +268,7 @@ export const VirtualizedPresenceList = memo(({
                         canSeeRealtimePresence={canSeeRealtimePresence}
                         compatibility={getCompatibility(presence)}
                         compatibilityBreakdown={getCompatibilityBreakdown(presence)}
+                        hasVisibilityBoost={presence.hasVisibilityBoost}
                       />
                     )}
                   </div>
@@ -320,6 +324,7 @@ export const VirtualizedPresenceList = memo(({
                     }
                     isBoosted={!!isBoosted}
                     canSeeRealtimePresence={canSeeRealtimePresence}
+                    hasVisibilityBoost={presence.hasVisibilityBoost}
                   />
                 ) : (
                   <AnonymousPresenceCard
@@ -344,6 +349,7 @@ export const VirtualizedPresenceList = memo(({
                     canSeeRealtimePresence={canSeeRealtimePresence}
                     compatibility={getCompatibility(presence)}
                     compatibilityBreakdown={getCompatibilityBreakdown(presence)}
+                    hasVisibilityBoost={presence.hasVisibilityBoost}
                   />
                 )}
               </div>
