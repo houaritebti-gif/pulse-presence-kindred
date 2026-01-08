@@ -393,25 +393,38 @@ const Landing = () => {
                 ))}
               </motion.span>
               <motion.span 
-                className="text-lg md:text-xl font-bold text-primary tracking-wide inline-flex items-center"
+                className="text-lg md:text-xl font-bold text-primary tracking-wide inline-flex items-center relative"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                 initial={{ opacity: 1 }}
               >
-                {"y punto.".split("").map((char, index) => (
+                <span className="relative">
+                  {"y punto.".split("").map((char, index) => (
+                    <motion.span
+                      key={index}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ 
+                        delay: 1.8 + index * 0.08, 
+                        duration: 0.15,
+                        type: "spring",
+                        stiffness: 200
+                      }}
+                    >
+                      {char}
+                    </motion.span>
+                  ))}
+                  {/* Animated underline */}
                   <motion.span
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute -bottom-1 left-0 h-0.5 bg-primary rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: "100%" }}
                     transition={{ 
-                      delay: 1.8 + index * 0.08, 
-                      duration: 0.15,
-                      type: "spring",
-                      stiffness: 200
+                      delay: 2.5,
+                      duration: 0.4,
+                      ease: "easeOut"
                     }}
-                  >
-                    {char}
-                  </motion.span>
-                ))}
+                  />
+                </span>
                 {/* Blinking cursor */}
                 <motion.span
                   className="inline-block w-0.5 h-5 md:h-6 bg-primary ml-0.5"
