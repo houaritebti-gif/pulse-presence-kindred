@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { triggerHaptic } from "@/utils/haptics";
+import { sendPushNotification } from "@/utils/pushNotifications";
 
 // Achievement definitions
 export type AchievementKey = 
@@ -161,10 +162,10 @@ export const useAchievements = () => {
       
       return data;
     },
-    onSuccess: (data, achievementKey) => {
+    onSuccess: async (data, achievementKey) => {
       if (data) {
         const achievement = getAchievementDefinition(achievementKey);
-        if (achievement) {
+        if (achievement && profile?.id) {
           triggerHaptic('success');
           toast.success(
             `🏆 ¡Logro desbloqueado!`,
@@ -173,6 +174,15 @@ export const useAchievements = () => {
               duration: 5000,
             }
           );
+          
+          // Send push notification for users not active in app
+          sendPushNotification({
+            profileId: profile.id,
+            title: `🏆 ¡Logro desbloqueado!`,
+            body: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
+            url: '/achievements',
+            tag: `achievement-${achievementKey}`,
+          });
         }
         queryClient.invalidateQueries({ queryKey: ['achievements', profile?.id] });
       }
