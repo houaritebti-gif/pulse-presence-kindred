@@ -11,7 +11,8 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile } from "@/hooks/useProfile";
 import { ACHIEVEMENTS, AchievementDefinition } from "@/hooks/useAchievements";
-import { getSparkLevel, SparkLevelInfo } from "@/hooks/useSparkEnergy";
+import { getSparkLevel, getNextLevel, getProgressToNextLevel, SparkLevelInfo } from "@/hooks/useSparkEnergy";
+import { Progress } from "@/components/ui/progress";
 import {
   Tooltip,
   TooltipContent,
@@ -154,32 +155,65 @@ function LeaderboardCard({ entry, rank, isCurrentUser }: { entry: LeaderboardEnt
                 <span className="text-muted-foreground">{sparkLevel.name}</span>
               </div>
             </TooltipTrigger>
-            <TooltipContent side="left" className="max-w-[200px]">
-              <div className="space-y-1.5">
-                <p className="font-semibold text-sm">
-                  {sparkLevel.emoji} Nivel {sparkLevel.level}: {sparkLevel.name}
-                </p>
-                {(sparkLevel.discount > 0 || sparkLevel.bonusGhostMessages > 0) ? (
-                  <div className="space-y-1 text-xs">
-                    {sparkLevel.discount > 0 && (
-                      <div className="flex items-center gap-1.5 text-green-500">
-                        <Percent className="w-3 h-3" />
-                        <span>{sparkLevel.discount}% descuento en tienda</span>
+            <TooltipContent side="left" className="max-w-[220px]">
+              {(() => {
+                const nextLevel = getNextLevel(sparkLevel.level);
+                const progress = getProgressToNextLevel(entry.totalEnergy);
+                
+                return (
+                  <div className="space-y-2">
+                    <p className="font-semibold text-sm">
+                      {sparkLevel.emoji} Nivel {sparkLevel.level}: {sparkLevel.name}
+                    </p>
+                    {(sparkLevel.discount > 0 || sparkLevel.bonusGhostMessages > 0) ? (
+                      <div className="space-y-1 text-xs">
+                        {sparkLevel.discount > 0 && (
+                          <div className="flex items-center gap-1.5 text-green-500">
+                            <Percent className="w-3 h-3" />
+                            <span>{sparkLevel.discount}% descuento en tienda</span>
+                          </div>
+                        )}
+                        {sparkLevel.bonusGhostMessages > 0 && (
+                          <div className="flex items-center gap-1.5 text-purple-400">
+                            <Ghost className="w-3 h-3" />
+                            <span>+{sparkLevel.bonusGhostMessages} mensaje{sparkLevel.bonusGhostMessages > 1 ? 's' : ''} fantasma</span>
+                          </div>
+                        )}
                       </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Sigue ganando energía para desbloquear beneficios
+                      </p>
                     )}
-                    {sparkLevel.bonusGhostMessages > 0 && (
-                      <div className="flex items-center gap-1.5 text-purple-400">
-                        <Ghost className="w-3 h-3" />
-                        <span>+{sparkLevel.bonusGhostMessages} mensaje{sparkLevel.bonusGhostMessages > 1 ? 's' : ''} fantasma</span>
+                    
+                    {/* Progress to next level */}
+                    {nextLevel ? (
+                      <div className="pt-1.5 border-t border-border/50 space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Siguiente:</span>
+                          <span className="font-medium">
+                            {nextLevel.emoji} {nextLevel.name}
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <Progress value={progress} className="h-1.5" />
+                          <div className="flex justify-between text-[10px] text-muted-foreground">
+                            <span>{entry.totalEnergy} ⚡</span>
+                            <span>{nextLevel.minTotal} ⚡</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="pt-1.5 border-t border-border/50">
+                        <p className="text-xs text-amber-500 flex items-center gap-1">
+                          <Star className="w-3 h-3" />
+                          ¡Nivel máximo alcanzado!
+                        </p>
                       </div>
                     )}
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Sigue ganando energía para desbloquear beneficios
-                  </p>
-                )}
-              </div>
+                );
+              })()}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
