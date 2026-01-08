@@ -1,5 +1,6 @@
 import { Instagram, Twitter, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { KikiLogo } from "@/components/KikiLogo";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,9 +11,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="md:col-span-2">
-            <h3 className="text-2xl font-bold text-primary mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-              KIKI
-            </h3>
+            <div className="mb-3">
+              <KikiLogo size="lg" />
+            </div>
             <p className="text-foreground/80 text-sm max-w-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
               Conecta con personas afines en tu ciudad. Presencia en tiempo real, 
               chispas mutuas y quedadas grupales.

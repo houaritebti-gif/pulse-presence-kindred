@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { KikiLogo } from "@/components/KikiLogo";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -580,7 +581,7 @@ const Profile = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
         </button>
-        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+        <KikiLogo size="md" />
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <button

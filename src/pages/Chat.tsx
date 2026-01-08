@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Send, Flame, Sparkles, Crown, Ghost } from "lucide-react";
+import { KikiLogo } from "@/components/KikiLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit, useHasSparkWith, useCanSendSecondChance } from "@/hooks/useSparks";
@@ -226,7 +227,7 @@ const Chat = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Presencia</span>
         </button>
-        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+        <KikiLogo size="md" />
         <div className="w-20" />
       </div>
 
