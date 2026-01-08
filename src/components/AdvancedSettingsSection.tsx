@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useAdvancedSettings, Theme, TextSize } from "@/hooks/useAdvancedSettings";
-import { isThemeSoundEnabled, setThemeSoundEnabled, notifyUser } from "@/utils/notificationSound";
+import { isThemeSoundEnabled, setThemeSoundEnabled, isEnergySoundEnabled, setEnergySoundEnabled, notifyUser, playEnergyGainSound } from "@/utils/notificationSound";
 
 const AdvancedSettingsSection = () => {
   const [expanded, setExpanded] = useState(false);
   const [themeSoundOn, setThemeSoundOn] = useState(true);
+  const [energySoundOn, setEnergySoundOn] = useState(true);
   
   const {
     theme,
@@ -25,11 +26,17 @@ const AdvancedSettingsSection = () => {
 
   useEffect(() => {
     setThemeSoundOn(isThemeSoundEnabled());
+    setEnergySoundOn(isEnergySoundEnabled());
   }, []);
 
   const handleThemeSoundChange = (enabled: boolean) => {
     setThemeSoundOn(enabled);
     setThemeSoundEnabled(enabled);
+  };
+
+  const handleEnergySoundChange = (enabled: boolean) => {
+    setEnergySoundOn(enabled);
+    setEnergySoundEnabled(enabled);
   };
 
   const themeOptions: { value: Theme; label: string; icon: typeof Sun }[] = [
@@ -197,6 +204,35 @@ const AdvancedSettingsSection = () => {
               checked={themeSoundOn}
               onCheckedChange={handleThemeSoundChange}
             />
+          </div>
+
+          {/* Energy Gain Sound */}
+          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Flame className={`w-5 h-5 ${energySoundOn ? "text-primary" : "text-muted-foreground"}`} />
+              <div>
+                <span className="font-body text-sm text-foreground block">
+                  Sonido al ganar energía
+                </span>
+                <span className="font-body text-xs text-muted-foreground">
+                  Reproduce un ding al ganar Spark Energy
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => playEnergyGainSound()}
+              >
+                <Play className="w-3 h-3" />
+              </Button>
+              <Switch
+                checked={energySoundOn}
+                onCheckedChange={handleEnergySoundChange}
+              />
+            </div>
           </div>
 
           {/* Sound Test Section */}
