@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Trophy, Crown, Medal, Award, Sparkles, Zap } from "lucide-react";
+import { ArrowLeft, Trophy, Crown, Medal, Award, Sparkles, Zap, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ParallaxBackground from "@/components/ParallaxBackground";
@@ -149,10 +150,18 @@ export default function Leaderboard() {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span style={{ fontFamily: 'Arial, sans-serif' }}>Atrás</span>
         </button>
-        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-          KIKI
-        </span>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/achievements")}
+            className="gap-2"
+          >
+            <Star className="w-4 h-4" />
+            Logros
+          </Button>
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
