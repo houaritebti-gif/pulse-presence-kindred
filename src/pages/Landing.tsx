@@ -422,11 +422,11 @@ const Landing = () => {
               <KikiLogo size="hero" animate={true} />
             </div>
             
-            {/* Slogan - Para gente diferente, y punto - Typewriter effect */}
+            {/* Slogan - Para gente diferente, y punto - with typographic contrast */}
             <div className="flex flex-col items-center">
               <motion.span 
-                className="text-2xl md:text-3xl font-bold text-foreground tracking-tight"
-                style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+                className="text-xl md:text-2xl text-foreground/80 tracking-wide"
+                style={{ fontFamily: 'Arial, sans-serif', fontWeight: 400 }}
                 initial={{ opacity: 1 }}
               >
                 {"Para gente diferente,".split("").map((char, index) => (
@@ -548,6 +548,25 @@ const Landing = () => {
                 />
               </motion.span>
             </div>
+          </motion.div>
+
+          {/* Microcopy with animated arrow */}
+          <motion.div
+            className="pt-4 flex flex-col items-center gap-1"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 2.3 }}
+          >
+            <p className="text-sm text-foreground/50" style={{ fontFamily: 'Arial, sans-serif' }}>
+              ¿A qué esperas?
+            </p>
+            <motion.span
+              className="text-primary text-lg"
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+            >
+              ↓
+            </motion.span>
           </motion.div>
 
           {/* CTA Button - prominent position right after slogan */}
