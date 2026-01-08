@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
@@ -11,6 +11,7 @@ import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
 import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import { useSparkChatWith } from "@/hooks/useSparks";
+import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { Button } from "@/components/ui/button";
 import PremiumBadge from "@/components/PremiumBadge";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -59,6 +60,25 @@ const PublicProfile = () => {
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
   const [bioExpanded, setBioExpanded] = useState(false);
+  
+  // Spark energy for profile exploration
+  const { earnEnergy, canDoAction } = useSparkEnergy();
+  const hasEarnedRef = useRef<string | null>(null);
+  
+  // Earn energy when viewing a different user's profile
+  useEffect(() => {
+    const isOwnProfile = myProfile?.id === profileId;
+    const profileLoaded = publicProfile?.profile && !isLoading;
+    const notEarnedYet = hasEarnedRef.current !== profileId;
+    
+    if (profileLoaded && !isOwnProfile && profileId && notEarnedYet && canDoAction('explore_profiles')) {
+      hasEarnedRef.current = profileId;
+      earnEnergy({ 
+        action: 'explore_profiles', 
+        description: `Exploraste el perfil de ${publicProfile.profile?.name || 'alguien'}` 
+      });
+    }
+  }, [publicProfile, myProfile?.id, profileId, isLoading, earnEnergy, canDoAction]);
 
   // Fetch my interests for compatibility
   const { data: myInterests } = useProfileInterests(myProfile?.id);
