@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Check, X, AlertTriangle, Shield, Loader2 } from "lucide-react";
@@ -166,10 +167,30 @@ const Auth = () => {
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-        {/* Logo prominente */}
-        <div className="mb-8 animate-fade-up">
-          <KikiLogo size="xl" />
-        </div>
+        {/* Logo prominente con animación de entrada */}
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, scale: 0.5, y: -30 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ 
+            duration: 0.6, 
+            ease: [0.34, 1.56, 0.64, 1],
+            delay: 0.1
+          }}
+        >
+          <motion.div
+            animate={{ 
+              scale: [1, 1.02, 1],
+            }}
+            transition={{ 
+              duration: 3, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+          >
+            <KikiLogo size="xl" />
+          </motion.div>
+        </motion.div>
         
         {/* Header */}
         <div className="text-center mb-8 animate-fade-up animate-delay-100">
