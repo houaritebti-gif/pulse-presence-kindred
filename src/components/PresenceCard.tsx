@@ -148,7 +148,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
   return (
     <>
       <div
-        className={`w-full bg-card rounded-2xl sm:rounded-3xl overflow-hidden text-left transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20 active:scale-[0.98] active:shadow-md animate-fade-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+        className={`w-full bg-card rounded-2xl sm:rounded-3xl overflow-hidden text-left transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20 active:scale-[0.98] active:shadow-md animate-fade-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background border border-foreground/5 dark:border-transparent ${
           isBoosted ? "ring-2 ring-primary/50 shadow-lg shadow-primary/20" : "shadow-md shadow-foreground/10 dark:shadow-foreground/5"
         }`}
         style={{ animationDelay: `${animationDelay}ms` }}
