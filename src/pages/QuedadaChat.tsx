@@ -355,17 +355,21 @@ const QuedadaChat = () => {
       {/* Ambient glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-accent/5 blur-[100px] rounded-full pointer-events-none" />
       
-      {/* Header */}
+      {/* Header - Grid layout for perfect centering */}
       <div className="relative z-10 border-b border-border/20 backdrop-blur-sm bg-background/80">
-        <div className="flex items-center justify-between px-6 py-4">
-          <button 
-            onClick={() => navigate("/quedadas")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
-            aria-label="Volver a Quedadas"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          </button>
+        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-6 py-4">
+          {/* Left section - back button */}
+          <div className="flex items-center justify-start">
+            <button 
+              onClick={() => navigate("/quedadas")}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group rounded-lg p-1 -ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label="Volver a Quedadas"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            </button>
+          </div>
           
+          {/* Center section - quedada info (always centered) */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
               <Calendar className="w-4 h-4 text-accent" />
@@ -375,26 +379,27 @@ const QuedadaChat = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Right section - actions */}
+          <div className="flex items-center justify-end gap-2">
             <ThemeToggle />
             <button 
               onClick={() => setShowAttendees(true)}
-              className="flex items-center gap-1 text-muted-foreground hover:text-accent transition-colors"
+              className="flex items-center gap-1 text-muted-foreground hover:text-accent transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               aria-label="Ver asistentes"
               title="Ver asistentes"
             >
               {quedada.private_attendees && !quedada.is_creator && !quedada.is_attending ? (
-              <EyeOff className="w-4 h-4" />
-            ) : (
-              <Users className="w-4 h-4" />
-            )}
-            <span className="font-body text-xs">{quedada.attendee_count}</span>
-          </button>
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Users className="w-4 h-4" />
+              )}
+              <span className="font-body text-xs">{quedada.attendee_count}</span>
+            </button>
           </div>
-        </div>
+        </header>
         
         {/* Event info bar */}
-        <div className="px-6 pb-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+        <div className="px-6 pb-3 flex flex-wrap gap-3 text-xs text-muted-foreground justify-center">
           <div className="flex items-center gap-1">
             <Calendar className="w-3 h-3" />
             <span className="capitalize">{formatEventDate(quedada.event_date)}</span>
