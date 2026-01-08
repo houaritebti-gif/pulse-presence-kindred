@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext, ReactNode } from "react";
+import { useState, useCallback, useEffect, createContext, useContext, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame } from "lucide-react";
 
@@ -15,10 +15,18 @@ interface EnergyGainContextType {
 
 const EnergyGainContext = createContext<EnergyGainContextType | null>(null);
 
+// Global event emitter for energy gains (allows triggering from anywhere)
+const ENERGY_GAIN_EVENT = "spark-energy-gain";
+
+export function emitEnergyGain(amount: number) {
+  window.dispatchEvent(new CustomEvent(ENERGY_GAIN_EVENT, { detail: { amount } }));
+}
+
 export function useEnergyGainAnimation() {
   const context = useContext(EnergyGainContext);
   if (!context) {
-    throw new Error("useEnergyGainAnimation must be used within EnergyGainProvider");
+    // Return a no-op if used outside provider (graceful fallback)
+    return { showEnergyGain: () => {} };
   }
   return context;
 }
@@ -33,7 +41,7 @@ export function EnergyGainProvider({ children }: EnergyGainProviderProps) {
   const showEnergyGain = useCallback((amount: number, x?: number, y?: number) => {
     const id = `${Date.now()}-${Math.random()}`;
     
-    // Default position: center-right of screen
+    // Default position: center of screen, upper third
     const posX = x ?? window.innerWidth / 2;
     const posY = y ?? window.innerHeight / 3;
     
@@ -44,6 +52,20 @@ export function EnergyGainProvider({ children }: EnergyGainProviderProps) {
       setGains((prev) => prev.filter((g) => g.id !== id));
     }, 1500);
   }, []);
+
+  // Listen for global energy gain events
+  useEffect(() => {
+    const handleEnergyGain = (e: CustomEvent<{ amount: number }>) => {
+      if (e.detail?.amount > 0) {
+        showEnergyGain(e.detail.amount);
+      }
+    };
+
+    window.addEventListener(ENERGY_GAIN_EVENT, handleEnergyGain as EventListener);
+    return () => {
+      window.removeEventListener(ENERGY_GAIN_EVENT, handleEnergyGain as EventListener);
+    };
+  }, [showEnergyGain]);
 
   return (
     <EnergyGainContext.Provider value={{ showEnergyGain }}>
