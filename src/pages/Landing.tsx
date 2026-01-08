@@ -507,82 +507,98 @@ const Landing = () => {
 
           {/* Tagline with emphasis */}
           <motion.div 
-            className="space-y-1 pt-4"
+            className="space-y-2 pt-6"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
           >
             <motion.p 
-              className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground leading-tight"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
+              className="text-lg md:text-xl lg:text-2xl text-foreground/80 leading-tight italic"
+              style={{ fontFamily: 'Georgia, serif' }}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.6 }}
             >
               aquí no hay match,
             </motion.p>
-            <motion.p 
-              className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight relative inline-block text-primary"
-              style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
+            <motion.div 
+              className="relative inline-flex items-center gap-2"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.6 }}
             >
-              hay chispa.
-              <motion.span
-                animate={{ 
-                  rotate: [0, 15, -15, 0],
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              <motion.p 
+                className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary"
+                style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
               >
-                <Sparkles className="absolute -right-8 -top-2 w-5 h-5 text-primary" />
+                hay chispa
+              </motion.p>
+              <motion.span
+                className="inline-flex"
+                animate={{ 
+                  rotate: [0, 10, -10, 0],
+                  scale: [1, 1.15, 1],
+                }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
               </motion.span>
-            </motion.p>
+            </motion.div>
           </motion.div>
 
-          {/* Feature highlights with stagger */}
+          {/* Elegant description */}
+          <motion.p 
+            className="text-base md:text-lg text-foreground/60 max-w-sm mx-auto leading-relaxed pt-4"
+            style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.3 }}
+          >
+            Un espacio para quienes buscan conexiones reales
+          </motion.p>
+
+          {/* Feature highlights with stagger - more elegant */}
           <motion.div 
-            className="flex flex-wrap justify-center gap-3 pt-3"
+            className="flex flex-wrap justify-center gap-4 pt-4"
             initial="hidden"
             animate="visible"
             variants={{
               hidden: {},
               visible: {
-                transition: { staggerChildren: 0.1, delayChildren: 1.2 }
+                transition: { staggerChildren: 0.15, delayChildren: 1.5 }
               }
             }}
           >
-            {["Sin algoritmos", "Sin presión", "Sin ruido"].map((tag, index) => (
+            {[
+              { text: "Sin algoritmos", icon: "✦" },
+              { text: "Sin presión", icon: "✦" },
+              { text: "Sin ruido", icon: "✦" }
+            ].map((tag, index) => (
               <motion.div 
                 key={index} 
-                className="px-4 py-2 rounded-full glass border border-primary/20 animate-border-glow"
+                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-sm shadow-sm"
                 variants={{
-                  hidden: { opacity: 0, y: 20, scale: 0.8 },
+                  hidden: { opacity: 0, y: 20, scale: 0.9 },
                   visible: { 
                     opacity: 1, 
                     y: 0, 
                     scale: 1,
-                    transition: { type: "spring", stiffness: 200 }
+                    transition: { type: "spring", stiffness: 150, damping: 15 }
                   }
                 }}
-              whileHover={{ scale: 1.05, borderColor: "hsl(var(--primary) / 0.5)" }}
+                whileHover={{ 
+                  scale: 1.08, 
+                  boxShadow: "0 4px 20px hsl(var(--primary) / 0.2)",
+                  borderColor: "hsl(var(--primary) / 0.4)" 
+                }}
               >
-                <span className="text-sm text-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>{tag}</span>
+                <span className="text-sm font-medium text-foreground/90 flex items-center gap-2" style={{ fontFamily: 'Arial, sans-serif' }}>
+                  <span className="text-primary text-xs">{tag.icon}</span>
+                  {tag.text}
+                </span>
               </motion.div>
             ))}
           </motion.div>
-
-          {/* Subtle description */}
-          <motion.p 
-            className="text-base md:text-lg text-muted-foreground max-w-md mx-auto leading-relaxed pt-2"
-            style={{ fontFamily: 'Arial, sans-serif' }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1.5 }}
-          >
-            Un espacio para quienes buscan conexiones reales, no likes.
-          </motion.p>
 
           {/* CTA with enhanced glow effect */}
           <motion.div 
