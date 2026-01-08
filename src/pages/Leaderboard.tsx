@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Trophy, Crown, Medal, Award, Sparkles, Zap, Star, MapPin, Filter, X } from "lucide-react";
+import { ArrowLeft, Trophy, Crown, Medal, Award, Sparkles, Zap, Star, MapPin, Filter, X, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -13,6 +13,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { ACHIEVEMENTS, AchievementDefinition } from "@/hooks/useAchievements";
 
 type CategoryFilter = AchievementDefinition['category'] | 'all';
+type SortOption = 'achievements' | 'energy';
 
 const CATEGORY_OPTIONS: { value: CategoryFilter; label: string; emoji: string }[] = [
   { value: 'all', label: 'Todas', emoji: '🏆' },
@@ -21,6 +22,11 @@ const CATEGORY_OPTIONS: { value: CategoryFilter; label: string; emoji: string }[
   { value: 'energy', label: 'Energía', emoji: '⚡' },
   { value: 'milestone', label: 'Hitos', emoji: '🎯' },
   { value: 'special', label: 'Especial', emoji: '✨' },
+];
+
+const SORT_OPTIONS: { value: SortOption; label: string; icon: typeof Trophy }[] = [
+  { value: 'achievements', label: 'Logros', icon: Trophy },
+  { value: 'energy', label: 'Energía', icon: Zap },
 ];
 const RARITY_COLORS = {
   common: "text-muted-foreground",
@@ -145,6 +151,7 @@ export default function Leaderboard() {
   
   const [cityFilter, setCityFilter] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+  const [sortBy, setSortBy] = useState<SortOption>('achievements');
   const [showFilters, setShowFilters] = useState(false);
 
   // Extract unique cities from leaderboard
@@ -156,11 +163,11 @@ export default function Leaderboard() {
     return [...new Set(cities)].sort();
   }, [leaderboard]);
 
-  // Filter leaderboard based on selected filters
+  // Filter and sort leaderboard based on selected options
   const filteredLeaderboard = useMemo(() => {
     if (!leaderboard) return [];
     
-    return leaderboard.filter(entry => {
+    let result = leaderboard.filter(entry => {
       // City filter
       if (cityFilter && entry.city !== cityFilter) {
         return false;
@@ -181,7 +188,26 @@ export default function Leaderboard() {
       
       return true;
     });
-  }, [leaderboard, cityFilter, categoryFilter]);
+
+    // Sort based on selected option
+    result.sort((a, b) => {
+      if (sortBy === 'energy') {
+        // Sort by energy first, then by achievements
+        if (b.totalEnergy !== a.totalEnergy) {
+          return b.totalEnergy - a.totalEnergy;
+        }
+        return b.achievementCount - a.achievementCount;
+      } else {
+        // Sort by achievements first, then by energy
+        if (b.achievementCount !== a.achievementCount) {
+          return b.achievementCount - a.achievementCount;
+        }
+        return b.totalEnergy - a.totalEnergy;
+      }
+    });
+
+    return result;
+  }, [leaderboard, cityFilter, categoryFilter, sortBy]);
 
   const hasActiveFilters = cityFilter !== null || categoryFilter !== 'all';
 
@@ -241,8 +267,24 @@ export default function Leaderboard() {
           </p>
         </div>
 
-        {/* Filters toggle */}
+        {/* Sort and Filters toggle */}
         <div className="flex items-center justify-center gap-2 mb-4">
+          {/* Sort buttons */}
+          <div className="flex items-center rounded-lg border border-border/50 bg-card/50 p-0.5">
+            {SORT_OPTIONS.map((option) => (
+              <Button
+                key={option.value}
+                variant={sortBy === option.value ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSortBy(option.value)}
+                className="gap-1.5 text-xs"
+              >
+                <option.icon className={`w-3.5 h-3.5 ${sortBy === option.value ? '' : option.value === 'energy' ? 'text-amber-500' : 'text-primary'}`} />
+                {option.label}
+              </Button>
+            ))}
+          </div>
+
           <Button
             variant={showFilters ? "default" : "outline"}
             size="sm"
