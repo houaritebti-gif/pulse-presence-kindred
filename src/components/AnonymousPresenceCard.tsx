@@ -443,13 +443,13 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                     {presence.tribes.slice(0, 3).map(tribe => (
                       <span 
                         key={tribe}
-                        className="px-2 py-0.5 rounded-full bg-card-foreground/15 font-body text-xs text-card-foreground/90"
+                        className="px-2 py-0.5 rounded-full bg-foreground/10 dark:bg-card-foreground/15 font-body text-xs text-foreground/80 dark:text-card-foreground/90 font-medium"
                       >
                         {tribe}
                       </span>
                     ))}
                     {presence.tribes.length > 3 && (
-                      <span className="px-2 py-0.5 rounded-full bg-card-foreground/10 font-body text-xs text-muted-foreground">
+                      <span className="px-2 py-0.5 rounded-full bg-foreground/10 dark:bg-card-foreground/10 font-body text-xs text-foreground/70 dark:text-muted-foreground font-medium">
                         +{presence.tribes.length - 3}
                       </span>
                     )}
@@ -457,7 +457,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                     {presence.tribes.length < 3 && presence.musicStyles.slice(0, 2).map(style => (
                       <span 
                         key={style}
-                        className="px-2 py-0.5 rounded-full bg-primary/10 font-body text-xs text-primary"
+                        className="px-2 py-0.5 rounded-full bg-primary/15 dark:bg-primary/10 font-body text-xs text-primary font-medium"
                       >
                         {style}
                       </span>
@@ -474,10 +474,10 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                   <div className="space-y-2">
                     {presence.tribes.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold text-muted-foreground mb-1">Tribus</p>
+                        <p className="text-xs font-semibold text-foreground/70 mb-1">Tribus</p>
                         <div className="flex flex-wrap gap-1">
                           {presence.tribes.map(tribe => (
-                            <span key={tribe} className="px-1.5 py-0.5 rounded bg-card-foreground/15 text-xs">
+                            <span key={tribe} className="px-1.5 py-0.5 rounded bg-foreground/10 dark:bg-card-foreground/15 text-xs font-medium">
                               {tribe}
                             </span>
                           ))}
@@ -486,10 +486,10 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                     )}
                     {presence.musicStyles.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold text-muted-foreground mb-1">Música</p>
+                        <p className="text-xs font-semibold text-foreground/70 mb-1">Música</p>
                         <div className="flex flex-wrap gap-1">
                           {presence.musicStyles.map(style => (
-                            <span key={style} className="px-1.5 py-0.5 rounded bg-primary/10 text-xs text-primary">
+                            <span key={style} className="px-1.5 py-0.5 rounded bg-primary/15 dark:bg-primary/10 text-xs text-primary font-medium">
                               {style}
                             </span>
                           ))}
