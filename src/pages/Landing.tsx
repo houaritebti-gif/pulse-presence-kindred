@@ -589,13 +589,18 @@ const Landing = () => {
             transition={{ duration: 0.8, delay: 2.8, ease: "easeOut" }}
           >
             <motion.p 
-              className="text-base md:text-lg text-foreground/60 leading-tight italic"
-              style={{ fontFamily: 'Georgia, serif' }}
+              className="text-lg md:text-xl text-foreground/80 leading-tight font-medium tracking-wide"
+              style={{ fontFamily: 'Arial, sans-serif' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 3, duration: 0.5 }}
             >
-              aquí no hay match,
+              Aquí no hay <motion.span 
+                className="line-through decoration-primary/50 decoration-2"
+                initial={{ backgroundSize: "0% 2px" }}
+                animate={{ backgroundSize: "100% 2px" }}
+                transition={{ delay: 3.3, duration: 0.4 }}
+              >match</motion.span>,
             </motion.p>
             <motion.div 
               className="relative inline-flex items-center gap-1.5"
@@ -604,7 +609,7 @@ const Landing = () => {
               transition={{ delay: 3.2, duration: 0.5 }}
             >
               <motion.p 
-                className="text-xl md:text-2xl lg:text-3xl font-bold leading-tight text-primary"
+                className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-primary"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
               >
                 hay chispa
@@ -617,26 +622,28 @@ const Landing = () => {
                 }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]" />
+                <Sparkles className="w-5 h-5 md:w-7 md:h-7 text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
               </motion.span>
             </motion.div>
           </motion.div>
 
-          {/* Elegant description with decorative quotes */}
+          {/* Elegant description with decorative styling */}
           <motion.div
             className="pt-5"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 3.6 }}
+            transition={{ duration: 0.8, delay: 3.5 }}
           >
-            <p 
-              className="text-base md:text-lg text-foreground/50 max-w-sm mx-auto leading-relaxed"
+            <motion.p 
+              className="text-base md:text-lg text-foreground/70 max-w-xs mx-auto leading-relaxed relative"
               style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}
+              whileHover={{ scale: 1.02 }}
             >
-              <span className="text-primary/60 text-xl mr-1">«</span>
-              Un espacio para quienes buscan conexiones reales
-              <span className="text-primary/60 text-xl ml-1">»</span>
-            </p>
+              <span className="text-primary text-2xl leading-none mr-1 font-serif">«</span>
+              Un espacio para quienes buscan{' '}
+              <span className="text-primary font-semibold not-italic">conexiones reales</span>
+              <span className="text-primary text-2xl leading-none ml-1 font-serif">»</span>
+            </motion.p>
           </motion.div>
 
           {/* Feature highlights with stagger */}
