@@ -581,42 +581,30 @@ const Landing = () => {
             </motion.div>
           </motion.div>
 
-          {/* Decorative line separator */}
-          <motion.div
-            className="flex items-center justify-center gap-4 pt-8"
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.6, delay: 2.8 }}
-          >
-            <span className="h-px w-12 bg-gradient-to-r from-transparent to-primary/30" />
-            <span className="text-primary/40 text-xs">✦</span>
-            <span className="h-px w-12 bg-gradient-to-l from-transparent to-primary/30" />
-          </motion.div>
-
           {/* Tagline with emphasis */}
           <motion.div 
-            className="space-y-2 pt-4"
-            initial={{ opacity: 0, y: 30 }}
+            className="space-y-1 pt-6"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 3, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 2.8, ease: "easeOut" }}
           >
             <motion.p 
-              className="text-lg md:text-xl lg:text-2xl text-foreground/70 leading-tight italic"
+              className="text-base md:text-lg text-foreground/60 leading-tight italic"
               style={{ fontFamily: 'Georgia, serif' }}
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 3.2, duration: 0.6 }}
+              transition={{ delay: 3, duration: 0.5 }}
             >
               aquí no hay match,
             </motion.p>
             <motion.div 
-              className="relative inline-flex items-center gap-2"
-              initial={{ opacity: 0, y: 15 }}
+              className="relative inline-flex items-center gap-1.5"
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 3.4, duration: 0.6 }}
+              transition={{ delay: 3.2, duration: 0.5 }}
             >
               <motion.p 
-                className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary"
+                className="text-xl md:text-2xl lg:text-3xl font-bold leading-tight text-primary"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
               >
                 hay chispa
@@ -629,7 +617,7 @@ const Landing = () => {
                 }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
+                <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]" />
               </motion.span>
             </motion.div>
           </motion.div>
