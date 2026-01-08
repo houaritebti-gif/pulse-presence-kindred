@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Trophy, Crown, Medal, Award, Sparkles, Zap, Star, MapPin, Filter, X, ArrowUpDown } from "lucide-react";
+import { ArrowLeft, Trophy, Crown, Medal, Award, Sparkles, Zap, Star, MapPin, Filter, X, Percent, Ghost } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -11,7 +11,13 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile } from "@/hooks/useProfile";
 import { ACHIEVEMENTS, AchievementDefinition } from "@/hooks/useAchievements";
-import { getSparkLevel } from "@/hooks/useSparkEnergy";
+import { getSparkLevel, SparkLevelInfo } from "@/hooks/useSparkEnergy";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type CategoryFilter = AchievementDefinition['category'] | 'all';
 type SortOption = 'achievements' | 'energy';
@@ -137,10 +143,46 @@ function LeaderboardCard({ entry, rank, isCurrentUser }: { entry: LeaderboardEnt
           <Trophy className="w-4 h-4 text-primary" />
           {entry.achievementCount}
         </div>
-        <div className="flex items-center justify-end gap-1 text-xs">
-          <span className="text-base leading-none">{sparkLevel.emoji}</span>
-          <span className="text-muted-foreground">{sparkLevel.name}</span>
-        </div>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div 
+                className="flex items-center justify-end gap-1 text-xs cursor-help hover:opacity-80 transition-opacity"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="text-base leading-none">{sparkLevel.emoji}</span>
+                <span className="text-muted-foreground">{sparkLevel.name}</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-[200px]">
+              <div className="space-y-1.5">
+                <p className="font-semibold text-sm">
+                  {sparkLevel.emoji} Nivel {sparkLevel.level}: {sparkLevel.name}
+                </p>
+                {(sparkLevel.discount > 0 || sparkLevel.bonusGhostMessages > 0) ? (
+                  <div className="space-y-1 text-xs">
+                    {sparkLevel.discount > 0 && (
+                      <div className="flex items-center gap-1.5 text-green-500">
+                        <Percent className="w-3 h-3" />
+                        <span>{sparkLevel.discount}% descuento en tienda</span>
+                      </div>
+                    )}
+                    {sparkLevel.bonusGhostMessages > 0 && (
+                      <div className="flex items-center gap-1.5 text-purple-400">
+                        <Ghost className="w-3 h-3" />
+                        <span>+{sparkLevel.bonusGhostMessages} mensaje{sparkLevel.bonusGhostMessages > 1 ? 's' : ''} fantasma</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Sigue ganando energía para desbloquear beneficios
+                  </p>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <div className="flex items-center justify-end gap-0.5 text-xs text-muted-foreground">
           <Zap className="w-3 h-3 text-amber-500" />
           {entry.totalEnergy}
