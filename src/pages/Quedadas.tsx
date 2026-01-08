@@ -372,7 +372,7 @@ const Quedadas = () => {
               return (
                 <div
                   key={quedada.id}
-                  className={`bg-card rounded-2xl p-5 sm:p-6 border border-transparent hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] active:scale-[0.99] cursor-pointer transition-all duration-400 ${
+                  className={`bg-card rounded-2xl p-5 sm:p-6 border border-foreground/5 dark:border-transparent hover:border-accent/30 shadow-md shadow-foreground/10 dark:shadow-foreground/5 hover:shadow-lg hover:shadow-accent/10 hover:scale-[1.01] active:scale-[0.99] cursor-pointer transition-all duration-400 ${
                     isExiting 
                       ? 'opacity-0 scale-95 translate-x-8 pointer-events-none' 
                       : 'opacity-0 animate-stagger-fade-up'
