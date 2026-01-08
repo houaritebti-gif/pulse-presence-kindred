@@ -104,7 +104,7 @@ const SocialProofCounter = () => {
     const startDelay = setTimeout(() => {
       setHasStarted(true);
       const target = 500;
-      const duration = 2000;
+      const duration = 1500;
       const startTime = Date.now();
       
       const interval = setInterval(() => {
@@ -117,17 +117,17 @@ const SocialProofCounter = () => {
       }, 16);
       
       return () => clearInterval(interval);
-    }, 2000);
+    }, 4200);
     
     return () => clearTimeout(startDelay);
   }, []);
   
   return (
     <motion.div
-      className="pt-6"
+      className="pt-4"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 1.8 }}
+      transition={{ duration: 0.8, delay: 4.2 }}
     >
       <p className="text-sm text-foreground/40" style={{ fontFamily: 'Arial, sans-serif' }}>
         Ya somos{' '}
@@ -550,12 +550,43 @@ const Landing = () => {
             </div>
           </motion.div>
 
+          {/* CTA Button - prominent position right after slogan */}
+          <motion.div 
+            className="pt-6" 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 2.5 }}
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button 
+                variant="kiki" 
+                size="lg" 
+                onClick={() => navigate("/auth")} 
+                className="px-10 relative group overflow-hidden shadow-[0_0_30px_hsl(var(--primary)/0.25)]"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <Heart className="w-4 h-4 fill-current" />
+                  Entrar
+                </span>
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary"
+                  style={{ backgroundSize: "200% 100%" }}
+                  animate={{ backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                />
+              </Button>
+            </motion.div>
+          </motion.div>
+
           {/* Decorative line separator */}
           <motion.div
-            className="flex items-center justify-center gap-4 pt-6"
+            className="flex items-center justify-center gap-4 pt-8"
             initial={{ opacity: 0, scaleX: 0 }}
             animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
+            transition={{ duration: 0.6, delay: 2.8 }}
           >
             <span className="h-px w-12 bg-gradient-to-r from-transparent to-primary/30" />
             <span className="text-primary/40 text-xs">✦</span>
@@ -567,14 +598,14 @@ const Landing = () => {
             className="space-y-2 pt-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.8, delay: 3, ease: "easeOut" }}
           >
             <motion.p 
               className="text-lg md:text-xl lg:text-2xl text-foreground/70 leading-tight italic"
               style={{ fontFamily: 'Georgia, serif' }}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 0.6 }}
+              transition={{ delay: 3.2, duration: 0.6 }}
             >
               aquí no hay match,
             </motion.p>
@@ -582,7 +613,7 @@ const Landing = () => {
               className="relative inline-flex items-center gap-2"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.6 }}
+              transition={{ delay: 3.4, duration: 0.6 }}
             >
               <motion.p 
                 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-primary"
@@ -608,7 +639,7 @@ const Landing = () => {
             className="pt-5"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.3 }}
+            transition={{ duration: 0.8, delay: 3.6 }}
           >
             <p 
               className="text-base md:text-lg text-foreground/50 max-w-sm mx-auto leading-relaxed"
@@ -620,27 +651,15 @@ const Landing = () => {
             </p>
           </motion.div>
 
-          {/* Decorative line separator */}
-          <motion.div
-            className="flex items-center justify-center gap-4 pt-4"
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={{ opacity: 1, scaleX: 1 }}
-            transition={{ duration: 0.6, delay: 1.4 }}
-          >
-            <span className="h-px w-16 bg-gradient-to-r from-transparent to-foreground/10" />
-            <span className="text-foreground/20 text-xs">♡</span>
-            <span className="h-px w-16 bg-gradient-to-l from-transparent to-foreground/10" />
-          </motion.div>
-
-          {/* Feature highlights with stagger - more elegant */}
+          {/* Feature highlights with stagger */}
           <motion.div 
-            className="flex flex-wrap justify-center gap-4 pt-4"
+            className="flex flex-wrap justify-center gap-4 pt-5"
             initial="hidden"
             animate="visible"
             variants={{
               hidden: {},
               visible: {
-                transition: { staggerChildren: 0.15, delayChildren: 1.5 }
+                transition: { staggerChildren: 0.15, delayChildren: 3.8 }
               }
             }}
           >
@@ -677,37 +696,6 @@ const Landing = () => {
 
           {/* Social proof counter */}
           <SocialProofCounter />
-
-          {/* CTA with enhanced glow effect */}
-          <motion.div 
-            className="pt-6" 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.8 }}
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button 
-                variant="kiki" 
-                size="lg" 
-                onClick={() => navigate("/auth")} 
-                className="px-10 relative group overflow-hidden shadow-[0_0_30px_hsl(var(--primary)/0.25)]"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  <Heart className="w-4 h-4 fill-current" />
-                  Entrar
-                </span>
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary"
-                  style={{ backgroundSize: "200% 100%" }}
-                  animate={{ backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                />
-              </Button>
-            </motion.div>
-          </motion.div>
 
           {/* Scroll indicator with enhanced animation */}
           <motion.div 
