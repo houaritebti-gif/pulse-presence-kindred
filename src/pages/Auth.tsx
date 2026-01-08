@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { z } from "zod";
 import { usePasswordBreachCheck } from "@/hooks/usePasswordBreachCheck";
+import { fireWelcomeConfetti } from "@/utils/sparkConfetti";
+import { triggerHaptic } from "@/utils/haptics";
 
 const passwordSchema = z.string()
   .min(8, "Mínimo 8 caracteres")
@@ -129,7 +131,11 @@ const Auth = () => {
           },
         });
         if (error) throw error;
-        toast.success("¡Cuenta creada! Ya puedes entrar.");
+        
+        // 🎉 Celebrate new user signup!
+        fireWelcomeConfetti();
+        triggerHaptic('success');
+        toast.success("🎉 ¡Bienvenida a KIKI! Tu cuenta está lista.");
       }
       navigate("/presence");
     } catch (error: any) {
