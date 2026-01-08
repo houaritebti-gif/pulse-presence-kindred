@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
 import ProfilePhotoGallery from "@/components/ProfilePhotoGallery";
+import PublicAchievementsBadges from "@/components/PublicAchievementsBadges";
 import { triggerHaptic } from "@/utils/haptics";
 import ParallaxBackground from "@/components/ParallaxBackground";
 
@@ -448,6 +449,9 @@ const PublicProfile = () => {
               </div>
             </div>
           )}
+          
+          {/* Public Achievements Badges */}
+          <PublicAchievementsBadges profileId={profileId} maxDisplay={6} />
         </div>
 
         {/* CTA buttons - Spark chat or Ghost message */}
