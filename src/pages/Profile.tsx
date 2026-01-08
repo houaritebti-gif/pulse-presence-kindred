@@ -38,6 +38,7 @@ import { useCheckBlacklistedWords } from "@/hooks/useBioBlacklist";
 import { triggerHaptic } from "@/utils/haptics";
 import { SparkFlame } from "@/components/SparkFlame";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
+import { AchievementsDisplay } from "@/components/AchievementsDisplay";
 
 // Spark Energy Card Component for Profile
 const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
@@ -685,6 +686,11 @@ const Profile = () => {
 
         {/* Spark Energy Card */}
         <SparkEnergyCard navigate={navigate} />
+
+        {/* Achievements */}
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '190ms', animationFillMode: 'forwards' }}>
+          <AchievementsDisplay compact />
+        </div>
 
         {/* Name & City */}
         <div className="space-y-4 mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
