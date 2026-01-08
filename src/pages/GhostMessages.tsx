@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Ghost, Flame, Eye, EyeOff, Sparkles, Send, Clock, MoreVertical, Flag, Ban, User, Zap, ChevronDown } from "lucide-react";
+import { KikiLogo } from "@/components/KikiLogo";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import ErrorState from "@/components/ErrorState";
 import EmptyState from "@/components/EmptyState";
@@ -275,8 +276,8 @@ const GhostMessages = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Presencia</span>
         </button>
-        <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
-        <div className="w-20" />
+        <KikiLogo size="lg" />
+        <div className="w-16" />
       </div>
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">

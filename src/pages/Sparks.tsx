@@ -121,7 +121,7 @@ const Sparks = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
         </button>
-        <KikiLogo size="md" />
+        <KikiLogo size="lg" />
         <ThemeToggle />
       </div>
 

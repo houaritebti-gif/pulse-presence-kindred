@@ -332,7 +332,7 @@ const Presence = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span className="text-sm sm:text-base" style={{ fontFamily: 'Arial, sans-serif' }}>Perfil</span>
         </button>
-        <KikiLogo size="md" />
+        <KikiLogo size="lg" />
         <div className="flex items-center gap-1.5 sm:gap-2">
           <ThemeToggle />
           {/* Connection requests button */}

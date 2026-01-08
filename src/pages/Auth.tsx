@@ -149,11 +149,11 @@ const Auth = () => {
   return (
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 relative overflow-hidden">
       {/* Ambient glow */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-20 right-0 w-[300px] h-[300px] bg-accent/5 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/8 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-20 right-0 w-[300px] h-[300px] bg-accent/8 blur-[100px] rounded-full pointer-events-none" />
       
-      {/* Header with back button and logo */}
-      <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-10">
+      {/* Header with back button */}
+      <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-6">
         <button 
           onClick={() => navigate("/")}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -162,14 +162,18 @@ const Auth = () => {
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           <span>Volver</span>
         </button>
-        <KikiLogo size="md" />
         <div className="w-20" />
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
+        {/* Logo prominente */}
+        <div className="mb-8 animate-fade-up">
+          <KikiLogo size="xl" />
+        </div>
+        
         {/* Header */}
-        <div className="text-center mb-10 animate-fade-up">
-          <h1 className="text-4xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+        <div className="text-center mb-8 animate-fade-up animate-delay-100">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             {isLogin ? "Hola de nuevo" : "Únete"}
           </h1>
           <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>

@@ -111,7 +111,7 @@ const Notifications = () => {
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Volver</span>
           </button>
-          <KikiLogo size="md" />
+          <KikiLogo size="lg" />
           <div className="flex items-center gap-2">
             <ThemeToggle />
             {readCount > 0 && (
