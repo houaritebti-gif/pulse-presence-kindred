@@ -217,19 +217,23 @@ const Chat = () => {
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
       
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-10">
-        <button 
-          onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
-          style={{ fontFamily: 'Arial, sans-serif' }}
-          aria-label="Volver a Presencia"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Presencia</span>
-        </button>
-        <KikiLogo size="md" />
-        <div className="w-20" />
-      </div>
+      <header className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 max-w-lg mx-auto w-full mb-10">
+        <div className="flex items-center justify-start">
+          <button 
+            onClick={() => navigate("/presence")}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
+            style={{ fontFamily: 'Arial, sans-serif' }}
+            aria-label="Volver a Presencia"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Presencia</span>
+          </button>
+        </div>
+        <div className="flex items-center justify-center">
+          <KikiLogo size="md" />
+        </div>
+        <div className="flex items-center justify-end" />
+      </header>
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto w-full">
         {alreadySent && !canSendSecondChance ? (

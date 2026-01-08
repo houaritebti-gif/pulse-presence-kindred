@@ -231,20 +231,24 @@ const Subscription = () => {
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
       
       {/* Header */}
-      <div className="relative z-10 px-4 sm:px-6 py-6 sm:py-8">
-        <div className="flex items-center justify-between max-w-lg mx-auto">
-          <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
-            style={{ fontFamily: 'Arial, sans-serif' }}
-            aria-label="Volver atrás"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>Volver</span>
-          </button>
-          <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
-          <div className="w-20" />
-        </div>
+      <div className="relative z-10 px-4 sm:px-6 py-6 sm:py-8 max-w-lg mx-auto">
+        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <div className="flex items-center justify-start">
+            <button 
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
+              style={{ fontFamily: 'Arial, sans-serif' }}
+              aria-label="Volver atrás"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span>Volver</span>
+            </button>
+          </div>
+          <div className="flex items-center justify-center">
+            <span className="text-xl font-bold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>KIKI</span>
+          </div>
+          <div className="flex items-center justify-end" />
+        </header>
       </div>
 
       <div className="relative z-10 px-4 pb-32 max-w-lg mx-auto space-y-6">

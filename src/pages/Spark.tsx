@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ArrowLeft, 
   Flame, 
   TrendingUp, 
   History, 
@@ -24,6 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SparkFlame } from "@/components/SparkFlame";
 import { SparkShop } from "@/components/SparkShop";
 import LevelUpCelebration from "@/components/LevelUpCelebration";
+import PageHeader from "@/components/PageHeader";
 import { useSparkEnergy, SPARK_LEVELS, ENERGY_AMOUNTS } from "@/hooks/useSparkEnergy";
 import { useLevelUpCelebration } from "@/hooks/useLevelUpCelebration";
 
@@ -378,24 +378,11 @@ export default function Spark() {
         previousLevel={previousLevel}
       />
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border/50">
-        <div className="flex items-center justify-between px-4 py-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="rounded-full"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          
-          <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
-            <Flame className="w-5 h-5 text-primary" />
-            Tu Chispa
-          </h1>
-          
-          <div className="w-10" /> {/* Spacer */}
-        </div>
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border/50 px-4 py-3">
+        <PageHeader 
+          backLabel="Volver"
+          className="mb-0"
+        />
       </header>
 
       <main className="px-4 py-6 max-w-lg mx-auto space-y-6">

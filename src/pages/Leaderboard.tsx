@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Trophy, Crown, Medal, Award, Sparkles, Zap, Star, MapPin, Filter, X, Percent, Ghost } from "lucide-react";
+import { Trophy, Crown, Medal, Award, Sparkles, Zap, Star, MapPin, Filter, X, Percent, Ghost } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import PageHeader from "@/components/PageHeader";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import { useAchievementsLeaderboard, LeaderboardEntry } from "@/hooks/useAchievementsLeaderboard";
 import SharedAvatar from "@/components/SharedAvatar";
@@ -307,16 +307,9 @@ export default function Leaderboard() {
       <ParallaxBackground variant="list" />
 
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between mb-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
-          aria-label="Volver"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span style={{ fontFamily: 'Arial, sans-serif' }}>Atrás</span>
-        </button>
-        <div className="flex items-center gap-2">
+      <PageHeader 
+        backLabel="Atrás"
+        rightContent={
           <Button
             variant="outline"
             size="sm"
@@ -326,9 +319,8 @@ export default function Leaderboard() {
             <Star className="w-4 h-4" />
             Logros
           </Button>
-          <ThemeToggle />
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
         {/* Hero section */}
