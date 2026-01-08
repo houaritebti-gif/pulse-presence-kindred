@@ -37,10 +37,10 @@ const sizeClasses = {
     glow: true,
   },
   hero: {
-    text: "text-8xl md:text-9xl lg:text-[10rem]",
-    heart: "w-7 h-7 md:w-10 md:h-10 lg:w-14 lg:h-14",
-    heartPos: "-top-6 md:-top-8 lg:-top-10 -left-4 md:-left-5 lg:-left-6",
-    marginLeft: "-ml-1 md:-ml-2",
+    text: "text-6xl md:text-7xl lg:text-8xl",
+    heart: "w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10",
+    heartPos: "-top-4 md:-top-6 lg:-top-7 -left-3 md:-left-4 lg:-left-5",
+    marginLeft: "-ml-1 md:-ml-1.5",
     glow: true,
   },
 };
