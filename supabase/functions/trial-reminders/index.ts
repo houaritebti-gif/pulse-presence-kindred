@@ -25,23 +25,37 @@ serve(async (req) => {
     const twoDaysFromNowStart = new Date(twoDaysFromNow.getTime() - 12 * 60 * 60 * 1000); // 1.5 days
     const twoDaysFromNowEnd = new Date(twoDaysFromNow.getTime() + 12 * 60 * 60 * 1000); // 2.5 days
     
+    // Find trials that don't have a Stripe subscription (check stripe_customer_data table)
     const { data: expiringTrials, error: trialsError } = await supabase
       .from('user_subscriptions')
       .select('profile_id, expires_at')
       .not('trial_started_at', 'is', null)
-      .is('stripe_subscription_id', null)
       .eq('tier', 'plus')
       .gte('expires_at', twoDaysFromNowStart.toISOString())
       .lte('expires_at', twoDaysFromNowEnd.toISOString());
+    
+    // Filter out users who have a Stripe subscription
+    let filteredTrials = expiringTrials || [];
+    if (filteredTrials.length > 0) {
+      const profileIds = filteredTrials.map(t => t.profile_id);
+      const { data: stripeData } = await supabase
+        .from('stripe_customer_data')
+        .select('profile_id')
+        .in('profile_id', profileIds)
+        .not('stripe_subscription_id', 'is', null);
+      
+      const paidProfileIds = new Set(stripeData?.map(s => s.profile_id) || []);
+      filteredTrials = filteredTrials.filter(t => !paidProfileIds.has(t.profile_id));
+    }
     
     if (trialsError) {
       console.error('Error fetching expiring trials:', trialsError);
       throw trialsError;
     }
     
-    console.log(`Found ${expiringTrials?.length || 0} trials expiring in ~2 days`);
+    console.log(`Found ${filteredTrials.length} trials expiring in ~2 days`);
     
-    if (!expiringTrials || expiringTrials.length === 0) {
+    if (filteredTrials.length === 0) {
       return new Response(JSON.stringify({ 
         message: 'No trials expiring in 2 days',
         processed: 0 
@@ -53,7 +67,7 @@ serve(async (req) => {
     let sentCount = 0;
     let errorCount = 0;
     
-    for (const trial of expiringTrials) {
+    for (const trial of filteredTrials) {
       try {
         // Create a notification in the database
         const { error: notifError } = await supabase
@@ -105,7 +119,7 @@ serve(async (req) => {
     
     return new Response(JSON.stringify({ 
       message: 'Trial reminders processed',
-      processed: expiringTrials.length,
+      processed: filteredTrials.length,
       sent: sentCount,
       errors: errorCount,
     }), {

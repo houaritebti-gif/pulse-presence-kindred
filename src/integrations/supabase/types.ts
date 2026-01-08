@@ -1044,6 +1044,41 @@ export type Database = {
           },
         ]
       }
+      stripe_customer_data: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_customer_data_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_achievements: {
         Row: {
           achievement_key: string
@@ -1185,8 +1220,6 @@ export type Database = {
           id: string
           profile_id: string
           started_at: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
           tier: Database["public"]["Enums"]["subscription_tier"]
           trial_started_at: string | null
           trial_used: boolean | null
@@ -1198,8 +1231,6 @@ export type Database = {
           id?: string
           profile_id: string
           started_at?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           tier?: Database["public"]["Enums"]["subscription_tier"]
           trial_started_at?: string | null
           trial_used?: boolean | null
@@ -1211,8 +1242,6 @@ export type Database = {
           id?: string
           profile_id?: string
           started_at?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           tier?: Database["public"]["Enums"]["subscription_tier"]
           trial_started_at?: string | null
           trial_used?: boolean | null

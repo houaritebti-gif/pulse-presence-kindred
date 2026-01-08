@@ -17,10 +17,8 @@ interface Subscription {
   tier: SubscriptionTier;
   started_at: string;
   expires_at: string | null;
-  stripe_customer_id: string | null;
-  stripe_subscription_id: string | null;
   trial_started_at: string | null;
-  trial_used: boolean;
+  trial_used: boolean | null;
 }
 
 const TRIAL_DURATION_DAYS = 7;
@@ -179,8 +177,8 @@ export const useSubscription = () => {
   
   const effectiveTier: SubscriptionTier = isExpired ? 'free' : tier;
 
-  // Trial status calculations
-  const isOnTrial = subscription?.trial_started_at && !isExpired && effectiveTier === 'plus' && !subscription?.stripe_subscription_id;
+  // Trial status calculations - we check trial status without relying on Stripe IDs (they're now in a separate secure table)
+  const isOnTrial = subscription?.trial_started_at && !isExpired && effectiveTier === 'plus';
   const trialUsed = subscription?.trial_used || false;
   
   const trialDaysRemaining = subscription?.expires_at && isOnTrial
