@@ -54,6 +54,7 @@ const Quedadas = () => {
 
   const [showCreate, setShowCreate] = useState(false);
   const [editingQuedada, setEditingQuedada] = useState<Quedada | null>(null);
+  const [activeTab, setActiveTab] = useState<"explore" | "mine">("explore");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [locationHint, setLocationHint] = useState("");
@@ -66,6 +67,15 @@ const Quedadas = () => {
   const [exitingQuedadas, setExitingQuedadas] = useState<Set<string>>(new Set());
   const exitTimeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
+  // Filter quedadas based on active tab
+  const filteredQuedadas = useMemo(() => {
+    if (!quedadas || !profile?.id) return quedadas;
+    if (activeTab === "mine") {
+      return quedadas.filter(q => q.creator_profile_id === profile.id || q.is_attending);
+    }
+    return quedadas;
+  }, [quedadas, activeTab, profile?.id]);
+
   // Check if user has created any quedadas (for first-time confetti)
   const userCreatedQuedadas = quedadas?.filter(q => q.creator_profile_id === profile?.id) || [];
   const isFirstQuedada = userCreatedQuedadas.length === 0;
@@ -74,9 +84,9 @@ const Quedadas = () => {
   const currentState = useMemo(() => {
     if (isLoading) return "loading" as const;
     if (isError) return "error" as const;
-    if (quedadas?.length === 0) return "empty" as const;
+    if (filteredQuedadas?.length === 0) return "empty" as const;
     return "content" as const;
-  }, [isLoading, isError, quedadas?.length]);
+  }, [isLoading, isError, filteredQuedadas?.length]);
 
   const triggerConfetti = () => {
     confetti({
@@ -337,6 +347,34 @@ const Quedadas = () => {
           </p>
         </div>
 
+        {/* Tabs Filter */}
+        <div className="flex bg-card rounded-xl p-1 border border-foreground/5 dark:border-border shadow-md shadow-foreground/10 dark:shadow-foreground/5 mb-6">
+          <button
+            onClick={() => setActiveTab("explore")}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+              activeTab === "explore"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                : "text-card-foreground hover:bg-muted/50"
+            }`}
+            style={{ fontFamily: 'Arial, sans-serif' }}
+          >
+            <Sparkles className="w-4 h-4" />
+            Explorar
+          </button>
+          <button
+            onClick={() => setActiveTab("mine")}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+              activeTab === "mine"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                : "text-card-foreground hover:bg-muted/50"
+            }`}
+            style={{ fontFamily: 'Arial, sans-serif' }}
+          >
+            <Users className="w-4 h-4" />
+            Mis Quedadas
+          </button>
+        </div>
+
         {/* List with smooth state transitions */}
         <StateTransition
           state={currentState}
@@ -352,8 +390,8 @@ const Quedadas = () => {
           emptyContent={
             <EmptyState
               icon={Calendar}
-              title="No hay quedadas"
-              description="Sé la primera persona en crear una."
+              title={activeTab === "mine" ? "No tienes quedadas" : "No hay quedadas"}
+              description={activeTab === "mine" ? "Crea una o únete a alguna." : "Sé la primera persona en crear una."}
               action={
                 <Button variant="kiki" onClick={() => setShowCreate(true)}>
                   <Plus className="w-4 h-4 mr-2" />
@@ -364,7 +402,7 @@ const Quedadas = () => {
           }
         >
           <div className="space-y-5 sm:space-y-6 pb-6">
-            {quedadas?.map((quedada, index) => {
+            {filteredQuedadas?.map((quedada, index) => {
               const isFull = quedada.max_attendees && quedada.attendee_count >= quedada.max_attendees;
               const isCreator = quedada.creator_profile_id === profile?.id;
               const isExiting = exitingQuedadas.has(quedada.id);
