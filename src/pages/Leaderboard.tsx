@@ -1,7 +1,8 @@
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Trophy, Crown, Medal, Award, Sparkles, Zap, Star } from "lucide-react";
+import { ArrowLeft, Trophy, Crown, Medal, Award, Sparkles, Zap, Star, MapPin, Filter, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import { useAchievementsLeaderboard, LeaderboardEntry } from "@/hooks/useAchievementsLeaderboard";
@@ -9,7 +10,18 @@ import SharedAvatar from "@/components/SharedAvatar";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile } from "@/hooks/useProfile";
+import { ACHIEVEMENTS, AchievementDefinition } from "@/hooks/useAchievements";
 
+type CategoryFilter = AchievementDefinition['category'] | 'all';
+
+const CATEGORY_OPTIONS: { value: CategoryFilter; label: string; emoji: string }[] = [
+  { value: 'all', label: 'Todas', emoji: '🏆' },
+  { value: 'social', label: 'Social', emoji: '💬' },
+  { value: 'streak', label: 'Rachas', emoji: '🔥' },
+  { value: 'energy', label: 'Energía', emoji: '⚡' },
+  { value: 'milestone', label: 'Hitos', emoji: '🎯' },
+  { value: 'special', label: 'Especial', emoji: '✨' },
+];
 const RARITY_COLORS = {
   common: "text-muted-foreground",
   uncommon: "text-green-500",
@@ -130,12 +142,58 @@ export default function Leaderboard() {
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const { data: leaderboard, isLoading } = useAchievementsLeaderboard(50);
+  
+  const [cityFilter, setCityFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+  const [showFilters, setShowFilters] = useState(false);
 
-  const currentUserRank = leaderboard?.findIndex(e => e.profileId === profile?.id);
+  // Extract unique cities from leaderboard
+  const availableCities = useMemo(() => {
+    if (!leaderboard) return [];
+    const cities = leaderboard
+      .map(e => e.city)
+      .filter((city): city is string => !!city);
+    return [...new Set(cities)].sort();
+  }, [leaderboard]);
+
+  // Filter leaderboard based on selected filters
+  const filteredLeaderboard = useMemo(() => {
+    if (!leaderboard) return [];
+    
+    return leaderboard.filter(entry => {
+      // City filter
+      if (cityFilter && entry.city !== cityFilter) {
+        return false;
+      }
+      
+      // Category filter - check if user has any achievement in that category
+      if (categoryFilter !== 'all') {
+        const categoryAchievementKeys = ACHIEVEMENTS
+          .filter(a => a.category === categoryFilter)
+          .map(a => a.key);
+        const hasAchievementInCategory = entry.achievementKeys.some(
+          key => categoryAchievementKeys.includes(key as any)
+        );
+        if (!hasAchievementInCategory) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [leaderboard, cityFilter, categoryFilter]);
+
+  const hasActiveFilters = cityFilter !== null || categoryFilter !== 'all';
+
+  const clearFilters = () => {
+    setCityFilter(null);
+    setCategoryFilter('all');
+  };
+
+  const currentUserRank = filteredLeaderboard?.findIndex(e => e.profileId === profile?.id);
   const currentUserEntry = currentUserRank !== undefined && currentUserRank !== -1 
-    ? leaderboard?.[currentUserRank] 
+    ? filteredLeaderboard?.[currentUserRank] 
     : null;
-
   return (
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24 relative overflow-hidden">
       <ParallaxBackground variant="list" />
@@ -183,6 +241,103 @@ export default function Leaderboard() {
           </p>
         </div>
 
+        {/* Filters toggle */}
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <Button
+            variant={showFilters ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2"
+          >
+            <Filter className="w-4 h-4" />
+            Filtros
+            {hasActiveFilters && (
+              <span className="ml-1 w-5 h-5 rounded-full bg-primary-foreground text-primary text-xs flex items-center justify-center">
+                {(cityFilter ? 1 : 0) + (categoryFilter !== 'all' ? 1 : 0)}
+              </span>
+            )}
+          </Button>
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="gap-1 text-muted-foreground"
+            >
+              <X className="w-4 h-4" />
+              Limpiar
+            </Button>
+          )}
+        </div>
+
+        {/* Filters panel */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden mb-6"
+            >
+              <div className="p-4 rounded-xl bg-card/50 border border-border/50 space-y-4">
+                {/* Category filter */}
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                    <Star className="w-3 h-3" />
+                    Categoría de logros
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORY_OPTIONS.map((option) => (
+                      <Button
+                        key={option.value}
+                        variant={categoryFilter === option.value ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCategoryFilter(option.value)}
+                        className="gap-1.5 text-xs"
+                      >
+                        <span>{option.emoji}</span>
+                        {option.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* City filter */}
+                {availableCities.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      Ciudad
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={cityFilter === null ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCityFilter(null)}
+                        className="text-xs"
+                      >
+                        Todas
+                      </Button>
+                      {availableCities.map((city) => (
+                        <Button
+                          key={city}
+                          variant={cityFilter === city ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCityFilter(city)}
+                          className="text-xs"
+                        >
+                          {city}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Current user position (if not in top) */}
         {currentUserEntry && currentUserRank !== undefined && currentUserRank >= 10 && (
           <motion.div
@@ -203,8 +358,8 @@ export default function Leaderboard() {
         <div className="space-y-2">
           {isLoading ? (
             <LeaderboardSkeleton />
-          ) : leaderboard && leaderboard.length > 0 ? (
-            leaderboard.map((entry, index) => (
+          ) : filteredLeaderboard && filteredLeaderboard.length > 0 ? (
+            filteredLeaderboard.map((entry, index) => (
               <LeaderboardCard
                 key={entry.profileId}
                 entry={entry}
@@ -212,6 +367,16 @@ export default function Leaderboard() {
                 isCurrentUser={entry.profileId === profile?.id}
               />
             ))
+          ) : hasActiveFilters ? (
+            <div className="text-center py-12">
+              <Filter className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
+              <p className="text-muted-foreground mb-3">
+                No hay usuarios que coincidan con los filtros
+              </p>
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                Limpiar filtros
+              </Button>
+            </div>
           ) : (
             <div className="text-center py-12">
               <Award className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
