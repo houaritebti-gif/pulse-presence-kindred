@@ -95,6 +95,51 @@ const FloatingParticles = () => {
   );
 };
 
+// Animated counter for social proof
+const SocialProofCounter = () => {
+  const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  
+  useEffect(() => {
+    const startDelay = setTimeout(() => {
+      setHasStarted(true);
+      const target = 500;
+      const duration = 2000;
+      const startTime = Date.now();
+      
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setCount(Math.floor(eased * target));
+        
+        if (progress >= 1) clearInterval(interval);
+      }, 16);
+      
+      return () => clearInterval(interval);
+    }, 2000);
+    
+    return () => clearTimeout(startDelay);
+  }, []);
+  
+  return (
+    <motion.div
+      className="pt-6"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 1.8 }}
+    >
+      <p className="text-sm text-foreground/40" style={{ fontFamily: 'Arial, sans-serif' }}>
+        Ya somos{' '}
+        <span className="text-primary font-semibold">
+          +{count}
+        </span>
+        {' '}personas diferentes
+      </p>
+    </motion.div>
+  );
+};
+
 // Animated text with letter-by-letter reveal
 const AnimatedTitle = ({ text, className }: { text: string; className?: string }) => {
   return (
@@ -631,25 +676,7 @@ const Landing = () => {
           </motion.div>
 
           {/* Social proof counter */}
-          <motion.div
-            className="pt-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.8 }}
-          >
-            <p className="text-sm text-foreground/40" style={{ fontFamily: 'Arial, sans-serif' }}>
-              Ya somos{' '}
-              <motion.span 
-                className="text-primary font-semibold"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 2, duration: 0.5 }}
-              >
-                +500
-              </motion.span>
-              {' '}personas diferentes
-            </p>
-          </motion.div>
+          <SocialProofCounter />
 
           {/* CTA with enhanced glow effect */}
           <motion.div 
