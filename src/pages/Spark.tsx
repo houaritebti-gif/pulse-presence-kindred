@@ -23,7 +23,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SparkFlame } from "@/components/SparkFlame";
 import { SparkShop } from "@/components/SparkShop";
+import LevelUpCelebration from "@/components/LevelUpCelebration";
 import { useSparkEnergy, SPARK_LEVELS, ENERGY_AMOUNTS } from "@/hooks/useSparkEnergy";
+import { useLevelUpCelebration } from "@/hooks/useLevelUpCelebration";
 
 // Transaction type icons
 const getTransactionIcon = (action: string, type: string) => {
@@ -345,9 +347,22 @@ function TransactionHistory() {
 export default function Spark() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const { sparkEnergy } = useSparkEnergy();
+  
+  // Level up celebration detection
+  const { isOpen, newLevel, previousLevel, closeCelebration } = useLevelUpCelebration(
+    sparkEnergy?.total_earned
+  );
 
   return (
     <div className="min-h-screen bg-background pb-safe">
+      {/* Level Up Celebration Modal */}
+      <LevelUpCelebration
+        isOpen={isOpen}
+        onClose={closeCelebration}
+        newLevel={newLevel}
+        previousLevel={previousLevel}
+      />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border/50">
         <div className="flex items-center justify-between px-4 py-3">
