@@ -466,16 +466,20 @@ const SparkChat = () => {
       {/* Ambient glow background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
       
-      {/* Header */}
-      <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-border/20 backdrop-blur-sm bg-background/80">
-        <button 
-          onClick={() => navigate("/sparks")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
-          aria-label="Volver a Sparks"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        </button>
+      {/* Header - Grid layout for perfect centering */}
+      <header className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-6 py-4 border-b border-border/20 backdrop-blur-sm bg-background/80">
+        {/* Left section - back button */}
+        <div className="flex items-center justify-start">
+          <button 
+            onClick={() => navigate("/sparks")}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group rounded-lg p-1 -ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            aria-label="Volver a Sparks"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          </button>
+        </div>
         
+        {/* Center section - user info (always centered) */}
         <button 
           onClick={() => chat.other_profile?.id && navigate(`/user/${chat.other_profile.id}`)}
           className="flex items-center gap-3 animate-fade-up hover:opacity-80 transition-opacity"
@@ -510,50 +514,51 @@ const SparkChat = () => {
           </div>
         </button>
 
-        <div className="flex items-center gap-2">
+        {/* Right section - actions */}
+        <div className="flex items-center justify-end gap-2">
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button 
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 aria-label="Más opciones"
                 title="Más opciones"
               >
                 <MoreVertical className="w-5 h-5" />
               </button>
             </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem
-              onClick={() => {
-                setModerationMode("report");
-                setShowModerationModal(true);
-              }}
-              className="gap-2 text-muted-foreground"
-            >
-              <Flag className="w-4 h-4" />
-              Reportar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                setModerationMode("block");
-                setShowModerationModal(true);
-              }}
-              className="gap-2 text-destructive"
-            >
-              <Ban className="w-4 h-4" />
-              Bloquear
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setShowExtinguishConfirm(true)}
-              className="gap-2 text-muted-foreground"
-            >
-              <X className="w-4 h-4" />
-              Apagar chispa
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={() => {
+                  setModerationMode("report");
+                  setShowModerationModal(true);
+                }}
+                className="gap-2 text-muted-foreground"
+              >
+                <Flag className="w-4 h-4" />
+                Reportar
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setModerationMode("block");
+                  setShowModerationModal(true);
+                }}
+                className="gap-2 text-destructive"
+              >
+                <Ban className="w-4 h-4" />
+                Bloquear
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setShowExtinguishConfirm(true)}
+                className="gap-2 text-muted-foreground"
+              >
+                <X className="w-4 h-4" />
+                Apagar chispa
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </div>
+      </header>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 relative z-10">
