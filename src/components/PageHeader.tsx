@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { KikiLogo } from "@/components/KikiLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ReactNode } from "react";
@@ -43,7 +44,12 @@ export const PageHeader = ({
       className={`relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 mb-6 sm:mb-8 ${className}`}
     >
       {/* Left section - back button */}
-      <div className="flex items-center justify-start">
+      <motion.div 
+        className="flex items-center justify-start"
+        initial={{ opacity: 0, x: -12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         {backLabel !== null && (
           <button
             onClick={handleBack}
@@ -55,18 +61,32 @@ export const PageHeader = ({
             <span className="text-sm sm:text-base">{backLabel}</span>
           </button>
         )}
-      </div>
+      </motion.div>
 
-      {/* Center section - Logo (always centered) */}
-      <div className="flex items-center justify-center">
+      {/* Center section - Logo (always centered) with entrance animation */}
+      <motion.div 
+        className="flex items-center justify-center"
+        initial={{ opacity: 0, scale: 0.9, y: -8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ 
+          duration: 0.4, 
+          ease: [0.175, 0.885, 0.32, 1.1], // Bouncy easing
+          delay: 0.05
+        }}
+      >
         <KikiLogo size="lg" />
-      </div>
+      </motion.div>
 
       {/* Right section - actions */}
-      <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+      <motion.div 
+        className="flex items-center justify-end gap-1.5 sm:gap-2"
+        initial={{ opacity: 0, x: 12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         {showThemeToggle && <ThemeToggle />}
         {rightContent}
-      </div>
+      </motion.div>
     </header>
   );
 };
