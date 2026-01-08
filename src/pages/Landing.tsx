@@ -8,6 +8,7 @@ import FAQSection from "@/components/FAQSection";
 import { useRef, useEffect, useState } from "react";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import { KikiLogo } from "@/components/KikiLogo";
+import { FloatingParticles as LogoParticles } from "@/components/FloatingParticles";
 
 const fadeInUp: Variants = {
   hidden: {
@@ -348,11 +349,15 @@ const Landing = () => {
         >
           {/* Logo KIKI with heart as dot of second I */}
           <motion.div 
-            className="flex justify-center items-end" 
+            className="flex justify-center items-end relative" 
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut", type: "spring" }}
           >
+            {/* Floating particles around hero logo */}
+            <div className="absolute -inset-24 sm:-inset-32 md:-inset-40">
+              <LogoParticles count={24} />
+            </div>
             <KikiLogo size="hero" animate={true} />
           </motion.div>
 
