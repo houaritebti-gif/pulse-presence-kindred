@@ -362,7 +362,7 @@ const Landing = () => {
         >
           {/* Logo KIKI with heart as dot of second I */}
           <motion.div 
-            className="flex flex-col items-center gap-0" 
+            className="flex flex-col items-center gap-4" 
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut", type: "spring" }}
@@ -378,9 +378,9 @@ const Landing = () => {
             </div>
             
             {/* Slogan - Para gente diferente, y punto - Typewriter effect */}
-            <div className="flex flex-col items-center -mt-2">
+            <div className="flex flex-col items-center">
               <motion.span 
-                className="text-xl md:text-2xl font-bold text-foreground tracking-wide"
+                className="text-2xl md:text-3xl font-bold text-foreground tracking-tight"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                 initial={{ opacity: 1 }}
               >
@@ -396,7 +396,7 @@ const Landing = () => {
                 ))}
               </motion.span>
               <motion.span 
-                className="text-xl md:text-2xl font-bold text-foreground tracking-wide inline-flex items-center relative"
+                className="text-2xl md:text-3xl font-bold text-foreground tracking-tight inline-flex items-center relative"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                 initial={{ opacity: 1 }}
               >
