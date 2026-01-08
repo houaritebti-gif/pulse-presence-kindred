@@ -25,6 +25,7 @@ import confetti from "canvas-confetti";
 import { playCelebrationSound } from "@/utils/notificationSound";
 import QuedadaCreatorHeader from "@/components/QuedadaCreatorHeader";
 import ParallaxBackground from "@/components/ParallaxBackground";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Quedadas = () => {
   const navigate = useNavigate();
@@ -376,33 +377,41 @@ const Quedadas = () => {
         </div>
 
         {/* List with smooth state transitions */}
-        <StateTransition
-          state={currentState}
-          loadingContent={<QuedadasListSkeleton count={3} />}
-          errorContent={
-            <ErrorState
-              icon={Calendar}
-              description="No pudimos cargar las quedadas. Revisa tu conexión e inténtalo de nuevo."
-              onRetry={() => refetch()}
-              isRetrying={isFetching}
-            />
-          }
-          emptyContent={
-            <EmptyState
-              icon={Calendar}
-              title={activeTab === "mine" ? "No tienes quedadas" : "No hay quedadas"}
-              description={activeTab === "mine" ? "Crea una o únete a alguna." : "Sé la primera persona en crear una."}
-              action={
-                <Button variant="kiki" onClick={() => setShowCreate(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Crear quedada
-                </Button>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, x: activeTab === "mine" ? 20 : -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: activeTab === "mine" ? -20 : 20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <StateTransition
+              state={currentState}
+              loadingContent={<QuedadasListSkeleton count={3} />}
+              errorContent={
+                <ErrorState
+                  icon={Calendar}
+                  description="No pudimos cargar las quedadas. Revisa tu conexión e inténtalo de nuevo."
+                  onRetry={() => refetch()}
+                  isRetrying={isFetching}
+                />
               }
-            />
-          }
-        >
-          <div className="space-y-5 sm:space-y-6 pb-6">
-            {filteredQuedadas?.map((quedada, index) => {
+              emptyContent={
+                <EmptyState
+                  icon={Calendar}
+                  title={activeTab === "mine" ? "No tienes quedadas" : "No hay quedadas"}
+                  description={activeTab === "mine" ? "Crea una o únete a alguna." : "Sé la primera persona en crear una."}
+                  action={
+                    <Button variant="kiki" onClick={() => setShowCreate(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Crear quedada
+                    </Button>
+                  }
+                />
+              }
+            >
+              <div className="space-y-5 sm:space-y-6 pb-6">
+                {filteredQuedadas?.map((quedada, index) => {
               const isFull = quedada.max_attendees && quedada.attendee_count >= quedada.max_attendees;
               const isCreator = quedada.creator_profile_id === profile?.id;
               const isExiting = exitingQuedadas.has(quedada.id);
@@ -534,15 +543,17 @@ const Quedadas = () => {
                 </div>
               );
             })}
-          </div>
-          {/* Infinite scroll trigger */}
-          <div ref={loadMoreRef} className="h-4" />
-          {isFetchingNextPage && (
-            <div className="flex justify-center py-4">
-              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-            </div>
-          )}
-        </StateTransition>
+              </div>
+              {/* Infinite scroll trigger */}
+              <div ref={loadMoreRef} className="h-4" />
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+            </StateTransition>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Footer */}
         <div className="mt-10 text-center animate-fade-up animate-delay-500">
