@@ -361,7 +361,7 @@ const Landing = () => {
         >
           {/* Logo KIKI with heart as dot of second I */}
           <motion.div 
-            className="flex flex-col items-center gap-3" 
+            className="flex flex-col items-center gap-0" 
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut", type: "spring" }}
@@ -374,26 +374,26 @@ const Landing = () => {
               <KikiLogo size="hero" animate={true} />
             </div>
             
-            {/* Slogan - Para gente diferente y punto - Typewriter effect */}
-            <div className="flex flex-col items-center mt-1">
+            {/* Slogan - Para gente diferente, y punto - Typewriter effect */}
+            <div className="flex flex-col items-center -mt-2">
               <motion.span 
-                className="text-lg md:text-xl text-foreground/90 tracking-wide"
-                style={{ fontFamily: 'Arial, sans-serif' }}
+                className="text-xl md:text-2xl font-bold text-foreground tracking-wide"
+                style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                 initial={{ opacity: 1 }}
               >
-                {"Para gente diferente".split("").map((char, index) => (
+                {"Para gente diferente,".split("").map((char, index) => (
                   <motion.span
                     key={index}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.8 + index * 0.05, duration: 0.1 }}
+                    transition={{ delay: 0.8 + index * 0.04, duration: 0.1 }}
                   >
                     {char}
                   </motion.span>
                 ))}
               </motion.span>
               <motion.span 
-                className="text-lg md:text-xl font-bold text-primary tracking-wide inline-flex items-center relative"
+                className="text-xl md:text-2xl font-bold text-foreground tracking-wide inline-flex items-center relative"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                 initial={{ opacity: 1 }}
               >
@@ -407,7 +407,7 @@ const Landing = () => {
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ 
-                          delay: 1.8 + index * 0.08, 
+                          delay: 1.7 + index * 0.06,
                           duration: 0.15,
                           type: "spring",
                           stiffness: 200
@@ -441,7 +441,7 @@ const Landing = () => {
                                     y: Math.sin(i * 45 * Math.PI / 180) * 14
                                   }}
                                   transition={{
-                                    delay: 2.44 + i * 0.025,
+                                    delay: 2.2 + i * 0.025,
                                     duration: 0.6,
                                     ease: "easeOut"
                                   }}
@@ -459,7 +459,7 @@ const Landing = () => {
                     initial={{ x: "-100%" }}
                     animate={{ x: ["-100%", "200%", "200%"] }}
                     transition={{ 
-                      delay: 3,
+                      delay: 2.8,
                       duration: 4,
                       ease: "easeInOut",
                       repeat: Infinity,
@@ -469,11 +469,11 @@ const Landing = () => {
                   />
                   {/* Animated underline */}
                   <motion.span
-                    className="absolute -bottom-1 left-0 h-0.5 bg-primary rounded-full"
+                    className="absolute -bottom-1 left-0 h-0.5 bg-foreground rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: "100%" }}
                     transition={{ 
-                      delay: 2.5,
+                      delay: 2.3,
                       duration: 0.4,
                       ease: "easeOut"
                     }}
@@ -481,13 +481,13 @@ const Landing = () => {
                 </span>
                 {/* Blinking cursor */}
                 <motion.span
-                  className="inline-block w-0.5 h-5 md:h-6 bg-primary ml-0.5"
+                  className="inline-block w-0.5 h-5 md:h-6 bg-foreground ml-0.5"
                   initial={{ opacity: 0 }}
                   animate={{ 
                     opacity: [0, 1, 1, 0],
                   }}
                   transition={{
-                    delay: 1.8,
+                    delay: 1.7,
                     duration: 0.8,
                     repeat: 4,
                     repeatType: "loop",
