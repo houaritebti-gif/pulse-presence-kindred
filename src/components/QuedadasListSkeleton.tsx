@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const QuedadaCardSkeleton = ({ delay = 0 }: { delay?: number }) => (
   <div 
-    className="bg-card rounded-2xl p-5 sm:p-6 opacity-0 animate-fade-up border border-border/30"
+    className="bg-card rounded-2xl p-5 sm:p-6 opacity-0 animate-fade-up border border-foreground/5 dark:border-transparent shadow-md shadow-foreground/10 dark:shadow-foreground/5"
     style={{ animationDelay: `${delay}ms` }}
   >
     {/* Header - Creator avatar and title */}
