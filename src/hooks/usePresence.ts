@@ -28,6 +28,7 @@ export interface PresenceWithProfile {
   tribes: string[];
   musicStyles: string[];
   interests: string[];
+  hasVisibilityBoost?: boolean;
 }
 
 const PRESENCE_PAGE_SIZE = 20;
@@ -70,9 +71,10 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
       let tribesMap: Record<string, string[]> = {};
       let musicMap: Record<string, string[]> = {};
       let interestsMap: Record<string, string[]> = {};
+      let visibilityBoostMap: Record<string, boolean> = {};
       
       if (profileIds.length > 0) {
-        const [tribesResult, musicResult, interestsResult] = await Promise.all([
+        const [tribesResult, musicResult, interestsResult, visibilityBoostResult] = await Promise.all([
           supabase
             .from("profile_tribes")
             .select("profile_id, tribe")
@@ -84,6 +86,13 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
           supabase
             .from("profile_interests")
             .select("profile_id, interest")
+            .in("profile_id", profileIds),
+          // Check for active visibility boosts from spark shop
+          supabase
+            .from("spark_purchased_items")
+            .select("profile_id")
+            .eq("item_key", "visibility_boost")
+            .gt("expires_at", new Date().toISOString())
             .in("profile_id", profileIds)
         ]);
 
@@ -104,6 +113,11 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
           acc[i.profile_id].push(i.interest);
           return acc;
         }, {} as Record<string, string[]>);
+
+        // Map visibility boost
+        (visibilityBoostResult.data || []).forEach(v => {
+          visibilityBoostMap[v.profile_id] = true;
+        });
       }
 
       const items = (presenceData || []).map(p => ({
@@ -111,6 +125,7 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
         tribes: tribesMap[p.profile?.id] || [],
         musicStyles: musicMap[p.profile?.id] || [],
         interests: interestsMap[p.profile?.id] || [],
+        hasVisibilityBoost: visibilityBoostMap[p.profile?.id] || false,
       })) as PresenceWithProfile[];
 
       return {
