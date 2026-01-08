@@ -356,12 +356,12 @@ const Landing = () => {
         </motion.div>
         
         <motion.div 
-          className="relative z-10 max-w-2xl w-full text-center space-y-8" 
+          className="relative z-10 max-w-2xl w-full text-center space-y-5" 
           style={{ opacity, scale }}
         >
           {/* Logo KIKI with heart as dot of second I */}
           <motion.div 
-            className="flex flex-col items-center gap-4" 
+            className="flex flex-col items-center gap-2" 
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut", type: "spring" }}
@@ -375,7 +375,7 @@ const Landing = () => {
             </div>
             
             {/* Slogan - Para gente diferente y punto - Typewriter effect */}
-            <div className="flex flex-col items-center mt-2">
+            <div className="flex flex-col items-center -mt-1">
               <motion.span 
                 className="text-lg md:text-xl text-foreground/90 tracking-wide"
                 style={{ fontFamily: 'Arial, sans-serif' }}
@@ -500,13 +500,13 @@ const Landing = () => {
 
           {/* Tagline with emphasis */}
           <motion.div 
-            className="space-y-2" 
+            className="space-y-0" 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
           >
             <motion.p 
-              className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground leading-relaxed"
+              className="text-xl md:text-2xl lg:text-3xl font-medium text-foreground leading-snug"
               style={{ fontFamily: 'Arial, sans-serif' }}
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -515,7 +515,7 @@ const Landing = () => {
               aquí no hay match,
             </motion.p>
             <motion.p 
-              className="text-2xl md:text-3xl lg:text-4xl font-bold leading-relaxed relative inline-block text-primary"
+              className="text-2xl md:text-3xl lg:text-4xl font-bold leading-snug relative inline-block text-primary"
               style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -536,7 +536,7 @@ const Landing = () => {
 
           {/* Feature highlights with stagger */}
           <motion.div 
-            className="flex flex-wrap justify-center gap-4 pt-4" 
+            className="flex flex-wrap justify-center gap-3 pt-2"
             initial="hidden"
             animate="visible"
             variants={{
