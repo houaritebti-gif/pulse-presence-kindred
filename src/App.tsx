@@ -18,6 +18,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { ScreenReaderAnnouncerProvider } from "@/components/ScreenReaderAnnouncer";
 import { AnimatedRoutes } from "@/components/AnimatedRoutes";
 import { useDailyLoginReward } from "@/hooks/useDailyLoginReward";
+import { EnergyGainProvider } from "@/components/EnergyGainAnimation";
 
 // Lazy load heavy components
 const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
@@ -92,23 +93,25 @@ const App = () => {
       <AuthProvider>
         <TooltipProvider>
           <ScreenReaderAnnouncerProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <SkipLink />
-              <NotificationProvider>
-                <KeyboardNavigationWrapper>
-                  <OfflineIndicator />
-                  <PWAInstallPrompt />
-                  <Suspense fallback={null}>
-                    <AIChatBot />
-                  </Suspense>
-                  <CookieConsent />
-                  <BottomNavigation />
-                  <AnimatedRoutes />
-                </KeyboardNavigationWrapper>
-              </NotificationProvider>
-            </BrowserRouter>
+            <EnergyGainProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <SkipLink />
+                <NotificationProvider>
+                  <KeyboardNavigationWrapper>
+                    <OfflineIndicator />
+                    <PWAInstallPrompt />
+                    <Suspense fallback={null}>
+                      <AIChatBot />
+                    </Suspense>
+                    <CookieConsent />
+                    <BottomNavigation />
+                    <AnimatedRoutes />
+                  </KeyboardNavigationWrapper>
+                </NotificationProvider>
+              </BrowserRouter>
+            </EnergyGainProvider>
           </ScreenReaderAnnouncerProvider>
         </TooltipProvider>
       </AuthProvider>
