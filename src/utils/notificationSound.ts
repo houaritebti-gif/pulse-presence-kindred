@@ -10,6 +10,7 @@ const DND_START_KEY = "kiki_dnd_start";
 const DND_END_KEY = "kiki_dnd_end";
 const THEME_SOUND_ENABLED_KEY = "kiki_theme_sound_enabled";
 const SYNC_SOUND_TYPE_KEY = "kiki_sync_sound_type";
+const ENERGY_SOUND_ENABLED_KEY = "kiki_energy_sound_enabled";
 
 export type SyncSoundType = 'default' | 'chime' | 'bubble' | 'whoosh' | 'minimal' | 'silent';
 
@@ -56,6 +57,16 @@ export const isThemeSoundEnabled = (): boolean => {
 
 export const setThemeSoundEnabled = (enabled: boolean): void => {
   localStorage.setItem(THEME_SOUND_ENABLED_KEY, enabled ? "true" : "false");
+};
+
+// Energy gain sound toggle
+export const isEnergySoundEnabled = (): boolean => {
+  const stored = localStorage.getItem(ENERGY_SOUND_ENABLED_KEY);
+  return stored === null ? true : stored === "true"; // Default enabled
+};
+
+export const setEnergySoundEnabled = (enabled: boolean): void => {
+  localStorage.setItem(ENERGY_SOUND_ENABLED_KEY, enabled ? "true" : "false");
 };
 
 // Do Not Disturb functions
@@ -683,6 +694,7 @@ export const playThemeToggleSound = () => {
 export const playEnergyGainSound = () => {
   if (isSoundMuted()) return;
   if (isInDndPeriod()) return;
+  if (!isEnergySoundEnabled()) return;
   
   try {
     const ctx = getAudioContext();
