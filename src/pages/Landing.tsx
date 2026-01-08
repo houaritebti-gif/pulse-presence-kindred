@@ -398,26 +398,62 @@ const Landing = () => {
                 initial={{ opacity: 1 }}
               >
                 <span className="relative inline-block">
-                  {"y punto.".split("").map((char, index) => (
-                    <motion.span
-                      key={index}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ 
-                        delay: 1.8 + index * 0.08, 
-                        duration: 0.15,
-                        type: "spring",
-                        stiffness: 200
-                      }}
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
+                  {"y punto.".split("").map((char, index) => {
+                    const isLastChar = index === "y punto.".length - 1;
+                    return (
+                      <motion.span
+                        key={index}
+                        className={isLastChar ? "relative" : ""}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ 
+                          delay: 1.8 + index * 0.08, 
+                          duration: 0.15,
+                          type: "spring",
+                          stiffness: 200
+                        }}
+                      >
+                        {char}
+                        {/* Mini spark particles on the final period */}
+                        {isLastChar && (
+                          <>
+                            {[...Array(6)].map((_, i) => (
+                              <motion.span
+                                key={i}
+                                className="absolute w-1 h-1 rounded-full bg-primary"
+                                style={{
+                                  left: '50%',
+                                  top: '50%',
+                                }}
+                                initial={{ 
+                                  opacity: 0, 
+                                  scale: 0,
+                                  x: 0,
+                                  y: 0
+                                }}
+                                animate={{ 
+                                  opacity: [0, 1, 0],
+                                  scale: [0, 1.5, 0],
+                                  x: Math.cos(i * 60 * Math.PI / 180) * 12,
+                                  y: Math.sin(i * 60 * Math.PI / 180) * 12
+                                }}
+                                transition={{
+                                  delay: 2.44 + i * 0.03,
+                                  duration: 0.5,
+                                  ease: "easeOut"
+                                }}
+                              />
+                            ))}
+                          </>
+                        )}
+                      </motion.span>
+                    );
+                  })}
                   {/* Shine effect overlay - repeating */}
                   <motion.span
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 pointer-events-none"
                     initial={{ x: "-100%" }}
-                    animate={{ x: ["−100%", "200%", "200%"] }}
+                    animate={{ x: ["-100%", "200%", "200%"] }}
                     transition={{ 
                       delay: 3,
                       duration: 4,
