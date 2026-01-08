@@ -361,16 +361,39 @@ const Landing = () => {
         >
           {/* Logo KIKI with heart as dot of second I */}
           <motion.div 
-            className="flex justify-center items-end relative" 
+            className="flex flex-col items-center gap-4" 
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: "easeOut", type: "spring" }}
           >
             {/* Floating particles around hero logo */}
-            <div className="absolute -inset-24 sm:-inset-32 md:-inset-40">
-              <LogoParticles count={24} />
+            <div className="relative">
+              <div className="absolute -inset-20 sm:-inset-24 md:-inset-32">
+                <LogoParticles count={24} />
+              </div>
+              <KikiLogo size="hero" animate={true} />
             </div>
-            <KikiLogo size="hero" animate={true} />
+            
+            {/* Slogan - Para gente diferente y punto */}
+            <motion.div 
+              className="flex flex-col items-center mt-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              <span 
+                className="text-lg md:text-xl text-foreground/90 tracking-wide"
+                style={{ fontFamily: 'Arial, sans-serif' }}
+              >
+                Para gente diferente
+              </span>
+              <span 
+                className="text-lg md:text-xl font-bold text-primary tracking-wide"
+                style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+              >
+                y punto.
+              </span>
+            </motion.div>
           </motion.div>
 
           {/* Tagline with emphasis */}
