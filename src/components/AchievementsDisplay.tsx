@@ -179,16 +179,16 @@ export const AchievementsDisplay = ({ compact = false, showHeader = true }: Achi
                     const unlocked = isUnlocked(achievement.key);
                     const unlockedAt = getUnlockDate(achievement.key);
                     
-                    return (
+                      return (
                       <motion.div
                         key={achievement.key}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className={`
-                          p-4 rounded-xl border
+                          p-4 rounded-xl border shadow-sm
                           ${unlocked 
-                            ? `${getRarityBgColor(achievement.rarity)} border-transparent` 
-                            : 'bg-muted/20 border-border/30'
+                            ? `${getRarityBgColor(achievement.rarity)} border-border/50` 
+                            : 'bg-card border-border/40'
                           }
                         `}
                       >
@@ -201,13 +201,13 @@ export const AchievementsDisplay = ({ compact = false, showHeader = true }: Achi
                             showTooltip={false}
                           />
                           <div>
-                            <p className={`font-semibold text-sm ${!unlocked && 'text-muted-foreground'}`}>
+                            <p className={`font-semibold text-sm ${unlocked ? 'text-foreground' : 'text-muted-foreground'}`}>
                               {achievement.name}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
+                            <p className={`text-xs mt-0.5 ${unlocked ? 'text-foreground/70' : 'text-muted-foreground'}`}>
                               {achievement.description}
                             </p>
-                            <p className={`text-xs font-medium mt-1 ${getRarityColor(achievement.rarity)}`}>
+                            <p className={`text-xs font-bold mt-1 ${getRarityColor(achievement.rarity)}`}>
                               {getRarityLabel(achievement.rarity)}
                             </p>
                           </div>

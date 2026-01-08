@@ -37,25 +37,25 @@ const SORT_OPTIONS: { value: SortOption; label: string; icon: typeof Trophy }[] 
   { value: 'energy', label: 'Energía', icon: Zap },
 ];
 const RARITY_COLORS = {
-  common: "text-muted-foreground",
-  uncommon: "text-green-500",
-  rare: "text-blue-500",
-  epic: "text-purple-500",
-  legendary: "text-amber-500",
+  common: "text-slate-600 dark:text-slate-400",
+  uncommon: "text-green-600 dark:text-green-500",
+  rare: "text-blue-600 dark:text-blue-500",
+  epic: "text-purple-600 dark:text-purple-500",
+  legendary: "text-amber-600 dark:text-amber-500",
 };
 
 const RARITY_BG = {
-  common: "bg-muted/50",
-  uncommon: "bg-green-500/10",
-  rare: "bg-blue-500/10",
-  epic: "bg-purple-500/10",
-  legendary: "bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-amber-500/20",
+  common: "bg-slate-100 dark:bg-slate-800/50",
+  uncommon: "bg-green-100 dark:bg-green-900/30",
+  rare: "bg-blue-100 dark:bg-blue-900/30",
+  epic: "bg-purple-100 dark:bg-purple-900/30",
+  legendary: "bg-gradient-to-r from-amber-100 via-yellow-100 to-amber-100 dark:from-amber-500/20 dark:via-yellow-400/20 dark:to-amber-500/20",
 };
 
 const RANK_ICONS = [
-  { icon: Crown, color: "text-amber-500", bg: "bg-amber-500/20" },
-  { icon: Medal, color: "text-slate-400", bg: "bg-slate-400/20" },
-  { icon: Medal, color: "text-amber-700", bg: "bg-amber-700/20" },
+  { icon: Crown, color: "text-amber-600 dark:text-amber-500", bg: "bg-amber-100 dark:bg-amber-500/20" },
+  { icon: Medal, color: "text-slate-500 dark:text-slate-400", bg: "bg-slate-200 dark:bg-slate-400/20" },
+  { icon: Medal, color: "text-amber-700 dark:text-amber-600", bg: "bg-amber-200 dark:bg-amber-700/20" },
 ];
 
 function LeaderboardSkeleton() {
