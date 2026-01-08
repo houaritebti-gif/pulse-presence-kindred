@@ -217,7 +217,7 @@ const PublicProfile = () => {
             <h1 className="font-display text-xl md:text-2xl font-bold text-foreground">
               {profile.name || "Anónima"}
               {(profile as any).birthdate && (
-                <span className="font-normal text-muted-foreground ml-1.5">
+                <span className="font-normal text-foreground/70 ml-1.5">
                   {calculateAge((profile as any).birthdate)}
                 </span>
               )}
@@ -235,17 +235,17 @@ const PublicProfile = () => {
               </span>
             )}
             {profile.vibe && profile.city && (
-              <span className="text-muted-foreground/50">·</span>
+              <span className="text-foreground/30">·</span>
             )}
             {profile.city && (
-              <span className="flex items-center gap-1 text-muted-foreground text-sm">
+              <span className="flex items-center gap-1 text-foreground/70 text-sm">
                 <MapPin className="w-3 h-3" />
                 {profile.city}
               </span>
             )}
             {organizedCount && organizedCount > 0 && (
               <>
-                <span className="text-muted-foreground/50">·</span>
+                <span className="text-foreground/30">·</span>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
