@@ -212,9 +212,9 @@ const Notifications = () => {
                 >
                   <button
                     onClick={() => handleNotificationClick(notification)}
-                    className={`w-full text-left p-4 animate-fade-up transition-all duration-300 border rounded-2xl ${
+                    className={`w-full text-left p-4 animate-fade-up transition-all duration-300 border rounded-2xl shadow-md shadow-foreground/10 dark:shadow-foreground/5 ${
                       notification.read_at 
-                        ? "border-transparent opacity-70" 
+                        ? "border-foreground/5 dark:border-transparent opacity-70" 
                         : "border-primary/20 hover:border-primary/40"
                     }`}
                     style={{ animationDelay: `${index * 50}ms` }}
