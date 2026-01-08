@@ -16,6 +16,7 @@ import QuedadasListSkeleton from "@/components/QuedadasListSkeleton";
 import StateTransition from "@/components/StateTransition";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada, useUpdateQuedada, Quedada } from "@/hooks/useQuedadas";
+import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -33,6 +34,7 @@ const Quedadas = () => {
   const leaveQuedada = useLeaveQuedada();
   const deleteQuedada = useDeleteQuedada();
   const updateQuedada = useUpdateQuedada();
+  const { earnEnergy, canDoAction } = useSparkEnergy();
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: quedadas });
 
@@ -151,6 +153,12 @@ const Quedadas = () => {
         quedadaId: quedada.id,
         creatorProfileId: quedada.creator_profile_id,
         quedadaTitle: quedada.title,
+        onEarnEnergy: canDoAction("join_quedada") ? async () => {
+          await earnEnergy({ 
+            action: "join_quedada", 
+            description: `Unido a: ${quedada.title}` 
+          });
+        } : undefined,
       });
       toast.success("¡Te has unido!");
     } catch (error: any) {
