@@ -505,15 +505,27 @@ const Landing = () => {
             </div>
           </motion.div>
 
+          {/* Decorative line separator */}
+          <motion.div
+            className="flex items-center justify-center gap-4 pt-6"
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            <span className="h-px w-12 bg-gradient-to-r from-transparent to-primary/30" />
+            <span className="text-primary/40 text-xs">✦</span>
+            <span className="h-px w-12 bg-gradient-to-l from-transparent to-primary/30" />
+          </motion.div>
+
           {/* Tagline with emphasis */}
           <motion.div 
-            className="space-y-2 pt-6"
+            className="space-y-2 pt-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
           >
             <motion.p 
-              className="text-lg md:text-xl lg:text-2xl text-foreground/80 leading-tight italic"
+              className="text-lg md:text-xl lg:text-2xl text-foreground/70 leading-tight italic"
               style={{ fontFamily: 'Georgia, serif' }}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -546,16 +558,34 @@ const Landing = () => {
             </motion.div>
           </motion.div>
 
-          {/* Elegant description */}
-          <motion.p 
-            className="text-base md:text-lg text-foreground/60 max-w-sm mx-auto leading-relaxed pt-4"
-            style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}
+          {/* Elegant description with decorative quotes */}
+          <motion.div
+            className="pt-5"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.3 }}
           >
-            Un espacio para quienes buscan conexiones reales
-          </motion.p>
+            <p 
+              className="text-base md:text-lg text-foreground/50 max-w-sm mx-auto leading-relaxed"
+              style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}
+            >
+              <span className="text-primary/60 text-xl mr-1">«</span>
+              Un espacio para quienes buscan conexiones reales
+              <span className="text-primary/60 text-xl ml-1">»</span>
+            </p>
+          </motion.div>
+
+          {/* Decorative line separator */}
+          <motion.div
+            className="flex items-center justify-center gap-4 pt-4"
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.6, delay: 1.4 }}
+          >
+            <span className="h-px w-16 bg-gradient-to-r from-transparent to-foreground/10" />
+            <span className="text-foreground/20 text-xs">♡</span>
+            <span className="h-px w-16 bg-gradient-to-l from-transparent to-foreground/10" />
+          </motion.div>
 
           {/* Feature highlights with stagger - more elegant */}
           <motion.div 
@@ -598,6 +628,27 @@ const Landing = () => {
                 </span>
               </motion.div>
             ))}
+          </motion.div>
+
+          {/* Social proof counter */}
+          <motion.div
+            className="pt-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.8 }}
+          >
+            <p className="text-sm text-foreground/40" style={{ fontFamily: 'Arial, sans-serif' }}>
+              Ya somos{' '}
+              <motion.span 
+                className="text-primary font-semibold"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2, duration: 0.5 }}
+              >
+                +500
+              </motion.span>
+              {' '}personas diferentes
+            </p>
           </motion.div>
 
           {/* CTA with enhanced glow effect */}
