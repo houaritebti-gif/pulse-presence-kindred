@@ -77,6 +77,13 @@ const Quedadas = () => {
     return quedadas;
   }, [quedadas, activeTab, profile?.id]);
 
+  // Count quedadas for each tab
+  const exploreCount = quedadas?.length || 0;
+  const mineCount = useMemo(() => {
+    if (!quedadas || !profile?.id) return 0;
+    return quedadas.filter(q => q.creator_profile_id === profile.id || q.is_attending).length;
+  }, [quedadas, profile?.id]);
+
   // Check if user has created any quedadas (for first-time confetti)
   const userCreatedQuedadas = quedadas?.filter(q => q.creator_profile_id === profile?.id) || [];
   const isFirstQuedada = userCreatedQuedadas.length === 0;
@@ -361,6 +368,15 @@ const Quedadas = () => {
           >
             <Sparkles className="w-4 h-4" />
             Explorar
+            {exploreCount > 0 && (
+              <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
+                activeTab === "explore" 
+                  ? "bg-primary-foreground/20 text-primary-foreground" 
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                {exploreCount}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab("mine")}
@@ -373,6 +389,15 @@ const Quedadas = () => {
           >
             <Users className="w-4 h-4" />
             Mis Quedadas
+            {mineCount > 0 && (
+              <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-full ${
+                activeTab === "mine" 
+                  ? "bg-primary-foreground/20 text-primary-foreground" 
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                {mineCount}
+              </span>
+            )}
           </button>
         </div>
 
