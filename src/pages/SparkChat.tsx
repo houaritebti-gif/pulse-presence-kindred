@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check, CheckCheck, ImagePlus, Loader2, Crop } from "lucide-react";
@@ -469,7 +470,12 @@ const SparkChat = () => {
       {/* Header - Grid layout for perfect centering */}
       <header className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-6 py-4 border-b border-border/20 backdrop-blur-sm bg-background/80">
         {/* Left section - back button */}
-        <div className="flex items-center justify-start">
+        <motion.div 
+          className="flex items-center justify-start"
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
           <button 
             onClick={() => navigate("/sparks")}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group rounded-lg p-1 -ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -477,13 +483,20 @@ const SparkChat = () => {
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           </button>
-        </div>
+        </motion.div>
         
         {/* Center section - user info (always centered) */}
-        <button 
+        <motion.button 
           onClick={() => chat.other_profile?.id && navigate(`/user/${chat.other_profile.id}`)}
-          className="flex items-center gap-3 animate-fade-up hover:opacity-80 transition-opacity"
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           aria-label={`Ver perfil de ${chat.other_profile?.name || "usuario"}`}
+          initial={{ opacity: 0, scale: 0.9, y: -8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ 
+            duration: 0.4, 
+            ease: [0.175, 0.885, 0.32, 1.1],
+            delay: 0.05
+          }}
         >
           {/* Avatar with glow ring - shared element transition */}
           <div className="relative">
@@ -512,10 +525,15 @@ const SparkChat = () => {
               Ver perfil
             </span>
           </div>
-        </button>
+        </motion.button>
 
         {/* Right section - actions */}
-        <div className="flex items-center justify-end gap-2">
+        <motion.div 
+          className="flex items-center justify-end gap-2"
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -557,7 +575,7 @@ const SparkChat = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
+        </motion.div>
       </header>
 
       {/* Messages */}

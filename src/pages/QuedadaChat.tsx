@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, Loader2, EyeOff, UserX, X } from "lucide-react";
@@ -359,7 +360,12 @@ const QuedadaChat = () => {
       <div className="relative z-10 border-b border-border/20 backdrop-blur-sm bg-background/80">
         <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-6 py-4">
           {/* Left section - back button */}
-          <div className="flex items-center justify-start">
+          <motion.div 
+            className="flex items-center justify-start"
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
             <button 
               onClick={() => navigate("/quedadas")}
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group rounded-lg p-1 -ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -367,20 +373,34 @@ const QuedadaChat = () => {
             >
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             </button>
-          </div>
+          </motion.div>
           
           {/* Center section - quedada info (always centered) */}
-          <div className="flex items-center gap-2">
+          <motion.div 
+            className="flex items-center gap-2"
+            initial={{ opacity: 0, scale: 0.9, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ 
+              duration: 0.4, 
+              ease: [0.175, 0.885, 0.32, 1.1],
+              delay: 0.05
+            }}
+          >
             <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
               <Calendar className="w-4 h-4 text-accent" />
             </div>
             <span className="font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               {quedada.title}
             </span>
-          </div>
+          </motion.div>
 
           {/* Right section - actions */}
-          <div className="flex items-center justify-end gap-2">
+          <motion.div 
+            className="flex items-center justify-end gap-2"
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          >
             <ThemeToggle />
             <button 
               onClick={() => setShowAttendees(true)}
@@ -395,11 +415,16 @@ const QuedadaChat = () => {
               )}
               <span className="font-body text-xs">{quedada.attendee_count}</span>
             </button>
-          </div>
+          </motion.div>
         </header>
         
         {/* Event info bar */}
-        <div className="px-6 pb-3 flex flex-wrap gap-3 text-xs text-muted-foreground justify-center">
+        <motion.div 
+          className="px-6 pb-3 flex flex-wrap gap-3 text-xs text-muted-foreground justify-center"
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+        >
           <div className="flex items-center gap-1">
             <Calendar className="w-3 h-3" />
             <span className="capitalize">{formatEventDate(quedada.event_date)}</span>
@@ -414,7 +439,7 @@ const QuedadaChat = () => {
               <span>{quedada.location_hint}</span>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {/* Messages */}
