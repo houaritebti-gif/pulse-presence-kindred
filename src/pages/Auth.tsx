@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Check, X, AlertTriangle, Shield, Loader2 } from "lucide-react";
+import { ArrowLeft, Check, X, AlertTriangle, Shield, Loader2, Mail, Lock, Sparkles, Heart, Users, MessageCircle } from "lucide-react";
 import { KikiLogo } from "@/components/KikiLogo";
 import { FloatingParticles } from "@/components/FloatingParticles";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -36,6 +37,13 @@ const getPasswordStrength = (password: string) => {
   return { level: "strong", label: "Fuerte", color: "bg-green-500", percentage };
 };
 
+// Feature benefits for the auth page
+const benefits = [
+  { icon: Heart, label: "Conexiones reales", color: "text-primary" },
+  { icon: Users, label: "Comunidad diversa", color: "text-accent" },
+  { icon: MessageCircle, label: "Sin presión", color: "text-primary" },
+];
+
 const Auth = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -45,6 +53,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [breachChecked, setBreachChecked] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   
   const { 
     checkPassword, 
@@ -150,135 +159,218 @@ const Auth = () => {
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 relative overflow-hidden">
-      {/* Animated ambient glow */}
+      {/* Animated ambient glow - enhanced */}
       <motion.div 
-        className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/15 blur-[150px] rounded-full pointer-events-none"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-primary/20 blur-[180px] rounded-full pointer-events-none"
         animate={{
-          scale: [1, 1.15, 1],
-          opacity: [0.15, 0.25, 0.15],
+          scale: [1, 1.2, 1],
+          opacity: [0.2, 0.35, 0.2],
         }}
         transition={{
-          duration: 4,
+          duration: 5,
           repeat: Infinity,
           ease: "easeInOut",
         }}
       />
       <motion.div 
-        className="absolute bottom-10 right-0 w-[400px] h-[400px] bg-accent/12 blur-[120px] rounded-full pointer-events-none"
+        className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-accent/15 blur-[150px] rounded-full pointer-events-none"
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.12, 0.2, 0.12],
-          x: [0, 20, 0],
+          scale: [1, 1.25, 1],
+          opacity: [0.15, 0.25, 0.15],
+          x: [0, 30, 0],
         }}
         transition={{
-          duration: 5,
+          duration: 6,
           repeat: Infinity,
           ease: "easeInOut",
           delay: 1,
         }}
       />
       <motion.div 
-        className="absolute top-1/2 left-0 -translate-y-1/2 w-[300px] h-[300px] bg-primary/10 blur-[100px] rounded-full pointer-events-none"
+        className="absolute top-1/3 left-0 w-[400px] h-[400px] bg-primary/12 blur-[130px] rounded-full pointer-events-none"
         animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.1, 0.18, 0.1],
-          y: [0, -30, 0],
+          scale: [1, 1.15, 1],
+          opacity: [0.12, 0.22, 0.12],
+          y: [0, -40, 0],
         }}
         transition={{
-          duration: 6,
+          duration: 7,
           repeat: Infinity,
           ease: "easeInOut",
           delay: 2,
         }}
       />
       
-      {/* Header with back button */}
-      <div className="relative z-10 flex items-center justify-between max-w-lg mx-auto w-full mb-6">
-        <button 
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          style={{ fontFamily: 'Arial, sans-serif' }}
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Volver</span>
-        </button>
-        <div className="w-20" />
-      </div>
-
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
-        {/* Logo prominente con animación de entrada y partículas */}
+      {/* Header with grid centering - matching PageHeader pattern */}
+      <header className="relative z-10 grid grid-cols-[1fr_auto_1fr] items-center gap-2 max-w-lg mx-auto w-full mb-6 sm:mb-8">
+        {/* Left section - back button */}
         <motion.div 
-          className="mb-8 relative"
-          initial={{ opacity: 0, scale: 0.5, y: -30 }}
+          className="flex items-center justify-start"
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+          <button 
+            onClick={() => navigate("/")}
+            className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group rounded-lg p-1 -ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            style={{ fontFamily: 'Arial, sans-serif' }}
+            aria-label="Volver a inicio"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm sm:text-base">Volver</span>
+          </button>
+        </motion.div>
+
+        {/* Center section - Logo with entrance animation */}
+        <motion.div 
+          className="flex items-center justify-center"
+          initial={{ opacity: 0, scale: 0.9, y: -8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ 
-            duration: 0.6, 
-            ease: [0.34, 1.56, 0.64, 1],
-            delay: 0.1
+            duration: 0.4, 
+            ease: [0.175, 0.885, 0.32, 1.1],
+            delay: 0.05
           }}
         >
-          {/* Floating particles around logo */}
-          <div className="absolute -inset-16 sm:-inset-20">
-            <FloatingParticles count={16} />
-          </div>
-          
+          <KikiLogo size="lg" />
+        </motion.div>
+
+        {/* Right section - theme toggle */}
+        <motion.div 
+          className="flex items-center justify-end"
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+          <ThemeToggle />
+        </motion.div>
+      </header>
+
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full">
+        {/* Floating particles around content */}
+        <div className="absolute -inset-20 pointer-events-none">
+          <FloatingParticles count={20} />
+        </div>
+        
+        {/* Header text with enhanced animation */}
+        <motion.div 
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+        >
           <motion.div
-            className="relative z-10"
-            animate={{ 
-              scale: [1, 1.02, 1],
-            }}
-            transition={{ 
-              duration: 3, 
-              repeat: Infinity, 
-              ease: "easeInOut" 
-            }}
+            key={isLogin ? "login" : "signup"}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
           >
-            <KikiLogo size="xl" />
+            <h1 
+              className="text-3xl sm:text-4xl font-bold text-foreground mb-3" 
+              style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+            >
+              {isLogin ? "Hola de nuevo" : "Únete a KIKI"}
+            </h1>
+            <p 
+              className="text-foreground/70 text-base sm:text-lg" 
+              style={{ fontFamily: 'Arial, sans-serif' }}
+            >
+              {isLogin ? "Te echábamos de menos ✨" : "Tu espacio seguro te espera."}
+            </p>
           </motion.div>
         </motion.div>
-        
-        {/* Header */}
-        <div className="text-center mb-8 animate-fade-up animate-delay-100">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-            {isLogin ? "Hola de nuevo" : "Únete"}
-          </h1>
-          <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
-            {isLogin ? "Te echábamos de menos." : "Bienvenida al club."}
-          </p>
-        </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full space-y-4 animate-fade-up animate-delay-200">
+        {/* Benefits pills - only on signup */}
+        {!isLogin && (
+          <motion.div 
+            className="flex flex-wrap justify-center gap-2 mb-8"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.25 }}
+          >
+            {benefits.map((benefit, index) => (
+              <motion.div
+                key={benefit.label}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card/80 border border-border/50 shadow-sm"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+              >
+                <benefit.icon className={`w-3.5 h-3.5 ${benefit.color}`} />
+                <span className="text-xs font-medium text-foreground/80" style={{ fontFamily: 'Arial, sans-serif' }}>
+                  {benefit.label}
+                </span>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Form with enhanced styling */}
+        <motion.form 
+          onSubmit={handleSubmit} 
+          className="w-full space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
           <div className="space-y-4">
-            <Input
-              type="email"
-              placeholder="tu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="h-14 text-base bg-secondary/50 border-border/50 focus:border-primary"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
-            <Input
-              type="password"
-              placeholder="contraseña"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (!isLogin) setPasswordError(null);
-              }}
-              required
-              className="h-14 text-base bg-secondary/50 border-border/50 focus:border-primary"
-              style={{ fontFamily: 'Arial, sans-serif' }}
-            />
+            {/* Email field with icon */}
+            <div className="relative">
+              <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200 ${
+                focusedField === 'email' ? 'text-primary' : 'text-muted-foreground'
+              }`}>
+                <Mail className="w-5 h-5" />
+              </div>
+              <Input
+                type="email"
+                placeholder="tu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => setFocusedField('email')}
+                onBlur={() => setFocusedField(null)}
+                required
+                className="h-14 pl-12 text-base bg-card/60 border-border/60 focus:border-primary focus:bg-card shadow-sm transition-all duration-200"
+                style={{ fontFamily: 'Arial, sans-serif' }}
+              />
+            </div>
+            
+            {/* Password field with icon */}
+            <div className="relative">
+              <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200 ${
+                focusedField === 'password' ? 'text-primary' : 'text-muted-foreground'
+              }`}>
+                <Lock className="w-5 h-5" />
+              </div>
+              <Input
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (!isLogin) setPasswordError(null);
+                }}
+                onFocus={() => setFocusedField('password')}
+                onBlur={() => setFocusedField(null)}
+                required
+                className="h-14 pl-12 text-base bg-card/60 border-border/60 focus:border-primary focus:bg-card shadow-sm transition-all duration-200"
+                style={{ fontFamily: 'Arial, sans-serif' }}
+              />
+            </div>
             
             {/* Password strength indicator - only show on signup */}
             {!isLogin && password.length > 0 && (
-              <div className="space-y-3 animate-fade-in">
+              <motion.div 
+                className="space-y-3"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
                 {/* Strength bar */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Seguridad</span>
+                    <span className="text-xs text-foreground/60" style={{ fontFamily: 'Arial, sans-serif' }}>Seguridad</span>
                     <span className={`text-xs font-medium ${
                       getPasswordStrength(password).level === "strong" ? "text-green-500" :
                       getPasswordStrength(password).level === "good" ? "text-yellow-500" :
@@ -288,44 +380,54 @@ const Auth = () => {
                       {getPasswordStrength(password).label}
                     </span>
                   </div>
-                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-300 ease-out ${getPasswordStrength(password).color}`}
-                      style={{ width: `${getPasswordStrength(password).percentage}%` }}
+                  <div className="h-2 bg-muted rounded-full overflow-hidden shadow-inner">
+                    <motion.div 
+                      className={`h-full rounded-full ${getPasswordStrength(password).color}`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${getPasswordStrength(password).percentage}%` }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
                     />
                   </div>
                 </div>
                 
-                {/* Requirements checklist */}
-                <div className="grid grid-cols-2 gap-2 p-3 rounded-lg bg-secondary/30">
+                {/* Requirements checklist with enhanced styling */}
+                <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-card/50 border border-border/30 shadow-sm">
                   {passwordRequirements.map((req) => {
                     const passed = req.test(password);
                     return (
-                      <div 
+                      <motion.div 
                         key={req.label}
                         className={`flex items-center gap-2 text-xs transition-colors ${
-                          passed ? "text-green-500" : "text-muted-foreground"
+                          passed ? "text-green-500" : "text-foreground/50"
                         }`}
                         style={{ fontFamily: 'Arial, sans-serif' }}
+                        initial={false}
+                        animate={{ scale: passed ? [1, 1.05, 1] : 1 }}
+                        transition={{ duration: 0.2 }}
                       >
                         {passed ? (
-                          <Check className="w-3 h-3" />
+                          <Check className="w-3.5 h-3.5" />
                         ) : (
-                          <X className="w-3 h-3" />
+                          <X className="w-3.5 h-3.5" />
                         )}
                         {req.label}
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
 
                 {/* Breach check indicator */}
                 {password.length >= 8 && (
-                  <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30">
+                  <motion.div 
+                    className="flex items-center gap-2 p-3 rounded-xl bg-card/50 border border-border/30 shadow-sm"
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
                     {isCheckingBreach ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+                        <span className="text-xs text-foreground/60" style={{ fontFamily: 'Arial, sans-serif' }}>
                           Verificando filtraciones...
                         </span>
                       </>
@@ -340,19 +442,24 @@ const Auth = () => {
                       <>
                         <Shield className="w-4 h-4 text-green-500" />
                         <span className="text-xs text-green-500" style={{ fontFamily: 'Arial, sans-serif' }}>
-                          No encontrada en filtraciones conocidas
+                          ✓ No encontrada en filtraciones conocidas
                         </span>
                       </>
                     ) : null}
-                  </div>
+                  </motion.div>
                 )}
-              </div>
+              </motion.div>
             )}
             
             {passwordError && !isLogin && (
-              <p className="text-xs text-destructive animate-fade-in" style={{ fontFamily: 'Arial, sans-serif' }}>
+              <motion.p 
+                className="text-xs text-destructive" 
+                style={{ fontFamily: 'Arial, sans-serif' }}
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
                 {passwordError}
-              </p>
+              </motion.p>
             )}
           </div>
 
@@ -360,57 +467,94 @@ const Auth = () => {
             type="submit" 
             variant="kiki" 
             size="lg" 
-            className="w-full mt-6"
+            className="w-full mt-6 h-14 text-base font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
             disabled={loading}
           >
-            {loading ? "..." : isLogin ? "Entrar" : "Crear cuenta"}
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isLogin ? "Entrar" : "Crear cuenta"}
+              </>
+            )}
           </Button>
-        </form>
+        </motion.form>
 
-        {/* Divider */}
-        <div className="flex items-center gap-4 w-full my-8 animate-fade-up animate-delay-300">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-sm text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>o</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        {/* Google */}
-        <Button 
-          variant="kiki-soft" 
-          size="lg" 
-          className="w-full animate-fade-up animate-delay-300"
-          onClick={handleGoogleAuth}
+        {/* Divider with enhanced styling */}
+        <motion.div 
+          className="flex items-center gap-4 w-full my-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
         >
-          <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-            <path
-              fill="currentColor"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="currentColor"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            />
-            <path
-              fill="currentColor"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-            />
-            <path
-              fill="currentColor"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-            />
-          </svg>
-          Continuar con Google
-        </Button>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+          <span className="text-sm text-foreground/50 px-2" style={{ fontFamily: 'Arial, sans-serif' }}>o</span>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        </motion.div>
 
-        {/* Toggle */}
-        <button
+        {/* Google button with enhanced styling */}
+        <motion.div
+          className="w-full"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.35 }}
+        >
+          <Button 
+            variant="kiki-soft" 
+            size="lg" 
+            className="w-full h-14 shadow-md hover:shadow-lg transition-all duration-300"
+            onClick={handleGoogleAuth}
+          >
+            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+              <path
+                fill="currentColor"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="currentColor"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="currentColor"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="currentColor"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+            </svg>
+            Continuar con Google
+          </Button>
+        </motion.div>
+
+        {/* Toggle with enhanced styling */}
+        <motion.button
           type="button"
           onClick={() => setIsLogin(!isLogin)}
-          className="mt-8 text-sm text-muted-foreground hover:text-foreground transition-colors animate-fade-up animate-delay-400"
+          className="mt-8 text-sm text-foreground/60 hover:text-foreground transition-all duration-300 hover:scale-105"
           style={{ fontFamily: 'Arial, sans-serif' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
+          whileTap={{ scale: 0.95 }}
         >
-          {isLogin ? "¿Primera vez? Crear cuenta" : "¿Ya tienes cuenta? Entrar"}
-        </button>
+          {isLogin ? (
+            <>¿Primera vez? <span className="text-primary font-semibold">Crear cuenta</span></>
+          ) : (
+            <>¿Ya tienes cuenta? <span className="text-primary font-semibold">Entrar</span></>
+          )}
+        </motion.button>
+
+        {/* Decorative sparkle */}
+        <motion.div
+          className="absolute -bottom-10 left-1/2 -translate-x-1/2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Sparkles className="w-5 h-5 text-primary/30" />
+        </motion.div>
       </div>
     </main>
   );
