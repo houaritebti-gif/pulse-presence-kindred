@@ -2,6 +2,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Bell, Calendar, Flame, Users, User, Ghost, CloudOff, UserPlus } from "lucide-react";
 import { useNavBadgeCounts } from "@/hooks/useNavBadgeCounts";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
+import { useSparkEnergy } from "@/hooks/useSparkEnergy";
+import { SparkFlameCompact } from "@/components/SparkFlame";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState, useCallback } from "react";
 
@@ -89,6 +91,7 @@ export const BottomNavigation = () => {
   const location = useLocation();
   const { data: counts } = useNavBadgeCounts();
   const { pendingCount } = useOfflineQueue();
+  const { sparkEnergy, currentLevel } = useSparkEnergy();
 
   // Prefetch a route's component
   const prefetchRoute = useCallback((path: string) => {
@@ -171,7 +174,7 @@ export const BottomNavigation = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/50 safe-area-bottom">
-      <div className="flex items-center justify-around max-w-md mx-auto">
+      <div className="flex items-center justify-around max-w-md mx-auto px-1">
         {navItems.map((item) => (
           <NavItem
             key={item.path}
@@ -185,6 +188,14 @@ export const BottomNavigation = () => {
             isOfflineBadge={item.isOfflineBadge}
           />
         ))}
+        
+        {/* Spark Energy indicator */}
+        <SparkFlameCompact
+          level={currentLevel.level}
+          energy={sparkEnergy?.current_energy || 0}
+          onClick={() => navigate("/spark-energy")}
+          className="ml-1"
+        />
       </div>
     </nav>
   );
