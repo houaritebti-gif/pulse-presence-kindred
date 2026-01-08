@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, X, UserCheck, Clock, Users, Sparkles, Link2 } from "lucide-react";
-import { KikiLogo } from "@/components/KikiLogo";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Check, X, UserCheck, Clock, Users, Sparkles, Link2 } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -193,19 +192,7 @@ const Connections = () => {
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-accent/5 blur-[120px] rounded-full pointer-events-none" />
       
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between mb-8">
-        <button 
-          onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 group"
-          style={{ fontFamily: 'Arial, sans-serif' }}
-          aria-label="Volver a Presencia"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Presencia</span>
-        </button>
-        <KikiLogo size="lg" />
-        <ThemeToggle />
-      </div>
+      <PageHeader backLabel="Presencia" backTo="/presence" />
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
         {/* Hero section */}

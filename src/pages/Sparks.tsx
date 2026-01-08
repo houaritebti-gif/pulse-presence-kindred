@@ -1,8 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2, X } from "lucide-react";
-import { KikiLogo } from "@/components/KikiLogo";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { PageHeader } from "@/components/PageHeader";
 import { useSparkChats, useExtinguishSpark } from "@/hooks/useSparks";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
@@ -112,18 +111,7 @@ const Sparks = () => {
       <ParallaxBackground variant="list" />
       
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between mb-8">
-        <button 
-          onClick={() => navigate("/presence")}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-all duration-300 font-body group"
-          aria-label="Volver a Presencia"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span style={{ fontFamily: 'Arial, sans-serif' }}>Presencia</span>
-        </button>
-        <KikiLogo size="lg" />
-        <ThemeToggle />
-      </div>
+      <PageHeader backLabel="Presencia" backTo="/presence" />
 
       <div className="flex-1 max-w-lg mx-auto w-full relative z-10">
         {/* Hero section */}
