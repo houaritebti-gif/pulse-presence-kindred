@@ -114,6 +114,7 @@ const getAudioContext = () => {
 // Vibration patterns for different notification types (in milliseconds)
 const VIBRATION_PATTERNS = {
   spark: [100, 50, 100, 50, 150], // Quick double tap + longer
+  superSpark: [150, 50, 100, 50, 100, 50, 200], // Electric pattern for super spark
   message: [80, 80, 80], // Two quick taps
   quedada: [150, 100, 150], // Friendly pattern
   ghost: [50, 30, 50, 30, 50], // Mysterious light pattern
@@ -122,7 +123,7 @@ const VIBRATION_PATTERNS = {
 };
 
 // Vibrate device if supported
-export const vibrateDevice = (type: "spark" | "message" | "quedada" | "ghost" | "connection" | "default" = "default") => {
+export const vibrateDevice = (type: "spark" | "superSpark" | "message" | "quedada" | "ghost" | "connection" | "default" = "default") => {
   if (!isVibrationEnabled()) return;
   if (isInDndPeriod()) return;
   
@@ -136,7 +137,7 @@ export const vibrateDevice = (type: "spark" | "message" | "quedada" | "ghost" | 
 };
 
 // Play a simple "ding" notification sound
-export const playNotificationSound = (type: "spark" | "message" | "quedada" | "ghost" | "connection" | "default" = "default") => {
+export const playNotificationSound = (type: "spark" | "superSpark" | "message" | "quedada" | "ghost" | "connection" | "default" = "default") => {
   // Check if sound is muted or in DND period
   if (isSoundMuted()) return;
   if (isInDndPeriod()) return;
@@ -166,6 +167,55 @@ export const playNotificationSound = (type: "spark" | "message" | "quedada" | "g
         gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
         oscillator.start(ctx.currentTime);
         oscillator.stop(ctx.currentTime + 0.4);
+        break;
+      
+      case "superSpark":
+        // Electric super spark sound - dramatic ascending arpeggio
+        const superOsc1 = ctx.createOscillator();
+        const superOsc2 = ctx.createOscillator();
+        const superOsc3 = ctx.createOscillator();
+        const superGain1 = ctx.createGain();
+        const superGain2 = ctx.createGain();
+        const superGain3 = ctx.createGain();
+        
+        superOsc1.connect(superGain1);
+        superOsc2.connect(superGain2);
+        superOsc3.connect(superGain3);
+        superGain1.connect(ctx.destination);
+        superGain2.connect(ctx.destination);
+        superGain3.connect(ctx.destination);
+        
+        superOsc1.type = "sine";
+        superOsc2.type = "sine";
+        superOsc3.type = "triangle";
+        
+        // Fast electric arpeggio
+        superOsc1.frequency.setValueAtTime(523, ctx.currentTime); // C5
+        superOsc1.frequency.setValueAtTime(659, ctx.currentTime + 0.05); // E5
+        superOsc1.frequency.setValueAtTime(784, ctx.currentTime + 0.1); // G5
+        superOsc1.frequency.setValueAtTime(1047, ctx.currentTime + 0.15); // C6
+        
+        superOsc2.frequency.setValueAtTime(392, ctx.currentTime + 0.08); // G4
+        superOsc2.frequency.setValueAtTime(523, ctx.currentTime + 0.16); // C5
+        
+        superOsc3.frequency.setValueAtTime(262, ctx.currentTime); // C4 base
+        
+        superGain1.gain.setValueAtTime(0.18, ctx.currentTime);
+        superGain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        superGain2.gain.setValueAtTime(0.12, ctx.currentTime + 0.08);
+        superGain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+        superGain3.gain.setValueAtTime(0.08, ctx.currentTime);
+        superGain3.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        
+        superOsc1.start(ctx.currentTime);
+        superOsc2.start(ctx.currentTime + 0.08);
+        superOsc3.start(ctx.currentTime);
+        superOsc1.stop(ctx.currentTime + 0.45);
+        superOsc2.stop(ctx.currentTime + 0.5);
+        superOsc3.stop(ctx.currentTime + 0.55);
+        
+        // Don't use the main oscillator
+        oscillator.stop(ctx.currentTime);
         break;
         
       case "message":
@@ -280,7 +330,7 @@ export const playNotificationSound = (type: "spark" | "message" | "quedada" | "g
 };
 
 // Combined function to play sound and vibrate
-export const notifyUser = (type: "spark" | "message" | "quedada" | "ghost" | "connection" | "default" = "default") => {
+export const notifyUser = (type: "spark" | "superSpark" | "message" | "quedada" | "ghost" | "connection" | "default" = "default") => {
   playNotificationSound(type);
   vibrateDevice(type);
 };

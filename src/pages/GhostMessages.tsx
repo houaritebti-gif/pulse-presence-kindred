@@ -51,12 +51,16 @@ const GhostMessageCard = ({
     locale: es 
   });
 
+  const isSuperSpark = message.is_super_spark;
+  
   return (
     <div
       className={`bg-card rounded-2xl p-5 animate-fade-up border transition-all hover:border-primary/20 relative ${
-        message.is_premium_message 
-          ? "border-primary/40 ring-1 ring-primary/20 bg-gradient-to-br from-card via-card to-primary/5" 
-          : "border-border/30"
+        isSuperSpark 
+          ? "border-purple-500/50 ring-2 ring-purple-500/30 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5"
+          : message.is_premium_message 
+            ? "border-primary/40 ring-1 ring-primary/20 bg-gradient-to-br from-card via-card to-primary/5" 
+            : "border-border/30"
       }`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
@@ -131,15 +135,22 @@ const GhostMessageCard = ({
             <h3 className="font-semibold text-card-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               {isRevealed ? (message.from_profile?.name || "Anónima") : "Alguien misterioso"}
             </h3>
+            {/* Super Spark indicator - most prominent */}
+            {isSuperSpark && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 text-purple-400 text-[10px] font-bold border border-purple-500/30 shadow-sm shadow-purple-500/20">
+                <Flame className="w-3 h-3 animate-pulse" />
+                Super Chispa ⚡
+              </span>
+            )}
             {/* KIKI Now indicator */}
-            {message.hasKikiNowBoost && (
+            {message.hasKikiNowBoost && !isSuperSpark && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 text-[10px] font-semibold">
                 <Zap className="w-3 h-3" />
                 KIKI Now
               </span>
             )}
             {/* Premium message indicator */}
-            {message.is_premium_message && (
+            {message.is_premium_message && !isSuperSpark && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-semibold animate-pulse-soft">
                 <Sparkles className="w-3 h-3" />
                 Mensaje especial
@@ -318,13 +329,47 @@ const GhostMessages = () => {
           />
         ) : (
           <div className="space-y-6">
-            {/* KIKI Now section - users who want to connect now */}
             {(() => {
-              const kikiNowMessages = messages?.filter(m => m.hasKikiNowBoost) || [];
-              const otherMessages = messages?.filter(m => !m.hasKikiNowBoost) || [];
+              const superSparkMessages = messages?.filter(m => m.is_super_spark) || [];
+              const kikiNowMessages = messages?.filter(m => m.hasKikiNowBoost && !m.is_super_spark) || [];
+              const otherMessages = messages?.filter(m => !m.hasKikiNowBoost && !m.is_super_spark) || [];
               
               return (
                 <>
+                  {/* Super Spark section - highest priority */}
+                  {superSparkMessages.length > 0 && (
+                    <Collapsible defaultOpen className="space-y-4">
+                      <CollapsibleTrigger className="w-full">
+                        <div className="flex items-center gap-2 group cursor-pointer">
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/15 via-purple-500/15 to-pink-500/15 border border-purple-500/30 transition-colors group-hover:from-blue-500/20 group-hover:via-purple-500/20 group-hover:to-pink-500/20">
+                            <Flame className="w-4 h-4 text-purple-500" />
+                            <span className="text-sm font-semibold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+                              Super Chispas ⚡
+                            </span>
+                            <span className="ml-1 px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-400 text-[10px] font-bold">
+                              {superSparkMessages.length}
+                            </span>
+                            <ChevronDown className="w-4 h-4 text-purple-500 transition-transform group-data-[state=open]:rotate-180" />
+                          </div>
+                          <div className="flex-1 h-px bg-gradient-to-r from-purple-500/30 to-transparent" />
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-4">
+                        {superSparkMessages.map((message, index) => (
+                          <GhostMessageCard
+                            key={message.id}
+                            message={message}
+                            index={index}
+                            onNavigateToChat={handleNavigateToChat}
+                            onNavigateToSpark={handleNavigateToSpark}
+                            navigate={navigate}
+                          />
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
+
+                  {/* KIKI Now section - users who want to connect now */}
                   {kikiNowMessages.length > 0 && (
                     <Collapsible defaultOpen className="space-y-4">
                       <CollapsibleTrigger className="w-full">
@@ -365,7 +410,7 @@ const GhostMessages = () => {
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/30 transition-colors group-hover:bg-muted/70">
                             <Ghost className="w-4 h-4 text-muted-foreground" />
                             <span className="text-sm font-semibold text-muted-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-                              Otros mensajes
+                              Chispas
                             </span>
                             <span className="ml-1 px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
                               {otherMessages.length}
