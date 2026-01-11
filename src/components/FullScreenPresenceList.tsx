@@ -12,6 +12,7 @@ import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { usePurchasedItems } from "@/hooks/usePurchasedItems";
+import { useRewindLimit } from "@/hooks/useRewindLimit";
 import { useIsMobile } from "@/hooks/use-mobile";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +24,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { triggerHaptic } from "@/utils/haptics";
 import { fireSparkConfetti, firePerfectMatchHearts } from "@/utils/sparkConfetti";
 import { fireSuperSparkConfetti } from "@/utils/superSparkConfetti";
-import { playPassSound, playChispaSound, playSuperChispaSound, playViewProfileSound, playHayVibraSound } from "@/utils/notificationSound";
+import { playPassSound, playChispaSound, playSuperChispaSound, playHayVibraSound } from "@/utils/notificationSound";
 // Hay Vibra screen state
 interface MatchData {
   theirPhoto: string | null;
@@ -81,12 +82,14 @@ export const FullScreenPresenceList = memo(({
   const { checkForNewSpark } = useSparkDetection();
   const { earnEnergy, canDoAction } = useSparkEnergy();
   const { getAvailableQuantity, useItem } = usePurchasedItems();
+  const { canRewind, remaining: rewindRemaining, isUnlimited: isRewindUnlimited, useRewind, getLimitMessage } = useRewindLimit();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [rewindHistory, setRewindHistory] = useState<PresenceWithProfile[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [tutorialComplete, setTutorialComplete] = useState(false);
@@ -168,11 +171,15 @@ export const FullScreenPresenceList = memo(({
     toast.success("Acción deshecha", { duration: 2000 });
   }, [lastAction, refetchLimit, queryClient]);
 
-  const handleSwipeLeft = useCallback((presenceId: string) => {
-    // Pass - just dismiss the card
+  const handleSwipeLeft = useCallback((presence: PresenceWithProfile) => {
+    // Pass - dismiss the card and save to rewind history
     playPassSound(); // Action sound
-    setDismissedIds(prev => new Set(prev).add(presenceId));
-    setLastAction({ type: 'swipe_left', presenceId });
+    
+    // Save to rewind history (max 10 items)
+    setRewindHistory(prev => [presence, ...prev].slice(0, 10));
+    
+    setDismissedIds(prev => new Set(prev).add(presence.id));
+    setLastAction({ type: 'swipe_left', presenceId: presence.id });
     if (currentIndex < allProfiles.length - 1) {
       setCurrentIndex(prev => prev);
     }
@@ -333,13 +340,50 @@ export const FullScreenPresenceList = memo(({
     setDismissedIds(prev => new Set(prev).add(presence.id));
   }, [myProfile?.id, getAvailableQuantity, useItem, queryClient]);
 
-  // Handle swipe down - View profile
+  // Handle swipe down - View profile (confirmation via photo tap)
   const handleSwipeDown = useCallback((presence: PresenceWithProfile) => {
     if (presence.profile?.id) {
-      playViewProfileSound(); // View profile sound
+      triggerHaptic('light');
       navigate(`/user/${presence.profile.id}`);
     }
   }, [navigate]);
+
+  // Handle rewind - go back to last passed profile
+  const handleRewind = useCallback(() => {
+    if (rewindHistory.length === 0) {
+      toast.error("No hay perfiles anteriores");
+      return;
+    }
+
+    if (!canRewind) {
+      toast.error("Sin rebobinados disponibles", {
+        description: getLimitMessage(),
+      });
+      return;
+    }
+
+    // Use a rewind
+    const used = useRewind();
+    if (!used) {
+      toast.error("No se pudo rebobinar");
+      return;
+    }
+
+    triggerHaptic('medium');
+
+    // Get the last passed profile and restore it
+    const lastProfile = rewindHistory[0];
+    setRewindHistory(prev => prev.slice(1));
+    
+    // Remove from dismissed
+    setDismissedIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(lastProfile.id);
+      return newSet;
+    });
+
+    toast.success("⏪ Perfil recuperado", { duration: 2000 });
+  }, [rewindHistory, canRewind, useRewind, getLimitMessage]);
 
   // Keyboard shortcuts for desktop
   useEffect(() => {
@@ -357,7 +401,7 @@ export const FullScreenPresenceList = memo(({
       switch (e.key) {
         case "ArrowLeft":
           e.preventDefault();
-          handleSwipeLeft(currentPresence.id);
+          handleSwipeLeft(currentPresence);
           break;
         case "ArrowRight":
           e.preventDefault();
@@ -378,12 +422,17 @@ export const FullScreenPresenceList = memo(({
             handleUndo();
           }
           break;
+        case "r":
+        case "R":
+          e.preventDefault();
+          handleRewind();
+          break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isMobile, allProfiles, handleSwipeLeft, handleSwipeRight, handleSwipeUp, handleSwipeDown, handleUndo, showUndo, lastAction]);
+  }, [isMobile, allProfiles, handleSwipeLeft, handleSwipeRight, handleSwipeUp, handleSwipeDown, handleUndo, handleRewind, showUndo, lastAction]);
 
   if (profiles.length === 0) return null;
 
@@ -474,7 +523,7 @@ export const FullScreenPresenceList = memo(({
                   compatibilityBreakdown={getCompatibilityBreakdown(presence)}
                   hasVisibilityBoost={presence.hasVisibilityBoost}
                   photos={photos}
-                  onSwipeLeft={() => handleSwipeLeft(presence.id)}
+                  onSwipeLeft={() => handleSwipeLeft(presence)}
                   onSwipeRight={() => handleSwipeRight(presence)}
                   onSwipeUp={() => handleSwipeUp(presence)}
                   onSwipeDown={() => handleSwipeDown(presence)}
@@ -503,7 +552,7 @@ export const FullScreenPresenceList = memo(({
           <PresenceActionButtons
             onPass={() => {
               const currentPresence = allProfiles[0];
-              if (currentPresence) handleSwipeLeft(currentPresence.id);
+              if (currentPresence) handleSwipeLeft(currentPresence);
             }}
             onChispa={() => {
               const currentPresence = allProfiles[0];
@@ -513,12 +562,12 @@ export const FullScreenPresenceList = memo(({
               const currentPresence = allProfiles[0];
               if (currentPresence) handleSwipeUp(currentPresence);
             }}
-            onViewProfile={() => {
-              const currentPresence = allProfiles[0];
-              if (currentPresence) handleSwipeDown(currentPresence);
-            }}
+            onRewind={handleRewind}
             onUndo={handleUndo}
             showUndo={showUndo && !!lastAction}
+            canRewind={canRewind && rewindHistory.length > 0}
+            rewindRemaining={rewindRemaining}
+            isRewindUnlimited={isRewindUnlimited}
             availableSuperChispas={getAvailableQuantity("super_spark")}
             disabled={allProfiles.length === 0}
             showKeyboardHints={!isMobile}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { X, Flame, User, Sparkles, Undo2 } from "lucide-react";
+import { X, Flame, Sparkles, Undo2, RotateCcw, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
@@ -15,9 +15,12 @@ interface PresenceActionButtonsProps {
   onPass: () => void;
   onChispa: () => void;
   onSuperChispa: () => void;
-  onViewProfile: () => void;
+  onRewind?: () => void;
   onUndo?: () => void;
   showUndo?: boolean;
+  canRewind?: boolean;
+  rewindRemaining?: number;
+  isRewindUnlimited?: boolean;
   availableSuperChispas?: number;
   disabled?: boolean;
   showKeyboardHints?: boolean;
@@ -30,6 +33,7 @@ const ActionButton = ({
   variant = "default",
   size = "md",
   badge,
+  badgeVariant = "default",
   disabled,
   keyboardHint,
   showKeyboardHint = false,
@@ -37,9 +41,10 @@ const ActionButton = ({
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
-  variant?: "default" | "primary" | "super" | "secondary" | "muted";
+  variant?: "default" | "primary" | "super" | "secondary" | "muted" | "rewind";
   size?: "sm" | "md" | "lg";
   badge?: number;
+  badgeVariant?: "default" | "premium";
   disabled?: boolean;
   keyboardHint?: string;
   showKeyboardHint?: boolean;
@@ -62,6 +67,12 @@ const ActionButton = ({
     super: "bg-gradient-to-br from-purple-500 via-blue-500 to-pink-500 border-2 border-purple-400 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-purple-500/40",
     secondary: "bg-accent border-2 border-accent hover:bg-accent/80 text-accent-foreground shadow-lg",
     muted: "bg-muted/80 border-2 border-muted-foreground/20 hover:border-muted-foreground/40 text-muted-foreground shadow-md",
+    rewind: "bg-gradient-to-br from-amber-400 to-orange-500 border-2 border-amber-300 hover:from-amber-500 hover:to-orange-600 text-white shadow-lg shadow-amber-500/40",
+  };
+
+  const badgeClasses = {
+    default: "bg-gradient-to-r from-purple-500 to-blue-500",
+    premium: "bg-gradient-to-r from-amber-400 to-orange-500",
   };
 
   return (
@@ -86,7 +97,10 @@ const ActionButton = ({
           >
             <div className={iconSizeClasses[size]}>{icon}</div>
             {badge !== undefined && badge > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-blue-500 text-[10px] font-bold text-white">
+              <span className={cn(
+                "absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[10px] font-bold text-white",
+                badgeClasses[badgeVariant]
+              )}>
                 {badge > 9 ? "9+" : badge}
               </span>
             )}
@@ -112,9 +126,12 @@ export const PresenceActionButtons = ({
   onPass,
   onChispa,
   onSuperChispa,
-  onViewProfile,
+  onRewind,
   onUndo,
   showUndo = false,
+  canRewind = false,
+  rewindRemaining,
+  isRewindUnlimited = false,
   availableSuperChispas = 0,
   disabled = false,
   showKeyboardHints = false,
@@ -179,6 +196,9 @@ export const PresenceActionButtons = ({
     }
   }, [showUndo, showButtons]);
 
+  // Determine rewind badge display
+  const rewindBadge = isRewindUnlimited ? undefined : rewindRemaining;
+
   return (
     <AnimatePresence>
       <motion.div
@@ -227,7 +247,19 @@ export const PresenceActionButtons = ({
           showKeyboardHint={shouldShowHints}
         />
 
-        {/* Super Chispa button - Flame (bigger, center-left) */}
+        {/* Chispa button - Sparkles (primary) */}
+        <ActionButton
+          onClick={onChispa}
+          icon={<Sparkles className="w-full h-full" />}
+          label="Chispa ✨"
+          variant="primary"
+          size="lg"
+          disabled={disabled}
+          keyboardHint="→"
+          showKeyboardHint={shouldShowHints}
+        />
+
+        {/* Super Chispa button - Flame */}
         <ActionButton
           onClick={onSuperChispa}
           icon={<Flame className="w-full h-full" />}
@@ -240,29 +272,28 @@ export const PresenceActionButtons = ({
           showKeyboardHint={shouldShowHints}
         />
 
-        {/* Chispa button - Sparkles (primary, center-right) */}
-        <ActionButton
-          onClick={onChispa}
-          icon={<Sparkles className="w-full h-full" />}
-          label="Chispa ✨"
-          variant="primary"
-          size="lg"
-          disabled={disabled}
-          keyboardHint="→"
-          showKeyboardHint={shouldShowHints}
-        />
-
-        {/* View Profile button - User */}
-        <ActionButton
-          onClick={onViewProfile}
-          icon={<User className="w-full h-full" />}
-          label="Ver perfil 👤"
-          variant="secondary"
-          size="md"
-          disabled={disabled}
-          keyboardHint="↓"
-          showKeyboardHint={shouldShowHints}
-        />
+        {/* Rewind button - RotateCcw (replaces View Profile) */}
+        {onRewind && (
+          <ActionButton
+            onClick={onRewind}
+            icon={
+              <div className="relative w-full h-full">
+                <RotateCcw className="w-full h-full" />
+                {isRewindUnlimited && (
+                  <Crown className="absolute -top-1 -right-1 w-3 h-3 text-amber-300" />
+                )}
+              </div>
+            }
+            label={isRewindUnlimited ? "Rebobinar ∞" : `Rebobinar (${rewindRemaining ?? 0}/semana)`}
+            variant="rewind"
+            size="md"
+            badge={rewindBadge}
+            badgeVariant="premium"
+            disabled={disabled || !canRewind}
+            keyboardHint="R"
+            showKeyboardHint={shouldShowHints}
+          />
+        )}
       </motion.div>
     </AnimatePresence>
   );
