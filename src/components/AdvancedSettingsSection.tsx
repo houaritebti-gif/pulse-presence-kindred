@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useAdvancedSettings, Theme, TextSize, SparkleStyle } from "@/hooks/useAdvancedSettings";
+import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { 
   isThemeSoundEnabled, 
   setThemeSoundEnabled, 
@@ -31,6 +34,11 @@ const AdvancedSettingsSection = () => {
   const [energySoundOn, setEnergySoundOn] = useState(true);
   const [actionSoundsOn, setActionSoundsOn] = useState(true);
   const [masterVolume, setMasterVolumeState] = useState(0.7);
+  const [notifyNewPresence, setNotifyNewPresence] = useState(true);
+  const [isUpdatingPresenceNotif, setIsUpdatingPresenceNotif] = useState(false);
+  
+  const { data: profile } = useProfile();
+  const queryClient = useQueryClient();
   
   const {
     theme,
@@ -55,6 +63,42 @@ const AdvancedSettingsSection = () => {
     setActionSoundsOn(isActionSoundsEnabled());
     setMasterVolumeState(getMasterVolume());
   }, []);
+
+  // Sync presence notification preference from profile
+  useEffect(() => {
+    const profileWithPref = profile as typeof profile & { notify_new_presence?: boolean };
+    if (profileWithPref?.notify_new_presence !== undefined) {
+      setNotifyNewPresence(profileWithPref.notify_new_presence);
+    }
+  }, [profile]);
+
+  const handlePresenceNotificationChange = async (enabled: boolean) => {
+    if (!profile?.id) return;
+    
+    setIsUpdatingPresenceNotif(true);
+    setNotifyNewPresence(enabled);
+    
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ notify_new_presence: enabled })
+        .eq("id", profile.id);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(enabled 
+        ? "Notificaciones de nuevos perfiles activadas" 
+        : "Notificaciones de nuevos perfiles desactivadas"
+      );
+    } catch (error) {
+      console.error("Error updating presence notification preference:", error);
+      setNotifyNewPresence(!enabled); // Revert on error
+      toast.error("Error al actualizar preferencia");
+    } finally {
+      setIsUpdatingPresenceNotif(false);
+    }
+  };
 
   const handleMasterVolumeChange = (value: number[]) => {
     const newVolume = value[0];
@@ -438,6 +482,26 @@ const AdvancedSettingsSection = () => {
                 </Button>
               </div>
             )}
+          </div>
+
+          {/* New Presence Notifications */}
+          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Users className={`w-5 h-5 ${notifyNewPresence ? "text-primary" : "text-muted-foreground"}`} />
+              <div>
+                <span className="font-body text-sm text-foreground block">
+                  Notificar nuevos perfiles
+                </span>
+                <span className="font-body text-xs text-muted-foreground">
+                  Recibir push cuando haya gente nueva
+                </span>
+              </div>
+            </div>
+            <Switch
+              checked={notifyNewPresence}
+              onCheckedChange={handlePresenceNotificationChange}
+              disabled={isUpdatingPresenceNotif}
+            />
           </div>
 
           {/* Sound Test Section */}

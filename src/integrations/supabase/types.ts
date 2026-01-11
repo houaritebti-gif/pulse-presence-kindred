@@ -681,6 +681,7 @@ export type Database = {
           identity_verified: boolean | null
           looking_for: string[] | null
           name: string | null
+          notify_new_presence: boolean
           share_typing_status: boolean | null
           shaved_head: boolean | null
           updated_at: string | null
@@ -705,6 +706,7 @@ export type Database = {
           identity_verified?: boolean | null
           looking_for?: string[] | null
           name?: string | null
+          notify_new_presence?: boolean
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
           updated_at?: string | null
@@ -729,6 +731,7 @@ export type Database = {
           identity_verified?: boolean | null
           looking_for?: string[] | null
           name?: string | null
+          notify_new_presence?: boolean
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
           updated_at?: string | null
