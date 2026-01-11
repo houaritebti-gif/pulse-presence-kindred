@@ -21,7 +21,7 @@ import { useMultipleProfilePhotos } from "@/hooks/useProfilePhotos";
 import { useSentConnectionRequests, usePendingConnectionRequestCount } from "@/hooks/useConnectionRequests";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 import { PullToRefresh } from "@/components/PullToRefresh";
-import VirtualizedPresenceList from "@/components/VirtualizedPresenceList";
+import FullScreenPresenceList from "@/components/FullScreenPresenceList";
 import PresenceListSkeleton from "@/components/PresenceListSkeleton";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useMyKikiNowBoost, useCreateKikiNowCheckout, useVerifyKikiNowBoost, useActiveBoostedProfiles, getBoostTimeRemaining } from "@/hooks/useKikiNow";
@@ -699,7 +699,7 @@ const Presence = () => {
           />
         ) : (
           <>
-            <VirtualizedPresenceList
+            <FullScreenPresenceList
               profiles={filteredProfiles}
               connectedProfileIds={connectedProfileIds}
               photosMap={photosMap}
