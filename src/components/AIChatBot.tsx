@@ -840,30 +840,39 @@ export const AIChatBot = () => {
       )}
 
       {/* Reset position button - appears when widget has been moved */}
-      {position && isPositionCustomized() && !isOpen && !shouldHideButton && (
-        <motion.button
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.5 }}
-          onClick={resetPosition}
-          style={{
-            position: "fixed",
-            left: position.x + buttonSize + 4,
-            top: position.y + buttonSize / 2 - 12,
-            zIndex: 49,
-          }}
-          className={cn(
-            "flex items-center justify-center h-6 w-6 rounded-full",
-            "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground",
-            "shadow-md border border-border/50",
-            "transition-colors duration-200"
-          )}
-          title="Restaurar posición"
-          aria-label="Restaurar posición del asistente"
-        >
-          <RotateCcw className="h-3 w-3" />
-        </motion.button>
-      )}
+      {position && isPositionCustomized() && !isOpen && !shouldHideButton && (() => {
+        // Determine if button is on left or right side of screen
+        const isOnLeftSide = position.x < window.innerWidth / 2;
+        // Position reset button on the opposite side of the main button
+        const resetLeft = isOnLeftSide 
+          ? position.x + buttonSize + 8 
+          : position.x - 32;
+        
+        return (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            onClick={resetPosition}
+            style={{
+              position: "fixed",
+              left: resetLeft,
+              top: position.y + buttonSize / 2 - 12,
+              zIndex: 49,
+            }}
+            className={cn(
+              "flex items-center justify-center h-6 w-6 rounded-full",
+              "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground",
+              "shadow-md border border-border/50",
+              "transition-colors duration-200"
+            )}
+            title="Restaurar posición"
+            aria-label="Restaurar posición del asistente"
+          >
+            <RotateCcw className="h-3 w-3" />
+          </motion.button>
+        );
+      })()}
 
       {/* Chat Window */}
       {isOpen && (
