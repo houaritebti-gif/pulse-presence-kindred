@@ -38,7 +38,8 @@ const Quedadas = () => {
   const deleteQuedada = useDeleteQuedada();
   const updateQuedada = useUpdateQuedada();
   const { earnEnergy, canDoAction } = useSparkEnergy();
-  const { isQuedadaMuted } = useMutedQuedadas();
+  const { isQuedadaMuted, mutedQuedadas } = useMutedQuedadas();
+  const mutedCount = mutedQuedadas.length;
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: quedadas });
 
@@ -346,6 +347,24 @@ const Quedadas = () => {
           <p className="text-base sm:text-lg text-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
             Eventos efímeros en {profile?.city || "tu ciudad"}.
           </p>
+          
+          {mutedCount > 0 && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-muted/50 text-muted-foreground">
+                    <BellOff className="w-3.5 h-3.5" />
+                    <span className="text-xs font-body">
+                      {mutedCount} silenciada{mutedCount > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Gestiona tus quedadas silenciadas en tu perfil</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
 
         {/* Tabs Filter */}
