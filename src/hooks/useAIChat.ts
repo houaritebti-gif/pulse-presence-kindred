@@ -38,6 +38,7 @@ interface ChatContext {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
 const STORAGE_KEY = "ai-chat-history";
+const UNREAD_KEY = "ai-chat-unread";
 const MAX_STORED_MESSAGES = 50; // Limit stored messages to avoid localStorage bloat
 
 // Load messages from localStorage
@@ -73,6 +74,13 @@ export const useAIChat = () => {
   const [messages, setMessages] = useState<Message[]>(() => loadStoredMessages());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(() => {
+    try {
+      return parseInt(localStorage.getItem(UNREAD_KEY) || "0", 10);
+    } catch {
+      return 0;
+    }
+  });
   
   const { data: quedadas } = useQuedadas();
   const { data: profile } = useProfile();
@@ -230,14 +238,36 @@ export const useAIChat = () => {
   const clearChat = useCallback(() => {
     setMessages([]);
     setError(null);
+    setUnreadCount(0);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(UNREAD_KEY);
+  }, []);
+
+  // Mark messages as read
+  const markAsRead = useCallback(() => {
+    setUnreadCount(0);
+    localStorage.removeItem(UNREAD_KEY);
+  }, []);
+
+  // Increment unread when assistant responds (called externally when chat is closed)
+  const incrementUnread = useCallback(() => {
+    setUnreadCount(prev => {
+      const newCount = prev + 1;
+      try {
+        localStorage.setItem(UNREAD_KEY, String(newCount));
+      } catch {}
+      return newCount;
+    });
   }, []);
 
   return {
     messages,
     isLoading,
     error,
+    unreadCount,
     sendMessage,
     clearChat,
+    markAsRead,
+    incrementUnread,
   };
 };
