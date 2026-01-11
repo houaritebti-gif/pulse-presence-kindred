@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, Loader2, EyeOff, UserX, X, MoreVertical, Flag, BellOff, Bell } from "lucide-react";
+import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, Loader2, EyeOff, UserX, X, MoreVertical, Flag, BellOff, Bell, Link2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useProfile } from "@/hooks/useProfile";
@@ -455,6 +455,18 @@ const QuedadaChat = () => {
                       Silenciar
                     </>
                   )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    const url = `${window.location.origin}/quedada/${quedadaId}`;
+                    navigator.clipboard.writeText(url);
+                    triggerHaptic('light');
+                    toast.success("Enlace copiado");
+                  }}
+                  className="gap-2"
+                >
+                  <Link2 className="w-4 h-4" />
+                  Copiar enlace
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
