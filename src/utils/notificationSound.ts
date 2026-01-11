@@ -11,6 +11,7 @@ const DND_END_KEY = "kiki_dnd_end";
 const THEME_SOUND_ENABLED_KEY = "kiki_theme_sound_enabled";
 const SYNC_SOUND_TYPE_KEY = "kiki_sync_sound_type";
 const ENERGY_SOUND_ENABLED_KEY = "kiki_energy_sound_enabled";
+const ACTION_SOUNDS_ENABLED_KEY = "kiki_action_sounds_enabled";
 
 export type SyncSoundType = 'default' | 'chime' | 'bubble' | 'whoosh' | 'minimal' | 'silent';
 
@@ -67,6 +68,16 @@ export const isEnergySoundEnabled = (): boolean => {
 
 export const setEnergySoundEnabled = (enabled: boolean): void => {
   localStorage.setItem(ENERGY_SOUND_ENABLED_KEY, enabled ? "true" : "false");
+};
+
+// Action sounds toggle (Chispa, Super Chispa, Pasar)
+export const isActionSoundsEnabled = (): boolean => {
+  const stored = localStorage.getItem(ACTION_SOUNDS_ENABLED_KEY);
+  return stored === null ? true : stored === "true"; // Default enabled
+};
+
+export const setActionSoundsEnabled = (enabled: boolean): void => {
+  localStorage.setItem(ACTION_SOUNDS_ENABLED_KEY, enabled ? "true" : "false");
 };
 
 // Do Not Disturb functions
@@ -797,5 +808,278 @@ export const playEnergyGainSound = () => {
     }
   } catch (error) {
     console.log("Could not play energy gain sound:", error);
+  }
+};
+
+// ===========================================
+// ACTION SOUNDS (Swipe interactions)
+// ===========================================
+
+// Pass sound - soft "whoosh" to the left
+export const playPassSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  if (!isActionSoundsEnabled()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Soft descending whoosh - dismissive but not harsh
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.type = "sawtooth";
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(800, ctx.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.15);
+    
+    // Descending pitch
+    osc.frequency.setValueAtTime(400, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.12);
+    
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.18);
+  } catch (error) {
+    console.log("Could not play pass sound:", error);
+  }
+};
+
+// Chispa sound - sparkly ascending with shimmer
+export const playChispaSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  if (!isActionSoundsEnabled()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Sparkly ascending sound - magical and positive
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    const gain2 = ctx.createGain();
+    
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+    gain1.connect(ctx.destination);
+    gain2.connect(ctx.destination);
+    
+    osc1.type = "sine";
+    osc2.type = "triangle";
+    
+    // Main sparkle arpeggio
+    osc1.frequency.setValueAtTime(659, ctx.currentTime); // E5
+    osc1.frequency.setValueAtTime(784, ctx.currentTime + 0.06); // G5
+    osc1.frequency.setValueAtTime(988, ctx.currentTime + 0.12); // B5
+    
+    // Harmonic shimmer
+    osc2.frequency.setValueAtTime(1319, ctx.currentTime + 0.04); // E6
+    osc2.frequency.setValueAtTime(1568, ctx.currentTime + 0.1); // G6
+    
+    gain1.gain.setValueAtTime(0.1, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+    
+    gain2.gain.setValueAtTime(0.04, ctx.currentTime + 0.04);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
+    
+    osc1.start(ctx.currentTime);
+    osc2.start(ctx.currentTime + 0.04);
+    osc1.stop(ctx.currentTime + 0.28);
+    osc2.stop(ctx.currentTime + 0.25);
+  } catch (error) {
+    console.log("Could not play chispa sound:", error);
+  }
+};
+
+// Super Chispa sound - electric, powerful, dramatic
+export const playSuperChispaSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  if (!isActionSoundsEnabled()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Electric super sound - dramatic power-up feel
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const osc3 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    const gain2 = ctx.createGain();
+    const gain3 = ctx.createGain();
+    
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+    osc3.connect(gain3);
+    gain1.connect(ctx.destination);
+    gain2.connect(ctx.destination);
+    gain3.connect(ctx.destination);
+    
+    osc1.type = "sine";
+    osc2.type = "triangle";
+    osc3.type = "sine";
+    
+    // Power chord base
+    osc1.frequency.setValueAtTime(220, ctx.currentTime); // A3
+    osc1.frequency.setValueAtTime(330, ctx.currentTime + 0.08); // E4
+    osc1.frequency.setValueAtTime(440, ctx.currentTime + 0.16); // A4
+    
+    // Electric arpeggio
+    osc2.frequency.setValueAtTime(440, ctx.currentTime);
+    osc2.frequency.setValueAtTime(554, ctx.currentTime + 0.05); // C#5
+    osc2.frequency.setValueAtTime(659, ctx.currentTime + 0.1); // E5
+    osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5
+    osc2.frequency.setValueAtTime(1109, ctx.currentTime + 0.2); // C#6
+    
+    // High shimmer overtone
+    osc3.frequency.setValueAtTime(1760, ctx.currentTime + 0.1); // A6
+    osc3.frequency.exponentialRampToValueAtTime(2200, ctx.currentTime + 0.3);
+    
+    // Dramatic swelling gains
+    gain1.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain1.gain.setValueAtTime(0.12, ctx.currentTime + 0.15);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+    
+    gain2.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain2.gain.setValueAtTime(0.1, ctx.currentTime + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+    
+    gain3.gain.setValueAtTime(0, ctx.currentTime);
+    gain3.gain.setValueAtTime(0.04, ctx.currentTime + 0.1);
+    gain3.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+    
+    osc1.start(ctx.currentTime);
+    osc2.start(ctx.currentTime);
+    osc3.start(ctx.currentTime + 0.1);
+    osc1.stop(ctx.currentTime + 0.5);
+    osc2.stop(ctx.currentTime + 0.45);
+    osc3.stop(ctx.currentTime + 0.4);
+  } catch (error) {
+    console.log("Could not play super chispa sound:", error);
+  }
+};
+
+// View Profile sound - subtle "peek" sound
+export const playViewProfileSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  if (!isActionSoundsEnabled()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Soft curious "peek" - questioning, exploratory
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.type = "sine";
+    
+    // Short ascending inquiry
+    osc.frequency.setValueAtTime(523, ctx.currentTime); // C5
+    osc.frequency.setValueAtTime(587, ctx.currentTime + 0.08); // D5
+    
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+    
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.15);
+  } catch (error) {
+    console.log("Could not play view profile sound:", error);
+  }
+};
+
+// Hay Vibra (mutual match) sound - celebratory!
+export const playHayVibraSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  if (!isActionSoundsEnabled()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Triumphant match sound - exciting and celebratory
+    const notes = [
+      { freq: 523, time: 0 },      // C5
+      { freq: 659, time: 0.08 },   // E5
+      { freq: 784, time: 0.16 },   // G5
+      { freq: 1047, time: 0.24 },  // C6
+    ];
+    
+    notes.forEach(({ freq, time }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
+      
+      gain.gain.setValueAtTime(0, ctx.currentTime + time);
+      gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + time + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.02, ctx.currentTime + time + 0.2);
+      
+      osc.start(ctx.currentTime + time);
+      osc.stop(ctx.currentTime + time + 0.25);
+    });
+    
+    // Final chord
+    setTimeout(() => {
+      const chordFreqs = [523, 659, 784]; // C major
+      chordFreqs.forEach(freq => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+        
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.55);
+      });
+    }, 350);
+    
+    // Celebratory vibration
+    if ("vibrate" in navigator && isVibrationEnabled()) {
+      navigator.vibrate([80, 50, 80, 50, 150]);
+    }
+  } catch (error) {
+    console.log("Could not play hay vibra sound:", error);
   }
 };
