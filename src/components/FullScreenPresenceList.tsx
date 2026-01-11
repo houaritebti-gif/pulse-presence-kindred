@@ -1,5 +1,5 @@
 import { memo, useRef, useState, useCallback, useEffect } from "react";
-import { Radio, RotateCcw } from "lucide-react";
+import { Radio, RotateCcw, Crown, Info } from "lucide-react";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import SwipeTutorial from "./SwipeTutorial";
 import PresenceActionButtons from "./PresenceActionButtons";
@@ -16,6 +16,7 @@ import { useRewindLimit } from "@/hooks/useRewindLimit";
 import { useIsMobile } from "@/hooks/use-mobile";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { RewindLimitModal } from "@/components/RewindLimitModal";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -175,6 +176,7 @@ export const FullScreenPresenceList = memo(({
 
   const handleSwipeLeft = useCallback((presence: PresenceWithProfile) => {
     // Pass - dismiss the card and save to rewind history
+    triggerHaptic('light'); // Soft haptic for pass
     playPassSound(); // Action sound
     
     // Save to rewind history (max 10 items)
@@ -268,6 +270,7 @@ export const FullScreenPresenceList = memo(({
             console.log("[SparkEnergy] Could not award mutual spark energy:", e);
           }
         } else {
+          triggerHaptic('medium'); // Medium haptic for chispa
           playChispaSound(); // Chispa sound
           toast.success("✨ Chispa enviada", {
             description: "Si hay interés mutuo, ¡habrá vibra!",
@@ -328,7 +331,7 @@ export const FullScreenPresenceList = memo(({
       } else {
         playSuperChispaSound(); // Super Chispa sound
         fireSuperSparkConfetti();
-        triggerHaptic('success');
+        triggerHaptic('heavy'); // Strong haptic for super chispa
         toast.success("🔥 ¡Super Chispa enviada!", {
           description: `${presence.profile.name || "Este perfil"} verá tu interés especial`,
         });
@@ -447,46 +450,73 @@ export const FullScreenPresenceList = memo(({
       className="h-[calc(100vh-200px)] flex flex-col"
     >
       {/* Top badges row: Profile counter + Rewind counter */}
-      <div className="fixed top-24 left-0 right-0 z-30 pointer-events-none px-4">
+      <div className="fixed top-24 left-0 right-0 z-30 px-4">
         <div className="flex items-center justify-between max-w-md mx-auto">
-          {/* Profile counter */}
-          <div className="px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border border-border">
-            <span className="text-sm font-medium text-foreground">
-              {remainingCount} {remainingCount === 1 ? 'perfil' : 'perfiles'}
-            </span>
-          </div>
+          {/* Profile counter with tooltip */}
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border border-border cursor-help pointer-events-auto">
+                  <span className="text-sm font-medium text-foreground">
+                    {remainingCount} {remainingCount === 1 ? 'perfil' : 'perfiles'}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[200px] text-center">
+                <p className="text-xs">Perfiles que coinciden con tus preferencias. Ajusta tus filtros para ver más.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-          {/* Rewind counter badge */}
-          <motion.div 
-            className={cn(
-              "px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border flex items-center gap-1.5",
-              rewindRemaining === 1 && !isRewindUnlimited
-                ? "border-amber-500/50 animate-pulse"
-                : "border-border"
-            )}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <RotateCcw className={cn(
-              "w-3.5 h-3.5",
-              rewindRemaining === 1 && !isRewindUnlimited
-                ? "text-amber-500 animate-bounce"
-                : "text-amber-500"
-            )} />
-            <span className="text-sm font-medium text-foreground">
-              {isRewindUnlimited ? (
-                <span className="text-amber-500">∞</span>
-              ) : (
-                <span className={cn(
-                  rewindRemaining === 0 ? "text-muted-foreground" : "",
-                  rewindRemaining === 1 ? "text-amber-500 font-bold" : ""
-                )}>
-                  {rewindRemaining}
-                </span>
-              )}
-            </span>
-          </motion.div>
+          {/* Rewind counter badge with tooltip */}
+          <TooltipProvider delayDuration={0}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.div 
+                  className={cn(
+                    "px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border flex items-center gap-1.5 cursor-help pointer-events-auto",
+                    rewindRemaining === 1 && !isRewindUnlimited
+                      ? "border-amber-500/50 animate-pulse"
+                      : "border-border"
+                  )}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <RotateCcw className={cn(
+                    "w-3.5 h-3.5",
+                    rewindRemaining === 1 && !isRewindUnlimited
+                      ? "text-amber-500 animate-bounce"
+                      : "text-amber-500"
+                  )} />
+                  <span className="text-sm font-medium text-foreground">
+                    {isRewindUnlimited ? (
+                      <span className="text-amber-500">∞</span>
+                    ) : (
+                      <span className={cn(
+                        rewindRemaining === 0 ? "text-muted-foreground" : "",
+                        rewindRemaining === 1 ? "text-amber-500 font-bold" : ""
+                      )}>
+                        {rewindRemaining}
+                      </span>
+                    )}
+                  </span>
+                </motion.div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[220px]">
+                <div className="text-xs space-y-1">
+                  <p className="font-medium">Rebobinados disponibles</p>
+                  <p className="text-muted-foreground">Recupera perfiles que pasaste por error.</p>
+                  {!isRewindUnlimited && (
+                    <p className="text-amber-500 flex items-center gap-1">
+                      <Crown className="w-3 h-3" />
+                      Mejora tu plan para más rebobinados
+                    </p>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
