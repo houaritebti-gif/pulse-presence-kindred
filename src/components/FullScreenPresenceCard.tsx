@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Music, Star, Flame } from "lucide-react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star, Flame } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from "framer-motion";
 import { ALL_GENDERS, VIBES, CULTURAL_INTERESTS } from "@/constants/profileOptions";
@@ -41,8 +41,6 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
 import { firePerfectCompatibilityConfetti } from "@/utils/sparkConfetti";
-import { fireSuperSparkConfetti } from "@/utils/superSparkConfetti";
-import { SuperSparkButton } from "@/components/SuperSparkButton";
 
 // Swipe direction type
 type SwipeDirection = "left" | "right" | "up" | "down" | null;
@@ -904,61 +902,13 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
             )}
           </div>
 
-          {/* Action buttons - 3 buttons layout */}
-          <div className="flex gap-2">
-            {/* Ver perfil */}
-            <Button
-              onClick={handleViewProfile}
-              variant="secondary"
-              size="icon"
-              className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-md text-white border-0 hover:bg-white/30"
-            >
-              <User className="w-5 h-5" />
-            </Button>
-            
-            {/* Mensaje Ghost - Normal "like" */}
-            <Button
-              onClick={handleOpenDialog}
-              variant="default"
-              className="flex-1 h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30"
-            >
-              <Ghost className="w-4 h-4 mr-2" />
-              Chispa
-            </Button>
-            
-            {/* Super Chispa - Premium "super like" */}
-            {presence.profile?.id && (
-              <SuperSparkButton
-                targetProfileId={presence.profile.id}
-                targetProfileName={presence.profile.name || undefined}
-                className="h-12 w-12"
-              />
-            )}
-          </div>
-
-          {/* Swipe hint - 4 directions (mobile only) */}
-          {isMobile && (
-            <div className="flex justify-center mt-4">
-              <div className="grid grid-cols-4 gap-3 text-white/50 text-[10px]">
-                <span className="flex flex-col items-center gap-0.5">
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  <span>Pasar</span>
-                </span>
-                <span className="flex flex-col items-center gap-0.5">
-                  <ChevronRight className="w-3.5 h-3.5 text-primary/70" />
-                  <span>Chispa</span>
-                </span>
-                <span className="flex flex-col items-center gap-0.5">
-                  <ChevronUp className="w-3.5 h-3.5 text-purple-400/70" />
-                  <span>Super</span>
-                </span>
-                <span className="flex flex-col items-center gap-0.5">
-                  <ChevronDown className="w-3.5 h-3.5 text-accent/70" />
-                  <span>Perfil</span>
-                </span>
-              </div>
-            </div>
-          )}
+          {/* Ghost message button - floating */}
+          <button
+            onClick={handleOpenDialog}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-primary/90 hover:bg-primary backdrop-blur-md shadow-lg shadow-primary/30 flex items-center justify-center active:scale-95 transition-transform"
+          >
+            <Ghost className="w-6 h-6 text-primary-foreground" />
+          </button>
         </div>
       </motion.div>
 
@@ -966,19 +916,24 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
       <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
         <DialogContent className="max-w-sm bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="font-display text-lg text-card-foreground">
+            <DialogTitle className="font-display text-lg text-card-foreground flex items-center gap-2">
               {messageSent 
                 ? sparkCreated 
                   ? "🔥 ¡Chispa mutua!" 
-                  : "✓ Enviado" 
-                : "Envía un mensaje ghost"}
+                  : "✓ Mensaje enviado"
+                : (
+                  <>
+                    <Ghost className="w-5 h-5" />
+                    Mensaje fantasma
+                  </>
+                )}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
               {messageSent 
                 ? sparkCreated
                   ? "¡Hay conexión! Ya pueden chatear."
-                  : "Si hay interés mutuo, se creará una chispa."
-                : "Elige qué quieres transmitir."}
+                  : "Tu identidad permanecerá oculta hasta que haya interés mutuo."
+                : "Envía un mensaje anónimo. Si hay interés mutuo, ¡habrá chispa!"}
             </DialogDescription>
           </DialogHeader>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Flame, Sparkles, Undo2, RotateCcw, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+// Long press threshold in ms
+const LONG_PRESS_DURATION = 600;
 
 interface PresenceActionButtonsProps {
   onPass: () => void;
@@ -114,6 +117,178 @@ const ActionButton = ({
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">
           {label}{showKeyboardHint && keyboardHint && <span className="ml-2 opacity-60">({keyboardHint})</span>}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
+// ChispaButton with long-press for Super Chispa
+const ChispaButton = ({
+  onChispa,
+  onSuperChispa,
+  availableSuperChispas = 0,
+  disabled,
+  showKeyboardHint = false,
+}: {
+  onChispa: () => void;
+  onSuperChispa: () => void;
+  availableSuperChispas?: number;
+  disabled?: boolean;
+  showKeyboardHint?: boolean;
+}) => {
+  const [isLongPressing, setIsLongPressing] = useState(false);
+  const [longPressProgress, setLongPressProgress] = useState(0);
+  const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const wasLongPressRef = useRef(false);
+
+  const startLongPress = useCallback(() => {
+    wasLongPressRef.current = false;
+    setIsLongPressing(true);
+    setLongPressProgress(0);
+    triggerHaptic("light");
+
+    // Progress animation
+    const startTime = Date.now();
+    progressIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / LONG_PRESS_DURATION, 1);
+      setLongPressProgress(progress);
+      
+      if (progress >= 1) {
+        clearInterval(progressIntervalRef.current!);
+      }
+    }, 16);
+
+    // Long press detection
+    longPressTimeoutRef.current = setTimeout(() => {
+      wasLongPressRef.current = true;
+      setIsLongPressing(false);
+      setLongPressProgress(0);
+      triggerHaptic("success");
+      onSuperChispa();
+    }, LONG_PRESS_DURATION);
+  }, [onSuperChispa]);
+
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
+    }
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    setIsLongPressing(false);
+    setLongPressProgress(0);
+  }, []);
+
+  const handleRelease = useCallback(() => {
+    const wasLongPress = wasLongPressRef.current;
+    cancelLongPress();
+    
+    // If it was a short tap (not a long press), trigger Chispa
+    if (!wasLongPress && !disabled) {
+      triggerHaptic("medium");
+      onChispa();
+    }
+  }, [cancelLongPress, onChispa, disabled]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimeoutRef.current) clearTimeout(longPressTimeoutRef.current);
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+    };
+  }, []);
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <motion.button
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+            onMouseDown={!disabled ? startLongPress : undefined}
+            onMouseUp={handleRelease}
+            onMouseLeave={cancelLongPress}
+            onTouchStart={!disabled ? startLongPress : undefined}
+            onTouchEnd={handleRelease}
+            onTouchCancel={cancelLongPress}
+            disabled={disabled}
+            className={cn(
+              "relative w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200",
+              "shadow-lg select-none",
+              isLongPressing 
+                ? "bg-gradient-to-br from-purple-500 via-blue-500 to-pink-500 border-2 border-purple-400 shadow-purple-500/40"
+                : "bg-primary border-2 border-primary hover:bg-primary/90 shadow-primary/30",
+              disabled && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            {/* Progress ring for long press */}
+            {isLongPressing && (
+              <svg 
+                className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
+                viewBox="0 0 64 64"
+              >
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="30"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.3)"
+                  strokeWidth="3"
+                />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="30"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray={`${longPressProgress * 188.5} 188.5`}
+                />
+              </svg>
+            )}
+            
+            {/* Icon transitions from Sparkles to Flame during long press */}
+            <motion.div 
+              className="w-7 h-7 text-primary-foreground"
+              animate={{ 
+                scale: isLongPressing ? [1, 1.2, 1] : 1,
+                rotate: isLongPressing ? [0, 5, -5, 0] : 0
+              }}
+              transition={{ duration: 0.3, repeat: isLongPressing ? Infinity : 0 }}
+            >
+              {isLongPressing ? (
+                <Flame className="w-full h-full text-white" />
+              ) : (
+                <Sparkles className="w-full h-full" />
+              )}
+            </motion.div>
+            
+            {/* Super Chispa badge when available */}
+            {availableSuperChispas > 0 && !isLongPressing && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[10px] font-bold text-white bg-gradient-to-r from-purple-500 to-blue-500">
+                {availableSuperChispas > 9 ? "9+" : availableSuperChispas}
+              </span>
+            )}
+            
+            {/* Keyboard hint badge */}
+            {showKeyboardHint && !isLongPressing && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-background/90 border border-border text-[9px] font-mono font-bold text-muted-foreground shadow-sm">
+                → / ↑
+              </span>
+            )}
+          </motion.button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          <div className="text-center">
+            <p>Toca = Chispa ✨</p>
+            <p className="text-muted-foreground">Mantén = Super Chispa 🔥</p>
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -247,28 +422,12 @@ export const PresenceActionButtons = ({
           showKeyboardHint={shouldShowHints}
         />
 
-        {/* Chispa button - Sparkles (primary) */}
-        <ActionButton
-          onClick={onChispa}
-          icon={<Sparkles className="w-full h-full" />}
-          label="Chispa ✨"
-          variant="primary"
-          size="lg"
+        {/* Chispa button with long-press for Super Chispa */}
+        <ChispaButton
+          onChispa={onChispa}
+          onSuperChispa={onSuperChispa}
+          availableSuperChispas={availableSuperChispas}
           disabled={disabled}
-          keyboardHint="→"
-          showKeyboardHint={shouldShowHints}
-        />
-
-        {/* Super Chispa button - Flame */}
-        <ActionButton
-          onClick={onSuperChispa}
-          icon={<Flame className="w-full h-full" />}
-          label="Super Chispa 🔥"
-          variant="super"
-          size="lg"
-          badge={availableSuperChispas}
-          disabled={disabled}
-          keyboardHint="↑"
           showKeyboardHint={shouldShowHints}
         />
 
