@@ -315,29 +315,38 @@ export const PresenceActionButtons = ({
   const shouldShowHints = showKeyboardHints && !isMobile;
   
   // Hybrid intelligent: on mobile, buttons appear on touch and fade after inactivity
-  const [isVisible, setIsVisible] = useState(!isMobile);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const showButtons = useCallback(() => {
     setIsVisible(true);
     // Clear any existing timeout
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
     // Set new timeout to hide after inactivity (mobile only)
     if (isMobile) {
-      const id = setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         setIsVisible(false);
       }, INACTIVITY_TIMEOUT);
-      setTimeoutId(id);
     }
-  }, [isMobile, timeoutId]);
+  }, [isMobile]);
 
-  // On desktop, always visible
+  // On desktop, always visible; cleanup timeout on unmount
   useEffect(() => {
     if (!isMobile) {
       setIsVisible(true);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [isMobile]);
 
   // Touch handler for mobile - show buttons on any touch
@@ -358,11 +367,8 @@ export const PresenceActionButtons = ({
     return () => {
       document.removeEventListener("touchstart", handleTouch);
       document.removeEventListener("touchmove", handleTouch);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     };
-  }, [isMobile, showButtons, timeoutId]);
+  }, [isMobile, showButtons]);
 
   // Keep buttons visible when showUndo changes (undo action)
   useEffect(() => {
