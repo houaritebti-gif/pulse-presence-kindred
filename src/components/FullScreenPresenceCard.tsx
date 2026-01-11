@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, ChevronUp, MapPin } from "lucide-react";
+import { useState, forwardRef } from "react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin } from "lucide-react";
+import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { ALL_GENDERS } from "@/constants/profileOptions";
 import { Button } from "@/components/ui/button";
 import {
@@ -67,6 +68,8 @@ interface FullScreenPresenceCardProps {
   compatibilityBreakdown?: CompatibilityBreakdown;
   hasVisibilityBoost?: boolean;
   photos?: string[];
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
 }
 
 const getGenderLabel = (genderValue: string | null | undefined): string | null => {
@@ -116,15 +119,20 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealti
   }
 };
 
-const FullScreenPresenceCard = ({ 
+const SWIPE_THRESHOLD = 100;
+const SWIPE_VELOCITY_THRESHOLD = 500;
+
+const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCardProps>(({ 
   presence, 
   isBoosted = false, 
   canSeeRealtimePresence = true, 
   compatibility = 0, 
   compatibilityBreakdown, 
   hasVisibilityBoost = false,
-  photos = []
-}: FullScreenPresenceCardProps) => {
+  photos = [],
+  onSwipeLeft,
+  onSwipeRight,
+}, ref) => {
   const { data: myProfile } = useProfile();
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
@@ -140,9 +148,38 @@ const FullScreenPresenceCard = ({
   const [sending, setSending] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
   const [sparkCreated, setSparkCreated] = useState(false);
+  const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(null);
+
+  // Swipe gesture state
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-300, 0, 300], [-15, 0, 15]);
+  const opacity = useTransform(x, [-300, -100, 0, 100, 300], [0.5, 1, 1, 1, 0.5]);
+  
+  // Swipe indicator opacity
+  const leftIndicatorOpacity = useTransform(x, [-150, -50, 0], [1, 0.5, 0]);
+  const rightIndicatorOpacity = useTransform(x, [0, 50, 150], [0, 0.5, 1]);
 
   const displayPhoto = photos.length > 0 ? photos[0] : presence.profile?.avatar_url;
   const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
+
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const { offset, velocity } = info;
+    
+    // Check if swipe exceeds threshold
+    if (Math.abs(offset.x) > SWIPE_THRESHOLD || Math.abs(velocity.x) > SWIPE_VELOCITY_THRESHOLD) {
+      if (offset.x > 0) {
+        // Swipe right - send ghost message
+        setExitDirection("right");
+        triggerHaptic('success');
+        onSwipeRight?.();
+      } else {
+        // Swipe left - pass
+        setExitDirection("left");
+        triggerHaptic('light');
+        onSwipeLeft?.();
+      }
+    }
+  };
 
   const handleOpenDialog = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -252,14 +289,43 @@ const FullScreenPresenceCard = ({
 
   return (
     <>
-      <div
+      <motion.div
+        ref={ref}
+        style={{ x, rotate, opacity }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.9}
+        onDragEnd={handleDragEnd}
+        animate={exitDirection ? { 
+          x: exitDirection === "left" ? -500 : 500,
+          opacity: 0,
+          transition: { duration: 0.3 }
+        } : undefined}
         className={cn(
-          "relative w-full aspect-[3/4] max-h-[calc(100vh-180px)] min-h-[500px] rounded-3xl overflow-hidden",
-          "transition-all duration-300 ease-out",
+          "relative w-full aspect-[3/4] max-h-[calc(100vh-180px)] min-h-[500px] rounded-3xl overflow-hidden cursor-grab active:cursor-grabbing",
           "shadow-2xl shadow-foreground/20",
           isBoosted && "ring-2 ring-primary/50"
         )}
       >
+        {/* Swipe indicators */}
+        <motion.div 
+          style={{ opacity: leftIndicatorOpacity }}
+          className="absolute top-1/2 left-6 -translate-y-1/2 z-30 pointer-events-none"
+        >
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-muted/90 backdrop-blur-md border-2 border-muted-foreground/30">
+            <X className="w-8 h-8 text-muted-foreground" />
+          </div>
+        </motion.div>
+        
+        <motion.div 
+          style={{ opacity: rightIndicatorOpacity }}
+          className="absolute top-1/2 right-6 -translate-y-1/2 z-30 pointer-events-none"
+        >
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/90 backdrop-blur-md border-2 border-primary shadow-lg shadow-primary/40">
+            <Ghost className="w-8 h-8 text-primary-foreground" />
+          </div>
+        </motion.div>
+
         {/* Full-screen photo background */}
         <div className="absolute inset-0">
           {displayPhoto ? (
@@ -463,15 +529,20 @@ const FullScreenPresenceCard = ({
             </Button>
           </div>
 
-          {/* Scroll hint */}
+          {/* Swipe hint */}
           <div className="flex justify-center mt-4">
-            <div className="flex items-center gap-1 text-white/40 text-xs animate-bounce">
-              <ChevronUp className="w-4 h-4" />
-              <span>Desliza para ver más</span>
+            <div className="flex items-center gap-3 text-white/50 text-xs">
+              <span className="flex items-center gap-1">
+                <X className="w-3 h-3" /> Pasar
+              </span>
+              <span className="text-white/30">•</span>
+              <span className="flex items-center gap-1">
+                Mensaje <Ghost className="w-3 h-3" />
+              </span>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Ghost message dialog */}
       <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
@@ -577,6 +648,8 @@ const FullScreenPresenceCard = ({
       />
     </>
   );
-};
+});
+
+FullScreenPresenceCard.displayName = "FullScreenPresenceCard";
 
 export default FullScreenPresenceCard;

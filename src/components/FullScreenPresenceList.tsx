@@ -1,9 +1,15 @@
-import { memo, useRef, useState, useEffect } from "react";
-import { Radio, ChevronDown } from "lucide-react";
+import { memo, useRef, useState, useCallback } from "react";
+import { Radio } from "lucide-react";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import { PresenceWithProfile } from "@/hooks/usePresence";
 import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useProfile } from "@/hooks/useProfile";
+import { useGhostMessageLimit } from "@/hooks/useSparks";
+import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -38,9 +44,14 @@ export const FullScreenPresenceList = memo(({
 }: FullScreenPresenceListProps) => {
   const { data: activeBoostedData } = useActiveBoostedProfiles();
   const { canSeeRealtimePresence } = useSubscription();
+  const { data: myProfile } = useProfile();
+  const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
+  const queryClient = useQueryClient();
   const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Separate active and inactive profiles
   const activeProfiles = canSeeRealtimePresence 
@@ -50,31 +61,69 @@ export const FullScreenPresenceList = memo(({
     ? profiles.filter(p => !isProfileActive(p))
     : profiles;
 
-  const allProfiles = [...activeProfiles, ...inactiveProfiles];
+  // Filter out dismissed profiles
+  const allProfiles = [...activeProfiles, ...inactiveProfiles].filter(
+    p => !dismissedIds.has(p.id)
+  );
 
-  // Track scroll position to update current index
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  const handleSwipeLeft = useCallback((presenceId: string) => {
+    // Pass - just dismiss the card
+    setDismissedIds(prev => new Set(prev).add(presenceId));
+    if (currentIndex < allProfiles.length - 1) {
+      setCurrentIndex(prev => prev);
+    }
+  }, [allProfiles.length, currentIndex]);
 
-    const handleScroll = () => {
-      const scrollTop = container.scrollTop;
-      const cardHeight = container.clientHeight * 0.85; // Approximate card height
-      const newIndex = Math.round(scrollTop / cardHeight);
-      setCurrentIndex(Math.min(newIndex, allProfiles.length - 1));
-    };
+  const handleSwipeRight = useCallback(async (presence: PresenceWithProfile) => {
+    if (!myProfile?.id || !presence.profile?.id) return;
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [allProfiles.length]);
+    // Check limit first
+    if (!limitData?.canSend) {
+      setShowLimitModal(true);
+      return;
+    }
+
+    // Send a quick ghost message with a random preset
+    const quickMessages = [
+      "Me gustó tu vibra.",
+      "Algo me dice que conectamos.",
+      "Curiosidad.",
+      "Ojalá coincidamos.",
+    ];
+    const randomMessage = quickMessages[Math.floor(Math.random() * quickMessages.length)];
+
+    try {
+      const { error } = await supabase.from("ghost_messages").insert({
+        from_profile_id: myProfile.id,
+        to_profile_id: presence.profile.id,
+        content: randomMessage,
+      });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("Ya enviaste un mensaje a esta persona");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("👻 Mensaje ghost enviado");
+        refetchLimit();
+        queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
+      }
+    } catch (error: any) {
+      toast.error("Error al enviar: " + error.message);
+    }
+
+    // Dismiss the card
+    setDismissedIds(prev => new Set(prev).add(presence.id));
+  }, [myProfile?.id, limitData?.canSend, refetchLimit, queryClient]);
 
   if (profiles.length === 0) return null;
 
   return (
     <div 
       ref={containerRef}
-      className="h-[calc(100vh-200px)] overflow-y-auto snap-y snap-mandatory scrollbar-hide scroll-smooth"
-      style={{ scrollSnapType: 'y mandatory' }}
+      className="h-[calc(100vh-200px)] flex flex-col"
     >
       {/* Profile counter */}
       <div className="fixed top-24 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
@@ -97,40 +146,37 @@ export const FullScreenPresenceList = memo(({
         </div>
       )}
 
-      {/* Profile cards */}
-      {allProfiles.map((presence, index) => {
-        const profileId = presence.profile?.id;
-        const isBoosted = profileId && boostedIds.has(profileId);
-        const photos = profileId ? photosMap?.[profileId]?.map(p => p.photo_url) || [] : [];
-        const isInActiveSection = index < activeProfiles.length;
+      {/* Profile cards - Stack with current on top */}
+      <div className="relative flex-1 flex items-center justify-center px-4">
+        <AnimatePresence mode="popLayout">
+          {allProfiles.slice(currentIndex, currentIndex + 2).map((presence, idx) => {
+            const profileId = presence.profile?.id;
+            const isBoosted = profileId && boostedIds.has(profileId);
+            const photos = profileId ? photosMap?.[profileId]?.map(p => p.photo_url) || [] : [];
+            const isTop = idx === 0;
 
-        // Show section divider before inactive profiles
-        const showInactiveDivider = canSeeRealtimePresence && 
-          activeProfiles.length > 0 && 
-          index === activeProfiles.length;
-
-        return (
-          <div key={presence.id}>
-            {showInactiveDivider && (
-              <div className="snap-start flex items-center justify-center py-4">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 backdrop-blur-sm">
-                  <Radio className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Vistos recientemente ({inactiveProfiles.length})
-                  </span>
-                </div>
-              </div>
-            )}
-            
-            <div 
-              className="snap-start flex items-center justify-center px-4 py-3"
-              style={{ minHeight: 'calc(100vh - 220px)' }}
-            >
+            return (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="w-full max-w-md"
+                key={presence.id}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ 
+                  scale: isTop ? 1 : 0.95, 
+                  opacity: isTop ? 1 : 0.7,
+                  zIndex: isTop ? 10 : 5
+                }}
+                exit={{ 
+                  x: 0, 
+                  opacity: 0, 
+                  scale: 0.9,
+                  transition: { duration: 0.2 }
+                }}
+                className={cn(
+                  "absolute w-full max-w-md",
+                  !isTop && "pointer-events-none"
+                )}
+                style={{
+                  transform: !isTop ? 'translateY(10px)' : undefined
+                }}
               >
                 <FullScreenPresenceCard
                   presence={{
@@ -155,24 +201,32 @@ export const FullScreenPresenceList = memo(({
                   compatibilityBreakdown={getCompatibilityBreakdown(presence)}
                   hasVisibilityBoost={presence.hasVisibilityBoost}
                   photos={photos}
+                  onSwipeLeft={() => handleSwipeLeft(presence.id)}
+                  onSwipeRight={() => handleSwipeRight(presence)}
                 />
               </motion.div>
-            </div>
-          </div>
-        );
-      })}
+            );
+          })}
+        </AnimatePresence>
 
-      {/* End indicator */}
-      <div className="snap-start flex items-center justify-center py-8">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-2">
-            Has visto todos los perfiles
-          </p>
-          <p className="text-xs text-muted-foreground/60">
-            Vuelve más tarde para ver más
-          </p>
-        </div>
+        {/* Empty state */}
+        {allProfiles.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-2">
+              Has visto todos los perfiles
+            </p>
+            <p className="text-xs text-muted-foreground/60">
+              Vuelve más tarde para ver más
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Limit modal */}
+      <GhostMessageLimitModal
+        open={showLimitModal}
+        onOpenChange={setShowLimitModal}
+      />
     </div>
   );
 });
