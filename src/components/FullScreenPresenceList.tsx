@@ -15,6 +15,7 @@ import { usePurchasedItems } from "@/hooks/usePurchasedItems";
 import { useRewindLimit } from "@/hooks/useRewindLimit";
 import { useIsMobile } from "@/hooks/use-mobile";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
+import { RewindLimitModal } from "@/components/RewindLimitModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -82,7 +83,7 @@ export const FullScreenPresenceList = memo(({
   const { checkForNewSpark } = useSparkDetection();
   const { earnEnergy, canDoAction } = useSparkEnergy();
   const { getAvailableQuantity, useItem } = usePurchasedItems();
-  const { canRewind, remaining: rewindRemaining, isUnlimited: isRewindUnlimited, useRewind, getLimitMessage } = useRewindLimit();
+  const { canRewind, remaining: rewindRemaining, isUnlimited: isRewindUnlimited, useRewind, getLimitMessage, tier: rewindTier } = useRewindLimit();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -92,6 +93,7 @@ export const FullScreenPresenceList = memo(({
   const [rewindHistory, setRewindHistory] = useState<PresenceWithProfile[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showRewindLimitModal, setShowRewindLimitModal] = useState(false);
   const [tutorialComplete, setTutorialComplete] = useState(false);
   
   // Hay Vibra screen state
@@ -356,9 +358,8 @@ export const FullScreenPresenceList = memo(({
     }
 
     if (!canRewind) {
-      toast.error("Sin rebobinados disponibles", {
-        description: getLimitMessage(),
-      });
+      // Show premium modal instead of toast
+      setShowRewindLimitModal(true);
       return;
     }
 
@@ -383,7 +384,7 @@ export const FullScreenPresenceList = memo(({
     });
 
     toast.success("⏪ Perfil recuperado", { duration: 2000 });
-  }, [rewindHistory, canRewind, useRewind, getLimitMessage]);
+  }, [rewindHistory, canRewind, useRewind]);
 
   // Keyboard shortcuts for desktop
   useEffect(() => {
@@ -579,6 +580,13 @@ export const FullScreenPresenceList = memo(({
       <GhostMessageLimitModal
         open={showLimitModal}
         onOpenChange={setShowLimitModal}
+      />
+
+      {/* Rewind limit modal */}
+      <RewindLimitModal
+        open={showRewindLimitModal}
+        onOpenChange={setShowRewindLimitModal}
+        tier={rewindTier}
       />
 
       {/* Hay Vibra match screen */}
