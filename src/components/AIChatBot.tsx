@@ -557,6 +557,14 @@ export const AIChatBot = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [position, isMobile]);
 
+  const handleDragStart = useCallback(() => {
+    setIsDragging(true);
+    // Haptic feedback on drag start - short vibration
+    if (navigator.vibrate) {
+      navigator.vibrate(20);
+    }
+  }, []);
+
   const handleDragEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (!position) return;
     
@@ -576,6 +584,11 @@ export const AIChatBot = () => {
     };
     
     setPosition(clampedPosition);
+    
+    // Haptic feedback on drag end - double tap pattern
+    if (navigator.vibrate) {
+      navigator.vibrate([15, 30, 15]);
+    }
     
     // Save to localStorage
     try {
@@ -759,7 +772,7 @@ export const AIChatBot = () => {
           drag
           dragMomentum={false}
           dragElastic={0.1}
-          onDragStart={() => setIsDragging(true)}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onClick={handleButtonClick}
           initial={false}
