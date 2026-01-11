@@ -28,6 +28,7 @@ import { useUserSubscription } from "@/hooks/useUserSubscription";
 import QuedadaAttendeeItem from "@/components/QuedadaAttendeeItem";
 import QuedadaMessageSender from "@/components/QuedadaMessageSender";
 import UserModerationModal from "@/components/UserModerationModal";
+import { useMutedQuedadas } from "@/hooks/useMutedQuedadas";
 
 import { useGroupTypingIndicator } from "@/hooks/useGroupTypingIndicator";
 import { useQuedadaReactions } from "@/hooks/useQuedadaReactions";
@@ -62,6 +63,9 @@ const QuedadaChat = () => {
   // Reactions
   const { getMessageReactions, toggleReaction, availableEmojis, isToggling } = useQuedadaReactions(quedadaId);
   
+  // Muted quedadas
+  const { isQuedadaMuted, toggleMute } = useMutedQuedadas();
+  const isMuted = quedadaId ? isQuedadaMuted(quedadaId) : false;
   
   // Voice recording
   const { 
@@ -105,7 +109,6 @@ const QuedadaChat = () => {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showAttendees, setShowAttendees] = useState(false);
   const [showModerationModal, setShowModerationModal] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Get pending messages for this chat
@@ -438,10 +441,7 @@ const QuedadaChat = () => {
                   Ver participantes ({quedada.attendee_count})
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
-                    setIsMuted(!isMuted);
-                    triggerHaptic('light');
-                  }}
+                  onClick={() => quedadaId && toggleMute(quedadaId)}
                   className="gap-2"
                 >
                   {isMuted ? (
