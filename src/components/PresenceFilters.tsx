@@ -35,6 +35,7 @@ interface PresenceFiltersProps {
 const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: PresenceFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [interestSearch, setInterestSearch] = useState("");
 
   const hasAgeFilter = filters.ageRange && (filters.ageRange[0] !== 18 || filters.ageRange[1] !== 99);
   const hasGenderFilter = filters.genders?.length > 0;
@@ -652,25 +653,59 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="max-h-64 overflow-y-auto scrollbar-hide"
+                  className="space-y-3"
                 >
-                  <div className="flex flex-wrap gap-2">
-                    {CULTURAL_INTERESTS.map((interest, index) => (
-                      <motion.button
-                        key={interest.value}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: Math.min(index * 0.01, 0.3), duration: 0.15 }}
-                        onClick={() => toggleInterest(interest.value)}
-                        className={`px-2.5 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
-                          (filters.interests ?? []).includes(interest.value)
-                            ? "bg-accent text-accent-foreground"
-                            : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
-                        }`}
+                  {/* Search input */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Buscar intereses..."
+                      value={interestSearch}
+                      onChange={(e) => setInterestSearch(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 rounded-xl bg-muted/50 border border-border text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    />
+                    {interestSearch && (
+                      <button
+                        onClick={() => setInterestSearch("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        {interest.emoji} {interest.value}
-                      </motion.button>
-                    ))}
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Filtered interests */}
+                  <div className="max-h-48 overflow-y-auto scrollbar-hide">
+                    <div className="flex flex-wrap gap-2">
+                      {CULTURAL_INTERESTS
+                        .filter(interest => 
+                          interest.value.toLowerCase().includes(interestSearch.toLowerCase()) ||
+                          interest.emoji.includes(interestSearch)
+                        )
+                        .map((interest, index) => (
+                          <motion.button
+                            key={interest.value}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: Math.min(index * 0.01, 0.2), duration: 0.15 }}
+                            onClick={() => toggleInterest(interest.value)}
+                            className={`px-2.5 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
+                              (filters.interests ?? []).includes(interest.value)
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                            }`}
+                          >
+                            {interest.emoji} {interest.value}
+                          </motion.button>
+                        ))}
+                      {CULTURAL_INTERESTS.filter(interest => 
+                        interest.value.toLowerCase().includes(interestSearch.toLowerCase()) ||
+                        interest.emoji.includes(interestSearch)
+                      ).length === 0 && (
+                        <p className="text-xs text-muted-foreground py-2">No se encontraron intereses</p>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               )}
