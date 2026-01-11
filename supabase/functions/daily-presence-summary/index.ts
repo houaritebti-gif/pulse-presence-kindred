@@ -5,12 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface PendingNotification {
-  recipient_profile_id: string;
-  new_user_count: number;
-  cities: string[];
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -21,9 +15,11 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log("Starting daily presence summary...");
+    // Get current hour in UTC (cron runs in UTC)
+    const currentHour = new Date().getUTCHours();
+    console.log(`Starting presence summary for hour ${currentHour} UTC...`);
 
-    // Get aggregated pending notifications per recipient
+    // Get all pending notifications grouped by recipient
     const { data: pendingData, error: fetchError } = await supabase
       .from("pending_presence_notifications")
       .select("recipient_profile_id, new_user_city");
@@ -41,10 +37,41 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Aggregate by recipient
+    // Get unique recipient IDs
+    const recipientIds = [...new Set(pendingData.map(n => n.recipient_profile_id))];
+
+    // Get profiles with their preferred hour - only process those matching current hour
+    const { data: profiles, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, notify_summary_hour")
+      .in("id", recipientIds);
+
+    if (profileError) {
+      console.error("Error fetching profiles:", profileError);
+      throw profileError;
+    }
+
+    // Filter to only recipients whose preferred hour matches current hour
+    const recipientsToNotify = profiles
+      ?.filter(p => (p.notify_summary_hour ?? 9) === currentHour)
+      .map(p => p.id) || [];
+
+    if (recipientsToNotify.length === 0) {
+      console.log(`No recipients scheduled for hour ${currentHour}`);
+      return new Response(
+        JSON.stringify({ success: true, message: `No recipients for hour ${currentHour}`, pendingCount: pendingData.length }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Processing summaries for ${recipientsToNotify.length} users at hour ${currentHour}`);
+
+    // Aggregate by recipient (only those we're notifying now)
     const aggregated = new Map<string, { count: number; cities: Set<string> }>();
     
     for (const notification of pendingData) {
+      if (!recipientsToNotify.includes(notification.recipient_profile_id)) continue;
+      
       const existing = aggregated.get(notification.recipient_profile_id);
       if (existing) {
         existing.count++;
@@ -58,8 +85,6 @@ Deno.serve(async (req) => {
         });
       }
     }
-
-    console.log(`Processing summaries for ${aggregated.size} users`);
 
     let successCount = 0;
     let errorCount = 0;
@@ -118,6 +143,12 @@ Deno.serve(async (req) => {
           console.warn(`Push notification failed for ${recipientProfileId}:`, await pushResponse.text());
         }
 
+        // Delete pending notifications for this recipient after successful processing
+        await supabase
+          .from("pending_presence_notifications")
+          .delete()
+          .eq("recipient_profile_id", recipientProfileId);
+
         successCount++;
       } catch (err) {
         console.error(`Error processing recipient ${recipientProfileId}:`, err);
@@ -125,30 +156,21 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Clear all pending notifications after processing
-    const { error: deleteError } = await supabase
-      .from("pending_presence_notifications")
-      .delete()
-      .gte("created_at", "1970-01-01"); // Delete all
-
-    if (deleteError) {
-      console.error("Error clearing pending notifications:", deleteError);
-    }
-
-    // Also clear presence_exhaustion records older than 7 days to keep table clean
+    // Clean up old presence_exhaustion records (older than 7 days)
     await supabase
       .from("presence_exhaustion")
       .delete()
       .lt("exhausted_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
 
-    console.log(`Daily summary complete. Success: ${successCount}, Errors: ${errorCount}`);
+    console.log(`Summary complete for hour ${currentHour}. Success: ${successCount}, Errors: ${errorCount}`);
 
     return new Response(
       JSON.stringify({
         success: true,
+        hour: currentHour,
         processed: successCount,
         errors: errorCount,
-        totalRecipients: aggregated.size,
+        totalRecipients: recipientsToNotify.length,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
