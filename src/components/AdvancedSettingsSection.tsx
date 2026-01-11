@@ -16,6 +16,9 @@ import {
   playChispaSound,
   playSuperChispaSound,
   playPassSound,
+  playSparkleStarsSound,
+  playSparkleFireSound,
+  playSparkleHeartsSound,
 } from "@/utils/notificationSound";
 
 const AdvancedSettingsSection = () => {
@@ -236,24 +239,57 @@ const AdvancedSettingsSection = () => {
               />
             </div>
             {sparkleTrailEnabled && (
-              <div className="flex gap-2 pt-2 border-t border-border/50">
-                {sparkleStyleOptions.map((option) => {
-                  const Icon = option.icon;
-                  return (
-                    <button
-                      key={option.value}
-                      onClick={() => setSparkleStyle(option.value)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-body transition-colors ${
-                        sparkleStyle === option.value
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground hover:bg-muted/80"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {option.label}
-                    </button>
-                  );
-                })}
+              <div className="space-y-3 pt-2 border-t border-border/50">
+                {/* Style selector */}
+                <div className="flex gap-2">
+                  {sparkleStyleOptions.map((option) => {
+                    const Icon = option.icon;
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => setSparkleStyle(option.value)}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-body transition-colors ${
+                          sparkleStyle === option.value
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-foreground hover:bg-muted/80"
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Sound test buttons */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => playSparkleStarsSound()}
+                    className="flex-1 flex items-center gap-1.5 text-xs"
+                  >
+                    <Stars className="w-3 h-3" />
+                    <Play className="w-2.5 h-2.5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => playSparkleFireSound()}
+                    className="flex-1 flex items-center gap-1.5 text-xs"
+                  >
+                    <Flame className="w-3 h-3 text-orange-500" />
+                    <Play className="w-2.5 h-2.5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => playSparkleHeartsSound()}
+                    className="flex-1 flex items-center gap-1.5 text-xs"
+                  >
+                    <Heart className="w-3 h-3 text-rose-500" />
+                    <Play className="w-2.5 h-2.5" />
+                  </Button>
+                </div>
               </div>
             )}
           </div>

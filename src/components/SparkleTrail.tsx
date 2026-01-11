@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSparkleStyle, SparkleStyle } from "@/hooks/useAdvancedSettings";
+import { playSparkleTrailSound } from "@/utils/notificationSound";
 
 interface Sparkle {
   id: number;
@@ -49,13 +50,36 @@ const SparkleTrail = ({ isActive, intensity = 0.5, containerRef }: SparkleTrailP
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const [sparkleId, setSparkleId] = useState(0);
   const [style, setStyle] = useState<SparkleStyle>(getSparkleStyle);
+  const lastSoundTime = useRef(0);
+  const wasActive = useRef(false);
 
-  // Update style when becoming active
+  // Update style when becoming active and play initial sound
   useEffect(() => {
-    if (isActive) {
-      setStyle(getSparkleStyle());
+    if (isActive && !wasActive.current) {
+      const currentStyle = getSparkleStyle();
+      setStyle(currentStyle);
+      // Play sound when trail starts
+      playSparkleTrailSound(currentStyle);
+      lastSoundTime.current = Date.now();
     }
+    wasActive.current = isActive;
   }, [isActive]);
+
+  // Play periodic sounds during high intensity
+  useEffect(() => {
+    if (!isActive || intensity < 0.6) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      // Play sound every 400ms during high intensity drag
+      if (now - lastSoundTime.current > 400) {
+        playSparkleTrailSound(style);
+        lastSoundTime.current = now;
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [isActive, intensity, style]);
 
   const colors = STYLE_COLORS[style];
 
