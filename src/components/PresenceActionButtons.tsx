@@ -143,18 +143,33 @@ const ChispaButton = ({
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const wasLongPressRef = useRef(false);
 
+  const lastHapticThreshold = useRef(0);
+
   const startLongPress = useCallback(() => {
     wasLongPressRef.current = false;
+    lastHapticThreshold.current = 0;
     setIsLongPressing(true);
     setLongPressProgress(0);
     triggerHaptic("light");
 
-    // Progress animation
+    // Progress animation with progressive haptic feedback
     const startTime = Date.now();
     progressIntervalRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / LONG_PRESS_DURATION, 1);
       setLongPressProgress(progress);
+      
+      // Progressive haptic feedback at 25%, 50%, 75% thresholds
+      if (progress >= 0.25 && lastHapticThreshold.current < 0.25) {
+        lastHapticThreshold.current = 0.25;
+        triggerHaptic("light");
+      } else if (progress >= 0.50 && lastHapticThreshold.current < 0.50) {
+        lastHapticThreshold.current = 0.50;
+        triggerHaptic("medium");
+      } else if (progress >= 0.75 && lastHapticThreshold.current < 0.75) {
+        lastHapticThreshold.current = 0.75;
+        triggerHaptic("heavy");
+      }
       
       if (progress >= 1) {
         clearInterval(progressIntervalRef.current!);
@@ -166,6 +181,7 @@ const ChispaButton = ({
       wasLongPressRef.current = true;
       setIsLongPressing(false);
       setLongPressProgress(0);
+      lastHapticThreshold.current = 0;
       triggerHaptic("success");
       onSuperChispa();
     }, LONG_PRESS_DURATION);
