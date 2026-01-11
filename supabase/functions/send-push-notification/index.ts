@@ -26,13 +26,30 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    const { profile_id, title, body, url, tag } = await req.json();
+    const { profile_id, title, body, url, tag, quedada_id } = await req.json();
     
     if (!profile_id || !title) {
       throw new Error('profile_id and title are required');
     }
     
     console.log(`Sending push to profile: ${profile_id}, title: ${title}`);
+    
+    // Check if this is a quedada notification and user has muted it
+    if (quedada_id) {
+      const { data: mutedCheck } = await supabase
+        .from('muted_quedadas')
+        .select('id')
+        .eq('profile_id', profile_id)
+        .eq('quedada_id', quedada_id)
+        .maybeSingle();
+      
+      if (mutedCheck) {
+        console.log(`Quedada ${quedada_id} is muted for profile ${profile_id}, skipping push`);
+        return new Response(JSON.stringify({ sent: 0, message: 'Quedada muted' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
     
     // Get all subscriptions for this profile
     const { data: subscriptions, error: subError } = await supabase
