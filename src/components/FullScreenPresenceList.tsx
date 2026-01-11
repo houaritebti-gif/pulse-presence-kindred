@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { triggerHaptic } from "@/utils/haptics";
 import { fireSparkConfetti, firePerfectMatchHearts, fireChispaHearts } from "@/utils/sparkConfetti";
-import { fireSuperSparkConfetti } from "@/utils/superSparkConfetti";
+import { fireSuperSparkConfetti, fireSuperSparkGoldenStars } from "@/utils/superSparkConfetti";
 import { playPassSound, playChispaSound, playSuperChispaSound, playHayVibraSound } from "@/utils/notificationSound";
 // Hay Vibra screen state
 interface MatchData {
@@ -331,7 +331,8 @@ export const FullScreenPresenceList = memo(({
         }
       } else {
         playSuperChispaSound(); // Super Chispa sound
-        fireSuperSparkConfetti();
+        fireSuperSparkGoldenStars(); // Golden stars for Super Chispa
+        fireSuperSparkConfetti(); // Additional electric confetti
         triggerHaptic('heavy'); // Strong haptic for super chispa
         toast.success("🔥 ¡Super Chispa enviada!", {
           description: `${presence.profile.name || "Este perfil"} verá tu interés especial`,
