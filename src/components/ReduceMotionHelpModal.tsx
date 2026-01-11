@@ -492,6 +492,21 @@ export const ReduceMotionHelpModal = () => {
             <TabsContent key={os} value={os} className="flex-1 mt-0 p-4">
               <ScrollArea className="h-[350px] pr-4">
                 <div className="space-y-4">
+                  {/* Animated progress bar */}
+                  <div className="relative h-1.5 bg-muted rounded-full overflow-hidden">
+                    <motion.div
+                      className="absolute inset-y-0 left-0 bg-primary rounded-full"
+                      initial={false}
+                      animate={{ 
+                        width: `${((currentStep + 1) / osInstructionsData[os].steps.length) * 100}%` 
+                      }}
+                      transition={reduceMotion 
+                        ? { duration: 0 } 
+                        : { type: "spring", stiffness: 300, damping: 30 }
+                      }
+                    />
+                  </div>
+
                   {/* Step indicator with animations */}
                   <div className="flex items-center justify-center gap-2">
                     {osInstructionsData[os].steps.map((_, index) => (
