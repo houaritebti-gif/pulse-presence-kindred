@@ -1,15 +1,28 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useAdvancedSettings, Theme, TextSize } from "@/hooks/useAdvancedSettings";
-import { isThemeSoundEnabled, setThemeSoundEnabled, isEnergySoundEnabled, setEnergySoundEnabled, notifyUser, playEnergyGainSound } from "@/utils/notificationSound";
+import { 
+  isThemeSoundEnabled, 
+  setThemeSoundEnabled, 
+  isEnergySoundEnabled, 
+  setEnergySoundEnabled, 
+  isActionSoundsEnabled,
+  setActionSoundsEnabled,
+  notifyUser, 
+  playEnergyGainSound,
+  playChispaSound,
+  playSuperChispaSound,
+  playPassSound,
+} from "@/utils/notificationSound";
 
 const AdvancedSettingsSection = () => {
   const [expanded, setExpanded] = useState(false);
   const [themeSoundOn, setThemeSoundOn] = useState(true);
   const [energySoundOn, setEnergySoundOn] = useState(true);
+  const [actionSoundsOn, setActionSoundsOn] = useState(true);
   
   const {
     theme,
@@ -27,6 +40,7 @@ const AdvancedSettingsSection = () => {
   useEffect(() => {
     setThemeSoundOn(isThemeSoundEnabled());
     setEnergySoundOn(isEnergySoundEnabled());
+    setActionSoundsOn(isActionSoundsEnabled());
   }, []);
 
   const handleThemeSoundChange = (enabled: boolean) => {
@@ -37,6 +51,11 @@ const AdvancedSettingsSection = () => {
   const handleEnergySoundChange = (enabled: boolean) => {
     setEnergySoundOn(enabled);
     setEnergySoundEnabled(enabled);
+  };
+
+  const handleActionSoundsChange = (enabled: boolean) => {
+    setActionSoundsOn(enabled);
+    setActionSoundsEnabled(enabled);
   };
 
   const themeOptions: { value: Theme; label: string; icon: typeof Sun }[] = [
@@ -233,6 +252,58 @@ const AdvancedSettingsSection = () => {
                 onCheckedChange={handleEnergySoundChange}
               />
             </div>
+          </div>
+
+          {/* Action Sounds (Swipe interactions) */}
+          <div className="p-4 bg-secondary/50 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <MousePointer2 className={`w-5 h-5 ${actionSoundsOn ? "text-primary" : "text-muted-foreground"}`} />
+                <div>
+                  <span className="font-body text-sm text-foreground block">
+                    Sonidos de acciones
+                  </span>
+                  <span className="font-body text-xs text-muted-foreground">
+                    Chispa, Super Chispa, Pasar
+                  </span>
+                </div>
+              </div>
+              <Switch
+                checked={actionSoundsOn}
+                onCheckedChange={handleActionSoundsChange}
+              />
+            </div>
+            {actionSoundsOn && (
+              <div className="flex gap-2 pt-2 border-t border-border/50">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => playPassSound()}
+                  className="flex-1 flex items-center gap-2 text-xs"
+                >
+                  <X className="w-4 h-4 text-muted-foreground" />
+                  Pasar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => playChispaSound()}
+                  className="flex-1 flex items-center gap-2 text-xs"
+                >
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  Chispa
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => playSuperChispaSound()}
+                  className="flex-1 flex items-center gap-2 text-xs"
+                >
+                  <Flame className="w-4 h-4 text-purple-500" />
+                  Super
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Sound Test Section */}

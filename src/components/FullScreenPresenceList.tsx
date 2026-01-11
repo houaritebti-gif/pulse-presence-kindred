@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { triggerHaptic } from "@/utils/haptics";
 import { fireSparkConfetti, firePerfectMatchHearts } from "@/utils/sparkConfetti";
 import { fireSuperSparkConfetti } from "@/utils/superSparkConfetti";
+import { playPassSound, playChispaSound, playSuperChispaSound, playViewProfileSound, playHayVibraSound } from "@/utils/notificationSound";
 // Hay Vibra screen state
 interface MatchData {
   theirPhoto: string | null;
@@ -169,6 +170,7 @@ export const FullScreenPresenceList = memo(({
 
   const handleSwipeLeft = useCallback((presenceId: string) => {
     // Pass - just dismiss the card
+    playPassSound(); // Action sound
     setDismissedIds(prev => new Set(prev).add(presenceId));
     setLastAction({ type: 'swipe_left', presenceId });
     if (currentIndex < allProfiles.length - 1) {
@@ -245,6 +247,7 @@ export const FullScreenPresenceList = memo(({
             isPerfectMatch: isPerfect,
           });
           setShowHayVibra(true);
+          playHayVibraSound(); // Celebration sound for mutual match
           
           // Award mutual spark energy
           try {
@@ -256,6 +259,7 @@ export const FullScreenPresenceList = memo(({
             console.log("[SparkEnergy] Could not award mutual spark energy:", e);
           }
         } else {
+          playChispaSound(); // Chispa sound
           toast.success("✨ Chispa enviada", {
             description: "Si hay interés mutuo, ¡habrá vibra!",
           });
@@ -313,6 +317,7 @@ export const FullScreenPresenceList = memo(({
           throw error;
         }
       } else {
+        playSuperChispaSound(); // Super Chispa sound
         fireSuperSparkConfetti();
         triggerHaptic('success');
         toast.success("🔥 ¡Super Chispa enviada!", {
@@ -331,6 +336,7 @@ export const FullScreenPresenceList = memo(({
   // Handle swipe down - View profile
   const handleSwipeDown = useCallback((presence: PresenceWithProfile) => {
     if (presence.profile?.id) {
+      playViewProfileSound(); // View profile sound
       navigate(`/user/${presence.profile.id}`);
     }
   }, [navigate]);
