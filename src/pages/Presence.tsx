@@ -22,7 +22,7 @@ import { useSentConnectionRequests, usePendingConnectionRequestCount } from "@/h
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import FullScreenPresenceList from "@/components/FullScreenPresenceList";
-import PresenceListSkeleton from "@/components/PresenceListSkeleton";
+import FullScreenPresenceSkeleton from "@/components/FullScreenPresenceSkeleton";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useMyKikiNowBoost, useCreateKikiNowCheckout, useVerifyKikiNowBoost, useActiveBoostedProfiles, getBoostTimeRemaining } from "@/hooks/useKikiNow";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -698,7 +698,7 @@ const Presence = () => {
 
         {/* Profile cards */}
         {isLoading ? (
-          <PresenceListSkeleton count={3} />
+          <FullScreenPresenceSkeleton showStackedCards />
         ) : isError ? (
           <ErrorState
             icon={Sparkles}
