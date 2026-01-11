@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.verify-kiki-now-boost]
 verify_jwt = true
+
+[functions.daily-presence-summary]
+verify_jwt = false

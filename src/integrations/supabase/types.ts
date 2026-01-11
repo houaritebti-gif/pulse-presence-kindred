@@ -415,6 +415,45 @@ export type Database = {
           },
         ]
       }
+      pending_presence_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          new_user_city: string | null
+          new_user_profile_id: string
+          recipient_profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_user_city?: string | null
+          new_user_profile_id: string
+          recipient_profile_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_user_city?: string | null
+          new_user_profile_id?: string
+          recipient_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_presence_notifications_new_user_profile_id_fkey"
+            columns: ["new_user_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_presence_notifications_recipient_profile_id_fkey"
+            columns: ["recipient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       presence: {
         Row: {
           id: string
