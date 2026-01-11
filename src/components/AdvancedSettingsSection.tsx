@@ -1,12 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock, HelpCircle, Copy, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { ReduceMotionHelpModal } from "@/components/ReduceMotionHelpModal";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -45,126 +40,6 @@ const getManualReduceMotionPreference = (): boolean | null => {
   return null;
 };
 
-type DetectedOS = "windows" | "macos" | "ios" | "android" | "unknown";
-
-const detectOS = (): DetectedOS => {
-  if (typeof window === "undefined") return "unknown";
-  const ua = navigator.userAgent.toLowerCase();
-  
-  if (/iphone|ipad|ipod/.test(ua)) return "ios";
-  if (/android/.test(ua)) return "android";
-  if (/mac/.test(ua)) return "macos";
-  if (/win/.test(ua)) return "windows";
-  return "unknown";
-};
-
-const osInstructions: Record<DetectedOS, { name: string; steps: string }> = {
-  windows: {
-    name: "Windows",
-    steps: "Configuración → Accesibilidad → Efectos visuales → Desactivar animaciones"
-  },
-  macos: {
-    name: "macOS",
-    steps: "Preferencias del Sistema → Accesibilidad → Pantalla → Reducir movimiento"
-  },
-  ios: {
-    name: "iOS",
-    steps: "Ajustes → Accesibilidad → Movimiento → Reducir movimiento"
-  },
-  android: {
-    name: "Android",
-    steps: "Ajustes → Accesibilidad → Quitar animaciones"
-  },
-  unknown: {
-    name: "Tu dispositivo",
-    steps: "Busca 'Reducir movimiento' o 'Animaciones' en los ajustes de accesibilidad"
-  }
-};
-
-const ReduceMotionHelpTooltip = () => {
-  const [copied, setCopied] = useState(false);
-  const detectedOS = useMemo(() => detectOS(), []);
-  const currentOSInfo = osInstructions[detectedOS];
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        `${currentOSInfo.name}: ${currentOSInfo.steps}`
-      );
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = `${currentOSInfo.name}: ${currentOSInfo.steps}`;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  return (
-    <TooltipProvider>
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
-          <button className="p-1 rounded-full hover:bg-muted/50 transition-colors">
-            <HelpCircle className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="left" className="max-w-[300px] p-3 space-y-2">
-          <p className="font-medium text-sm">¿Qué es prefers-reduced-motion?</p>
-          <p className="text-xs text-muted-foreground">
-            Es una configuración del sistema que indica que prefieres menos animaciones, útil para personas con sensibilidad al movimiento o epilepsia.
-          </p>
-          
-          {/* Detected OS instructions with copy button */}
-          <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-medium text-primary">
-                Detectado: {currentOSInfo.name}
-              </span>
-              <button
-                onClick={handleCopy}
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3 h-3" />
-                    Copiado
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3" />
-                    Copiar
-                  </>
-                )}
-              </button>
-            </div>
-            <p className="text-[10px] text-foreground/80">
-              {currentOSInfo.steps}
-            </p>
-          </div>
-
-          <div className="space-y-1.5 pt-1 border-t border-border">
-            <p className="text-[10px] font-medium text-muted-foreground">Otros sistemas:</p>
-            <div className="text-[10px] text-muted-foreground/70 space-y-0.5">
-              {Object.entries(osInstructions)
-                .filter(([key]) => key !== detectedOS && key !== "unknown")
-                .map(([key, info]) => (
-                  <p key={key}>
-                    <span className="font-medium">{info.name}:</span> {info.steps}
-                  </p>
-                ))}
-            </div>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-};
 
 const ReduceMotionSetting = ({ 
   reduceMotion, 
@@ -302,8 +177,8 @@ const ReduceMotionSetting = ({
           </span>
         </div>
         
-        {/* Help tooltip */}
-        <ReduceMotionHelpTooltip />
+        {/* Help modal */}
+        <ReduceMotionHelpModal />
       </div>
     </div>
   );
