@@ -1,22 +1,82 @@
 import { useState, useEffect } from "react";
 
+const REDUCE_MOTION_KEY = "kiki_reduce_motion";
+
+/**
+ * Get the manual reduce motion preference from localStorage
+ * Returns null if user hasn't set a preference (use system default)
+ */
+const getManualReduceMotionPreference = (): boolean | null => {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem(REDUCE_MOTION_KEY);
+  if (stored === "true") return true;
+  if (stored === "false") return false;
+  return null; // No preference set, use system
+};
+
 /**
  * Hook to detect if user prefers reduced motion
- * Returns true if the user has requested the system minimize non-essential motion
+ * Checks manual setting first, then falls back to system preference
+ * Returns true if animations should be reduced
  */
 export const useReducedMotion = (): boolean => {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
+    const manual = getManualReduceMotionPreference();
+    if (manual !== null) return manual;
     if (typeof window === "undefined") return false;
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   });
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mediaQuery.matches);
+    // Check for manual override first
+    const manual = getManualReduceMotionPreference();
+    if (manual !== null) {
+      setPrefersReducedMotion(manual);
+    } else {
+      // Fall back to system preference
+      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+      setPrefersReducedMotion(mediaQuery.matches);
+    }
 
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
+    // Listen for system preference changes (only applies if no manual setting)
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleSystemChange = (e: MediaQueryListEvent) => {
+      const manualPref = getManualReduceMotionPreference();
+      if (manualPref === null) {
+        setPrefersReducedMotion(e.matches);
+      }
+    };
+    mediaQuery.addEventListener("change", handleSystemChange);
+
+    // Listen for localStorage changes (for when user toggles the setting)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === REDUCE_MOTION_KEY) {
+        const manual = getManualReduceMotionPreference();
+        if (manual !== null) {
+          setPrefersReducedMotion(manual);
+        } else {
+          setPrefersReducedMotion(mediaQuery.matches);
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    // Also listen for custom events for same-tab updates
+    const handleCustomEvent = () => {
+      const manual = getManualReduceMotionPreference();
+      if (manual !== null) {
+        setPrefersReducedMotion(manual);
+      } else {
+        setPrefersReducedMotion(mediaQuery.matches);
+      }
+    };
+    window.addEventListener("reduceMotionChanged", handleCustomEvent);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleSystemChange);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("reduceMotionChanged", handleCustomEvent);
+    };
   }, []);
 
   return prefersReducedMotion;

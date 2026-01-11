@@ -366,22 +366,26 @@ const AdvancedSettingsSection = () => {
             </div>
           </div>
 
-          {/* Reduce Motion */}
+          {/* Reduce Motion - Manual Override */}
           <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
             <div className="flex items-center gap-3">
-              <Sparkles className={`w-5 h-5 ${!reduceMotion ? "text-foreground" : "text-muted-foreground"}`} />
+              <Sparkles className={`w-5 h-5 ${!reduceMotion ? "text-primary" : "text-muted-foreground"}`} />
               <div>
                 <span className="font-body text-sm text-foreground block">
-                  {reduceMotion ? "Animaciones reducidas" : "Animaciones activas"}
+                  Reducir animaciones
                 </span>
                 <span className="font-body text-xs text-muted-foreground">
-                  Reduce el movimiento para mayor accesibilidad
+                  {reduceMotion 
+                    ? "Movimiento reducido para accesibilidad" 
+                    : "Animaciones completas activas"
+                  }
                 </span>
               </div>
             </div>
             <Switch
-              checked={!reduceMotion}
-              onCheckedChange={(checked) => setReduceMotion(!checked)}
+              checked={reduceMotion}
+              onCheckedChange={setReduceMotion}
+              aria-label="Forzar reducción de movimiento"
             />
           </div>
 
