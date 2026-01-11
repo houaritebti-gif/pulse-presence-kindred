@@ -642,35 +642,51 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
             )}
           </div>
 
-          {/* Action buttons */}
-          <div className="flex gap-3">
+          {/* Action buttons - 3 buttons layout */}
+          <div className="flex gap-2">
+            {/* Ver perfil */}
             <Button
               onClick={handleViewProfile}
               variant="secondary"
-              className="flex-1 h-12 rounded-full bg-white/20 backdrop-blur-md text-white border-0 hover:bg-white/30 font-semibold"
+              size="icon"
+              className="h-12 w-12 rounded-full bg-white/20 backdrop-blur-md text-white border-0 hover:bg-white/30"
             >
-              <User className="w-4 h-4 mr-2" />
-              Ver perfil
+              <User className="w-5 h-5" />
             </Button>
+            
+            {/* Mensaje Ghost - Normal "like" */}
             <Button
               onClick={handleOpenDialog}
               variant="default"
               className="flex-1 h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/30"
             >
               <Ghost className="w-4 h-4 mr-2" />
-              Mensaje ghost
+              Chispa
             </Button>
+            
+            {/* Super Chispa - Premium "super like" */}
+            {presence.profile?.id && (
+              <SuperSparkButton
+                targetProfileId={presence.profile.id}
+                targetProfileName={presence.profile.name || undefined}
+                className="h-12 w-12"
+              />
+            )}
           </div>
 
           {/* Swipe hint */}
           <div className="flex justify-center mt-4">
-            <div className="flex items-center gap-3 text-white/50 text-xs">
+            <div className="flex items-center gap-4 text-white/50 text-xs">
               <span className="flex items-center gap-1">
                 <X className="w-3 h-3" /> Pasar
               </span>
               <span className="text-white/30">•</span>
               <span className="flex items-center gap-1">
-                Mensaje <Ghost className="w-3 h-3" />
+                <Ghost className="w-3 h-3" /> Chispa
+              </span>
+              <span className="text-white/30">•</span>
+              <span className="flex items-center gap-1">
+                <Flame className="w-3 h-3 text-purple-400" /> Super
               </span>
             </div>
           </div>
