@@ -11,6 +11,7 @@ import { TypingIndicator } from "./TypingIndicator";
 import { useCreateQuedada, useDeleteQuedada } from "@/hooks/useQuedadas";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useChatInput } from "@/contexts/ChatInputContext";
 
 const SUGGESTED_QUESTIONS = [
   "¿Cuáles son mis quedadas?",
@@ -499,6 +500,7 @@ export const AIChatBot = () => {
   const createQuedada = useCreateQuedada();
   const deleteQuedada = useDeleteQuedada();
   const { canAccessChatbot, canCreateQuedadas, canDeleteQuedadas, tier } = useSubscription();
+  const { isTypingInChat } = useChatInput();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -618,14 +620,14 @@ export const AIChatBot = () => {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - hidden when user is typing in chat */}
       <Button
         onClick={() => setIsOpen(true)}
         className={cn(
           "fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full shadow-lg",
           "bg-primary hover:bg-primary/90 text-primary-foreground",
           "transition-all duration-300 hover:scale-110",
-          isOpen && "hidden"
+          (isOpen || isTypingInChat) && "hidden"
         )}
         size="icon"
       >
