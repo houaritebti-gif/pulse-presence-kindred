@@ -207,18 +207,24 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, profileId, isOwnProfile 
 
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 300 : -300,
+      x: direction > 0 ? 100 : -100,
       opacity: 0,
+      scale: 0.95,
+      filter: "blur(4px)",
     }),
     center: {
       zIndex: 1,
       x: 0,
       opacity: 1,
+      scale: 1,
+      filter: "blur(0px)",
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      x: direction < 0 ? 300 : -300,
+      x: direction < 0 ? 100 : -100,
       opacity: 0,
+      scale: 0.95,
+      filter: "blur(4px)",
     }),
   };
 
@@ -237,8 +243,10 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, profileId, isOwnProfile 
               animate="center"
               exit="exit"
               transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 },
+                x: { type: "spring", stiffness: 400, damping: 35 },
+                opacity: { duration: 0.25 },
+                scale: { type: "spring", stiffness: 400, damping: 35 },
+                filter: { duration: 0.2 },
               }}
               drag={allPhotos.length > 1 ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
@@ -295,18 +303,23 @@ const ProfilePhotoGallery = ({ photos, avatarUrl, name, profileId, isOwnProfile 
           {allPhotos.length > 1 && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
               {allPhotos.map((_, index) => (
-                <button
+                <motion.button
                   key={index}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleThumbnailClick(index);
                   }}
-                  className={cn(
-                    "w-2 h-2 rounded-full transition-all",
-                    index === currentIndex
-                      ? "bg-primary w-4"
-                      : "bg-background/60 hover:bg-background/80"
-                  )}
+                  className="h-2 rounded-full bg-background/60"
+                  animate={{
+                    width: index === currentIndex ? 16 : 8,
+                    backgroundColor: index === currentIndex 
+                      ? "hsl(var(--primary))" 
+                      : "hsl(var(--background) / 0.6)",
+                    scale: index === currentIndex ? 1 : 0.9,
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               ))}
             </div>

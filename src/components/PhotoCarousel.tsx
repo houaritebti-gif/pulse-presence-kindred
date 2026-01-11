@@ -413,10 +413,13 @@ const DotsIndicator = memo(({
         key={index}
         className="h-1.5 rounded-full bg-background/60"
         animate={{
-          width: index === currentIndex ? 12 : 6,
+          width: index === currentIndex ? 14 : 6,
           backgroundColor: index === currentIndex ? "hsl(var(--primary))" : "hsl(var(--background) / 0.6)",
+          scale: index === currentIndex ? 1 : 0.85,
+          opacity: index === currentIndex ? 1 : 0.7,
         }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        whileHover={{ scale: 1.15, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 500, damping: 28 }}
       />
     ))}
   </div>
