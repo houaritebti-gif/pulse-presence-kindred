@@ -1,5 +1,5 @@
 import { memo, useRef, useState, useCallback, useEffect } from "react";
-import { Radio, RotateCcw, Crown, Info, RefreshCw } from "lucide-react";
+import { Radio, RotateCcw, Crown, Info, RefreshCw, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import SwipeTutorial from "./SwipeTutorial";
@@ -441,6 +441,48 @@ export const FullScreenPresenceList = memo(({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isMobile, allProfiles, handleSwipeLeft, handleSwipeRight, handleSwipeUp, handleSwipeDown, handleUndo, handleRewind, showUndo, lastAction]);
 
+  // Track exhaustion state for push notifications
+  useEffect(() => {
+    if (allProfiles.length === 0 && totalProfiles > 0 && myProfile?.id) {
+      // Register that user has exhausted their list
+      const trackExhaustion = async () => {
+        try {
+          await supabase
+            .from("presence_exhaustion")
+            .upsert({
+              profile_id: myProfile.id,
+              exhausted_at: new Date().toISOString(),
+              notified_at: null, // Reset to receive new notifications
+            }, { onConflict: 'profile_id' });
+        } catch (e) {
+          console.log("[PresenceExhaustion] Could not track:", e);
+        }
+      };
+      trackExhaustion();
+    }
+  }, [allProfiles.length, totalProfiles, myProfile?.id]);
+
+  // Clear exhaustion when user resets
+  const handleReset = useCallback(async () => {
+    triggerHaptic('medium');
+    setDismissedIds(new Set());
+    setRewindHistory([]);
+    
+    // Remove exhaustion record since user is starting fresh
+    if (myProfile?.id) {
+      try {
+        await supabase
+          .from("presence_exhaustion")
+          .delete()
+          .eq("profile_id", myProfile.id);
+      } catch (e) {
+        console.log("[PresenceExhaustion] Could not clear:", e);
+      }
+    }
+    
+    toast.success("Perfiles restablecidos", { description: "Puedes volver a explorar desde el inicio" });
+  }, [myProfile?.id]);
+
   // Show empty state when all profiles have been viewed
   if (allProfiles.length === 0 && totalProfiles > 0) {
     return (
@@ -463,18 +505,17 @@ export const FullScreenPresenceList = memo(({
         <h3 className="font-display text-xl font-semibold text-foreground mb-2">
           ¡Has visto todos los perfiles!
         </h3>
-        <p className="font-body text-sm text-muted-foreground max-w-[280px] mx-auto leading-relaxed mb-6">
-          Vuelve más tarde para descubrir gente nueva o ajusta tus filtros para ampliar tu búsqueda.
+        <p className="font-body text-sm text-muted-foreground max-w-[280px] mx-auto leading-relaxed mb-4">
+          Te notificaremos cuando haya gente nueva. También puedes ajustar tus filtros para ampliar tu búsqueda.
         </p>
+        <div className="flex items-center gap-2 text-xs text-primary/70 mb-6">
+          <Bell className="w-3.5 h-3.5" />
+          <span>Recibirás una notificación push</span>
+        </div>
         <Button
           variant="outline"
           size="lg"
-          onClick={() => {
-            triggerHaptic('medium');
-            setDismissedIds(new Set());
-            setRewindHistory([]);
-            toast.success("Perfiles restablecidos", { description: "Puedes volver a explorar desde el inicio" });
-          }}
+          onClick={handleReset}
           className="gap-2 mb-4"
         >
           <RefreshCw className="w-4 h-4" />
