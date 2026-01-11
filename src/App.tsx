@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ChatInputProvider } from "@/contexts/ChatInputContext";
 import NotificationProvider from "@/components/NotificationProvider";
 import { initializeAdvancedSettings } from "@/hooks/useAdvancedSettings";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -95,26 +96,28 @@ const App = () => {
       <AuthProvider>
         <TooltipProvider>
           <ScreenReaderAnnouncerProvider>
-            <EnergyGainProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <SkipLink />
-                <NotificationProvider>
-                  <KeyboardNavigationWrapper>
-                    <OfflineIndicator />
-                    <PWAInstallPrompt />
-                    <Suspense fallback={null}>
-                      <AIChatBot />
-                    </Suspense>
-                    <CookieConsent />
-                    <BottomNavigation />
-                    <AnimatedRoutes />
-                  </KeyboardNavigationWrapper>
-                </NotificationProvider>
-              </BrowserRouter>
-            </EnergyGainProvider>
-          </ScreenReaderAnnouncerProvider>
+              <EnergyGainProvider>
+                <ChatInputProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <SkipLink />
+                    <NotificationProvider>
+                      <KeyboardNavigationWrapper>
+                        <OfflineIndicator />
+                        <PWAInstallPrompt />
+                        <Suspense fallback={null}>
+                          <AIChatBot />
+                        </Suspense>
+                        <CookieConsent />
+                        <BottomNavigation />
+                        <AnimatedRoutes />
+                      </KeyboardNavigationWrapper>
+                    </NotificationProvider>
+                  </BrowserRouter>
+                </ChatInputProvider>
+              </EnergyGainProvider>
+            </ScreenReaderAnnouncerProvider>
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>

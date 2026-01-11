@@ -27,12 +27,14 @@ import PremiumBadge from "@/components/PremiumBadge";
 import ImageCropModal from "@/components/ImageCropModal";
 import SharedAvatar from "@/components/SharedAvatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChatInput } from "@/contexts/ChatInputContext";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 
 const SparkChat = () => {
   const navigate = useNavigate();
   const { chatId } = useParams<{ chatId: string }>();
   const { user } = useAuth();
+  const { setTypingInChat } = useChatInput();
   const { data: profile } = useProfile();
   const { data: chats } = useSparkChats();
   const { data: messages, isLoading } = useChatMessages(chatId);
@@ -41,6 +43,13 @@ const SparkChat = () => {
   const markRead = useMarkSparkRead();
   const deleteMessage = useDeleteMessage();
   const editMessage = useEditMessage();
+  
+  // Reset typing state when leaving the chat
+  useEffect(() => {
+    return () => {
+      setTypingInChat(false);
+    };
+  }, [setTypingInChat]);
   
   // Find current chat
   const chat = chats?.find(c => c.id === chatId);
@@ -873,6 +882,8 @@ const SparkChat = () => {
                     setNewMessage(e.target.value);
                     handleTyping();
                   }}
+                  onFocus={() => setTypingInChat(true)}
+                  onBlur={() => setTypingInChat(false)}
                   placeholder={selectedFile ? "Añade un mensaje..." : "Escribe algo..."}
                   className="h-12 font-body bg-card/50 text-card-foreground border-border/30 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
                 />

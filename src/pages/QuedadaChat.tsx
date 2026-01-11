@@ -10,6 +10,7 @@ import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRe
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useAuth } from "@/contexts/AuthContext";
+import { useChatInput } from "@/contexts/ChatInputContext";
 import { triggerHaptic } from "@/utils/haptics";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -34,6 +35,7 @@ const QuedadaChat = () => {
   const navigate = useNavigate();
   const { quedadaId } = useParams<{ quedadaId: string }>();
   const { user } = useAuth();
+  const { setTypingInChat } = useChatInput();
   const { data: profile } = useProfile();
   const { data: quedada, isLoading: quedadaLoading } = useQuedada(quedadaId);
   const { data: messages, isLoading: messagesLoading } = useQuedadaMessages(quedadaId);
@@ -41,6 +43,13 @@ const QuedadaChat = () => {
   const sendMessage = useSendQuedadaMessage();
   const markRead = useMarkQuedadaRead();
   const expelAttendee = useExpelAttendee();
+  
+  // Reset typing state when leaving the chat
+  useEffect(() => {
+    return () => {
+      setTypingInChat(false);
+    };
+  }, [setTypingInChat]);
   
   // Subscription check for creator
   const { data: creatorTier } = useUserSubscription(quedada?.creator?.id);
@@ -606,7 +615,6 @@ const QuedadaChat = () => {
       {/* Input - extra right padding to avoid floating widgets (AI assistant, shortcuts) */}
       <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80 pr-24">
         <div className="flex gap-3 items-center">
-          {/* Text input */}
           <div className="flex-1 relative">
             <Input
               value={newMessage}
@@ -614,6 +622,8 @@ const QuedadaChat = () => {
                 setNewMessage(e.target.value);
                 handleTyping();
               }}
+              onFocus={() => setTypingInChat(true)}
+              onBlur={() => setTypingInChat(false)}
               placeholder="Escribe algo..."
               className="h-12 font-body bg-card/50 text-card-foreground border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
             />
