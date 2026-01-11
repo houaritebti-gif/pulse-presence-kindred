@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { Flame } from "lucide-react";
+import { Flame, BellOff } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
+import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
 import PremiumBadge from "@/components/PremiumBadge";
 import SharedAvatar from "@/components/SharedAvatar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SparkChatItemProps {
   chat: {
@@ -26,6 +28,8 @@ interface SparkChatItemProps {
 const SparkChatItem = ({ chat, animationDelay = 0, animationStyle }: SparkChatItemProps) => {
   const navigate = useNavigate();
   const { data: subscriptionTier } = useUserSubscription(chat.other_profile?.id);
+  const { isChatMuted } = useMutedSparkChats();
+  const isMuted = isChatMuted(chat.id);
 
   const computedStyle = animationStyle || { animationDelay: `${animationDelay}ms` };
 
@@ -59,6 +63,20 @@ const SparkChatItem = ({ chat, animationDelay = 0, animationStyle }: SparkChatIt
             {chat.other_profile?.name || "Anónima"}
           </h3>
           {subscriptionTier === 'premium' && <PremiumBadge size="sm" />}
+          {isMuted && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-muted flex items-center justify-center">
+                    <BellOff className="w-3 h-3 text-muted-foreground" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Notificaciones silenciadas</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {chat.last_message_at && (
             <span className="font-body text-xs text-card-foreground/60">
               · {formatDistanceToNow(new Date(chat.last_message_at), { addSuffix: false, locale: es })}

@@ -7,6 +7,7 @@ interface SendPushParams {
   url?: string;
   tag?: string;
   quedadaId?: string;
+  sparkChatId?: string;
 }
 
 export async function sendPushNotification({
@@ -16,6 +17,7 @@ export async function sendPushNotification({
   url,
   tag,
   quedadaId,
+  sparkChatId,
 }: SendPushParams): Promise<boolean> {
   try {
     const { data, error } = await supabase.functions.invoke("send-push-notification", {
@@ -26,6 +28,7 @@ export async function sendPushNotification({
         url,
         tag,
         quedada_id: quedadaId,
+        spark_chat_id: sparkChatId,
       },
     });
 

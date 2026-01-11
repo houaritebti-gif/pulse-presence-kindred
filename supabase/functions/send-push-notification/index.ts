@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    const { profile_id, title, body, url, tag, quedada_id } = await req.json();
+    const { profile_id, title, body, url, tag, quedada_id, spark_chat_id } = await req.json();
     
     if (!profile_id || !title) {
       throw new Error('profile_id and title are required');
@@ -46,6 +46,23 @@ serve(async (req) => {
       if (mutedCheck) {
         console.log(`Quedada ${quedada_id} is muted for profile ${profile_id}, skipping push`);
         return new Response(JSON.stringify({ sent: 0, message: 'Quedada muted' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+    
+    // Check if this is a spark chat notification and user has muted it
+    if (spark_chat_id) {
+      const { data: mutedCheck } = await supabase
+        .from('muted_spark_chats')
+        .select('id')
+        .eq('profile_id', profile_id)
+        .eq('chat_id', spark_chat_id)
+        .maybeSingle();
+      
+      if (mutedCheck) {
+        console.log(`Spark chat ${spark_chat_id} is muted for profile ${profile_id}, skipping push`);
+        return new Response(JSON.stringify({ sent: 0, message: 'Spark chat muted' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
