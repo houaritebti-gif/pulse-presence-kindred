@@ -4,7 +4,13 @@ import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { triggerHaptic } from "@/utils/haptics";
 import { sendPushNotification } from "@/utils/pushNotifications";
-import { fireEpicAchievementConfetti, fireLegendaryAchievementConfetti } from "@/utils/sparkConfetti";
+import { 
+  fireCommonAchievementConfetti,
+  fireUncommonAchievementConfetti,
+  fireRareAchievementConfetti,
+  fireEpicAchievementConfetti, 
+  fireLegendaryAchievementConfetti 
+} from "@/utils/sparkConfetti";
 
 // Achievement definitions
 export type AchievementKey = 
@@ -187,11 +193,23 @@ export const useAchievements = () => {
         if (achievement && profile?.id) {
           triggerHaptic('success');
           
-          // Fire special confetti for epic and legendary achievements
-          if (achievement.rarity === 'legendary') {
-            fireLegendaryAchievementConfetti();
-          } else if (achievement.rarity === 'epic') {
-            fireEpicAchievementConfetti();
+          // Fire confetti based on achievement rarity
+          switch (achievement.rarity) {
+            case 'legendary':
+              fireLegendaryAchievementConfetti();
+              break;
+            case 'epic':
+              fireEpicAchievementConfetti();
+              break;
+            case 'rare':
+              fireRareAchievementConfetti();
+              break;
+            case 'uncommon':
+              fireUncommonAchievementConfetti();
+              break;
+            case 'common':
+              fireCommonAchievementConfetti();
+              break;
           }
           
           // Award energy if the achievement has a reward

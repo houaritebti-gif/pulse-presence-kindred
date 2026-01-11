@@ -572,3 +572,138 @@ export const fireChispaHearts = () => {
     });
   }, 80);
 };
+
+/**
+ * Fires a simple confetti animation for common achievements.
+ * Subtle celebration with soft colors.
+ */
+export const fireCommonAchievementConfetti = () => {
+  const commonColors = ['#64748B', '#94A3B8', '#CBD5E1', '#E2E8F0', '#F1F5F9'];
+  
+  // Simple burst from bottom
+  confetti({
+    particleCount: 40,
+    spread: 60,
+    origin: { x: 0.5, y: 0.7 },
+    colors: commonColors,
+    startVelocity: 30,
+    gravity: 1,
+    scalar: 1,
+    shapes: ['circle', 'square'],
+    ticks: 80,
+  });
+  
+  // Light shimmer from top
+  setTimeout(() => {
+    confetti({
+      particleCount: 25,
+      spread: 80,
+      origin: { x: 0.5, y: 0 },
+      colors: commonColors,
+      startVelocity: 15,
+      gravity: 1.1,
+      scalar: 0.9,
+      ticks: 60,
+    });
+  }, 150);
+};
+
+/**
+ * Fires a green-tinted confetti animation for uncommon achievements.
+ * More noticeable than common with nature-inspired colors.
+ */
+export const fireUncommonAchievementConfetti = () => {
+  const uncommonColors = ['#22C55E', '#4ADE80', '#86EFAC', '#10B981', '#34D399', '#6EE7B7'];
+  
+  // Main burst from center
+  confetti({
+    particleCount: 60,
+    spread: 70,
+    origin: { x: 0.5, y: 0.6 },
+    colors: uncommonColors,
+    startVelocity: 35,
+    gravity: 0.9,
+    scalar: 1.1,
+    shapes: ['circle', 'square'],
+    ticks: 100,
+  });
+  
+  // Side sparkles
+  setTimeout(() => {
+    confetti({
+      particleCount: 30,
+      angle: 60,
+      spread: 45,
+      origin: { x: 0.1, y: 0.6 },
+      colors: uncommonColors,
+      startVelocity: 28,
+      gravity: 0.85,
+    });
+    confetti({
+      particleCount: 30,
+      angle: 120,
+      spread: 45,
+      origin: { x: 0.9, y: 0.6 },
+      colors: uncommonColors,
+      startVelocity: 28,
+      gravity: 0.85,
+    });
+  }, 100);
+};
+
+/**
+ * Fires a blue-tinted confetti animation for rare achievements.
+ * Distinctive burst with electric blue colors.
+ */
+export const fireRareAchievementConfetti = () => {
+  const rareColors = ['#3B82F6', '#60A5FA', '#93C5FD', '#2563EB', '#1D4ED8', '#DBEAFE'];
+  
+  // Central electric burst
+  confetti({
+    particleCount: 80,
+    spread: 75,
+    origin: { x: 0.5, y: 0.5 },
+    colors: rareColors,
+    startVelocity: 38,
+    gravity: 0.85,
+    scalar: 1.2,
+    shapes: ['circle', 'square'],
+    ticks: 110,
+  });
+  
+  // Wave from sides
+  setTimeout(() => {
+    confetti({
+      particleCount: 40,
+      angle: 55,
+      spread: 50,
+      origin: { x: 0, y: 0.5 },
+      colors: rareColors,
+      startVelocity: 32,
+      gravity: 0.8,
+    });
+    confetti({
+      particleCount: 40,
+      angle: 125,
+      spread: 50,
+      origin: { x: 1, y: 0.5 },
+      colors: rareColors,
+      startVelocity: 32,
+      gravity: 0.8,
+    });
+  }, 120);
+  
+  // Final shimmer from top
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      spread: 100,
+      origin: { x: 0.5, y: 0 },
+      colors: ['#93C5FD', '#DBEAFE', '#3B82F6'],
+      startVelocity: 20,
+      gravity: 1,
+      scalar: 1.1,
+      ticks: 80,
+    });
+  }, 220);
+};
