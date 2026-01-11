@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, UserCircle, Radio, Copy, Check, Plus, Pencil, Lock, Crown, RotateCcw } from "lucide-react";
+import { MessageCircle, X, Send, Trash2, Bot, User, Sparkles, Calendar, Users, UserCircle, Radio, Copy, Check, Plus, Pencil, Lock, Crown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAIChat } from "@/hooks/useAIChat";
 import { cn } from "@/lib/utils";
@@ -610,26 +610,6 @@ export const AIChatBot = () => {
     }
   }, [isDragging]);
 
-  // Check if position has been moved from default
-  const isPositionCustomized = useCallback(() => {
-    if (!position) return false;
-    const defaultPos = getDefaultPosition();
-    const threshold = 20; // pixels tolerance
-    return Math.abs(position.x - defaultPos.x) > threshold || 
-           Math.abs(position.y - defaultPos.y) > threshold;
-  }, [position, getDefaultPosition]);
-
-  // Reset position to default
-  const resetPosition = useCallback(() => {
-    const defaultPos = getDefaultPosition();
-    setPosition(defaultPos);
-    localStorage.removeItem(POSITION_STORAGE_KEY);
-    
-    // Haptic feedback
-    if (navigator.vibrate) {
-      navigator.vibrate([30, 20, 30]);
-    }
-  }, [getDefaultPosition]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -838,41 +818,6 @@ export const AIChatBot = () => {
           )}
         </motion.button>
       )}
-
-      {/* Reset position button - appears when widget has been moved */}
-      {position && isPositionCustomized() && !isOpen && !shouldHideButton && (() => {
-        // Determine if button is on left or right side of screen
-        const isOnLeftSide = position.x < window.innerWidth / 2;
-        // Position reset button on the opposite side of the main button
-        const resetLeft = isOnLeftSide 
-          ? position.x + buttonSize + 8 
-          : position.x - 32;
-        
-        return (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            onClick={resetPosition}
-            style={{
-              position: "fixed",
-              left: resetLeft,
-              top: position.y + buttonSize / 2 - 12,
-              zIndex: 49,
-            }}
-            className={cn(
-              "flex items-center justify-center h-6 w-6 rounded-full",
-              "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground",
-              "shadow-md border border-border/50",
-              "transition-colors duration-200"
-            )}
-            title="Restaurar posición"
-            aria-label="Restaurar posición del asistente"
-          >
-            <RotateCcw className="h-3 w-3" />
-          </motion.button>
-        );
-      })()}
 
       {/* Chat Window */}
       {isOpen && (
