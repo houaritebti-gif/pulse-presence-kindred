@@ -27,6 +27,7 @@ import {
 import UserModerationModal from "@/components/UserModerationModal";
 import LazyImage from "@/components/LazyImage";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
+import SparkleTrail from "@/components/SparkleTrail";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
@@ -213,6 +214,11 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const upIndicatorOpacity = useTransform(y, [-120, -40, 0], [1, 0.5, 0]);
   const downIndicatorOpacity = useTransform(y, [0, 40, 120], [0, 0.5, 1]);
 
+  // Sparkle trail state - intensity based on swipe distance
+  const [sparkleIntensity, setSparkleIntensity] = useState(0);
+  const [showSparkleTrail, setShowSparkleTrail] = useState(false);
+  const cardContainerRef = useRef<HTMLDivElement>(null);
+
   const displayPhoto = photos.length > 0 ? photos[0] : presence.profile?.avatar_url;
   const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
 
@@ -221,6 +227,17 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
     const { offset } = info;
     const absX = Math.abs(offset.x);
     const absY = Math.abs(offset.y);
+    
+    // Calculate sparkle intensity for right swipe (Chispa)
+    if (offset.x > 20 && absX > absY) {
+      setShowSparkleTrail(true);
+      // Intensity from 0 to 1 based on swipe distance (20-150px)
+      const intensity = Math.min(1, Math.max(0, (offset.x - 20) / 130));
+      setSparkleIntensity(intensity);
+    } else {
+      setShowSparkleTrail(false);
+      setSparkleIntensity(0);
+    }
     
     // Determine dominant direction
     if (absX > 30 || absY > 30) {
@@ -239,8 +256,10 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
     const absX = Math.abs(offset.x);
     const absY = Math.abs(offset.y);
     
-    // Reset current swipe direction
+    // Reset current swipe direction and sparkle trail
     setCurrentSwipeDirection(null);
+    setShowSparkleTrail(false);
+    setSparkleIntensity(0);
     
     // Determine if horizontal or vertical swipe is dominant
     const isHorizontal = absX > absY;
@@ -406,7 +425,15 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   return (
     <>
       <motion.div
-        ref={ref}
+        ref={(node) => {
+          // Combine refs: external ref + internal cardContainerRef
+          if (typeof ref === 'function') {
+            ref(node);
+          } else if (ref) {
+            ref.current = node;
+          }
+          (cardContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        }}
         style={{ x, y, rotate, opacity: cardOpacity }}
         drag
         dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
@@ -418,6 +445,8 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
         onDrag={handleDrag}
         onDragEnd={(e, info) => {
           setIsDragging(false);
+          setShowSparkleTrail(false);
+          setSparkleIntensity(0);
           handleDragEnd(e, info);
         }}
         onMouseEnter={() => !isMobile && setIsHovering(true)}
@@ -435,6 +464,12 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
           !isMobile && isHovering && !isDragging && "ring-2 ring-primary/30"
         )}
       >
+        {/* Sparkle trail for right swipe (Chispa) */}
+        <SparkleTrail 
+          isActive={showSparkleTrail} 
+          intensity={sparkleIntensity}
+          containerRef={cardContainerRef}
+        />
         {/* Desktop drag hint - appears on hover */}
         {!isMobile && isHovering && !isDragging && (
           <motion.div
