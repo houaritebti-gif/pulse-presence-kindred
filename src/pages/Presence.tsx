@@ -205,6 +205,10 @@ const Presence = () => {
       music: sharedMusic.length,
       lookingFor: sharedLookingFor.length,
       interests: sharedInterests.length,
+      sharedTribes,
+      sharedMusic,
+      sharedLookingFor,
+      sharedInterests,
     };
   };
 

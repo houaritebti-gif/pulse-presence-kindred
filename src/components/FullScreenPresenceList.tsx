@@ -24,6 +24,10 @@ interface CompatibilityBreakdown {
   music: number;
   lookingFor: number;
   interests: number;
+  sharedTribes?: string[];
+  sharedMusic?: string[];
+  sharedLookingFor?: string[];
+  sharedInterests?: string[];
 }
 
 interface FullScreenPresenceListProps {
@@ -335,12 +339,14 @@ export const FullScreenPresenceList = memo(({
                       name: presence.profile.name,
                       avatar_url: presence.profile.avatar_url,
                       city: presence.profile.city,
+                      vibe: presence.profile.vibe,
                       looking_for: presence.profile.looking_for,
                       gender: presence.profile.gender,
                       birthdate: presence.profile.birthdate,
                     } : null,
                     tribes: presence.tribes,
                     musicStyles: presence.musicStyles,
+                    interests: presence.interests,
                     last_pulse: presence.last_pulse,
                     is_present: presence.is_present,
                   }}

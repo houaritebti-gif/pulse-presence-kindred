@@ -1,7 +1,7 @@
 import { useState, forwardRef } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin } from "lucide-react";
-import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
-import { ALL_GENDERS } from "@/constants/profileOptions";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star } from "lucide-react";
+import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from "framer-motion";
+import { ALL_GENDERS, VIBES, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -42,6 +42,10 @@ interface CompatibilityBreakdown {
   music: number;
   lookingFor: number;
   interests: number;
+  sharedTribes?: string[];
+  sharedMusic?: string[];
+  sharedInterests?: string[];
+  sharedLookingFor?: string[];
 }
 
 interface FullScreenPresenceCardProps {
@@ -59,6 +63,7 @@ interface FullScreenPresenceCardProps {
     } | null;
     tribes: string[];
     musicStyles: string[];
+    interests: string[];
     last_pulse?: string;
     is_present?: boolean;
   };
@@ -149,6 +154,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const [messageSent, setMessageSent] = useState(false);
   const [sparkCreated, setSparkCreated] = useState(false);
   const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(null);
+  const [showCompatibilityDetails, setShowCompatibilityDetails] = useState(false);
 
   // Swipe gesture state
   const x = useMotionValue(0);
@@ -487,6 +493,11 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                   {presence.profile.city}
                 </span>
               )}
+              {presence.profile?.vibe && (
+                <span className="flex items-center gap-1">
+                  {VIBES.find(v => v.value === presence.profile?.vibe)?.emoji || "✨"} {presence.profile.vibe}
+                </span>
+              )}
             </div>
 
             {/* Tribes preview */}
@@ -506,6 +517,110 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                   </span>
                 )}
               </div>
+            )}
+
+            {/* Expandable compatibility details */}
+            {compatibilityBreakdown && compatibility > 0 && (
+              <motion.div className="mt-3">
+                <button
+                  onClick={(e) => { e.stopPropagation(); triggerHaptic('light'); setShowCompatibilityDetails(!showCompatibilityDetails); }}
+                  className="flex items-center gap-2 text-white/80 text-sm font-medium hover:text-white transition-colors"
+                >
+                  <Heart className="w-4 h-4 fill-primary text-primary" />
+                  <span>Ver {compatibility} coincidencias</span>
+                  <motion.div
+                    animate={{ rotate: showCompatibilityDetails ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </motion.div>
+                </button>
+                
+                <AnimatePresence>
+                  {showCompatibilityDetails && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mt-3 p-3 rounded-xl bg-black/40 backdrop-blur-md space-y-2">
+                        {/* Shared tribes */}
+                        {compatibilityBreakdown.sharedTribes && compatibilityBreakdown.sharedTribes.length > 0 && (
+                          <div className="flex items-start gap-2">
+                            <Sparkles className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                            <div>
+                              <span className="text-white/60 text-xs">Tribus en común:</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {compatibilityBreakdown.sharedTribes.map(tribe => (
+                                  <span key={tribe} className="px-2 py-0.5 rounded-full bg-primary/30 text-xs text-white">
+                                    {tribe}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Shared music */}
+                        {compatibilityBreakdown.sharedMusic && compatibilityBreakdown.sharedMusic.length > 0 && (
+                          <div className="flex items-start gap-2">
+                            <Music className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                            <div>
+                              <span className="text-white/60 text-xs">Música en común:</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {compatibilityBreakdown.sharedMusic.slice(0, 4).map(style => (
+                                  <span key={style} className="px-2 py-0.5 rounded-full bg-accent/30 text-xs text-white">
+                                    {style}
+                                  </span>
+                                ))}
+                                {compatibilityBreakdown.sharedMusic.length > 4 && (
+                                  <span className="px-2 py-0.5 rounded-full bg-white/10 text-xs text-white/60">
+                                    +{compatibilityBreakdown.sharedMusic.length - 4}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Shared interests */}
+                        {compatibilityBreakdown.sharedInterests && compatibilityBreakdown.sharedInterests.length > 0 && (
+                          <div className="flex items-start gap-2">
+                            <Star className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <span className="text-white/60 text-xs">Intereses en común:</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {compatibilityBreakdown.sharedInterests.slice(0, 5).map(interest => {
+                                  const interestData = CULTURAL_INTERESTS.find(ci => ci.value === interest);
+                                  return (
+                                    <span key={interest} className="px-2 py-0.5 rounded-full bg-yellow-400/20 text-xs text-white">
+                                      {interestData?.emoji} {interest}
+                                    </span>
+                                  );
+                                })}
+                                {compatibilityBreakdown.sharedInterests.length > 5 && (
+                                  <span className="px-2 py-0.5 rounded-full bg-white/10 text-xs text-white/60">
+                                    +{compatibilityBreakdown.sharedInterests.length - 5}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Shared looking for */}
+                        {compatibilityBreakdown.sharedLookingFor && compatibilityBreakdown.sharedLookingFor.length > 0 && (
+                          <div className="flex items-center gap-2 text-white/80 text-xs">
+                            <span>🔍</span>
+                            <span>Ambos buscáis: {compatibilityBreakdown.sharedLookingFor.join(", ")}</span>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             )}
           </div>
 
