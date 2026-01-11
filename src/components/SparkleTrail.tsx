@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSparkleStyle, SparkleStyle } from "@/hooks/useAdvancedSettings";
 import { playSparkleTrailSound } from "@/utils/notificationSound";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface Sparkle {
   id: number;
@@ -47,11 +48,17 @@ const STYLE_COLORS: Record<SparkleStyle, string[]> = {
 };
 
 const SparkleTrail = ({ isActive, intensity = 0.5, containerRef }: SparkleTrailProps) => {
+  const prefersReducedMotion = useReducedMotion();
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
   const [sparkleId, setSparkleId] = useState(0);
   const [style, setStyle] = useState<SparkleStyle>(getSparkleStyle);
   const lastSoundTime = useRef(0);
   const wasActive = useRef(false);
+
+  // Don't render anything for reduced motion
+  if (prefersReducedMotion) {
+    return null;
+  }
 
   // Update style when becoming active and play initial sound
   useEffect(() => {

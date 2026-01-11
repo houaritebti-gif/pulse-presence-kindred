@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import {
   Tooltip,
   TooltipContent,
@@ -40,6 +41,7 @@ const ActionButton = ({
   disabled,
   keyboardHint,
   showKeyboardHint = false,
+  reducedMotion = false,
 }: {
   onClick: () => void;
   icon: React.ReactNode;
@@ -51,6 +53,7 @@ const ActionButton = ({
   disabled?: boolean;
   keyboardHint?: string;
   showKeyboardHint?: boolean;
+  reducedMotion?: boolean;
 }) => {
   const sizeClasses = {
     sm: "w-12 h-12",
@@ -83,8 +86,8 @@ const ActionButton = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.button
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92 }}
+            whileHover={reducedMotion ? undefined : { scale: 1.08 }}
+            whileTap={reducedMotion ? undefined : { scale: 0.92 }}
             onClick={() => {
               if (disabled) return;
               triggerHaptic("medium");
@@ -130,12 +133,14 @@ const ChispaButton = ({
   availableSuperChispas = 0,
   disabled,
   showKeyboardHint = false,
+  reducedMotion = false,
 }: {
   onChispa: () => void;
   onSuperChispa: () => void;
   availableSuperChispas?: number;
   disabled?: boolean;
   showKeyboardHint?: boolean;
+  reducedMotion?: boolean;
 }) => {
   const [isLongPressing, setIsLongPressing] = useState(false);
   const [longPressProgress, setLongPressProgress] = useState(0);
@@ -224,8 +229,8 @@ const ChispaButton = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.button
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={reducedMotion ? undefined : { scale: 1.08 }}
+            whileTap={reducedMotion ? undefined : { scale: 0.95 }}
             onMouseDown={!disabled ? startLongPress : undefined}
             onMouseUp={handleRelease}
             onMouseLeave={cancelLongPress}
@@ -272,11 +277,11 @@ const ChispaButton = ({
             {/* Icon transitions from Sparkles to Flame during long press */}
             <motion.div 
               className="w-7 h-7 text-primary-foreground"
-              animate={{ 
+              animate={reducedMotion ? undefined : { 
                 scale: isLongPressing ? [1, 1.2, 1] : 1,
                 rotate: isLongPressing ? [0, 5, -5, 0] : 0
               }}
-              transition={{ duration: 0.3, repeat: isLongPressing ? Infinity : 0 }}
+              transition={reducedMotion ? undefined : { duration: 0.3, repeat: isLongPressing ? Infinity : 0 }}
             >
               {isLongPressing ? (
                 <Flame className="w-full h-full text-white" />
@@ -328,6 +333,7 @@ export const PresenceActionButtons = ({
   showKeyboardHints = false,
 }: PresenceActionButtonsProps) => {
   const isMobile = useIsMobile();
+  const prefersReducedMotion = useReducedMotion();
   const shouldShowHints = showKeyboardHints && !isMobile;
   
   // Hybrid intelligent: on mobile, buttons appear on touch and fade after inactivity
@@ -399,13 +405,13 @@ export const PresenceActionButtons = ({
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: 20 }}
         animate={{ 
           opacity: isVisible ? 1 : 0, 
-          y: isVisible ? 0 : 20,
+          y: prefersReducedMotion ? 0 : (isVisible ? 0 : 20),
           pointerEvents: isVisible ? "auto" : "none"
         }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
+        transition={prefersReducedMotion ? { duration: 0.1 } : { duration: 0.2, ease: "easeOut" }}
         className={cn(
           "flex items-center justify-center gap-3 py-4",
           // Semi-transparent background on mobile for better visibility
@@ -415,9 +421,9 @@ export const PresenceActionButtons = ({
         {/* Undo button (smaller, appears when available) */}
         {showUndo && onUndo && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, x: -20 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.8, x: -20 }}
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.8, x: -20 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, x: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8, x: -20 }}
           >
             <ActionButton
               onClick={onUndo}
@@ -428,6 +434,7 @@ export const PresenceActionButtons = ({
               disabled={disabled}
               keyboardHint="Z"
               showKeyboardHint={shouldShowHints}
+              reducedMotion={prefersReducedMotion}
             />
           </motion.div>
         )}
@@ -442,6 +449,7 @@ export const PresenceActionButtons = ({
           disabled={disabled}
           keyboardHint="←"
           showKeyboardHint={shouldShowHints}
+          reducedMotion={prefersReducedMotion}
         />
 
         {/* Chispa button with long-press for Super Chispa */}
@@ -451,6 +459,7 @@ export const PresenceActionButtons = ({
           availableSuperChispas={availableSuperChispas}
           disabled={disabled}
           showKeyboardHint={shouldShowHints}
+          reducedMotion={prefersReducedMotion}
         />
 
         {/* Rewind button - RotateCcw (replaces View Profile) */}
@@ -473,6 +482,7 @@ export const PresenceActionButtons = ({
             disabled={disabled || !canRewind}
             keyboardHint="R"
             showKeyboardHint={shouldShowHints}
+            reducedMotion={prefersReducedMotion}
           />
         )}
       </motion.div>
