@@ -655,28 +655,43 @@ export const ReduceMotionHelpModal = () => {
         </Tabs>
 
         {/* Footer actions */}
-        <div className="p-4 pt-2 border-t border-border flex items-center justify-between">
-          <p className="text-[10px] text-muted-foreground max-w-[60%]">
-            Al activar esta opción, KIKI respetará tu preferencia automáticamente.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopy}
-            className="gap-1.5 text-xs"
-          >
-            {copied ? (
-              <>
-                <Check className="w-3 h-3" />
-                Copiado
-              </>
-            ) : (
-              <>
-                <Copy className="w-3 h-3" />
-                Copiar pasos
-              </>
-            )}
-          </Button>
+        <div className="p-4 pt-2 border-t border-border flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] text-muted-foreground max-w-[55%]">
+              Al activar esta opción, KIKI respetará tu preferencia automáticamente.
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  triggerHaptic("light");
+                  setOpen(false);
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Saltar tutorial
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopy}
+                className="gap-1.5 text-xs"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3 h-3" />
+                    Copiado
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                    Copiar
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
