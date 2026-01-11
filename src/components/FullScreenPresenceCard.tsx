@@ -688,7 +688,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
             </DropdownMenu>
 
             {/* Compatibility badge */}
-            <TooltipProvider>
+            <TooltipProvider delayDuration={0}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className={cn(
@@ -716,29 +716,86 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                     )}
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">
+                <TooltipContent side="bottom" className="max-w-[280px] p-3">
                   {compatibilityBreakdown ? (
-                    <div className="space-y-1">
+                    <div className="space-y-2.5">
+                      {/* Header */}
                       {compatibility >= 5 ? (
-                        <p className="text-primary font-semibold">💫 ¡Compatibilidad perfecta!</p>
+                        <p className="text-primary font-bold text-sm">💫 ¡Compatibilidad perfecta!</p>
                       ) : compatibility >= 4 ? (
-                        <p className="text-primary font-semibold">✨ ¡Alta compatibilidad!</p>
-                      ) : null}
+                        <p className="text-primary font-bold text-sm">✨ ¡Alta compatibilidad!</p>
+                      ) : (
+                        <p className="font-medium text-sm">Desglose de compatibilidad</p>
+                      )}
+                      
+                      {/* Tribes breakdown */}
                       {compatibilityBreakdown.tribes > 0 && (
-                        <p>🏴 {compatibilityBreakdown.tribes} {compatibilityBreakdown.tribes === 1 ? "tribu" : "tribus"}</p>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium flex items-center gap-1">
+                            🏴 Tribus en común ({compatibilityBreakdown.tribes})
+                          </p>
+                          {compatibilityBreakdown.sharedTribes && compatibilityBreakdown.sharedTribes.length > 0 && (
+                            <p className="text-xs text-muted-foreground pl-4">
+                              {compatibilityBreakdown.sharedTribes.join(", ")}
+                            </p>
+                          )}
+                        </div>
                       )}
+                      
+                      {/* Music breakdown */}
                       {compatibilityBreakdown.music > 0 && (
-                        <p>🎵 {compatibilityBreakdown.music} {compatibilityBreakdown.music === 1 ? "estilo" : "estilos"}</p>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium flex items-center gap-1">
+                            🎵 Estilos musicales ({compatibilityBreakdown.music})
+                          </p>
+                          {compatibilityBreakdown.sharedMusic && compatibilityBreakdown.sharedMusic.length > 0 && (
+                            <p className="text-xs text-muted-foreground pl-4">
+                              {compatibilityBreakdown.sharedMusic.slice(0, 4).join(", ")}
+                              {compatibilityBreakdown.sharedMusic.length > 4 && ` +${compatibilityBreakdown.sharedMusic.length - 4}`}
+                            </p>
+                          )}
+                        </div>
                       )}
+                      
+                      {/* Looking for breakdown */}
                       {compatibilityBreakdown.lookingFor > 0 && (
-                        <p>🔍 {compatibilityBreakdown.lookingFor} coincidencias</p>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium flex items-center gap-1">
+                            🔍 Buscan lo mismo ({compatibilityBreakdown.lookingFor})
+                          </p>
+                          {compatibilityBreakdown.sharedLookingFor && compatibilityBreakdown.sharedLookingFor.length > 0 && (
+                            <p className="text-xs text-muted-foreground pl-4">
+                              {compatibilityBreakdown.sharedLookingFor.join(", ")}
+                            </p>
+                          )}
+                        </div>
                       )}
+                      
+                      {/* Interests breakdown */}
                       {compatibilityBreakdown.interests > 0 && (
-                        <p>⭐ {compatibilityBreakdown.interests} intereses</p>
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-medium flex items-center gap-1">
+                            ⭐ Intereses culturales ({compatibilityBreakdown.interests})
+                          </p>
+                          {compatibilityBreakdown.sharedInterests && compatibilityBreakdown.sharedInterests.length > 0 && (
+                            <p className="text-xs text-muted-foreground pl-4">
+                              {compatibilityBreakdown.sharedInterests.slice(0, 4).join(", ")}
+                              {compatibilityBreakdown.sharedInterests.length > 4 && ` +${compatibilityBreakdown.sharedInterests.length - 4}`}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Empty state */}
+                      {compatibilityBreakdown.tribes === 0 && 
+                       compatibilityBreakdown.music === 0 && 
+                       compatibilityBreakdown.lookingFor === 0 && 
+                       compatibilityBreakdown.interests === 0 && (
+                        <p className="text-xs text-muted-foreground">Sin coincidencias aún</p>
                       )}
                     </div>
                   ) : (
-                    <p>{compatibility} coincidencias</p>
+                    <p className="text-xs">{compatibility} coincidencias</p>
                   )}
                 </TooltipContent>
               </Tooltip>
