@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { useAdvancedSettings, Theme, TextSize, SparkleStyle } from "@/hooks/useAdvancedSettings";
 import { 
   isThemeSoundEnabled, 
@@ -19,6 +20,9 @@ import {
   playSparkleStarsSound,
   playSparkleFireSound,
   playSparkleHeartsSound,
+  getMasterVolume,
+  setMasterVolume,
+  updateMasterGainVolume,
 } from "@/utils/notificationSound";
 
 const AdvancedSettingsSection = () => {
@@ -26,6 +30,7 @@ const AdvancedSettingsSection = () => {
   const [themeSoundOn, setThemeSoundOn] = useState(true);
   const [energySoundOn, setEnergySoundOn] = useState(true);
   const [actionSoundsOn, setActionSoundsOn] = useState(true);
+  const [masterVolume, setMasterVolumeState] = useState(0.7);
   
   const {
     theme,
@@ -48,7 +53,15 @@ const AdvancedSettingsSection = () => {
     setThemeSoundOn(isThemeSoundEnabled());
     setEnergySoundOn(isEnergySoundEnabled());
     setActionSoundsOn(isActionSoundsEnabled());
+    setMasterVolumeState(getMasterVolume());
   }, []);
+
+  const handleMasterVolumeChange = (value: number[]) => {
+    const newVolume = value[0];
+    setMasterVolumeState(newVolume);
+    setMasterVolume(newVolume);
+    updateMasterGainVolume();
+  };
 
   const handleThemeSoundChange = (enabled: boolean) => {
     setThemeSoundOn(enabled);
@@ -104,6 +117,41 @@ const AdvancedSettingsSection = () => {
 
       {expanded && (
         <div className="space-y-3">
+          {/* Master Volume Control */}
+          <div className="p-4 bg-secondary/50 rounded-xl space-y-3">
+            <div className="flex items-center gap-3">
+              {masterVolume === 0 ? (
+                <VolumeX className="w-5 h-5 text-muted-foreground" />
+              ) : (
+                <Volume2 className="w-5 h-5 text-primary" />
+              )}
+              <div className="flex-1">
+                <span className="font-body text-sm text-foreground block">
+                  Volumen general
+                </span>
+                <span className="font-body text-xs text-muted-foreground">
+                  Controla el volumen de todos los sonidos
+                </span>
+              </div>
+              <span className="font-body text-sm text-muted-foreground w-10 text-right">
+                {Math.round(masterVolume * 100)}%
+              </span>
+            </div>
+            <Slider
+              value={[masterVolume]}
+              min={0}
+              max={1}
+              step={0.05}
+              onValueChange={handleMasterVolumeChange}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground px-1">
+              <span>0%</span>
+              <span>50%</span>
+              <span>100%</span>
+            </div>
+          </div>
+
           {/* Theme Selection */}
           <div className="p-4 bg-secondary/50 rounded-xl space-y-3">
             <div className="flex items-center gap-3">
