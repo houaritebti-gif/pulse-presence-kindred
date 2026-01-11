@@ -1,4 +1,4 @@
-import { useState, forwardRef } from "react";
+import { useState, useEffect, useRef, forwardRef } from "react";
 import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star } from "lucide-react";
 import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from "framer-motion";
 import { ALL_GENDERS, VIBES, CULTURAL_INTERESTS } from "@/constants/profileOptions";
@@ -36,6 +36,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
+import { firePerfectCompatibilityConfetti } from "@/utils/sparkConfetti";
 
 interface CompatibilityBreakdown {
   tribes: number;
@@ -155,6 +156,22 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const [sparkCreated, setSparkCreated] = useState(false);
   const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(null);
   const [showCompatibilityDetails, setShowCompatibilityDetails] = useState(false);
+  const [hasShownPerfectConfetti, setHasShownPerfectConfetti] = useState(false);
+  const confettiShownRef = useRef(false);
+
+  // Trigger confetti for perfect compatibility (5/5)
+  useEffect(() => {
+    if (compatibility >= 5 && !confettiShownRef.current) {
+      confettiShownRef.current = true;
+      // Small delay to let the card appear first
+      const timer = setTimeout(() => {
+        firePerfectCompatibilityConfetti();
+        triggerHaptic('success');
+        setHasShownPerfectConfetti(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [compatibility]);
 
   // Swipe gesture state
   const x = useMotionValue(0);

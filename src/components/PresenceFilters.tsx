@@ -1,11 +1,14 @@
 import { useState, useMemo } from "react";
-import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin, Sparkles, Music, Heart, Search, Palette, Star } from "lucide-react";
+import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin, Sparkles, Music, Heart, Search, Palette, Star, Save, Bookmark, Trash2, Plus } from "lucide-react";
 import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, ALL_GENDERS, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { GenderType } from "@/constants/profileOptions";
 import { triggerHaptic } from "@/utils/haptics";
 import { motion, AnimatePresence } from "framer-motion";
+import { useFilterPresets, FilterPreset } from "@/hooks/useFilterPresets";
+import { toast } from "sonner";
 
 
 export interface PresenceFilters {
@@ -36,6 +39,10 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [interestSearch, setInterestSearch] = useState("");
+  const [showSavePresetInput, setShowSavePresetInput] = useState(false);
+  const [presetName, setPresetName] = useState("");
+
+  const { presets, addPreset, deletePreset, getActiveFilterCount } = useFilterPresets();
 
   const hasAgeFilter = filters.ageRange && (filters.ageRange[0] !== 18 || filters.ageRange[1] !== 99);
   const hasGenderFilter = filters.genders?.length > 0;
@@ -50,6 +57,30 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
     [...availableCities].sort((a, b) => a.localeCompare(b, 'es')),
     [availableCities]
   );
+
+  const handleSavePreset = () => {
+    if (activeCount === 0) {
+      toast.error("Añade filtros antes de guardar");
+      return;
+    }
+    const saved = addPreset(presetName || `Preset ${presets.length + 1}`, filters);
+    toast.success(`Preset "${saved.name}" guardado`);
+    setPresetName("");
+    setShowSavePresetInput(false);
+    triggerHaptic('success');
+  };
+
+  const handleLoadPreset = (preset: FilterPreset) => {
+    onChange(preset.filters);
+    toast.success(`Preset "${preset.name}" aplicado`);
+    triggerHaptic('medium');
+  };
+
+  const handleDeletePreset = (presetId: string, presetName: string) => {
+    deletePreset(presetId);
+    toast.success(`Preset "${presetName}" eliminado`);
+    triggerHaptic('light');
+  };
 
   const toggleShowAllProfiles = () => {
     // Haptic feedback on mobile
@@ -209,6 +240,18 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
 
       {/* Quick filters - always visible */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+        {/* Quick preset chips - show first 3 */}
+        {presets.slice(0, 3).map((preset) => (
+          <button
+            key={preset.id}
+            onClick={() => handleLoadPreset(preset)}
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 bg-gradient-to-r from-accent/20 to-primary/20 text-card-foreground border border-accent/30 hover:border-primary/50"
+          >
+            <span>{preset.emoji}</span>
+            {preset.name}
+          </button>
+        ))}
+
         {/* Compatibility filter chips */}
         {[1, 2, 3, 4].map((level) => (
           <button
@@ -377,6 +420,105 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
             className="overflow-hidden"
           >
             <div className="bg-card rounded-2xl p-4 border border-foreground/5 dark:border-border shadow-md shadow-foreground/10 dark:shadow-foreground/5">
+
+              {/* Presets section - always at top */}
+              <div className="mb-5 pb-4 border-b border-border">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                      <Bookmark className="w-4 h-4 text-accent-foreground" />
+                    </div>
+                    <div>
+                      <span className="font-display text-sm font-semibold text-card-foreground block">
+                        Presets guardados
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {presets.length} {presets.length === 1 ? 'preset' : 'presets'}
+                      </span>
+                    </div>
+                  </div>
+                  {hasActiveFilters && (
+                    <motion.button
+                      onClick={() => setShowSavePresetInput(!showSavePresetInput)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-all"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Guardar actual
+                    </motion.button>
+                  )}
+                </div>
+
+                {/* Save preset input */}
+                <AnimatePresence>
+                  {showSavePresetInput && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mb-3 overflow-hidden"
+                    >
+                      <div className="flex gap-2">
+                        <Input
+                          value={presetName}
+                          onChange={(e) => setPresetName(e.target.value)}
+                          placeholder="Nombre del preset..."
+                          className="flex-1 h-9 text-sm"
+                          onKeyDown={(e) => e.key === "Enter" && handleSavePreset()}
+                        />
+                        <motion.button
+                          onClick={handleSavePreset}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
+                        >
+                          <Save className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Preset list */}
+                {presets.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {presets.map((preset, index) => (
+                      <motion.div
+                        key={preset.id}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="group relative"
+                      >
+                        <button
+                          onClick={() => handleLoadPreset(preset)}
+                          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-card-foreground/5 hover:bg-card-foreground/10 text-card-foreground text-xs font-medium transition-all active:scale-95 pr-8"
+                        >
+                          <span>{preset.emoji}</span>
+                          <span>{preset.name}</span>
+                          <span className="text-[10px] text-muted-foreground ml-1">
+                            ({getActiveFilterCount(preset.filters)})
+                          </span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePreset(preset.id, preset.name);
+                          }}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-all"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    No hay presets guardados. Configura filtros y guárdalos para acceso rápido.
+                  </p>
+                )}
+              </div>
 
               {/* Clear filters */}
               {hasActiveFilters && (
