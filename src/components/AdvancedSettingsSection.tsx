@@ -36,6 +36,9 @@ const AdvancedSettingsSection = () => {
   const [masterVolume, setMasterVolumeState] = useState(0.7);
   const [notifyNewPresence, setNotifyNewPresence] = useState(true);
   const [isUpdatingPresenceNotif, setIsUpdatingPresenceNotif] = useState(false);
+  const [notifyMinAge, setNotifyMinAge] = useState<number | null>(null);
+  const [notifyMaxAge, setNotifyMaxAge] = useState<number | null>(null);
+  const [isUpdatingAgeRange, setIsUpdatingAgeRange] = useState(false);
   
   const { data: profile } = useProfile();
   const queryClient = useQueryClient();
@@ -66,9 +69,19 @@ const AdvancedSettingsSection = () => {
 
   // Sync presence notification preference from profile
   useEffect(() => {
-    const profileWithPref = profile as typeof profile & { notify_new_presence?: boolean };
+    const profileWithPref = profile as typeof profile & { 
+      notify_new_presence?: boolean;
+      notify_min_age?: number | null;
+      notify_max_age?: number | null;
+    };
     if (profileWithPref?.notify_new_presence !== undefined) {
       setNotifyNewPresence(profileWithPref.notify_new_presence);
+    }
+    if (profileWithPref?.notify_min_age !== undefined) {
+      setNotifyMinAge(profileWithPref.notify_min_age);
+    }
+    if (profileWithPref?.notify_max_age !== undefined) {
+      setNotifyMaxAge(profileWithPref.notify_max_age);
     }
   }, [profile]);
 
@@ -97,6 +110,38 @@ const AdvancedSettingsSection = () => {
       toast.error("Error al actualizar preferencia");
     } finally {
       setIsUpdatingPresenceNotif(false);
+    }
+  };
+
+  const handleAgeRangeChange = async (minAge: number | null, maxAge: number | null) => {
+    if (!profile?.id) return;
+    
+    setIsUpdatingAgeRange(true);
+    const prevMin = notifyMinAge;
+    const prevMax = notifyMaxAge;
+    setNotifyMinAge(minAge);
+    setNotifyMaxAge(maxAge);
+    
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ 
+          notify_min_age: minAge,
+          notify_max_age: maxAge
+        })
+        .eq("id", profile.id);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success("Rango de edad actualizado");
+    } catch (error) {
+      console.error("Error updating age range preference:", error);
+      setNotifyMinAge(prevMin);
+      setNotifyMaxAge(prevMax);
+      toast.error("Error al actualizar rango de edad");
+    } finally {
+      setIsUpdatingAgeRange(false);
     }
   };
 
@@ -485,23 +530,97 @@ const AdvancedSettingsSection = () => {
           </div>
 
           {/* New Presence Notifications */}
-          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
-            <div className="flex items-center gap-3">
-              <Users className={`w-5 h-5 ${notifyNewPresence ? "text-primary" : "text-muted-foreground"}`} />
-              <div>
-                <span className="font-body text-sm text-foreground block">
-                  Notificar nuevos perfiles
-                </span>
-                <span className="font-body text-xs text-muted-foreground">
-                  Recibir push cuando haya gente nueva
-                </span>
+          <div className="p-4 bg-secondary/50 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Users className={`w-5 h-5 ${notifyNewPresence ? "text-primary" : "text-muted-foreground"}`} />
+                <div>
+                  <span className="font-body text-sm text-foreground block">
+                    Notificar nuevos perfiles
+                  </span>
+                  <span className="font-body text-xs text-muted-foreground">
+                    Recibir push cuando haya gente nueva
+                  </span>
+                </div>
               </div>
+              <Switch
+                checked={notifyNewPresence}
+                onCheckedChange={handlePresenceNotificationChange}
+                disabled={isUpdatingPresenceNotif}
+              />
             </div>
-            <Switch
-              checked={notifyNewPresence}
-              onCheckedChange={handlePresenceNotificationChange}
-              disabled={isUpdatingPresenceNotif}
-            />
+            
+            {notifyNewPresence && (
+              <div className="pt-3 border-t border-border/50 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-body text-xs text-muted-foreground">
+                    Filtrar por edad:
+                  </span>
+                  {(notifyMinAge !== null || notifyMaxAge !== null) && (
+                    <button
+                      onClick={() => handleAgeRangeChange(null, null)}
+                      disabled={isUpdatingAgeRange}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Quitar filtro
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <label className="font-body text-xs text-muted-foreground block mb-1">
+                      Edad mínima
+                    </label>
+                    <select
+                      value={notifyMinAge ?? ""}
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? null : parseInt(e.target.value);
+                        handleAgeRangeChange(value, notifyMaxAge);
+                      }}
+                      disabled={isUpdatingAgeRange}
+                      className="w-full px-3 py-2 rounded-lg bg-muted text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">Sin mínimo</option>
+                      {Array.from({ length: 63 }, (_, i) => i + 18).map((age) => (
+                        <option key={age} value={age} disabled={notifyMaxAge !== null && age > notifyMaxAge}>
+                          {age} años
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <span className="text-muted-foreground pt-5">–</span>
+                  <div className="flex-1">
+                    <label className="font-body text-xs text-muted-foreground block mb-1">
+                      Edad máxima
+                    </label>
+                    <select
+                      value={notifyMaxAge ?? ""}
+                      onChange={(e) => {
+                        const value = e.target.value === "" ? null : parseInt(e.target.value);
+                        handleAgeRangeChange(notifyMinAge, value);
+                      }}
+                      disabled={isUpdatingAgeRange}
+                      className="w-full px-3 py-2 rounded-lg bg-muted text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">Sin máximo</option>
+                      {Array.from({ length: 63 }, (_, i) => i + 18).map((age) => (
+                        <option key={age} value={age} disabled={notifyMinAge !== null && age < notifyMinAge}>
+                          {age} años
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {(notifyMinAge !== null || notifyMaxAge !== null) && (
+                  <p className="font-body text-xs text-muted-foreground">
+                    Solo recibirás notificaciones de usuarios entre{" "}
+                    <span className="text-foreground font-medium">
+                      {notifyMinAge ?? 18} - {notifyMaxAge ?? "80+"} años
+                    </span>
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Sound Test Section */}
