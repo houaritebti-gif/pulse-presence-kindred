@@ -60,6 +60,8 @@ export const getReduceMotion = (): boolean => {
 export const setReduceMotion = (reduce: boolean) => {
   localStorage.setItem(STORAGE_KEYS.REDUCE_MOTION, String(reduce));
   applyReduceMotion(reduce);
+  // Dispatch custom event for same-tab listeners (useReducedMotion hook)
+  window.dispatchEvent(new CustomEvent("reduceMotionChanged"));
 };
 
 export const applyReduceMotion = (reduce: boolean) => {
