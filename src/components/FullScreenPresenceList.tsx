@@ -1,5 +1,5 @@
-import { memo, useRef, useState, useCallback } from "react";
-import { Radio } from "lucide-react";
+import { memo, useRef, useState, useCallback, useEffect } from "react";
+import { Radio, Undo2 } from "lucide-react";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import { PresenceWithProfile } from "@/hooks/usePresence";
 import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { fireSparkConfetti } from "@/utils/sparkConfetti";
 import { triggerHaptic } from "@/utils/haptics";
+import { Button } from "@/components/ui/button";
 
 interface CompatibilityBreakdown {
   tribes: number;
@@ -33,12 +34,20 @@ interface FullScreenPresenceListProps {
   getCompatibilityBreakdown: (presence: PresenceWithProfile) => CompatibilityBreakdown;
 }
 
+interface UndoAction {
+  type: 'swipe_left' | 'swipe_right';
+  presenceId: string;
+  ghostMessageId?: string;
+}
+
 const isProfileActive = (presence: PresenceWithProfile) => {
   if (!presence.last_pulse || !presence.is_present) return false;
   const pulseTime = new Date(presence.last_pulse).getTime();
   const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
   return pulseTime >= fiveMinutesAgo;
 };
+
+const UNDO_BUTTON_TIMEOUT = 4000; // 4 seconds
 
 export const FullScreenPresenceList = memo(({
   profiles,
@@ -60,6 +69,30 @@ export const FullScreenPresenceList = memo(({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [showLimitModal, setShowLimitModal] = useState(false);
+  
+  // Undo state
+  const [lastAction, setLastAction] = useState<UndoAction | null>(null);
+  const [showUndo, setShowUndo] = useState(false);
+  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Hide undo button after timeout
+  useEffect(() => {
+    if (lastAction) {
+      setShowUndo(true);
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current);
+      }
+      undoTimeoutRef.current = setTimeout(() => {
+        setShowUndo(false);
+        setLastAction(null);
+      }, UNDO_BUTTON_TIMEOUT);
+    }
+    return () => {
+      if (undoTimeoutRef.current) {
+        clearTimeout(undoTimeoutRef.current);
+      }
+    };
+  }, [lastAction]);
 
   // Separate active and inactive profiles
   const activeProfiles = canSeeRealtimePresence 
@@ -74,9 +107,46 @@ export const FullScreenPresenceList = memo(({
     p => !dismissedIds.has(p.id)
   );
 
+  // Total profiles for counter (including dismissed)
+  const totalProfiles = [...activeProfiles, ...inactiveProfiles].length;
+  const viewedCount = dismissedIds.size;
+  const remainingCount = totalProfiles - viewedCount;
+
+  const handleUndo = useCallback(async () => {
+    if (!lastAction) return;
+
+    triggerHaptic('light');
+
+    // If it was a swipe right with a ghost message, delete the message
+    if (lastAction.type === 'swipe_right' && lastAction.ghostMessageId) {
+      try {
+        await supabase
+          .from("ghost_messages")
+          .delete()
+          .eq("id", lastAction.ghostMessageId);
+        refetchLimit();
+        queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
+      } catch (e) {
+        console.log("[Undo] Could not delete ghost message:", e);
+      }
+    }
+
+    // Restore the dismissed profile
+    setDismissedIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(lastAction.presenceId);
+      return newSet;
+    });
+
+    setLastAction(null);
+    setShowUndo(false);
+    toast.success("Acción deshecha", { duration: 2000 });
+  }, [lastAction, refetchLimit, queryClient]);
+
   const handleSwipeLeft = useCallback((presenceId: string) => {
     // Pass - just dismiss the card
     setDismissedIds(prev => new Set(prev).add(presenceId));
+    setLastAction({ type: 'swipe_left', presenceId });
     if (currentIndex < allProfiles.length - 1) {
       setCurrentIndex(prev => prev);
     }
@@ -101,11 +171,11 @@ export const FullScreenPresenceList = memo(({
     const randomMessage = quickMessages[Math.floor(Math.random() * quickMessages.length)];
 
     try {
-      const { error } = await supabase.from("ghost_messages").insert({
+      const { data: insertedMessage, error } = await supabase.from("ghost_messages").insert({
         from_profile_id: myProfile.id,
         to_profile_id: presence.profile.id,
         content: randomMessage,
-      });
+      }).select('id').single();
 
       if (error) {
         if (error.code === "23505") {
@@ -157,9 +227,17 @@ export const FullScreenPresenceList = memo(({
         } else {
           toast.success("👻 Mensaje ghost enviado");
         }
+
+        // Store action for undo
+        setLastAction({
+          type: 'swipe_right',
+          presenceId: presence.id,
+          ghostMessageId: insertedMessage?.id,
+        });
       }
     } catch (error: any) {
       toast.error("Error al enviar: " + error.message);
+      return; // Don't dismiss on error
     }
 
     // Dismiss the card
@@ -173,14 +251,37 @@ export const FullScreenPresenceList = memo(({
       ref={containerRef}
       className="h-[calc(100vh-200px)] flex flex-col"
     >
-      {/* Profile counter */}
+      {/* Profile counter - now shows remaining */}
       <div className="fixed top-24 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
         <div className="px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border border-border">
           <span className="text-sm font-medium text-foreground">
-            {currentIndex + 1} / {allProfiles.length}
+            {remainingCount} {remainingCount === 1 ? 'perfil restante' : 'perfiles restantes'}
           </span>
         </div>
       </div>
+
+      {/* Floating undo button */}
+      <AnimatePresence>
+        {showUndo && lastAction && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.9 }}
+            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            className="fixed bottom-32 left-1/2 -translate-x-1/2 z-40"
+          >
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleUndo}
+              className="gap-2 bg-background/95 backdrop-blur-md shadow-lg border-primary/20 hover:bg-primary/10 hover:border-primary/40 transition-all"
+            >
+              <Undo2 className="w-4 h-4" />
+              <span>Deshacer</span>
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Active profiles section header */}
       {canSeeRealtimePresence && activeProfiles.length > 0 && (
