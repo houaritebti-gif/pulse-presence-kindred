@@ -1,6 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -174,6 +180,32 @@ const ReduceMotionSetting = ({
             {reduceMotion ? "Preview pausado" : "Preview animado"}
           </span>
         </div>
+        
+        {/* Help tooltip */}
+        <TooltipProvider>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <button className="p-1 rounded-full hover:bg-muted/50 transition-colors">
+                <HelpCircle className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-[280px] p-3 space-y-2">
+              <p className="font-medium text-sm">¿Qué es prefers-reduced-motion?</p>
+              <p className="text-xs text-muted-foreground">
+                Es una configuración del sistema que indica que prefieres menos animaciones, útil para personas con sensibilidad al movimiento o epilepsia.
+              </p>
+              <div className="space-y-1.5 pt-1 border-t border-border">
+                <p className="text-[10px] font-medium text-foreground">Cómo activarlo:</p>
+                <div className="text-[10px] text-muted-foreground space-y-1">
+                  <p><span className="font-medium">Windows:</span> Configuración → Accesibilidad → Efectos visuales → Desactivar animaciones</p>
+                  <p><span className="font-medium">macOS:</span> Preferencias → Accesibilidad → Pantalla → Reducir movimiento</p>
+                  <p><span className="font-medium">iOS:</span> Ajustes → Accesibilidad → Movimiento → Reducir movimiento</p>
+                  <p><span className="font-medium">Android:</span> Ajustes → Accesibilidad → Quitar animaciones</p>
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );
