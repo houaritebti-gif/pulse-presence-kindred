@@ -447,6 +447,38 @@ export type Database = {
           },
         ]
       }
+      presence_exhaustion: {
+        Row: {
+          created_at: string
+          exhausted_at: string
+          id: string
+          notified_at: string | null
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          exhausted_at?: string
+          id?: string
+          notified_at?: string | null
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          exhausted_at?: string
+          id?: string
+          notified_at?: string | null
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presence_exhaustion_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_gender_preferences: {
         Row: {
           created_at: string | null
