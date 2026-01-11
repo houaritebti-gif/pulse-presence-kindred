@@ -569,21 +569,26 @@ export const AIChatBot = () => {
     if (!position) return;
     
     const buttonSize = isMobile ? 44 : 56;
+    const padding = isMobile ? 12 : 16;
     const newX = position.x + info.offset.x;
     const newY = position.y + info.offset.y;
     
-    // Clamp to screen bounds
-    const maxX = window.innerWidth - buttonSize - 8;
+    // Clamp Y to screen bounds
     const maxY = window.innerHeight - buttonSize - 8;
-    const minX = 8;
     const minY = 8;
+    const clampedY = Math.min(Math.max(newY, minY), maxY);
     
-    const clampedPosition = {
-      x: Math.min(Math.max(newX, minX), maxX),
-      y: Math.min(Math.max(newY, minY), maxY),
+    // Snap to nearest edge (left or right)
+    const screenCenter = window.innerWidth / 2;
+    const snapToLeft = newX + buttonSize / 2 < screenCenter;
+    const snappedX = snapToLeft ? padding : window.innerWidth - buttonSize - padding;
+    
+    const snappedPosition = {
+      x: snappedX,
+      y: clampedY,
     };
     
-    setPosition(clampedPosition);
+    setPosition(snappedPosition);
     
     // Haptic feedback on drag end - double tap pattern
     if (navigator.vibrate) {
@@ -592,7 +597,7 @@ export const AIChatBot = () => {
     
     // Save to localStorage
     try {
-      localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(clampedPosition));
+      localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(snappedPosition));
     } catch {}
     
     // Small delay to prevent click after drag
