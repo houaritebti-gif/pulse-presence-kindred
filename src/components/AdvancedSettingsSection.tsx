@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,8 @@ const AdvancedSettingsSection = () => {
   const [isUpdatingAgeRange, setIsUpdatingAgeRange] = useState(false);
   const [notifySameCityOnly, setNotifySameCityOnly] = useState(false);
   const [isUpdatingSameCity, setIsUpdatingSameCity] = useState(false);
+  const [notifySummaryHour, setNotifySummaryHour] = useState(9);
+  const [isUpdatingSummaryHour, setIsUpdatingSummaryHour] = useState(false);
   
   const { data: profile } = useProfile();
   const queryClient = useQueryClient();
@@ -76,6 +78,7 @@ const AdvancedSettingsSection = () => {
       notify_min_age?: number | null;
       notify_max_age?: number | null;
       notify_same_city_only?: boolean;
+      notify_summary_hour?: number;
     };
     if (profileWithPref?.notify_new_presence !== undefined) {
       setNotifyNewPresence(profileWithPref.notify_new_presence);
@@ -88,6 +91,9 @@ const AdvancedSettingsSection = () => {
     }
     if (profileWithPref?.notify_same_city_only !== undefined) {
       setNotifySameCityOnly(profileWithPref.notify_same_city_only);
+    }
+    if (profileWithPref?.notify_summary_hour !== undefined) {
+      setNotifySummaryHour(profileWithPref.notify_summary_hour);
     }
   }, [profile]);
 
@@ -177,6 +183,32 @@ const AdvancedSettingsSection = () => {
       toast.error("Error al actualizar preferencia");
     } finally {
       setIsUpdatingSameCity(false);
+    }
+  };
+
+  const handleSummaryHourChange = async (hour: number) => {
+    if (!profile?.id) return;
+    
+    setIsUpdatingSummaryHour(true);
+    const prev = notifySummaryHour;
+    setNotifySummaryHour(hour);
+    
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ notify_summary_hour: hour })
+        .eq("id", profile.id);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(`Resumen diario programado a las ${hour}:00`);
+    } catch (error) {
+      console.error("Error updating summary hour preference:", error);
+      setNotifySummaryHour(prev);
+      toast.error("Error al actualizar hora del resumen");
+    } finally {
+      setIsUpdatingSummaryHour(false);
     }
   };
 
@@ -673,6 +705,31 @@ const AdvancedSettingsSection = () => {
                     onCheckedChange={handleSameCityChange}
                     disabled={isUpdatingSameCity || !profile?.city}
                   />
+                </div>
+
+                {/* Summary hour selector */}
+                <div className="pt-3 border-t border-border/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-body text-sm text-foreground">
+                      Hora del resumen diario
+                    </span>
+                  </div>
+                  <select
+                    value={notifySummaryHour}
+                    onChange={(e) => handleSummaryHourChange(parseInt(e.target.value))}
+                    disabled={isUpdatingSummaryHour}
+                    className="w-full px-3 py-2 rounded-lg bg-muted text-foreground text-sm border-0 focus:ring-2 focus:ring-primary"
+                  >
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <option key={i} value={i}>
+                        {i.toString().padStart(2, '0')}:00 {i < 12 ? '(mañana)' : i < 18 ? '(tarde)' : '(noche)'}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="font-body text-xs text-muted-foreground mt-1">
+                    Recibirás un resumen diario a las {notifySummaryHour.toString().padStart(2, '0')}:00 UTC
+                  </p>
                 </div>
               </div>
             )}
