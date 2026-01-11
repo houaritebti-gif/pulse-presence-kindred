@@ -166,6 +166,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
   const [showMessageDialog, setShowMessageDialog] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [showProfileConfirmModal, setShowProfileConfirmModal] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
@@ -416,6 +417,13 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const handleViewProfile = () => {
     if (presence.profile?.id) {
       triggerHaptic('light');
+      setShowProfileConfirmModal(true);
+    }
+  };
+
+  const confirmViewProfile = () => {
+    if (presence.profile?.id) {
+      setShowProfileConfirmModal(false);
       navigate(`/user/${presence.profile.id}`);
     }
   };
@@ -1056,6 +1064,37 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
         open={showLimitModal}
         onOpenChange={setShowLimitModal}
       />
+
+      {/* Profile view confirmation modal */}
+      <Dialog open={showProfileConfirmModal} onOpenChange={setShowProfileConfirmModal}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5 text-primary" />
+              Ver perfil
+            </DialogTitle>
+            <DialogDescription>
+              ¿Quieres ver el perfil completo de {presence.profile?.name || "esta persona"}?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row gap-2 sm:flex-row">
+            <Button
+              variant="ghost"
+              onClick={() => setShowProfileConfirmModal(false)}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmViewProfile}
+              className="flex-1"
+            >
+              <User className="w-4 h-4 mr-2" />
+              Ver perfil
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 });
