@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Sparkles, Flame, User, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
+import { X, Sparkles, Flame, User, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Smartphone, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { triggerHaptic } from "@/utils/haptics";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const TUTORIAL_STORAGE_KEY = "kiki_swipe_tutorial_seen";
 
@@ -16,46 +17,59 @@ const swipeDirections = [
     icon: X,
     arrow: ChevronLeft,
     title: "← Pasar",
-    description: "Desliza a la izquierda para pasar al siguiente perfil",
+    titleMobile: "← Desliza izquierda",
+    titleDesktop: "← Tecla izquierda",
+    description: "Pasa al siguiente perfil sin enviar interés",
     color: "from-muted to-muted-foreground/20",
     iconColor: "text-muted-foreground",
     emoji: "👋",
+    keyHint: "←",
   },
   {
     direction: "right",
     icon: Sparkles,
     arrow: ChevronRight,
     title: "→ Chispa",
-    description: "Desliza a la derecha para enviar una Chispa ✨ Si hay interés mutuo, ¡habrá vibra!",
+    titleMobile: "→ Desliza derecha",
+    titleDesktop: "→ Tecla derecha",
+    description: "Envía una Chispa ✨ Si hay interés mutuo, ¡habrá vibra!",
     color: "from-primary/80 to-primary",
     iconColor: "text-primary-foreground",
     emoji: "✨",
+    keyHint: "→",
   },
   {
     direction: "up",
     icon: Flame,
     arrow: ChevronUp,
     title: "↑ Super Chispa",
-    description: "Desliza hacia arriba para enviar una Super Chispa 🔥 que destacará tu interés especial",
+    titleMobile: "↑ Desliza arriba",
+    titleDesktop: "↑ Tecla arriba",
+    description: "Destaca tu interés especial con una Super Chispa 🔥",
     color: "from-purple-500 to-blue-500",
     iconColor: "text-white",
     emoji: "🔥",
+    keyHint: "↑",
   },
   {
     direction: "down",
     icon: User,
     arrow: ChevronDown,
     title: "↓ Ver perfil",
-    description: "Desliza hacia abajo para ver el perfil completo antes de decidir",
+    titleMobile: "↓ Desliza abajo",
+    titleDesktop: "↓ Tecla abajo",
+    description: "Ve el perfil completo antes de decidir",
     color: "from-accent/80 to-accent",
     iconColor: "text-accent-foreground",
     emoji: "👤",
+    keyHint: "↓",
   },
 ];
 
 export const SwipeTutorial = ({ onComplete }: SwipeTutorialProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const hasSeen = localStorage.getItem(TUTORIAL_STORAGE_KEY);
@@ -108,8 +122,23 @@ export const SwipeTutorial = ({ onComplete }: SwipeTutorialProps) => {
           Saltar
         </button>
 
+        {/* Device indicator */}
+        <div className="absolute top-6 left-6 flex items-center gap-2 text-white/40 text-xs">
+          {isMobile ? (
+            <>
+              <Smartphone className="w-4 h-4" />
+              <span>Móvil</span>
+            </>
+          ) : (
+            <>
+              <Monitor className="w-4 h-4" />
+              <span>Escritorio</span>
+            </>
+          )}
+        </div>
+
         {/* Step indicators */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 flex gap-2">
           {swipeDirections.map((_, idx) => (
             <div
               key={idx}
@@ -135,14 +164,14 @@ export const SwipeTutorial = ({ onComplete }: SwipeTutorialProps) => {
         >
           {/* Animated icon container */}
           <motion.div
-            className={`relative w-32 h-32 rounded-full bg-gradient-to-br ${current.color} flex items-center justify-center mb-8 shadow-2xl`}
+            className={`relative w-28 h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-br ${current.color} flex items-center justify-center mb-6 shadow-2xl`}
             animate={{
               x: current.direction === "left" ? [-20, 0] : current.direction === "right" ? [20, 0] : 0,
               y: current.direction === "up" ? [-20, 0] : current.direction === "down" ? [20, 0] : 0,
             }}
             transition={{ repeat: Infinity, repeatType: "reverse", duration: 1 }}
           >
-            <Icon className={`w-16 h-16 ${current.iconColor}`} />
+            <Icon className={`w-12 h-12 md:w-16 md:h-16 ${current.iconColor}`} />
             
             {/* Directional arrow */}
             <motion.div
@@ -168,40 +197,98 @@ export const SwipeTutorial = ({ onComplete }: SwipeTutorialProps) => {
           </motion.div>
 
           {/* Title with emoji */}
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-4xl">{current.emoji}</span>
-            <h2 className="text-2xl font-display font-bold text-white">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-3xl md:text-4xl">{current.emoji}</span>
+            <h2 className="text-xl md:text-2xl font-display font-bold text-white">
               {current.title}
             </h2>
           </div>
 
+          {/* Device-specific instruction */}
+          <p className="text-white/50 text-sm mb-3">
+            {isMobile ? current.titleMobile : current.titleDesktop}
+          </p>
+
           {/* Description */}
-          <p className="text-white/70 font-body mb-8 leading-relaxed">
+          <p className="text-white/70 font-body mb-6 leading-relaxed text-sm md:text-base">
             {current.description}
           </p>
 
-          {/* Phone mockup showing gesture */}
-          <div className="w-48 h-72 rounded-3xl border-2 border-white/20 bg-white/5 backdrop-blur-sm relative overflow-hidden mb-8">
-            {/* Card representation */}
-            <motion.div
-              className="absolute inset-4 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 border border-white/10"
-              animate={{
-                x: current.direction === "left" ? [0, -30] : current.direction === "right" ? [0, 30] : 0,
-                y: current.direction === "up" ? [0, -30] : current.direction === "down" ? [0, 30] : 0,
-                rotate: current.direction === "left" ? [0, -5] : current.direction === "right" ? [0, 5] : 0,
-              }}
-              transition={{ repeat: Infinity, repeatType: "reverse", duration: 1.2, ease: "easeInOut" }}
-            >
-              {/* Finger indicator */}
+          {/* Visual demonstration - different for mobile vs desktop */}
+          {isMobile ? (
+            // Phone mockup showing gesture
+            <div className="w-40 h-56 md:w-48 md:h-64 rounded-3xl border-2 border-white/20 bg-white/5 backdrop-blur-sm relative overflow-hidden mb-6">
+              {/* Card representation */}
               <motion.div
-                className="absolute bottom-6 left-1/2 w-8 h-8 rounded-full bg-white/80 shadow-lg"
+                className="absolute inset-4 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 border border-white/10"
                 animate={{
-                  x: current.direction === "left" ? ["-50%", "calc(-50% - 20px)"] : current.direction === "right" ? ["-50%", "calc(-50% + 20px)"] : "-50%",
-                  y: current.direction === "up" ? [0, -20] : current.direction === "down" ? [0, 20] : 0,
+                  x: current.direction === "left" ? [0, -30] : current.direction === "right" ? [0, 30] : 0,
+                  y: current.direction === "up" ? [0, -30] : current.direction === "down" ? [0, 30] : 0,
+                  rotate: current.direction === "left" ? [0, -5] : current.direction === "right" ? [0, 5] : 0,
                 }}
                 transition={{ repeat: Infinity, repeatType: "reverse", duration: 1.2, ease: "easeInOut" }}
-              />
-            </motion.div>
+              >
+                {/* Finger indicator */}
+                <motion.div
+                  className="absolute bottom-6 left-1/2 w-8 h-8 rounded-full bg-white/80 shadow-lg"
+                  animate={{
+                    x: current.direction === "left" ? ["-50%", "calc(-50% - 20px)"] : current.direction === "right" ? ["-50%", "calc(-50% + 20px)"] : "-50%",
+                    y: current.direction === "up" ? [0, -20] : current.direction === "down" ? [0, 20] : 0,
+                  }}
+                  transition={{ repeat: Infinity, repeatType: "reverse", duration: 1.2, ease: "easeInOut" }}
+                />
+              </motion.div>
+            </div>
+          ) : (
+            // Keyboard mockup for desktop
+            <div className="flex flex-col items-center gap-2 mb-6">
+              <div className="grid grid-cols-3 gap-1">
+                <div className="col-start-2">
+                  <motion.div
+                    className={`w-12 h-10 rounded-lg border-2 flex items-center justify-center text-sm font-mono font-bold
+                      ${current.direction === "up" ? "bg-primary border-primary text-primary-foreground" : "bg-white/10 border-white/20 text-white/40"}`}
+                    animate={current.direction === "up" ? { scale: [1, 1.1, 1] } : {}}
+                    transition={{ repeat: Infinity, duration: 1 }}
+                  >
+                    ↑
+                  </motion.div>
+                </div>
+                <motion.div
+                  className={`w-12 h-10 rounded-lg border-2 flex items-center justify-center text-sm font-mono font-bold
+                    ${current.direction === "left" ? "bg-primary border-primary text-primary-foreground" : "bg-white/10 border-white/20 text-white/40"}`}
+                  animate={current.direction === "left" ? { scale: [1, 1.1, 1] } : {}}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                >
+                  ←
+                </motion.div>
+                <motion.div
+                  className={`w-12 h-10 rounded-lg border-2 flex items-center justify-center text-sm font-mono font-bold
+                    ${current.direction === "down" ? "bg-primary border-primary text-primary-foreground" : "bg-white/10 border-white/20 text-white/40"}`}
+                  animate={current.direction === "down" ? { scale: [1, 1.1, 1] } : {}}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                >
+                  ↓
+                </motion.div>
+                <motion.div
+                  className={`w-12 h-10 rounded-lg border-2 flex items-center justify-center text-sm font-mono font-bold
+                    ${current.direction === "right" ? "bg-primary border-primary text-primary-foreground" : "bg-white/10 border-white/20 text-white/40"}`}
+                  animate={current.direction === "right" ? { scale: [1, 1.1, 1] } : {}}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                >
+                  →
+                </motion.div>
+              </div>
+              <p className="text-white/30 text-xs">
+                También puedes usar los botones
+              </p>
+            </div>
+          )}
+
+          {/* Buttons hint */}
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-4">
+            <span className="text-xs text-white/60">
+              {isMobile ? "O toca la pantalla para ver los botones" : "Los botones siempre están visibles en escritorio"}
+            </span>
           </div>
         </motion.div>
 

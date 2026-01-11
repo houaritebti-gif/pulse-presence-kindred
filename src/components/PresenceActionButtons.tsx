@@ -1,5 +1,6 @@
+import { useState, useEffect, useCallback } from "react";
 import { X, Flame, User, Sparkles, Undo2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -105,6 +106,8 @@ const ActionButton = ({
   );
 };
 
+const INACTIVITY_TIMEOUT = 3000; // 3 seconds
+
 export const PresenceActionButtons = ({
   onPass,
   onChispa,
@@ -118,78 +121,150 @@ export const PresenceActionButtons = ({
 }: PresenceActionButtonsProps) => {
   const isMobile = useIsMobile();
   const shouldShowHints = showKeyboardHints && !isMobile;
+  
+  // Hybrid intelligent: on mobile, buttons appear on touch and fade after inactivity
+  const [isVisible, setIsVisible] = useState(!isMobile);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+
+  const showButtons = useCallback(() => {
+    setIsVisible(true);
+    // Clear any existing timeout
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    // Set new timeout to hide after inactivity (mobile only)
+    if (isMobile) {
+      const id = setTimeout(() => {
+        setIsVisible(false);
+      }, INACTIVITY_TIMEOUT);
+      setTimeoutId(id);
+    }
+  }, [isMobile, timeoutId]);
+
+  // On desktop, always visible
+  useEffect(() => {
+    if (!isMobile) {
+      setIsVisible(true);
+    }
+  }, [isMobile]);
+
+  // Touch handler for mobile - show buttons on any touch
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleTouch = () => {
+      showButtons();
+    };
+
+    // Listen for touch events on the whole screen
+    document.addEventListener("touchstart", handleTouch, { passive: true });
+    document.addEventListener("touchmove", handleTouch, { passive: true });
+    
+    // Also show initially
+    showButtons();
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouch);
+      document.removeEventListener("touchmove", handleTouch);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [isMobile, showButtons, timeoutId]);
+
+  // Keep buttons visible when showUndo changes (undo action)
+  useEffect(() => {
+    if (showUndo) {
+      showButtons();
+    }
+  }, [showUndo, showButtons]);
 
   return (
-    <div className="flex items-center justify-center gap-3 py-4">
-      {/* Undo button (smaller, appears when available) */}
-      {showUndo && onUndo && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, x: -20 }}
-          animate={{ opacity: 1, scale: 1, x: 0 }}
-          exit={{ opacity: 0, scale: 0.8, x: -20 }}
-        >
-          <ActionButton
-            onClick={onUndo}
-            icon={<Undo2 className="w-full h-full" />}
-            label="Deshacer"
-            variant="muted"
-            size="sm"
-            disabled={disabled}
-            keyboardHint="Z"
-            showKeyboardHint={shouldShowHints}
-          />
-        </motion.div>
-      )}
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ 
+          opacity: isVisible ? 1 : 0, 
+          y: isVisible ? 0 : 20,
+          pointerEvents: isVisible ? "auto" : "none"
+        }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className={cn(
+          "flex items-center justify-center gap-3 py-4",
+          // Semi-transparent background on mobile for better visibility
+          isMobile && "bg-background/70 backdrop-blur-sm rounded-full px-4 mx-auto max-w-fit"
+        )}
+      >
+        {/* Undo button (smaller, appears when available) */}
+        {showUndo && onUndo && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, x: -20 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            exit={{ opacity: 0, scale: 0.8, x: -20 }}
+          >
+            <ActionButton
+              onClick={onUndo}
+              icon={<Undo2 className="w-full h-full" />}
+              label="Deshacer"
+              variant="muted"
+              size="sm"
+              disabled={disabled}
+              keyboardHint="Z"
+              showKeyboardHint={shouldShowHints}
+            />
+          </motion.div>
+        )}
 
-      {/* Pass button - X */}
-      <ActionButton
-        onClick={onPass}
-        icon={<X className="w-full h-full" strokeWidth={2.5} />}
-        label="Pasar 👋"
-        variant="muted"
-        size="md"
-        disabled={disabled}
-        keyboardHint="←"
-        showKeyboardHint={shouldShowHints}
-      />
+        {/* Pass button - X */}
+        <ActionButton
+          onClick={onPass}
+          icon={<X className="w-full h-full" strokeWidth={2.5} />}
+          label="Pasar 👋"
+          variant="muted"
+          size="md"
+          disabled={disabled}
+          keyboardHint="←"
+          showKeyboardHint={shouldShowHints}
+        />
 
-      {/* Super Chispa button - Flame (bigger, center-left) */}
-      <ActionButton
-        onClick={onSuperChispa}
-        icon={<Flame className="w-full h-full" />}
-        label="Super Chispa 🔥"
-        variant="super"
-        size="lg"
-        badge={availableSuperChispas}
-        disabled={disabled}
-        keyboardHint="↑"
-        showKeyboardHint={shouldShowHints}
-      />
+        {/* Super Chispa button - Flame (bigger, center-left) */}
+        <ActionButton
+          onClick={onSuperChispa}
+          icon={<Flame className="w-full h-full" />}
+          label="Super Chispa 🔥"
+          variant="super"
+          size="lg"
+          badge={availableSuperChispas}
+          disabled={disabled}
+          keyboardHint="↑"
+          showKeyboardHint={shouldShowHints}
+        />
 
-      {/* Chispa button - Sparkles (primary, center-right) */}
-      <ActionButton
-        onClick={onChispa}
-        icon={<Sparkles className="w-full h-full" />}
-        label="Chispa ✨"
-        variant="primary"
-        size="lg"
-        disabled={disabled}
-        keyboardHint="→"
-        showKeyboardHint={shouldShowHints}
-      />
+        {/* Chispa button - Sparkles (primary, center-right) */}
+        <ActionButton
+          onClick={onChispa}
+          icon={<Sparkles className="w-full h-full" />}
+          label="Chispa ✨"
+          variant="primary"
+          size="lg"
+          disabled={disabled}
+          keyboardHint="→"
+          showKeyboardHint={shouldShowHints}
+        />
 
-      {/* View Profile button - User */}
-      <ActionButton
-        onClick={onViewProfile}
-        icon={<User className="w-full h-full" />}
-        label="Ver perfil 👤"
-        variant="secondary"
-        size="md"
-        disabled={disabled}
-        keyboardHint="↓"
-        showKeyboardHint={shouldShowHints}
-      />
-    </div>
+        {/* View Profile button - User */}
+        <ActionButton
+          onClick={onViewProfile}
+          icon={<User className="w-full h-full" />}
+          label="Ver perfil 👤"
+          variant="secondary"
+          size="md"
+          disabled={disabled}
+          keyboardHint="↓"
+          showKeyboardHint={shouldShowHints}
+        />
+      </motion.div>
+    </AnimatePresence>
   );
 };
 
