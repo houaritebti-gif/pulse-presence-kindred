@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { triggerHaptic } from "@/utils/haptics";
 
 type DetectedOS = "windows" | "macos" | "ios" | "android" | "unknown";
 
@@ -423,16 +424,12 @@ export const ReduceMotionHelpModal = () => {
     setDirection(0);
   };
 
-  const goToStep = (index: number) => {
-    setDirection(index > currentStep ? 1 : -1);
-    setCurrentStep(index);
-  };
-
   const goNext = (os: DetectedOS) => {
     const maxStep = osInstructionsData[os].steps.length - 1;
     if (currentStep < maxStep) {
       setDirection(1);
       setCurrentStep(prev => prev + 1);
+      triggerHaptic("light");
     }
   };
 
@@ -440,6 +437,15 @@ export const ReduceMotionHelpModal = () => {
     if (currentStep > 0) {
       setDirection(-1);
       setCurrentStep(prev => prev - 1);
+      triggerHaptic("light");
+    }
+  };
+
+  const goToStep = (index: number) => {
+    if (index !== currentStep) {
+      setDirection(index > currentStep ? 1 : -1);
+      setCurrentStep(index);
+      triggerHaptic("selection");
     }
   };
 
