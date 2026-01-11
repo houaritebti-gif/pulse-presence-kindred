@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
 import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Music, Star, Flame } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from "framer-motion";
 import { ALL_GENDERS, VIBES, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import { Button } from "@/components/ui/button";
@@ -157,6 +158,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const { getAvailableQuantity } = usePurchasedItems();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
@@ -824,27 +826,29 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
             )}
           </div>
 
-          {/* Swipe hint - 4 directions */}
-          <div className="flex justify-center mt-4">
-            <div className="grid grid-cols-4 gap-3 text-white/50 text-[10px]">
-              <span className="flex flex-col items-center gap-0.5">
-                <ChevronLeft className="w-3.5 h-3.5" />
-                <span>Pasar</span>
-              </span>
-              <span className="flex flex-col items-center gap-0.5">
-                <ChevronRight className="w-3.5 h-3.5 text-primary/70" />
-                <span>Chispa</span>
-              </span>
-              <span className="flex flex-col items-center gap-0.5">
-                <ChevronUp className="w-3.5 h-3.5 text-purple-400/70" />
-                <span>Super</span>
-              </span>
-              <span className="flex flex-col items-center gap-0.5">
-                <ChevronDown className="w-3.5 h-3.5 text-accent/70" />
-                <span>Perfil</span>
-              </span>
+          {/* Swipe hint - 4 directions (mobile only) */}
+          {isMobile && (
+            <div className="flex justify-center mt-4">
+              <div className="grid grid-cols-4 gap-3 text-white/50 text-[10px]">
+                <span className="flex flex-col items-center gap-0.5">
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Pasar</span>
+                </span>
+                <span className="flex flex-col items-center gap-0.5">
+                  <ChevronRight className="w-3.5 h-3.5 text-primary/70" />
+                  <span>Chispa</span>
+                </span>
+                <span className="flex flex-col items-center gap-0.5">
+                  <ChevronUp className="w-3.5 h-3.5 text-purple-400/70" />
+                  <span>Super</span>
+                </span>
+                <span className="flex flex-col items-center gap-0.5">
+                  <ChevronDown className="w-3.5 h-3.5 text-accent/70" />
+                  <span>Perfil</span>
+                </span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </motion.div>
 

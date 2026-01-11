@@ -2,6 +2,7 @@ import { X, Flame, User, Sparkles, Undo2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Tooltip,
   TooltipContent,
@@ -18,6 +19,7 @@ interface PresenceActionButtonsProps {
   showUndo?: boolean;
   availableSuperChispas?: number;
   disabled?: boolean;
+  showKeyboardHints?: boolean;
 }
 
 const ActionButton = ({
@@ -28,6 +30,8 @@ const ActionButton = ({
   size = "md",
   badge,
   disabled,
+  keyboardHint,
+  showKeyboardHint = false,
 }: {
   onClick: () => void;
   icon: React.ReactNode;
@@ -36,6 +40,8 @@ const ActionButton = ({
   size?: "sm" | "md" | "lg";
   badge?: number;
   disabled?: boolean;
+  keyboardHint?: string;
+  showKeyboardHint?: boolean;
 }) => {
   const sizeClasses = {
     sm: "w-12 h-12",
@@ -83,10 +89,16 @@ const ActionButton = ({
                 {badge > 9 ? "9+" : badge}
               </span>
             )}
+            {/* Keyboard hint badge */}
+            {showKeyboardHint && keyboardHint && (
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded bg-background/90 border border-border text-[9px] font-mono font-bold text-muted-foreground shadow-sm">
+                {keyboardHint}
+              </span>
+            )}
           </motion.button>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">
-          {label}
+          {label}{showKeyboardHint && keyboardHint && <span className="ml-2 opacity-60">({keyboardHint})</span>}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -102,7 +114,11 @@ export const PresenceActionButtons = ({
   showUndo = false,
   availableSuperChispas = 0,
   disabled = false,
+  showKeyboardHints = false,
 }: PresenceActionButtonsProps) => {
+  const isMobile = useIsMobile();
+  const shouldShowHints = showKeyboardHints && !isMobile;
+
   return (
     <div className="flex items-center justify-center gap-3 py-4">
       {/* Undo button (smaller, appears when available) */}
@@ -119,6 +135,8 @@ export const PresenceActionButtons = ({
             variant="muted"
             size="sm"
             disabled={disabled}
+            keyboardHint="Z"
+            showKeyboardHint={shouldShowHints}
           />
         </motion.div>
       )}
@@ -131,6 +149,8 @@ export const PresenceActionButtons = ({
         variant="muted"
         size="md"
         disabled={disabled}
+        keyboardHint="←"
+        showKeyboardHint={shouldShowHints}
       />
 
       {/* Super Chispa button - Flame (bigger, center-left) */}
@@ -142,6 +162,8 @@ export const PresenceActionButtons = ({
         size="lg"
         badge={availableSuperChispas}
         disabled={disabled}
+        keyboardHint="↑"
+        showKeyboardHint={shouldShowHints}
       />
 
       {/* Chispa button - Sparkles (primary, center-right) */}
@@ -152,6 +174,8 @@ export const PresenceActionButtons = ({
         variant="primary"
         size="lg"
         disabled={disabled}
+        keyboardHint="→"
+        showKeyboardHint={shouldShowHints}
       />
 
       {/* View Profile button - User */}
@@ -162,6 +186,8 @@ export const PresenceActionButtons = ({
         variant="secondary"
         size="md"
         disabled={disabled}
+        keyboardHint="↓"
+        showKeyboardHint={shouldShowHints}
       />
     </div>
   );

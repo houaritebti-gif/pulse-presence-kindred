@@ -12,6 +12,7 @@ import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { usePurchasedItems } from "@/hooks/usePurchasedItems";
+import { useIsMobile } from "@/hooks/use-mobile";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -81,6 +82,7 @@ export const FullScreenPresenceList = memo(({
   const { getAvailableQuantity, useItem } = usePurchasedItems();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -333,6 +335,50 @@ export const FullScreenPresenceList = memo(({
     }
   }, [navigate]);
 
+  // Keyboard shortcuts for desktop
+  useEffect(() => {
+    if (isMobile || allProfiles.length === 0) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      const currentPresence = allProfiles[0];
+      if (!currentPresence) return;
+
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          handleSwipeLeft(currentPresence.id);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          handleSwipeRight(currentPresence);
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          handleSwipeUp(currentPresence);
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          handleSwipeDown(currentPresence);
+          break;
+        case "z":
+        case "Z":
+          if (showUndo && lastAction) {
+            e.preventDefault();
+            handleUndo();
+          }
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMobile, allProfiles, handleSwipeLeft, handleSwipeRight, handleSwipeUp, handleSwipeDown, handleUndo, showUndo, lastAction]);
+
   if (profiles.length === 0) return null;
 
   return (
@@ -469,6 +515,7 @@ export const FullScreenPresenceList = memo(({
             showUndo={showUndo && !!lastAction}
             availableSuperChispas={getAvailableQuantity("super_spark")}
             disabled={allProfiles.length === 0}
+            showKeyboardHints={!isMobile}
           />
         </div>
       )}
