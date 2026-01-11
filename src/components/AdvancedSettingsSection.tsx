@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,94 @@ import {
   setMasterVolume,
   updateMasterGainVolume,
 } from "@/utils/notificationSound";
+
+const REDUCE_MOTION_KEY = "kiki_reduce_motion";
+
+const getManualReduceMotionPreference = (): boolean | null => {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem(REDUCE_MOTION_KEY);
+  if (stored === "true") return true;
+  if (stored === "false") return false;
+  return null;
+};
+
+const ReduceMotionSetting = ({ 
+  reduceMotion, 
+  setReduceMotion 
+}: { 
+  reduceMotion: boolean; 
+  setReduceMotion: (value: boolean) => void;
+}) => {
+  const [isManual, setIsManual] = useState(() => getManualReduceMotionPreference() !== null);
+  
+  useEffect(() => {
+    const checkManualPreference = () => {
+      setIsManual(getManualReduceMotionPreference() !== null);
+    };
+    
+    window.addEventListener("reduceMotionChanged", checkManualPreference);
+    window.addEventListener("storage", (e) => {
+      if (e.key === REDUCE_MOTION_KEY) checkManualPreference();
+    });
+    
+    return () => {
+      window.removeEventListener("reduceMotionChanged", checkManualPreference);
+    };
+  }, []);
+
+  const handleChange = (value: boolean) => {
+    setReduceMotion(value);
+    setIsManual(true);
+  };
+
+  const resetToSystem = () => {
+    localStorage.removeItem(REDUCE_MOTION_KEY);
+    window.dispatchEvent(new Event("reduceMotionChanged"));
+    setIsManual(false);
+  };
+
+  return (
+    <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+      <div className="flex items-center gap-3">
+        <Sparkles className={`w-5 h-5 ${!reduceMotion ? "text-primary" : "text-muted-foreground"}`} />
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="font-body text-sm text-foreground">
+              Reducir animaciones
+            </span>
+            <Badge 
+              variant={isManual ? "default" : "secondary"}
+              className="text-[10px] px-1.5 py-0 h-4 font-normal"
+            >
+              {isManual ? "Manual" : "Sistema"}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-body text-xs text-muted-foreground">
+              {reduceMotion 
+                ? "Movimiento reducido para accesibilidad" 
+                : "Animaciones completas activas"
+              }
+            </span>
+            {isManual && (
+              <button 
+                onClick={resetToSystem}
+                className="text-[10px] text-primary hover:underline"
+              >
+                Usar sistema
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+      <Switch
+        checked={reduceMotion}
+        onCheckedChange={handleChange}
+        aria-label="Forzar reducción de movimiento"
+      />
+    </div>
+  );
+};
 
 const AdvancedSettingsSection = () => {
   const [expanded, setExpanded] = useState(false);
@@ -367,27 +456,10 @@ const AdvancedSettingsSection = () => {
           </div>
 
           {/* Reduce Motion - Manual Override */}
-          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
-            <div className="flex items-center gap-3">
-              <Sparkles className={`w-5 h-5 ${!reduceMotion ? "text-primary" : "text-muted-foreground"}`} />
-              <div>
-                <span className="font-body text-sm text-foreground block">
-                  Reducir animaciones
-                </span>
-                <span className="font-body text-xs text-muted-foreground">
-                  {reduceMotion 
-                    ? "Movimiento reducido para accesibilidad" 
-                    : "Animaciones completas activas"
-                  }
-                </span>
-              </div>
-            </div>
-            <Switch
-              checked={reduceMotion}
-              onCheckedChange={setReduceMotion}
-              aria-label="Forzar reducción de movimiento"
-            />
-          </div>
+          <ReduceMotionSetting 
+            reduceMotion={reduceMotion} 
+            setReduceMotion={setReduceMotion} 
+          />
 
           {/* Compact Mode */}
           <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
