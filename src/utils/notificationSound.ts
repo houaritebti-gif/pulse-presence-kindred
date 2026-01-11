@@ -12,6 +12,18 @@ const THEME_SOUND_ENABLED_KEY = "kiki_theme_sound_enabled";
 const SYNC_SOUND_TYPE_KEY = "kiki_sync_sound_type";
 const ENERGY_SOUND_ENABLED_KEY = "kiki_energy_sound_enabled";
 const ACTION_SOUNDS_ENABLED_KEY = "kiki_action_sounds_enabled";
+const MASTER_VOLUME_KEY = "kiki_master_volume";
+
+// Master volume control (0.0 - 1.0)
+export const getMasterVolume = (): number => {
+  const stored = localStorage.getItem(MASTER_VOLUME_KEY);
+  return stored !== null ? parseFloat(stored) : 0.7; // Default 70%
+};
+
+export const setMasterVolume = (volume: number): void => {
+  const clampedVolume = Math.max(0, Math.min(1, volume));
+  localStorage.setItem(MASTER_VOLUME_KEY, clampedVolume.toString());
+};
 
 export type SyncSoundType = 'default' | 'chime' | 'bubble' | 'whoosh' | 'minimal' | 'silent';
 
@@ -115,6 +127,26 @@ export const isInDndPeriod = (): boolean => {
   return currentHour >= start && currentHour < end;
 };
 
+// Master gain node for volume control
+let masterGainNode: GainNode | null = null;
+
+const getMasterGainNode = () => {
+  const ctx = getAudioContext();
+  if (!masterGainNode) {
+    masterGainNode = ctx.createGain();
+    masterGainNode.connect(ctx.destination);
+    masterGainNode.gain.value = getMasterVolume();
+  }
+  return masterGainNode;
+};
+
+// Update master volume dynamically
+export const updateMasterGainVolume = () => {
+  if (masterGainNode) {
+    masterGainNode.gain.value = getMasterVolume();
+  }
+};
+
 const getAudioContext = () => {
   if (!audioContext) {
     audioContext = new AudioContext();
@@ -162,9 +194,10 @@ export const playNotificationSound = (type: "spark" | "superSpark" | "message" |
     
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
+    gainNode.connect(masterGain);
     
     // Different sounds for different notification types
     switch (type) {
@@ -176,6 +209,9 @@ export const playNotificationSound = (type: "spark" | "superSpark" | "message" |
         oscillator.frequency.setValueAtTime(784, ctx.currentTime + 0.2); // G5
         gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + 0.4);
+        break;
         oscillator.start(ctx.currentTime);
         oscillator.stop(ctx.currentTime + 0.4);
         break;
@@ -192,9 +228,9 @@ export const playNotificationSound = (type: "spark" | "superSpark" | "message" |
         superOsc1.connect(superGain1);
         superOsc2.connect(superGain2);
         superOsc3.connect(superGain3);
-        superGain1.connect(ctx.destination);
-        superGain2.connect(ctx.destination);
-        superGain3.connect(ctx.destination);
+        superGain1.connect(masterGain);
+        superGain2.connect(masterGain);
+        superGain3.connect(masterGain);
         
         superOsc1.type = "sine";
         superOsc2.type = "sine";
@@ -246,7 +282,7 @@ export const playNotificationSound = (type: "spark" | "superSpark" | "message" |
         const osc2 = ctx.createOscillator();
         const gain2 = ctx.createGain();
         osc2.connect(gain2);
-        gain2.connect(ctx.destination);
+        gain2.connect(masterGain);
         
         oscillator.type = "sine";
         osc2.type = "sine";
@@ -295,8 +331,8 @@ export const playNotificationSound = (type: "spark" | "superSpark" | "message" |
         
         connOsc1.connect(connGain1);
         connOsc2.connect(connGain2);
-        connGain1.connect(ctx.destination);
-        connGain2.connect(ctx.destination);
+        connGain1.connect(masterGain);
+        connGain2.connect(masterGain);
         
         connOsc1.type = "sine";
         connOsc2.type = "triangle";
@@ -365,12 +401,14 @@ export const playCelebrationSound = () => {
       { freq: 1568, time: 0.6 },   // G6
     ];
     
+    const masterGain = getMasterGainNode();
+    
     notes.forEach(({ freq, time }) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(masterGain);
       
       osc.type = "sine";
       osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
@@ -391,7 +429,7 @@ export const playCelebrationSound = () => {
         const gain = ctx.createGain();
         
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(masterGain);
         
         osc.type = "sine";
         osc.frequency.setValueAtTime(freq, ctx.currentTime);
@@ -425,12 +463,12 @@ export const playChatbotResponseSound = () => {
       ctx.resume();
     }
     
-    // Soft ascending "blip" - friendly AI response
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(masterGain);
     
     osc.type = "sine";
     
@@ -460,16 +498,16 @@ export const playSuccessSound = () => {
       ctx.resume();
     }
     
-    // Simple ascending two-note chime (very subtle)
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     const gain2 = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc1.connect(gain1);
     osc2.connect(gain2);
-    gain1.connect(ctx.destination);
-    gain2.connect(ctx.destination);
+    gain1.connect(masterGain);
+    gain2.connect(masterGain);
     
     osc1.type = "sine";
     osc2.type = "sine";
@@ -506,12 +544,12 @@ export const playQueueAddedSound = () => {
       ctx.resume();
     }
     
-    // Soft "plop" sound - descending tone indicating queued
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(masterGain);
     
     osc.type = "sine";
     
@@ -583,13 +621,14 @@ const playSyncDefault = (ctx: AudioContext) => {
   const gain1 = ctx.createGain();
   const gain2 = ctx.createGain();
   const gain3 = ctx.createGain();
+  const masterGain = getMasterGainNode();
   
   osc1.connect(gain1);
   osc2.connect(gain2);
   osc3.connect(gain3);
-  gain1.connect(ctx.destination);
-  gain2.connect(ctx.destination);
-  gain3.connect(ctx.destination);
+  gain1.connect(masterGain);
+  gain2.connect(masterGain);
+  gain3.connect(masterGain);
   
   osc1.type = "sine";
   osc2.type = "sine";
@@ -621,14 +660,14 @@ const playSyncDefault = (ctx: AudioContext) => {
   osc3.stop(ctx.currentTime + 0.55);
 };
 
-// Chime sound - melodic bell-like
 const playSyncChime = (ctx: AudioContext) => {
   const notes = [784, 988, 1175]; // G5, B5, D6
+  const masterGain = getMasterGainNode();
   notes.forEach((freq, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(masterGain);
     osc.type = "sine";
     osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
     gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.1);
@@ -639,12 +678,12 @@ const playSyncChime = (ctx: AudioContext) => {
   });
 };
 
-// Bubble sound - soft popping
 const playSyncBubble = (ctx: AudioContext) => {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
+  const masterGain = getMasterGainNode();
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(masterGain);
   osc.type = "sine";
   osc.frequency.setValueAtTime(300, ctx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.05);
@@ -655,13 +694,12 @@ const playSyncBubble = (ctx: AudioContext) => {
   osc.stop(ctx.currentTime + 0.25);
 };
 
-// Whoosh sound - swift air movement
 const playSyncWhoosh = (ctx: AudioContext) => {
-  // Create noise-like effect with multiple oscillators
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
+  const masterGain = getMasterGainNode();
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(masterGain);
   osc.type = "sawtooth";
   osc.frequency.setValueAtTime(200, ctx.currentTime);
   osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
@@ -673,12 +711,12 @@ const playSyncWhoosh = (ctx: AudioContext) => {
   osc.stop(ctx.currentTime + 0.35);
 };
 
-// Minimal sound - single subtle ping
 const playSyncMinimal = (ctx: AudioContext) => {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
+  const masterGain = getMasterGainNode();
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(masterGain);
   osc.type = "sine";
   osc.frequency.setValueAtTime(880, ctx.currentTime);
   gain.gain.setValueAtTime(0.08, ctx.currentTime);
@@ -730,12 +768,12 @@ export const playThemeToggleSound = () => {
       ctx.resume();
     }
     
-    // Soft "click" sound - very short and subtle
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(masterGain);
     
     osc.type = "sine";
     osc.frequency.setValueAtTime(1200, ctx.currentTime);
@@ -764,16 +802,16 @@ export const playEnergyGainSound = () => {
       ctx.resume();
     }
     
-    // Create a sparkly ascending sound with harmonics
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     const gain2 = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc1.connect(gain1);
     osc2.connect(gain2);
-    gain1.connect(ctx.destination);
-    gain2.connect(ctx.destination);
+    gain1.connect(masterGain);
+    gain2.connect(masterGain);
     
     osc1.type = "sine";
     osc2.type = "triangle"; // Adds sparkle
@@ -828,14 +866,14 @@ export const playPassSound = () => {
       ctx.resume();
     }
     
-    // Soft descending whoosh - dismissive but not harsh
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const filter = ctx.createBiquadFilter();
+    const masterGain = getMasterGainNode();
     
     osc.connect(filter);
     filter.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(masterGain);
     
     osc.type = "sawtooth";
     filter.type = "lowpass";
@@ -869,16 +907,16 @@ export const playChispaSound = () => {
       ctx.resume();
     }
     
-    // Sparkly ascending sound - magical and positive
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     const gain2 = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc1.connect(gain1);
     osc2.connect(gain2);
-    gain1.connect(ctx.destination);
-    gain2.connect(ctx.destination);
+    gain1.connect(masterGain);
+    gain2.connect(masterGain);
     
     osc1.type = "sine";
     osc2.type = "triangle";
@@ -920,20 +958,20 @@ export const playSuperChispaSound = () => {
       ctx.resume();
     }
     
-    // Electric super sound - dramatic power-up feel
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const osc3 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     const gain2 = ctx.createGain();
     const gain3 = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc1.connect(gain1);
     osc2.connect(gain2);
     osc3.connect(gain3);
-    gain1.connect(ctx.destination);
-    gain2.connect(ctx.destination);
-    gain3.connect(ctx.destination);
+    gain1.connect(masterGain);
+    gain2.connect(masterGain);
+    gain3.connect(masterGain);
     
     osc1.type = "sine";
     osc2.type = "triangle";
@@ -992,12 +1030,12 @@ export const playViewProfileSound = () => {
       ctx.resume();
     }
     
-    // Soft curious "peek" - questioning, exploratory
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(masterGain);
     
     osc.type = "sine";
     
@@ -1036,12 +1074,14 @@ export const playHayVibraSound = () => {
       { freq: 1047, time: 0.24 },  // C6
     ];
     
+    const masterGain = getMasterGainNode();
+    
     notes.forEach(({ freq, time }) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(masterGain);
       
       osc.type = "sine";
       osc.frequency.setValueAtTime(freq, ctx.currentTime + time);
@@ -1062,7 +1102,7 @@ export const playHayVibraSound = () => {
         const gain = ctx.createGain();
         
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(masterGain);
         
         osc.type = "sine";
         osc.frequency.setValueAtTime(freq, ctx.currentTime);
@@ -1099,16 +1139,16 @@ export const playSparkleStarsSound = () => {
       ctx.resume();
     }
     
-    // Magical twinkling - high, light, sparkly
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     const gain2 = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc1.connect(gain1);
     osc2.connect(gain2);
-    gain1.connect(ctx.destination);
-    gain2.connect(ctx.destination);
+    gain1.connect(masterGain);
+    gain2.connect(masterGain);
     
     osc1.type = "sine";
     osc2.type = "sine";
@@ -1171,14 +1211,16 @@ export const playSparkleFireSound = () => {
     filter.type = "lowpass";
     filter.frequency.value = 1500;
     
+    const masterGain = getMasterGainNode();
+    
     noise.connect(filter);
     filter.connect(noiseGain);
-    noiseGain.connect(ctx.destination);
+    noiseGain.connect(masterGain);
     
     osc1.connect(gain1);
     osc2.connect(gain2);
-    gain1.connect(ctx.destination);
-    gain2.connect(ctx.destination);
+    gain1.connect(masterGain);
+    gain2.connect(masterGain);
     
     osc1.type = "triangle";
     osc2.type = "sawtooth";
@@ -1223,16 +1265,16 @@ export const playSparkleHeartsSound = () => {
       ctx.resume();
     }
     
-    // Romantic soft sound - gentle, warm, ascending
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     const gain2 = ctx.createGain();
+    const masterGain = getMasterGainNode();
     
     osc1.connect(gain1);
     osc2.connect(gain2);
-    gain1.connect(ctx.destination);
-    gain2.connect(ctx.destination);
+    gain1.connect(masterGain);
+    gain2.connect(masterGain);
     
     osc1.type = "sine";
     osc2.type = "sine";
