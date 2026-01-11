@@ -128,19 +128,52 @@ const ReduceMotionSetting = ({
         />
       </div>
       
-      {/* System preference indicator */}
-      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${
-        systemPrefersReduced 
-          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" 
-          : "bg-muted/50 text-muted-foreground"
-      }`}>
-        <Monitor className="w-3.5 h-3.5" />
-        <span>
-          Tu sistema {systemPrefersReduced ? "prefiere movimiento reducido" : "permite animaciones completas"}
-        </span>
-        {systemPrefersReduced && (
-          <span className="ml-auto font-medium">Activo</span>
-        )}
+      {/* Animation preview and system indicator */}
+      <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/30">
+        {/* Live animation preview */}
+        <div className="relative w-10 h-10 flex items-center justify-center">
+          {/* Orbiting dot */}
+          <div 
+            className={`absolute w-2 h-2 rounded-full bg-primary ${
+              reduceMotion ? "" : "animate-[orbit_2s_linear_infinite]"
+            }`}
+            style={reduceMotion ? { top: 0, left: "50%", transform: "translateX(-50%)" } : {}}
+          />
+          {/* Pulsing center */}
+          <div 
+            className={`w-3 h-3 rounded-full bg-primary/60 ${
+              reduceMotion ? "" : "animate-pulse"
+            }`}
+          />
+          {/* Rotating ring */}
+          <div 
+            className={`absolute inset-0 border-2 border-dashed border-primary/30 rounded-full ${
+              reduceMotion ? "" : "animate-[spin_4s_linear_infinite]"
+            }`}
+          />
+        </div>
+        
+        {/* Status text */}
+        <div className="flex-1">
+          <div className={`flex items-center gap-2 text-xs ${
+            systemPrefersReduced 
+              ? "text-amber-600 dark:text-amber-400" 
+              : "text-muted-foreground"
+          }`}>
+            <Monitor className="w-3.5 h-3.5" />
+            <span>
+              Sistema: {systemPrefersReduced ? "reducido" : "normal"}
+            </span>
+            {systemPrefersReduced && (
+              <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-[10px] font-medium">
+                Activo
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] text-muted-foreground">
+            {reduceMotion ? "Preview pausado" : "Preview animado"}
+          </span>
+        </div>
       </div>
     </div>
   );

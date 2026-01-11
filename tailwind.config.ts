@@ -202,6 +202,10 @@ export default {
             transform: "scale(1.1)"
           },
         },
+        "orbit": {
+          "0%": { transform: "rotate(0deg) translateX(16px) rotate(0deg)" },
+          "100%": { transform: "rotate(360deg) translateX(16px) rotate(-360deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -229,6 +233,7 @@ export default {
         "shake": "shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97)",
         "ripple": "ripple 0.6s ease-out forwards",
         "super-spark-pulse": "super-spark-pulse 1.5s ease-in-out infinite",
+        "orbit": "orbit 2s linear infinite",
       },
       // Granular animation delays for staggered lists
       animationDelay: {
