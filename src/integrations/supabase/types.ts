@@ -335,6 +335,42 @@ export type Database = {
           },
         ]
       }
+      muted_spark_chats: {
+        Row: {
+          chat_id: string
+          id: string
+          muted_at: string
+          profile_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          muted_at?: string
+          profile_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          muted_at?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muted_spark_chats_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "spark_chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "muted_spark_chats_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string

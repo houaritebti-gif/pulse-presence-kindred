@@ -294,6 +294,7 @@ export const useSendMessage = () => {
       if (error) throw error;
       
       // Send push notification to recipient
+      // Backend will filter out muted chats
       if (recipientProfileId && recipientProfileId !== profile.id) {
         sendPushNotification({
           profileId: recipientProfileId,
@@ -301,6 +302,7 @@ export const useSendMessage = () => {
           body: content.length > 50 ? content.substring(0, 50) + "..." : content,
           url: `/spark/${chatId}`,
           tag: `message-${chatId}`,
+          sparkChatId: chatId,
         });
       }
       

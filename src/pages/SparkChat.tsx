@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check, CheckCheck, ImagePlus, Loader2, Crop } from "lucide-react";
+import { ArrowLeft, Send, Flame, X, Sparkles, User, MoreVertical, Flag, Ban, Trash2, Pencil, Check, CheckCheck, ImagePlus, Loader2, Crop, Link2, BellOff, Bell } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useProfile } from "@/hooks/useProfile";
 import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage, useOtherUserReadStatus } from "@/hooks/useSparks";
@@ -29,6 +29,7 @@ import SharedAvatar from "@/components/SharedAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChatInput } from "@/contexts/ChatInputContext";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
+import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
 
 const SparkChat = () => {
   const navigate = useNavigate();
@@ -62,6 +63,10 @@ const SparkChat = () => {
   
   // Typing indicator
   const { isOtherTyping, handleTyping, stopTyping } = useTypingIndicator(chatId, chat?.other_profile?.id);
+  
+  // Muted chats
+  const { isChatMuted, toggleMute } = useMutedSparkChats();
+  const isMuted = chatId ? isChatMuted(chatId) : false;
   
   // Image upload
   const { uploadImage, isUploading: isUploadingImage, uploadPhase, uploadProgress } = useChatImageUpload();
@@ -555,6 +560,34 @@ const SparkChat = () => {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={() => chatId && toggleMute(chatId)}
+                className="gap-2"
+              >
+                {isMuted ? (
+                  <>
+                    <Bell className="w-4 h-4" />
+                    Activar notificaciones
+                  </>
+                ) : (
+                  <>
+                    <BellOff className="w-4 h-4" />
+                    Silenciar
+                  </>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  const url = `${window.location.origin}/spark/${chatId}`;
+                  navigator.clipboard.writeText(url);
+                  triggerHaptic('light');
+                  toast.success("Enlace copiado");
+                }}
+                className="gap-2"
+              >
+                <Link2 className="w-4 h-4" />
+                Copiar enlace
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
                   setModerationMode("report");
