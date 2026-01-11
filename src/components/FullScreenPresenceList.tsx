@@ -1,7 +1,8 @@
 import { memo, useRef, useState, useCallback, useEffect } from "react";
-import { Radio, Undo2 } from "lucide-react";
+import { Radio } from "lucide-react";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import SwipeTutorial from "./SwipeTutorial";
+import PresenceActionButtons from "./PresenceActionButtons";
 import { PresenceWithProfile } from "@/hooks/usePresence";
 import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -20,8 +21,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { fireSparkConfetti, firePerfectMatchHearts } from "@/utils/sparkConfetti";
 import { fireSuperSparkConfetti } from "@/utils/superSparkConfetti";
 import { triggerHaptic } from "@/utils/haptics";
-import { Button } from "@/components/ui/button";
-
 interface CompatibilityBreakdown {
   tribes: number;
   music: number;
@@ -170,14 +169,15 @@ export const FullScreenPresenceList = memo(({
       return;
     }
 
-    // Send a quick ghost message with a random preset
-    const quickMessages = [
-      "Me gustó tu vibra.",
-      "Algo me dice que conectamos.",
-      "Curiosidad.",
-      "Ojalá coincidamos.",
+    // Send a Chispa (like) - represented as a ghost message in the DB
+    // This is how the mutual matching system works
+    const chispaMessages = [
+      "✨ Te envío mi Chispa",
+      "✨ Me gusta tu vibra",
+      "✨ Algo me dice que conectamos",
+      "✨ Hay química",
     ];
-    const randomMessage = quickMessages[Math.floor(Math.random() * quickMessages.length)];
+    const randomMessage = chispaMessages[Math.floor(Math.random() * chispaMessages.length)];
 
     try {
       const { data: insertedMessage, error } = await supabase.from("ghost_messages").insert({
@@ -196,12 +196,12 @@ export const FullScreenPresenceList = memo(({
         refetchLimit();
         queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
         
-        // Award energy for sending ghost message
+        // Award energy for sending chispa
         if (canDoAction("send_ghost")) {
           try {
             await earnEnergy({ 
               action: "send_ghost", 
-              description: "Ghost message enviado" 
+              description: "Chispa enviada ✨" 
             });
           } catch (e) {
             console.log("[SparkEnergy] Could not award energy:", e);
@@ -232,8 +232,8 @@ export const FullScreenPresenceList = memo(({
             fireSparkConfetti();
             triggerHaptic('success');
             
-            toast.success("🔥 ¡Chispa mutua!", {
-              description: "¡Hay conexión! Ya pueden chatear.",
+            toast.success("🔥 ¡Hay vibra!", {
+              description: "¡Interés mutuo! Ya pueden chatear.",
               action: {
                 label: "Ver perfil",
                 onClick: () => navigate(`/user/${presence.profile!.id}`),
@@ -245,13 +245,15 @@ export const FullScreenPresenceList = memo(({
           try {
             await earnEnergy({ 
               action: "mutual_spark", 
-              description: matchCompatibility >= 5 ? "¡Match perfecto!" : "¡Chispa mutua!" 
+              description: matchCompatibility >= 5 ? "¡Match perfecto!" : "¡Hay vibra!" 
             });
           } catch (e) {
             console.log("[SparkEnergy] Could not award mutual spark energy:", e);
           }
         } else {
-          toast.success("👻 Mensaje ghost enviado");
+          toast.success("✨ Chispa enviada", {
+            description: "Si hay interés mutuo, ¡habrá vibra!",
+          });
         }
 
         // Store action for undo
@@ -348,29 +350,6 @@ export const FullScreenPresenceList = memo(({
         </div>
       </div>
 
-      {/* Floating undo button */}
-      <AnimatePresence>
-        {showUndo && lastAction && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.9 }}
-            transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="fixed bottom-32 left-1/2 -translate-x-1/2 z-40"
-          >
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleUndo}
-              className="gap-2 bg-background/95 backdrop-blur-md shadow-lg border-primary/20 hover:bg-primary/10 hover:border-primary/40 transition-all"
-            >
-              <Undo2 className="w-4 h-4" />
-              <span>Deshacer</span>
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Active profiles section header */}
       {canSeeRealtimePresence && activeProfiles.length > 0 && (
         <div className="snap-start flex items-center justify-center py-4">
@@ -462,6 +441,34 @@ export const FullScreenPresenceList = memo(({
           </div>
         )}
       </div>
+
+      {/* Fixed action buttons at bottom */}
+      {allProfiles.length > 0 && (
+        <div className="fixed bottom-20 left-0 right-0 z-40 px-4">
+          <PresenceActionButtons
+            onPass={() => {
+              const currentPresence = allProfiles[0];
+              if (currentPresence) handleSwipeLeft(currentPresence.id);
+            }}
+            onChispa={() => {
+              const currentPresence = allProfiles[0];
+              if (currentPresence) handleSwipeRight(currentPresence);
+            }}
+            onSuperChispa={() => {
+              const currentPresence = allProfiles[0];
+              if (currentPresence) handleSwipeUp(currentPresence);
+            }}
+            onViewProfile={() => {
+              const currentPresence = allProfiles[0];
+              if (currentPresence) handleSwipeDown(currentPresence);
+            }}
+            onUndo={handleUndo}
+            showUndo={showUndo && !!lastAction}
+            availableSuperChispas={getAvailableQuantity("super_spark")}
+            disabled={allProfiles.length === 0}
+          />
+        </div>
+      )}
 
       {/* Limit modal */}
       <GhostMessageLimitModal
