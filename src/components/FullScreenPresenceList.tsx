@@ -1,6 +1,7 @@
 import { memo, useRef, useState, useCallback, useEffect } from "react";
 import { Radio, Undo2 } from "lucide-react";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
+import SwipeTutorial from "./SwipeTutorial";
 import { PresenceWithProfile } from "@/hooks/usePresence";
 import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -8,6 +9,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
+import { usePurchasedItems } from "@/hooks/usePurchasedItems";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { fireSparkConfetti, firePerfectMatchHearts } from "@/utils/sparkConfetti";
+import { fireSuperSparkConfetti } from "@/utils/superSparkConfetti";
 import { triggerHaptic } from "@/utils/haptics";
 import { Button } from "@/components/ui/button";
 
@@ -66,6 +69,7 @@ export const FullScreenPresenceList = memo(({
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
   const { earnEnergy, canDoAction } = useSparkEnergy();
+  const { getAvailableQuantity, useItem } = usePurchasedItems();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
@@ -73,6 +77,7 @@ export const FullScreenPresenceList = memo(({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [tutorialComplete, setTutorialComplete] = useState(false);
   
   // Undo state
   const [lastAction, setLastAction] = useState<UndoAction | null>(null);
@@ -263,12 +268,74 @@ export const FullScreenPresenceList = memo(({
 
     // Dismiss the card
     setDismissedIds(prev => new Set(prev).add(presence.id));
-  }, [myProfile?.id, limitData?.canSend, refetchLimit, queryClient, checkForNewSpark, earnEnergy, canDoAction, navigate]);
+  }, [myProfile?.id, limitData?.canSend, refetchLimit, queryClient, checkForNewSpark, earnEnergy, canDoAction, navigate, getCompatibility]);
+
+  // Handle swipe up - Super Chispa
+  const handleSwipeUp = useCallback(async (presence: PresenceWithProfile) => {
+    if (!myProfile?.id || !presence.profile?.id) return;
+
+    // Check if user has Super Spark items
+    const availableSuperSparks = getAvailableQuantity("super_spark");
+    if (availableSuperSparks <= 0) {
+      toast.error("No tienes Super Chispas disponibles", {
+        description: "Consigue más en la tienda de Spark Energy ⚡",
+      });
+      return;
+    }
+
+    try {
+      // Use the item first
+      const used = await useItem("super_spark");
+      if (!used) {
+        toast.error("No se pudo usar la Super Chispa");
+        return;
+      }
+
+      // Send Super Spark ghost message
+      const { error } = await supabase.from("ghost_messages").insert({
+        from_profile_id: myProfile.id,
+        to_profile_id: presence.profile.id,
+        content: "⚡ Super Chispa",
+        is_super_spark: true,
+      });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("Ya enviaste un mensaje a esta persona");
+        } else {
+          throw error;
+        }
+      } else {
+        fireSuperSparkConfetti();
+        triggerHaptic('success');
+        toast.success("🔥 ¡Super Chispa enviada!", {
+          description: `${presence.profile.name || "Este perfil"} verá tu interés especial`,
+        });
+        queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
+      }
+    } catch (error: any) {
+      toast.error("Error: " + error.message);
+      return;
+    }
+
+    setDismissedIds(prev => new Set(prev).add(presence.id));
+  }, [myProfile?.id, getAvailableQuantity, useItem, queryClient]);
+
+  // Handle swipe down - View profile
+  const handleSwipeDown = useCallback((presence: PresenceWithProfile) => {
+    if (presence.profile?.id) {
+      navigate(`/user/${presence.profile.id}`);
+    }
+  }, [navigate]);
 
   if (profiles.length === 0) return null;
 
   return (
-    <div 
+    <>
+      {/* Swipe Tutorial for first-time users */}
+      <SwipeTutorial onComplete={() => setTutorialComplete(true)} />
+      
+      <div
       ref={containerRef}
       className="h-[calc(100vh-200px)] flex flex-col"
     >
@@ -375,6 +442,8 @@ export const FullScreenPresenceList = memo(({
                   photos={photos}
                   onSwipeLeft={() => handleSwipeLeft(presence.id)}
                   onSwipeRight={() => handleSwipeRight(presence)}
+                  onSwipeUp={() => handleSwipeUp(presence)}
+                  onSwipeDown={() => handleSwipeDown(presence)}
                 />
               </motion.div>
             );
@@ -400,6 +469,7 @@ export const FullScreenPresenceList = memo(({
         onOpenChange={setShowLimitModal}
       />
     </div>
+    </>
   );
 });
 

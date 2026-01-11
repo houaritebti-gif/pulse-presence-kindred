@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star, Flame } from "lucide-react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Music, Star, Flame } from "lucide-react";
 import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from "framer-motion";
 import { ALL_GENDERS, VIBES, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
+import { usePurchasedItems } from "@/hooks/usePurchasedItems";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -37,7 +38,11 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
 import { firePerfectCompatibilityConfetti } from "@/utils/sparkConfetti";
+import { fireSuperSparkConfetti } from "@/utils/superSparkConfetti";
 import { SuperSparkButton } from "@/components/SuperSparkButton";
+
+// Swipe direction type
+type SwipeDirection = "left" | "right" | "up" | "down" | null;
 
 interface CompatibilityBreakdown {
   tribes: number;
@@ -77,6 +82,8 @@ interface FullScreenPresenceCardProps {
   photos?: string[];
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
+  onSwipeUp?: () => void;
+  onSwipeDown?: () => void;
 }
 
 const getGenderLabel = (genderValue: string | null | undefined): string | null => {
@@ -126,8 +133,9 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealti
   }
 };
 
-const SWIPE_THRESHOLD = 100;
-const SWIPE_VELOCITY_THRESHOLD = 500;
+const SWIPE_THRESHOLD = 80;
+const SWIPE_VERTICAL_THRESHOLD = 100;
+const SWIPE_VELOCITY_THRESHOLD = 400;
 
 const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCardProps>(({ 
   presence, 
@@ -139,11 +147,14 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   photos = [],
   onSwipeLeft,
   onSwipeRight,
+  onSwipeUp,
+  onSwipeDown,
 }, ref) => {
   const { data: myProfile } = useProfile();
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
   const { earnEnergy, canDoAction } = useSparkEnergy();
+  const { getAvailableQuantity } = usePurchasedItems();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   
@@ -155,10 +166,14 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const [sending, setSending] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
   const [sparkCreated, setSparkCreated] = useState(false);
-  const [exitDirection, setExitDirection] = useState<"left" | "right" | null>(null);
+  const [exitDirection, setExitDirection] = useState<SwipeDirection>(null);
   const [showCompatibilityDetails, setShowCompatibilityDetails] = useState(false);
   const [hasShownPerfectConfetti, setHasShownPerfectConfetti] = useState(false);
+  const [currentSwipeDirection, setCurrentSwipeDirection] = useState<SwipeDirection>(null);
   const confettiShownRef = useRef(false);
+
+  // Check available Super Spark items
+  const availableSuperSparks = getAvailableQuantity("super_spark");
 
   // Trigger confetti for perfect compatibility (5/5)
   useEffect(() => {
@@ -174,34 +189,105 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
     }
   }, [compatibility]);
 
-  // Swipe gesture state
+  // Swipe gesture state - both X and Y
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-300, 0, 300], [-15, 0, 15]);
-  const opacity = useTransform(x, [-300, -100, 0, 100, 300], [0.5, 1, 1, 1, 0.5]);
+  const y = useMotionValue(0);
   
-  // Swipe indicator opacity
-  const leftIndicatorOpacity = useTransform(x, [-150, -50, 0], [1, 0.5, 0]);
-  const rightIndicatorOpacity = useTransform(x, [0, 50, 150], [0, 0.5, 1]);
+  // Rotation based on x movement
+  const rotate = useTransform(x, [-300, 0, 300], [-15, 0, 15]);
+  
+  // Opacity based on movement
+  const cardOpacity = useTransform(
+    [x, y],
+    ([latestX, latestY]: number[]) => {
+      const distance = Math.sqrt(latestX * latestX + latestY * latestY);
+      return distance > 150 ? 0.7 : 1;
+    }
+  );
+  
+  // Swipe indicator opacities - 4 directions
+  const leftIndicatorOpacity = useTransform(x, [-120, -40, 0], [1, 0.5, 0]);
+  const rightIndicatorOpacity = useTransform(x, [0, 40, 120], [0, 0.5, 1]);
+  const upIndicatorOpacity = useTransform(y, [-120, -40, 0], [1, 0.5, 0]);
+  const downIndicatorOpacity = useTransform(y, [0, 40, 120], [0, 0.5, 1]);
 
   const displayPhoto = photos.length > 0 ? photos[0] : presence.profile?.avatar_url;
   const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
 
+  // Determine swipe direction during drag
+  const handleDrag = (_: any, info: PanInfo) => {
+    const { offset } = info;
+    const absX = Math.abs(offset.x);
+    const absY = Math.abs(offset.y);
+    
+    // Determine dominant direction
+    if (absX > 30 || absY > 30) {
+      if (absX > absY) {
+        setCurrentSwipeDirection(offset.x > 0 ? "right" : "left");
+      } else {
+        setCurrentSwipeDirection(offset.y > 0 ? "down" : "up");
+      }
+    } else {
+      setCurrentSwipeDirection(null);
+    }
+  };
+
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const { offset, velocity } = info;
+    const absX = Math.abs(offset.x);
+    const absY = Math.abs(offset.y);
     
-    // Check if swipe exceeds threshold
-    if (Math.abs(offset.x) > SWIPE_THRESHOLD || Math.abs(velocity.x) > SWIPE_VELOCITY_THRESHOLD) {
-      if (offset.x > 0) {
-        // Swipe right - send ghost message
-        setExitDirection("right");
-        triggerHaptic('success');
-        onSwipeRight?.();
-      } else {
-        // Swipe left - pass
-        setExitDirection("left");
-        triggerHaptic('light');
-        onSwipeLeft?.();
+    // Reset current swipe direction
+    setCurrentSwipeDirection(null);
+    
+    // Determine if horizontal or vertical swipe is dominant
+    const isHorizontal = absX > absY;
+    
+    if (isHorizontal) {
+      // Horizontal swipe: left (pass) or right (chispa)
+      if (absX > SWIPE_THRESHOLD || Math.abs(velocity.x) > SWIPE_VELOCITY_THRESHOLD) {
+        if (offset.x > 0) {
+          // Swipe right - send ghost message
+          setExitDirection("right");
+          triggerHaptic('success');
+          onSwipeRight?.();
+        } else {
+          // Swipe left - pass
+          setExitDirection("left");
+          triggerHaptic('light');
+          onSwipeLeft?.();
+        }
       }
+    } else {
+      // Vertical swipe: up (super spark) or down (view profile)
+      if (absY > SWIPE_VERTICAL_THRESHOLD || Math.abs(velocity.y) > SWIPE_VELOCITY_THRESHOLD) {
+        if (offset.y < 0) {
+          // Swipe up - Super Chispa
+          setExitDirection("up");
+          triggerHaptic('success');
+          onSwipeUp?.();
+        } else {
+          // Swipe down - View profile
+          triggerHaptic('light');
+          onSwipeDown?.();
+        }
+      }
+    }
+  };
+
+  // Get exit animation based on direction
+  const getExitAnimation = () => {
+    switch (exitDirection) {
+      case "left":
+        return { x: -500, opacity: 0, transition: { duration: 0.3 } };
+      case "right":
+        return { x: 500, opacity: 0, transition: { duration: 0.3 } };
+      case "up":
+        return { y: -500, opacity: 0, scale: 1.1, transition: { duration: 0.3 } };
+      case "down":
+        return { y: 500, opacity: 0, transition: { duration: 0.3 } };
+      default:
+        return undefined;
     }
   };
 
@@ -315,40 +401,104 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
     <>
       <motion.div
         ref={ref}
-        style={{ x, rotate, opacity }}
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
+        style={{ x, y, rotate, opacity: cardOpacity }}
+        drag
+        dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
         dragElastic={0.9}
+        onDrag={handleDrag}
         onDragEnd={handleDragEnd}
-        animate={exitDirection ? { 
-          x: exitDirection === "left" ? -500 : 500,
-          opacity: 0,
-          transition: { duration: 0.3 }
-        } : undefined}
+        animate={exitDirection ? getExitAnimation() : undefined}
         className={cn(
           "relative w-full aspect-[3/4] max-h-[calc(100vh-180px)] min-h-[500px] rounded-3xl overflow-hidden cursor-grab active:cursor-grabbing",
           "shadow-2xl shadow-foreground/20",
           isBoosted && "ring-2 ring-primary/50"
         )}
       >
-        {/* Swipe indicators */}
+        {/* 4-Direction Swipe indicators */}
+        {/* LEFT - Pass */}
         <motion.div 
           style={{ opacity: leftIndicatorOpacity }}
           className="absolute top-1/2 left-6 -translate-y-1/2 z-30 pointer-events-none"
         >
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-muted/90 backdrop-blur-md border-2 border-muted-foreground/30">
-            <X className="w-8 h-8 text-muted-foreground" />
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-muted/90 backdrop-blur-md border-2 border-muted-foreground/30 shadow-xl">
+              <X className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <span className="text-xs font-medium text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
+              Pasar 👋
+            </span>
           </div>
         </motion.div>
         
+        {/* RIGHT - Chispa */}
         <motion.div 
           style={{ opacity: rightIndicatorOpacity }}
           className="absolute top-1/2 right-6 -translate-y-1/2 z-30 pointer-events-none"
         >
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/90 backdrop-blur-md border-2 border-primary shadow-lg shadow-primary/40">
-            <Ghost className="w-8 h-8 text-primary-foreground" />
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/90 backdrop-blur-md border-2 border-primary shadow-xl shadow-primary/40">
+              <Ghost className="w-8 h-8 text-primary-foreground" />
+            </div>
+            <span className="text-xs font-medium text-white bg-primary/80 backdrop-blur-sm px-2 py-1 rounded-full">
+              Chispa 👻
+            </span>
           </div>
         </motion.div>
+
+        {/* UP - Super Chispa */}
+        <motion.div 
+          style={{ opacity: upIndicatorOpacity }}
+          className="absolute top-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 backdrop-blur-md border-2 border-purple-400 shadow-xl shadow-purple-500/40 animate-pulse">
+              <Flame className="w-8 h-8 text-white" />
+            </div>
+            <span className="text-xs font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 backdrop-blur-sm px-3 py-1 rounded-full">
+              Super Chispa 🔥
+            </span>
+          </div>
+        </motion.div>
+
+        {/* DOWN - View Profile */}
+        <motion.div 
+          style={{ opacity: downIndicatorOpacity }}
+          className="absolute bottom-24 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
+        >
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-accent/90 backdrop-blur-md border-2 border-accent shadow-xl shadow-accent/30">
+              <User className="w-8 h-8 text-accent-foreground" />
+            </div>
+            <span className="text-xs font-medium text-white bg-accent/80 backdrop-blur-sm px-2 py-1 rounded-full">
+              Ver perfil 👤
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Current swipe direction indicator at center */}
+        <AnimatePresence>
+          {currentSwipeDirection && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
+            >
+              <div className={cn(
+                "w-24 h-24 rounded-full flex items-center justify-center backdrop-blur-sm",
+                currentSwipeDirection === "left" && "bg-muted/70",
+                currentSwipeDirection === "right" && "bg-primary/70",
+                currentSwipeDirection === "up" && "bg-gradient-to-br from-purple-500/70 to-blue-500/70",
+                currentSwipeDirection === "down" && "bg-accent/70",
+              )}>
+                {currentSwipeDirection === "left" && <X className="w-12 h-12 text-muted-foreground" />}
+                {currentSwipeDirection === "right" && <Ghost className="w-12 h-12 text-primary-foreground" />}
+                {currentSwipeDirection === "up" && <Flame className="w-12 h-12 text-white" />}
+                {currentSwipeDirection === "down" && <User className="w-12 h-12 text-accent-foreground" />}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Full-screen photo background */}
         <div className="absolute inset-0">
@@ -674,19 +824,24 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
             )}
           </div>
 
-          {/* Swipe hint */}
+          {/* Swipe hint - 4 directions */}
           <div className="flex justify-center mt-4">
-            <div className="flex items-center gap-4 text-white/50 text-xs">
-              <span className="flex items-center gap-1">
-                <X className="w-3 h-3" /> Pasar
+            <div className="grid grid-cols-4 gap-3 text-white/50 text-[10px]">
+              <span className="flex flex-col items-center gap-0.5">
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Pasar</span>
               </span>
-              <span className="text-white/30">•</span>
-              <span className="flex items-center gap-1">
-                <Ghost className="w-3 h-3" /> Chispa
+              <span className="flex flex-col items-center gap-0.5">
+                <ChevronRight className="w-3.5 h-3.5 text-primary/70" />
+                <span>Chispa</span>
               </span>
-              <span className="text-white/30">•</span>
-              <span className="flex items-center gap-1">
-                <Flame className="w-3 h-3 text-purple-400" /> Super
+              <span className="flex flex-col items-center gap-0.5">
+                <ChevronUp className="w-3.5 h-3.5 text-purple-400/70" />
+                <span>Super</span>
+              </span>
+              <span className="flex flex-col items-center gap-0.5">
+                <ChevronDown className="w-3.5 h-3.5 text-accent/70" />
+                <span>Perfil</span>
               </span>
             </div>
           </div>
