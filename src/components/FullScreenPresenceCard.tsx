@@ -399,6 +399,10 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
     }
   };
 
+  // Desktop drag enhancement - show drag hint on hover
+  const [isHovering, setIsHovering] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
   return (
     <>
       <motion.div
@@ -407,15 +411,76 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
         drag
         dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
         dragElastic={0.9}
+        onDragStart={() => {
+          setIsDragging(true);
+          triggerHaptic('light');
+        }}
         onDrag={handleDrag}
-        onDragEnd={handleDragEnd}
+        onDragEnd={(e, info) => {
+          setIsDragging(false);
+          handleDragEnd(e, info);
+        }}
+        onMouseEnter={() => !isMobile && setIsHovering(true)}
+        onMouseLeave={() => !isMobile && setIsHovering(false)}
         animate={exitDirection ? getExitAnimation() : undefined}
+        whileHover={!isMobile ? { scale: 1.01 } : undefined}
         className={cn(
-          "relative w-full aspect-[3/4] max-h-[calc(100vh-180px)] min-h-[500px] rounded-3xl overflow-hidden cursor-grab active:cursor-grabbing",
+          "relative w-full aspect-[3/4] max-h-[calc(100vh-180px)] min-h-[500px] rounded-3xl overflow-hidden",
           "shadow-2xl shadow-foreground/20",
-          isBoosted && "ring-2 ring-primary/50"
+          // Cursor states for desktop
+          !isMobile && "cursor-grab",
+          !isMobile && isDragging && "cursor-grabbing",
+          isBoosted && "ring-2 ring-primary/50",
+          // Hover glow effect on desktop
+          !isMobile && isHovering && !isDragging && "ring-2 ring-primary/30"
         )}
       >
+        {/* Desktop drag hint - appears on hover */}
+        {!isMobile && isHovering && !isDragging && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center"
+          >
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+            <div className="flex flex-col items-center gap-3 z-10">
+              <motion.div
+                animate={{ 
+                  x: [0, 15, 0, -15, 0],
+                  y: [0, 0, -10, 0, 10, 0]
+                }}
+                transition={{ 
+                  duration: 2.5, 
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border-2 border-white/40 flex items-center justify-center"
+              >
+                <div className="w-4 h-4 rounded-full bg-white shadow-lg" />
+              </motion.div>
+              <p className="text-white/90 text-sm font-medium bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
+                Arrastra para interactuar
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Drag direction trail effect on desktop */}
+        {!isMobile && isDragging && currentSwipeDirection && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.3 }}
+            className={cn(
+              "absolute inset-0 z-10 pointer-events-none",
+              currentSwipeDirection === "left" && "bg-gradient-to-r from-muted-foreground/30 to-transparent",
+              currentSwipeDirection === "right" && "bg-gradient-to-l from-primary/30 to-transparent",
+              currentSwipeDirection === "up" && "bg-gradient-to-b from-purple-500/30 to-transparent",
+              currentSwipeDirection === "down" && "bg-gradient-to-t from-accent/30 to-transparent"
+            )}
+          />
+        )}
+
         {/* 4-Direction Swipe indicators */}
         {/* LEFT - Pass */}
         <motion.div 
