@@ -3,6 +3,7 @@ import { Radio } from "lucide-react";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import SwipeTutorial from "./SwipeTutorial";
 import PresenceActionButtons from "./PresenceActionButtons";
+import HayVibraScreen from "./HayVibraScreen";
 import { PresenceWithProfile } from "@/hooks/usePresence";
 import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -18,9 +19,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { triggerHaptic } from "@/utils/haptics";
 import { fireSparkConfetti, firePerfectMatchHearts } from "@/utils/sparkConfetti";
 import { fireSuperSparkConfetti } from "@/utils/superSparkConfetti";
-import { triggerHaptic } from "@/utils/haptics";
+// Hay Vibra screen state
+interface MatchData {
+  theirPhoto: string | null;
+  theirName: string | null;
+  theirProfileId: string;
+  compatibility: number;
+  isPerfectMatch: boolean;
+}
+
 interface CompatibilityBreakdown {
   tribes: number;
   music: number;
@@ -77,6 +87,10 @@ export const FullScreenPresenceList = memo(({
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [tutorialComplete, setTutorialComplete] = useState(false);
+  
+  // Hay Vibra screen state
+  const [showHayVibra, setShowHayVibra] = useState(false);
+  const [matchData, setMatchData] = useState<MatchData | null>(null);
   
   // Undo state
   const [lastAction, setLastAction] = useState<UndoAction | null>(null);
@@ -214,38 +228,27 @@ export const FullScreenPresenceList = memo(({
         if (hasNewSpark) {
           // Get compatibility for this match
           const matchCompatibility = getCompatibility(presence);
+          const isPerfect = matchCompatibility >= 5;
           
-          // 🔥 MUTUAL SPARK! Fire celebration!
-          // Use hearts animation for perfect compatibility (5/5)
-          if (matchCompatibility >= 5) {
-            firePerfectMatchHearts();
-            triggerHaptic('success');
-            
-            toast.success("💖 ¡Match perfecto!", {
-              description: "¡Compatibilidad perfecta! Esto es especial.",
-              action: {
-                label: "Ver perfil",
-                onClick: () => navigate(`/user/${presence.profile!.id}`),
-              },
-            });
-          } else {
-            fireSparkConfetti();
-            triggerHaptic('success');
-            
-            toast.success("🔥 ¡Hay vibra!", {
-              description: "¡Interés mutuo! Ya pueden chatear.",
-              action: {
-                label: "Ver perfil",
-                onClick: () => navigate(`/user/${presence.profile!.id}`),
-              },
-            });
-          }
+          // Get photos for the match screen
+          const theirPhotos = photosMap?.[presence.profile!.id];
+          const theirPhoto = theirPhotos?.[0]?.photo_url || presence.profile?.avatar_url || null;
+          
+          // Set match data and show Hay Vibra screen
+          setMatchData({
+            theirPhoto,
+            theirName: presence.profile?.name || null,
+            theirProfileId: presence.profile!.id,
+            compatibility: matchCompatibility,
+            isPerfectMatch: isPerfect,
+          });
+          setShowHayVibra(true);
           
           // Award mutual spark energy
           try {
             await earnEnergy({ 
               action: "mutual_spark", 
-              description: matchCompatibility >= 5 ? "¡Match perfecto!" : "¡Hay vibra!" 
+              description: isPerfect ? "¡Match perfecto!" : "¡Hay vibra!" 
             });
           } catch (e) {
             console.log("[SparkEnergy] Could not award mutual spark energy:", e);
@@ -270,7 +273,7 @@ export const FullScreenPresenceList = memo(({
 
     // Dismiss the card
     setDismissedIds(prev => new Set(prev).add(presence.id));
-  }, [myProfile?.id, limitData?.canSend, refetchLimit, queryClient, checkForNewSpark, earnEnergy, canDoAction, navigate, getCompatibility]);
+  }, [myProfile?.id, myProfile?.avatar_url, limitData?.canSend, refetchLimit, queryClient, checkForNewSpark, earnEnergy, canDoAction, getCompatibility, photosMap]);
 
   // Handle swipe up - Super Chispa
   const handleSwipeUp = useCallback(async (presence: PresenceWithProfile) => {
@@ -474,6 +477,30 @@ export const FullScreenPresenceList = memo(({
       <GhostMessageLimitModal
         open={showLimitModal}
         onOpenChange={setShowLimitModal}
+      />
+
+      {/* Hay Vibra match screen */}
+      <HayVibraScreen
+        isOpen={showHayVibra}
+        onClose={() => {
+          setShowHayVibra(false);
+          setMatchData(null);
+        }}
+        onSendMessage={() => {
+          if (matchData?.theirProfileId) {
+            navigate(`/user/${matchData.theirProfileId}`);
+          }
+        }}
+        onViewProfile={() => {
+          if (matchData?.theirProfileId) {
+            navigate(`/user/${matchData.theirProfileId}`);
+          }
+        }}
+        myPhoto={myProfile?.avatar_url || null}
+        theirPhoto={matchData?.theirPhoto || null}
+        theirName={matchData?.theirName || null}
+        compatibility={matchData?.compatibility || 0}
+        isPerfectMatch={matchData?.isPerfectMatch || false}
       />
     </div>
     </>
