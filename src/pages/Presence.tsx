@@ -275,6 +275,12 @@ const Presence = () => {
         if (!filters.cities.includes(profileCity)) return false;
       }
 
+      // Minimum compatibility filter
+      if (filters.minCompatibility && filters.minCompatibility > 0) {
+        const compat = getCompatibility(presence);
+        if (compat < filters.minCompatibility) return false;
+      }
+
       return true;
     });
 

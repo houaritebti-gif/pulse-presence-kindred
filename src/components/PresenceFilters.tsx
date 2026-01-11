@@ -17,6 +17,7 @@ export interface PresenceFilters {
   cities: string[];
   showAllProfiles?: boolean;
   ageRange?: [number, number];
+  minCompatibility?: number;
 }
 
 interface PresenceFiltersProps {
@@ -37,8 +38,9 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   const hasAgeFilter = filters.ageRange && (filters.ageRange[0] !== 18 || filters.ageRange[1] !== 99);
   const hasGenderFilter = filters.genders?.length > 0;
   const hasCityFilter = filters.cities?.length > 0;
-  const hasActiveFilters = (filters.tribes?.length ?? 0) > 0 || (filters.musicStyles?.length ?? 0) > 0 || (filters.details?.length ?? 0) > 0 || (filters.lookingFor?.length ?? 0) > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter;
-  const activeCount = (filters.tribes?.length ?? 0) + (filters.musicStyles?.length ?? 0) + (filters.details?.length ?? 0) + (filters.lookingFor?.length ?? 0) + (filters.genders?.length ?? 0) + (filters.cities?.length ?? 0) + (hasAgeFilter ? 1 : 0);
+  const hasCompatibilityFilter = filters.minCompatibility && filters.minCompatibility > 0;
+  const hasActiveFilters = (filters.tribes?.length ?? 0) > 0 || (filters.musicStyles?.length ?? 0) > 0 || (filters.details?.length ?? 0) > 0 || (filters.lookingFor?.length ?? 0) > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter || hasCompatibilityFilter;
+  const activeCount = (filters.tribes?.length ?? 0) + (filters.musicStyles?.length ?? 0) + (filters.details?.length ?? 0) + (filters.lookingFor?.length ?? 0) + (filters.genders?.length ?? 0) + (filters.cities?.length ?? 0) + (hasAgeFilter ? 1 : 0) + (hasCompatibilityFilter ? 1 : 0);
 
   // Sort cities alphabetically
   const sortedCities = useMemo(() => 
@@ -114,7 +116,12 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
 
   const clearFilters = () => {
     triggerHaptic('medium');
-    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], ageRange: undefined });
+    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], ageRange: undefined, minCompatibility: undefined });
+  };
+
+  const handleMinCompatibilityChange = (value: number) => {
+    triggerHaptic('light');
+    onChange({ ...filters, minCompatibility: value === 0 ? undefined : value });
   };
 
   const toggleSection = (section: string) => {
@@ -188,6 +195,40 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
         </motion.button>
       </div>
 
+      {/* Quick filters - always visible */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+        {/* Compatibility filter chips */}
+        {[1, 2, 3, 4].map((level) => (
+          <button
+            key={level}
+            onClick={() => handleMinCompatibilityChange(filters.minCompatibility === level ? 0 : level)}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
+              filters.minCompatibility === level
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-card text-card-foreground border border-foreground/5 dark:border-border hover:border-primary/30"
+            }`}
+          >
+            <Heart className={`w-3.5 h-3.5 ${filters.minCompatibility === level ? "fill-current" : ""}`} />
+            {level}+ afín
+          </button>
+        ))}
+        
+        {/* Quick city filter - show top 3 cities */}
+        {sortedCities.slice(0, 3).map((city) => (
+          <button
+            key={city}
+            onClick={() => toggleCity(city)}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
+              (filters.cities ?? []).includes(city)
+                ? "bg-accent text-accent-foreground shadow-sm"
+                : "bg-card text-card-foreground border border-foreground/5 dark:border-border hover:border-accent/30"
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            {city}
+          </button>
+        ))}
+      </div>
 
       {/* Active filters summary - show when filters are active */}
       {hasActiveFilters && (
@@ -270,6 +311,18 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
               className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[11px] font-medium hover:bg-muted/80 transition-colors"
             >
               {filters.ageRange?.[0]}-{filters.ageRange?.[1]} años
+              <X className="w-3 h-3" />
+            </button>
+          )}
+          {hasCompatibilityFilter && (
+            <button
+              onClick={() => {
+                triggerHaptic('light');
+                onChange({ ...filters, minCompatibility: undefined });
+              }}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[11px] font-medium hover:bg-primary/30 transition-all active:scale-95"
+            >
+              ❤️ {filters.minCompatibility}+ afín
               <X className="w-3 h-3" />
             </button>
           )}
@@ -736,6 +789,70 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Compatibility section */}
+          <div className="mb-5">
+            <button
+              onClick={() => { triggerHaptic('light'); toggleSection("compatibility"); }}
+              className="flex items-center justify-between w-full text-left mb-3 p-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <span className="font-display text-sm font-semibold text-card-foreground block">
+                    Compatibilidad mínima
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {hasCompatibilityFilter ? `${filters.minCompatibility}+ coincidencias` : "Filtrar por afinidad"}
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                animate={{ rotate: expandedSection === "compatibility" ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              </motion.div>
+            </button>
+            <AnimatePresence>
+              {expandedSection === "compatibility" && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-3 overflow-hidden"
+                >
+                  <div className="flex gap-2 flex-wrap">
+                    {[0, 1, 2, 3, 4, 5].map((level) => (
+                      <button
+                        key={level}
+                        onClick={() => handleMinCompatibilityChange(level)}
+                        className={`px-4 py-2 rounded-full font-body text-sm transition-all active:scale-95 flex items-center gap-1.5 ${
+                          (filters.minCompatibility || 0) === level
+                            ? "bg-primary text-primary-foreground shadow-md"
+                            : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                        }`}
+                      >
+                        {level === 0 ? (
+                          "Cualquiera"
+                        ) : (
+                          <>
+                            <Heart className={`w-3.5 h-3.5 ${(filters.minCompatibility || 0) === level ? "fill-current" : ""}`} />
+                            {level}+ {level === 5 ? "💫" : ""}
+                          </>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    La compatibilidad incluye tribus, música, intereses y lo que buscas.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
             </div>
           </motion.div>
