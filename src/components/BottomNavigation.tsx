@@ -28,9 +28,10 @@ interface NavItemProps {
   onClick: () => void;
   onPrefetch: () => void;
   isOfflineBadge?: boolean;
+  hasSuperSparkPulse?: boolean;
 }
 
-const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineBadge }: NavItemProps) => {
+const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineBadge, hasSuperSparkPulse }: NavItemProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const prevBadgeRef = useRef(badge);
 
@@ -61,7 +62,10 @@ const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineB
           : "text-muted-foreground hover:text-foreground"
       )}
     >
-      <div className="relative">
+      <div className={cn(
+        "relative",
+        hasSuperSparkPulse && "animate-super-spark-pulse"
+      )}>
         {icon}
         {badge !== undefined && badge > 0 && (
           <span 
@@ -69,9 +73,11 @@ const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineB
               "absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center",
               isOfflineBadge 
                 ? "animate-offline-pulse text-destructive-foreground" 
-                : "bg-primary text-primary-foreground",
+                : hasSuperSparkPulse
+                  ? "bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 text-white animate-shimmer-badge"
+                  : "bg-primary text-primary-foreground",
               isAnimating && !isOfflineBadge && "animate-badge-bounce",
-              !isAnimating && !isOfflineBadge && "animate-badge-pulse"
+              !isAnimating && !isOfflineBadge && !hasSuperSparkPulse && "animate-badge-pulse"
             )}
           >
             {badge > 9 ? "9+" : badge}
@@ -127,6 +133,7 @@ export const BottomNavigation = () => {
   const unreadSparkCount = counts?.unreadSparks || 0;
   const unreadQuedadaCount = counts?.unreadQuedadas || 0;
   const unreadGhostCount = counts?.unreadGhostMessages || 0;
+  const unreadSuperSparkCount = counts?.unreadSuperSparks || 0;
   const pendingConnectionCount = counts?.pendingConnections || 0;
   const totalAlertCount = counts?.totalAlerts || 0;
 
@@ -153,6 +160,7 @@ export const BottomNavigation = () => {
       label: "Alertas",
       path: "/notifications",
       badge: totalAlertCount > 0 ? totalAlertCount : undefined,
+      hasSuperSparkPulse: unreadSuperSparkCount > 0,
     },
     {
       icon: pendingCount > 0 ? <CloudOff className="w-5 h-5" /> : <User className="w-5 h-5" />,
@@ -187,6 +195,7 @@ export const BottomNavigation = () => {
               onClick={() => navigate(item.path)}
               onPrefetch={() => prefetchRoute(item.path)}
               isOfflineBadge={item.isOfflineBadge}
+              hasSuperSparkPulse={item.hasSuperSparkPulse}
             />
           ))}
         </div>
