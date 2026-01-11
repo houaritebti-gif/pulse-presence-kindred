@@ -28,6 +28,7 @@ import UserModerationModal from "@/components/UserModerationModal";
 import LazyImage from "@/components/LazyImage";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import SparkleTrail from "@/components/SparkleTrail";
+import { getSparkleTrailEnabled } from "@/hooks/useAdvancedSettings";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
@@ -217,6 +218,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   // Sparkle trail state - intensity based on swipe distance
   const [sparkleIntensity, setSparkleIntensity] = useState(0);
   const [showSparkleTrail, setShowSparkleTrail] = useState(false);
+  const sparkleTrailEnabledRef = useRef(getSparkleTrailEnabled());
   const cardContainerRef = useRef<HTMLDivElement>(null);
 
   const displayPhoto = photos.length > 0 ? photos[0] : presence.profile?.avatar_url;
@@ -228,8 +230,8 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
     const absX = Math.abs(offset.x);
     const absY = Math.abs(offset.y);
     
-    // Calculate sparkle intensity for right swipe (Chispa)
-    if (offset.x > 20 && absX > absY) {
+    // Calculate sparkle intensity for right swipe (Chispa) if enabled
+    if (offset.x > 20 && absX > absY && sparkleTrailEnabledRef.current) {
       setShowSparkleTrail(true);
       // Intensity from 0 to 1 based on swipe distance (20-150px)
       const intensity = Math.min(1, Math.max(0, (offset.x - 20) / 130));

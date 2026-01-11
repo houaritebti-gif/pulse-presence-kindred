@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,13 @@ const AdvancedSettingsSection = () => {
     textSize,
     compactMode,
     highContrast,
+    sparkleTrailEnabled,
     setTheme,
     setReduceMotion,
     setTextSize,
     setCompactMode,
     setHighContrast,
+    setSparkleTrailEnabled,
   } = useAdvancedSettings();
 
   useEffect(() => {
@@ -206,7 +208,24 @@ const AdvancedSettingsSection = () => {
             />
           </div>
 
-          {/* Theme Sound */}
+          {/* Sparkle Trail Effect */}
+          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Stars className={`w-5 h-5 ${sparkleTrailEnabled ? "text-primary" : "text-muted-foreground"}`} />
+              <div>
+                <span className="font-body text-sm text-foreground block">
+                  Estela de destellos
+                </span>
+                <span className="font-body text-xs text-muted-foreground">
+                  Efecto visual al deslizar hacia Chispa
+                </span>
+              </div>
+            </div>
+            <Switch
+              checked={sparkleTrailEnabled}
+              onCheckedChange={setSparkleTrailEnabled}
+            />
+          </div>
           <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
             <div className="flex items-center gap-3">
               <Volume2 className={`w-5 h-5 ${themeSoundOn ? "text-foreground" : "text-muted-foreground"}`} />
