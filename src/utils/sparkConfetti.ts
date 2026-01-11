@@ -531,3 +531,44 @@ export const firePerfectMatchHearts = () => {
     });
   }, 550);
 };
+
+/**
+ * Fires a subtle floating hearts micro-animation for regular Chispa swipes.
+ * Lighter than perfect match hearts - just a quick celebratory burst.
+ */
+export const fireChispaHearts = () => {
+  // Soft pink and coral colors for subtle celebration
+  const chispaHeartColors = ['#FF69B4', '#FFB6C1', '#FFC0CB', '#FF85A2', '#F8BBD9'];
+  
+  // Subtle burst from right side (direction of swipe)
+  confetti({
+    particleCount: 25,
+    angle: 120,
+    spread: 50,
+    origin: { x: 0.85, y: 0.5 },
+    colors: chispaHeartColors,
+    startVelocity: 25,
+    gravity: 0.8,
+    scalar: 1.1,
+    shapes: ['circle'],
+    ticks: 60,
+    drift: -0.5,
+  });
+  
+  // Secondary lighter burst
+  setTimeout(() => {
+    confetti({
+      particleCount: 15,
+      angle: 100,
+      spread: 35,
+      origin: { x: 0.7, y: 0.4 },
+      colors: chispaHeartColors,
+      startVelocity: 20,
+      gravity: 0.9,
+      scalar: 0.9,
+      shapes: ['circle'],
+      ticks: 50,
+      drift: -0.3,
+    });
+  }, 80);
+};

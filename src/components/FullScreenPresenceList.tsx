@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { triggerHaptic } from "@/utils/haptics";
-import { fireSparkConfetti, firePerfectMatchHearts } from "@/utils/sparkConfetti";
+import { fireSparkConfetti, firePerfectMatchHearts, fireChispaHearts } from "@/utils/sparkConfetti";
 import { fireSuperSparkConfetti } from "@/utils/superSparkConfetti";
 import { playPassSound, playChispaSound, playSuperChispaSound, playHayVibraSound } from "@/utils/notificationSound";
 // Hay Vibra screen state
@@ -272,6 +272,7 @@ export const FullScreenPresenceList = memo(({
         } else {
           triggerHaptic('medium'); // Medium haptic for chispa
           playChispaSound(); // Chispa sound
+          fireChispaHearts(); // Floating hearts micro-animation
           toast.success("✨ Chispa enviada", {
             description: "Si hay interés mutuo, ¡habrá vibra!",
           });
