@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,8 @@ const AdvancedSettingsSection = () => {
   const [notifyMinAge, setNotifyMinAge] = useState<number | null>(null);
   const [notifyMaxAge, setNotifyMaxAge] = useState<number | null>(null);
   const [isUpdatingAgeRange, setIsUpdatingAgeRange] = useState(false);
+  const [notifySameCityOnly, setNotifySameCityOnly] = useState(false);
+  const [isUpdatingSameCity, setIsUpdatingSameCity] = useState(false);
   
   const { data: profile } = useProfile();
   const queryClient = useQueryClient();
@@ -73,6 +75,7 @@ const AdvancedSettingsSection = () => {
       notify_new_presence?: boolean;
       notify_min_age?: number | null;
       notify_max_age?: number | null;
+      notify_same_city_only?: boolean;
     };
     if (profileWithPref?.notify_new_presence !== undefined) {
       setNotifyNewPresence(profileWithPref.notify_new_presence);
@@ -82,6 +85,9 @@ const AdvancedSettingsSection = () => {
     }
     if (profileWithPref?.notify_max_age !== undefined) {
       setNotifyMaxAge(profileWithPref.notify_max_age);
+    }
+    if (profileWithPref?.notify_same_city_only !== undefined) {
+      setNotifySameCityOnly(profileWithPref.notify_same_city_only);
     }
   }, [profile]);
 
@@ -142,6 +148,35 @@ const AdvancedSettingsSection = () => {
       toast.error("Error al actualizar rango de edad");
     } finally {
       setIsUpdatingAgeRange(false);
+    }
+  };
+
+  const handleSameCityChange = async (enabled: boolean) => {
+    if (!profile?.id) return;
+    
+    setIsUpdatingSameCity(true);
+    const prev = notifySameCityOnly;
+    setNotifySameCityOnly(enabled);
+    
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ notify_same_city_only: enabled })
+        .eq("id", profile.id);
+      
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success(enabled 
+        ? "Solo recibirás notificaciones de tu ciudad" 
+        : "Recibirás notificaciones de todas las ciudades"
+      );
+    } catch (error) {
+      console.error("Error updating same city preference:", error);
+      setNotifySameCityOnly(prev);
+      toast.error("Error al actualizar preferencia");
+    } finally {
+      setIsUpdatingSameCity(false);
     }
   };
 
@@ -619,6 +654,26 @@ const AdvancedSettingsSection = () => {
                     </span>
                   </p>
                 )}
+
+                {/* Same city filter */}
+                <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                  <div className="flex items-center gap-2">
+                    <MapPin className={`w-4 h-4 ${notifySameCityOnly ? "text-primary" : "text-muted-foreground"}`} />
+                    <div>
+                      <span className="font-body text-sm text-foreground block">
+                        Solo mi ciudad
+                      </span>
+                      <span className="font-body text-xs text-muted-foreground">
+                        {profile?.city ? `Solo usuarios de ${profile.city}` : "Configura tu ciudad en el perfil"}
+                      </span>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={notifySameCityOnly}
+                    onCheckedChange={handleSameCityChange}
+                    disabled={isUpdatingSameCity || !profile?.city}
+                  />
+                </div>
               </div>
             )}
           </div>
