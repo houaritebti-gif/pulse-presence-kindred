@@ -21,6 +21,7 @@ import { AnimatedRoutes } from "@/components/AnimatedRoutes";
 import { useDailyLoginReward } from "@/hooks/useDailyLoginReward";
 import { EnergyGainProvider } from "@/components/EnergyGainAnimation";
 import { useAchievementChecker } from "@/hooks/useAchievementChecker";
+import { useSuperSparkWelcome } from "@/hooks/useSuperSparkWelcome";
 
 // Lazy load heavy components
 const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
@@ -73,6 +74,7 @@ const KeyboardNavigationWrapper = ({ children }: { children: React.ReactNode }) 
   useScrollToTop();
   useDailyLoginReward(); // Award energy on daily login
   useAchievementChecker(); // Check and unlock achievements
+  useSuperSparkWelcome(); // Show confetti for new Super Chispas
   const location = useLocation();
   
   // Show shortcuts help only on main pages (not landing/auth)
