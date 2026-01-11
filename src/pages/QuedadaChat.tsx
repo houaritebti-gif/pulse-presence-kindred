@@ -603,8 +603,8 @@ const QuedadaChat = () => {
       )}
 
 
-      {/* Input - with extra padding on desktop to avoid AI chatbot overlap */}
-      <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80 lg:pr-24">
+      {/* Input - extra right padding to avoid floating widgets (AI assistant, shortcuts) */}
+      <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80 pr-24">
         <div className="flex gap-3 items-center">
           {/* Text input */}
           <div className="flex-1 relative">
