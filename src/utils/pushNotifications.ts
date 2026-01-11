@@ -6,6 +6,7 @@ interface SendPushParams {
   body?: string;
   url?: string;
   tag?: string;
+  quedadaId?: string;
 }
 
 export async function sendPushNotification({
@@ -14,6 +15,7 @@ export async function sendPushNotification({
   body,
   url,
   tag,
+  quedadaId,
 }: SendPushParams): Promise<boolean> {
   try {
     const { data, error } = await supabase.functions.invoke("send-push-notification", {
@@ -23,6 +25,7 @@ export async function sendPushNotification({
         body,
         url,
         tag,
+        quedada_id: quedadaId,
       },
     });
 

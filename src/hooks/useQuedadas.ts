@@ -516,6 +516,7 @@ export const useSendQuedadaMessage = () => {
       if (error) throw error;
       
       // Send push notifications to all recipients (except sender)
+      // Backend will filter out muted quedadas
       if (recipientProfileIds && recipientProfileIds.length > 0) {
         const recipients = recipientProfileIds.filter(id => id !== profile.id);
         for (const recipientId of recipients) {
@@ -525,6 +526,7 @@ export const useSendQuedadaMessage = () => {
             body: content.length > 50 ? content.substring(0, 50) + "..." : content,
             url: `/quedada/${quedadaId}`,
             tag: `quedada-message-${quedadaId}`,
+            quedadaId,
           });
         }
       }
