@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
 import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star, Flame } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useReducedMotion, getExitAnimationConfig } from "@/hooks/useReducedMotion";
 import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from "framer-motion";
 import { ALL_GENDERS, VIBES, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import { Button } from "@/components/ui/button";
@@ -159,6 +160,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const prefersReducedMotion = useReducedMotion();
   
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
@@ -196,23 +198,44 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   
-  // Rotation based on x movement
-  const rotate = useTransform(x, [-300, 0, 300], [-15, 0, 15]);
+  // Rotation based on x movement (disabled for reduced motion)
+  const rotate = useTransform(
+    x, 
+    [-300, 0, 300], 
+    prefersReducedMotion ? [0, 0, 0] : [-15, 0, 15]
+  );
   
-  // Opacity based on movement
+  // Opacity based on movement (subtle for reduced motion)
   const cardOpacity = useTransform(
     [x, y],
     ([latestX, latestY]: number[]) => {
+      if (prefersReducedMotion) return 1;
       const distance = Math.sqrt(latestX * latestX + latestY * latestY);
       return distance > 150 ? 0.7 : 1;
     }
   );
   
-  // Swipe indicator opacities - 4 directions
-  const leftIndicatorOpacity = useTransform(x, [-120, -40, 0], [1, 0.5, 0]);
-  const rightIndicatorOpacity = useTransform(x, [0, 40, 120], [0, 0.5, 1]);
-  const upIndicatorOpacity = useTransform(y, [-120, -40, 0], [1, 0.5, 0]);
-  const downIndicatorOpacity = useTransform(y, [0, 40, 120], [0, 0.5, 1]);
+  // Swipe indicator opacities - 4 directions (instant for reduced motion)
+  const leftIndicatorOpacity = useTransform(
+    x, 
+    prefersReducedMotion ? [-60, -30, 0] : [-120, -40, 0], 
+    [1, 0.5, 0]
+  );
+  const rightIndicatorOpacity = useTransform(
+    x, 
+    prefersReducedMotion ? [0, 30, 60] : [0, 40, 120], 
+    [0, 0.5, 1]
+  );
+  const upIndicatorOpacity = useTransform(
+    y, 
+    prefersReducedMotion ? [-60, -30, 0] : [-120, -40, 0], 
+    [1, 0.5, 0]
+  );
+  const downIndicatorOpacity = useTransform(
+    y, 
+    prefersReducedMotion ? [0, 30, 60] : [0, 40, 120], 
+    [0, 0.5, 1]
+  );
 
   // Sparkle trail state - intensity based on swipe distance
   const [sparkleIntensity, setSparkleIntensity] = useState(0);
@@ -297,20 +320,9 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
     }
   };
 
-  // Get exit animation based on direction
+  // Get exit animation based on direction (respects reduced motion)
   const getExitAnimation = () => {
-    switch (exitDirection) {
-      case "left":
-        return { x: -500, opacity: 0, transition: { duration: 0.3 } };
-      case "right":
-        return { x: 500, opacity: 0, transition: { duration: 0.3 } };
-      case "up":
-        return { y: -500, opacity: 0, scale: 1.1, transition: { duration: 0.3 } };
-      case "down":
-        return { y: 500, opacity: 0, transition: { duration: 0.3 } };
-      default:
-        return undefined;
-    }
+    return getExitAnimationConfig(exitDirection, prefersReducedMotion);
   };
 
   const handleOpenDialog = (e: React.MouseEvent) => {
@@ -443,14 +455,14 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
           (cardContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
         }}
         style={{ x, y, rotate, opacity: cardOpacity }}
-        drag
+        drag={!prefersReducedMotion}
         dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-        dragElastic={0.9}
+        dragElastic={prefersReducedMotion ? 0 : 0.9}
         onDragStart={() => {
           setIsDragging(true);
-          triggerHaptic('light');
+          if (!prefersReducedMotion) triggerHaptic('light');
         }}
-        onDrag={handleDrag}
+        onDrag={prefersReducedMotion ? undefined : handleDrag}
         onDragEnd={(e, info) => {
           setIsDragging(false);
           setShowSparkleTrail(false);
@@ -460,7 +472,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
         onMouseEnter={() => !isMobile && setIsHovering(true)}
         onMouseLeave={() => !isMobile && setIsHovering(false)}
         animate={exitDirection ? getExitAnimation() : undefined}
-        whileHover={!isMobile ? { scale: 1.01 } : undefined}
+        whileHover={!isMobile && !prefersReducedMotion ? { scale: 1.01 } : undefined}
         className={cn(
           "relative w-full aspect-[3/4] max-h-[calc(100vh-180px)] min-h-[500px] rounded-3xl overflow-hidden",
           "shadow-2xl shadow-foreground/20",
