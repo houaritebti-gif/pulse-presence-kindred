@@ -37,7 +37,7 @@ const Presence = () => {
   // Filters state persisted to localStorage - moved up to use in hook
   const [filters, setFilters] = useLocalStorage<PresenceFilters>(
     STORAGE_KEYS.PRESENCE_FILTERS,
-    { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], showAllProfiles: false }
+    { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], showAllProfiles: false }
   );
   
   const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles || false);
@@ -279,6 +279,12 @@ const Presence = () => {
       if (filters.minCompatibility && filters.minCompatibility > 0) {
         const compat = getCompatibility(presence);
         if (compat < filters.minCompatibility) return false;
+      }
+
+      // Interests filter - must have at least one matching interest
+      if (filters.interests && filters.interests.length > 0) {
+        const hasMatchingInterest = presence.interests.some(i => filters.interests.includes(i));
+        if (!hasMatchingInterest) return false;
       }
 
       return true;

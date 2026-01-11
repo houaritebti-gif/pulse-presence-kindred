@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin, Sparkles, Music, Heart, Search, Palette } from "lucide-react";
-import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, ALL_GENDERS } from "@/constants/profileOptions";
+import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin, Sparkles, Music, Heart, Search, Palette, Star } from "lucide-react";
+import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, ALL_GENDERS, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { GenderType } from "@/constants/profileOptions";
@@ -15,6 +15,7 @@ export interface PresenceFilters {
   lookingFor: string[];
   genders: GenderType[];
   cities: string[];
+  interests: string[];
   showAllProfiles?: boolean;
   ageRange?: [number, number];
   minCompatibility?: number;
@@ -39,8 +40,9 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   const hasGenderFilter = filters.genders?.length > 0;
   const hasCityFilter = filters.cities?.length > 0;
   const hasCompatibilityFilter = filters.minCompatibility && filters.minCompatibility > 0;
-  const hasActiveFilters = (filters.tribes?.length ?? 0) > 0 || (filters.musicStyles?.length ?? 0) > 0 || (filters.details?.length ?? 0) > 0 || (filters.lookingFor?.length ?? 0) > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter || hasCompatibilityFilter;
-  const activeCount = (filters.tribes?.length ?? 0) + (filters.musicStyles?.length ?? 0) + (filters.details?.length ?? 0) + (filters.lookingFor?.length ?? 0) + (filters.genders?.length ?? 0) + (filters.cities?.length ?? 0) + (hasAgeFilter ? 1 : 0) + (hasCompatibilityFilter ? 1 : 0);
+  const hasInterestsFilter = (filters.interests?.length ?? 0) > 0;
+  const hasActiveFilters = (filters.tribes?.length ?? 0) > 0 || (filters.musicStyles?.length ?? 0) > 0 || (filters.details?.length ?? 0) > 0 || (filters.lookingFor?.length ?? 0) > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter || hasCompatibilityFilter || hasInterestsFilter;
+  const activeCount = (filters.tribes?.length ?? 0) + (filters.musicStyles?.length ?? 0) + (filters.details?.length ?? 0) + (filters.lookingFor?.length ?? 0) + (filters.genders?.length ?? 0) + (filters.cities?.length ?? 0) + (filters.interests?.length ?? 0) + (hasAgeFilter ? 1 : 0) + (hasCompatibilityFilter ? 1 : 0);
 
   // Sort cities alphabetically
   const sortedCities = useMemo(() => 
@@ -114,9 +116,18 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
     onChange({ ...filters, ageRange: [value[0], value[1]] as [number, number] });
   };
 
+  const toggleInterest = (interest: string) => {
+    triggerHaptic('light');
+    const currentInterests = filters.interests ?? [];
+    const newInterests = currentInterests.includes(interest)
+      ? currentInterests.filter(i => i !== interest)
+      : [...currentInterests, interest];
+    onChange({ ...filters, interests: newInterests });
+  };
+
   const clearFilters = () => {
     triggerHaptic('medium');
-    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], ageRange: undefined, minCompatibility: undefined });
+    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], ageRange: undefined, minCompatibility: undefined });
   };
 
   const handleMinCompatibilityChange = (value: number) => {
@@ -326,6 +337,22 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
               <X className="w-3 h-3" />
             </button>
           )}
+          {(filters.interests ?? []).map(interest => {
+            const interestData = CULTURAL_INTERESTS.find(ci => ci.value === interest);
+            return (
+              <button
+                key={interest}
+                onClick={() => {
+                  triggerHaptic('light');
+                  toggleInterest(interest);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/20 text-accent-foreground text-[11px] font-medium hover:bg-accent/30 transition-all active:scale-95"
+              >
+                {interestData?.emoji} {interest}
+                <X className="w-3 h-3" />
+              </button>
+            );
+          })}
           <button
             onClick={() => {
               triggerHaptic('medium');
@@ -588,6 +615,63 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
                       {detail.emoji} {detail.label}
                     </motion.button>
                   ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Interests section */}
+          <div className="mb-5">
+            <button
+              onClick={() => { triggerHaptic('light'); toggleSection("interests"); }}
+              className="flex items-center justify-between w-full text-left mb-3 p-2 -mx-2 rounded-xl hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                  <Star className="w-4 h-4 text-accent-foreground" />
+                </div>
+                <div>
+                  <span className="font-display text-sm font-semibold text-card-foreground block">
+                    Intereses
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {(filters.interests?.length ?? 0) > 0 ? `${filters.interests?.length} seleccionados` : "Cultura, hobbies..."}
+                  </span>
+                </div>
+              </div>
+              <motion.div
+                animate={{ rotate: expandedSection === "interests" ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-muted-foreground" />
+              </motion.div>
+            </button>
+            <AnimatePresence>
+              {expandedSection === "interests" && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="max-h-64 overflow-y-auto scrollbar-hide"
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {CULTURAL_INTERESTS.map((interest, index) => (
+                      <motion.button
+                        key={interest.value}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: Math.min(index * 0.01, 0.3), duration: 0.15 }}
+                        onClick={() => toggleInterest(interest.value)}
+                        className={`px-2.5 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
+                          (filters.interests ?? []).includes(interest.value)
+                            ? "bg-accent text-accent-foreground"
+                            : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                        }`}
+                      >
+                        {interest.emoji} {interest.value}
+                      </motion.button>
+                    ))}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
