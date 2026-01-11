@@ -724,6 +724,7 @@ export type Database = {
           notify_min_age: number | null
           notify_new_presence: boolean
           notify_same_city_only: boolean
+          notify_summary_hour: number
           share_typing_status: boolean | null
           shaved_head: boolean | null
           updated_at: string | null
@@ -752,6 +753,7 @@ export type Database = {
           notify_min_age?: number | null
           notify_new_presence?: boolean
           notify_same_city_only?: boolean
+          notify_summary_hour?: number
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
           updated_at?: string | null
@@ -780,6 +782,7 @@ export type Database = {
           notify_min_age?: number | null
           notify_new_presence?: boolean
           notify_same_city_only?: boolean
+          notify_summary_hour?: number
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
           updated_at?: string | null
