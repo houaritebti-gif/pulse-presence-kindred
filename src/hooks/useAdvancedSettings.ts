@@ -8,7 +8,10 @@ const STORAGE_KEYS = {
   COMPACT_MODE: "kiki_compact_mode",
   HIGH_CONTRAST: "kiki_high_contrast",
   SPARKLE_TRAIL: "kiki_sparkle_trail",
+  SPARKLE_STYLE: "kiki_sparkle_style",
 } as const;
+
+export type SparkleStyle = "stars" | "fire" | "hearts";
 
 export type Theme = "light" | "dark" | "system";
 export type TextSize = "small" | "normal" | "large";
@@ -116,12 +119,25 @@ export const applyHighContrast = (enabled: boolean) => {
 // Sparkle Trail
 export const getSparkleTrailEnabled = (): boolean => {
   const stored = localStorage.getItem(STORAGE_KEYS.SPARKLE_TRAIL);
-  // Default to true (enabled)
-  return stored === null ? true : stored === "true";
+  // Default to false (disabled) - it's a fun but optional feature
+  return stored === "true";
 };
 
 export const setSparkleTrailEnabled = (enabled: boolean) => {
   localStorage.setItem(STORAGE_KEYS.SPARKLE_TRAIL, String(enabled));
+};
+
+// Sparkle Style
+export const getSparkleStyle = (): SparkleStyle => {
+  const stored = localStorage.getItem(STORAGE_KEYS.SPARKLE_STYLE);
+  if (stored === "stars" || stored === "fire" || stored === "hearts") {
+    return stored;
+  }
+  return "stars";
+};
+
+export const setSparkleStyle = (style: SparkleStyle) => {
+  localStorage.setItem(STORAGE_KEYS.SPARKLE_STYLE, style);
 };
 
 // Initialize settings on app load
@@ -160,6 +176,7 @@ export const useAdvancedSettings = () => {
   const [compactMode, setCompactModeState] = useState<boolean>(getCompactMode);
   const [highContrast, setHighContrastState] = useState<boolean>(getHighContrast);
   const [sparkleTrailEnabled, setSparkleTrailState] = useState<boolean>(getSparkleTrailEnabled);
+  const [sparkleStyle, setSparkleStyleState] = useState<SparkleStyle>(getSparkleStyle);
 
   useEffect(() => {
     initializeAdvancedSettings();
@@ -195,6 +212,11 @@ export const useAdvancedSettings = () => {
     setSparkleTrailEnabled(enabled);
   };
 
+  const handleSparkleStyleChange = (style: SparkleStyle) => {
+    setSparkleStyleState(style);
+    setSparkleStyle(style);
+  };
+
   return {
     theme,
     reduceMotion,
@@ -202,11 +224,13 @@ export const useAdvancedSettings = () => {
     compactMode,
     highContrast,
     sparkleTrailEnabled,
+    sparkleStyle,
     setTheme: handleThemeChange,
     setReduceMotion: handleReduceMotionChange,
     setTextSize: handleTextSizeChange,
     setCompactMode: handleCompactModeChange,
     setHighContrast: handleHighContrastChange,
     setSparkleTrailEnabled: handleSparkleTrailChange,
+    setSparkleStyle: handleSparkleStyleChange,
   };
 };

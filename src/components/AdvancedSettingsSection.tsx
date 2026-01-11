@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { useAdvancedSettings, Theme, TextSize } from "@/hooks/useAdvancedSettings";
+import { useAdvancedSettings, Theme, TextSize, SparkleStyle } from "@/hooks/useAdvancedSettings";
 import { 
   isThemeSoundEnabled, 
   setThemeSoundEnabled, 
@@ -31,12 +31,14 @@ const AdvancedSettingsSection = () => {
     compactMode,
     highContrast,
     sparkleTrailEnabled,
+    sparkleStyle,
     setTheme,
     setReduceMotion,
     setTextSize,
     setCompactMode,
     setHighContrast,
     setSparkleTrailEnabled,
+    setSparkleStyle,
   } = useAdvancedSettings();
 
   useEffect(() => {
@@ -70,6 +72,12 @@ const AdvancedSettingsSection = () => {
     { value: "small", label: "Pequeño" },
     { value: "normal", label: "Normal" },
     { value: "large", label: "Grande" },
+  ];
+
+  const sparkleStyleOptions: { value: SparkleStyle; label: string; icon: typeof Stars }[] = [
+    { value: "stars", label: "Estrellas", icon: Stars },
+    { value: "fire", label: "Fuego", icon: Flame },
+    { value: "hearts", label: "Corazones", icon: Heart },
   ];
 
   return (
@@ -209,22 +217,45 @@ const AdvancedSettingsSection = () => {
           </div>
 
           {/* Sparkle Trail Effect */}
-          <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
-            <div className="flex items-center gap-3">
-              <Stars className={`w-5 h-5 ${sparkleTrailEnabled ? "text-primary" : "text-muted-foreground"}`} />
-              <div>
-                <span className="font-body text-sm text-foreground block">
-                  Estela de destellos
-                </span>
-                <span className="font-body text-xs text-muted-foreground">
-                  Efecto visual al deslizar hacia Chispa
-                </span>
+          <div className="p-4 bg-secondary/50 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Stars className={`w-5 h-5 ${sparkleTrailEnabled ? "text-primary" : "text-muted-foreground"}`} />
+                <div>
+                  <span className="font-body text-sm text-foreground block">
+                    Estela de destellos
+                  </span>
+                  <span className="font-body text-xs text-muted-foreground">
+                    Efecto visual al deslizar hacia Chispa
+                  </span>
+                </div>
               </div>
+              <Switch
+                checked={sparkleTrailEnabled}
+                onCheckedChange={setSparkleTrailEnabled}
+              />
             </div>
-            <Switch
-              checked={sparkleTrailEnabled}
-              onCheckedChange={setSparkleTrailEnabled}
-            />
+            {sparkleTrailEnabled && (
+              <div className="flex gap-2 pt-2 border-t border-border/50">
+                {sparkleStyleOptions.map((option) => {
+                  const Icon = option.icon;
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => setSparkleStyle(option.value)}
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-body transition-colors ${
+                        sparkleStyle === option.value
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
             <div className="flex items-center gap-3">
