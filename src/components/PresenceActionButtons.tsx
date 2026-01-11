@@ -5,6 +5,12 @@ import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { 
+  startProgressiveTone, 
+  updateProgressiveTone, 
+  stopProgressiveTone, 
+  playSuccessChime 
+} from "@/utils/progressiveAudio";
 import {
   Tooltip,
   TooltipContent,
@@ -156,24 +162,30 @@ const ChispaButton = ({
     setIsLongPressing(true);
     setLongPressProgress(0);
     triggerHaptic("light");
+    
+    // Start progressive audio tone
+    startProgressiveTone();
 
-    // Progress animation with progressive haptic feedback
+    // Progress animation with progressive haptic and audio feedback
     const startTime = Date.now();
     progressIntervalRef.current = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / LONG_PRESS_DURATION, 1);
       setLongPressProgress(progress);
       
-      // Progressive haptic feedback at 25%, 50%, 75% thresholds
+      // Update progressive audio pitch
+      updateProgressiveTone(progress);
+      
+      // Progressive haptic feedback at 25%, 50%, 75% thresholds (subtle)
       if (progress >= 0.25 && lastHapticThreshold.current < 0.25) {
         lastHapticThreshold.current = 0.25;
-        triggerHaptic("light");
+        triggerHaptic("selection"); // Subtle
       } else if (progress >= 0.50 && lastHapticThreshold.current < 0.50) {
         lastHapticThreshold.current = 0.50;
-        triggerHaptic("medium");
+        triggerHaptic("light");
       } else if (progress >= 0.75 && lastHapticThreshold.current < 0.75) {
         lastHapticThreshold.current = 0.75;
-        triggerHaptic("heavy");
+        triggerHaptic("medium");
       }
       
       if (progress >= 1) {
@@ -187,6 +199,8 @@ const ChispaButton = ({
       setIsLongPressing(false);
       setLongPressProgress(0);
       lastHapticThreshold.current = 0;
+      stopProgressiveTone();
+      playSuccessChime();
       triggerHaptic("success");
       onSuperChispa();
     }, LONG_PRESS_DURATION);
@@ -201,6 +215,8 @@ const ChispaButton = ({
       clearInterval(progressIntervalRef.current);
       progressIntervalRef.current = null;
     }
+    // Stop progressive audio
+    stopProgressiveTone();
     setIsLongPressing(false);
     setLongPressProgress(0);
   }, []);
