@@ -351,3 +351,78 @@ export const fireWelcomeConfetti = () => {
     });
   }, 450);
 };
+
+/**
+ * Fires a magical confetti animation for perfect compatibility (5/5).
+ * Uses hearts, stars, and rainbow sparkles for maximum impact.
+ */
+export const firePerfectCompatibilityConfetti = () => {
+  // Perfect match colors: hearts (pink/red), stars (gold), magic (purple)
+  const perfectColors = ['#FF69B4', '#FF1493', '#E91E63', '#FFD700', '#FFA500', '#A855F7', '#EC4899'];
+  
+  // Central heart-shaped burst
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { x: 0.5, y: 0.5 },
+    colors: perfectColors,
+    startVelocity: 40,
+    gravity: 0.8,
+    scalar: 1.4,
+    shapes: ['circle'],
+    ticks: 120,
+  });
+  
+  // Stars from sides
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0.1, y: 0.5 },
+      colors: ['#FFD700', '#FFA500', '#FF69B4'],
+      startVelocity: 35,
+      gravity: 0.7,
+      scalar: 1.2,
+    });
+    confetti({
+      particleCount: 50,
+      angle: 120,
+      spread: 55,
+      origin: { x: 0.9, y: 0.5 },
+      colors: ['#FFD700', '#FFA500', '#FF69B4'],
+      startVelocity: 35,
+      gravity: 0.7,
+      scalar: 1.2,
+    });
+  }, 100);
+  
+  // Sparkle rain from top
+  setTimeout(() => {
+    confetti({
+      particleCount: 80,
+      spread: 140,
+      origin: { x: 0.5, y: 0 },
+      colors: ['#FFD700', '#A855F7', '#EC4899', '#FF69B4'],
+      startVelocity: 25,
+      gravity: 1,
+      scalar: 1.1,
+      ticks: 100,
+      drift: 0.3,
+    });
+  }, 200);
+  
+  // Final magical burst
+  setTimeout(() => {
+    confetti({
+      particleCount: 70,
+      spread: 100,
+      origin: { x: 0.5, y: 0.6 },
+      colors: ['#A855F7', '#FFD700', '#FF1493'],
+      startVelocity: 30,
+      gravity: 0.9,
+      scalar: 1.3,
+      ticks: 90,
+    });
+  }, 350);
+};
