@@ -1,5 +1,6 @@
 import { memo, useRef, useState, useCallback, useEffect } from "react";
-import { Radio, RotateCcw, Crown, Info } from "lucide-react";
+import { Radio, RotateCcw, Crown, Info, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import SwipeTutorial from "./SwipeTutorial";
 import PresenceActionButtons from "./PresenceActionButtons";
@@ -462,9 +463,23 @@ export const FullScreenPresenceList = memo(({
         <h3 className="font-display text-xl font-semibold text-foreground mb-2">
           ¡Has visto todos los perfiles!
         </h3>
-        <p className="font-body text-sm text-muted-foreground max-w-[280px] mx-auto leading-relaxed mb-4">
+        <p className="font-body text-sm text-muted-foreground max-w-[280px] mx-auto leading-relaxed mb-6">
           Vuelve más tarde para descubrir gente nueva o ajusta tus filtros para ampliar tu búsqueda.
         </p>
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={() => {
+            triggerHaptic('medium');
+            setDismissedIds(new Set());
+            setRewindHistory([]);
+            toast.success("Perfiles restablecidos", { description: "Puedes volver a explorar desde el inicio" });
+          }}
+          className="gap-2 mb-4"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Restablecer perfiles
+        </Button>
         <p className="text-xs text-muted-foreground/70">
           {viewedCount} {viewedCount === 1 ? 'perfil visto' : 'perfiles vistos'}
         </p>
