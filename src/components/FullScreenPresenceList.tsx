@@ -458,17 +458,30 @@ export const FullScreenPresenceList = memo(({
 
           {/* Rewind counter badge */}
           <motion.div 
-            className="px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border border-border flex items-center gap-1.5"
+            className={cn(
+              "px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border flex items-center gap-1.5",
+              rewindRemaining === 1 && !isRewindUnlimited
+                ? "border-amber-500/50 animate-pulse"
+                : "border-border"
+            )}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <RotateCcw className="w-3.5 h-3.5 text-amber-500" />
+            <RotateCcw className={cn(
+              "w-3.5 h-3.5",
+              rewindRemaining === 1 && !isRewindUnlimited
+                ? "text-amber-500 animate-bounce"
+                : "text-amber-500"
+            )} />
             <span className="text-sm font-medium text-foreground">
               {isRewindUnlimited ? (
                 <span className="text-amber-500">∞</span>
               ) : (
-                <span className={rewindRemaining === 0 ? "text-muted-foreground" : ""}>
+                <span className={cn(
+                  rewindRemaining === 0 ? "text-muted-foreground" : "",
+                  rewindRemaining === 1 ? "text-amber-500 font-bold" : ""
+                )}>
                   {rewindRemaining}
                 </span>
               )}
