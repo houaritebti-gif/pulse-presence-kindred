@@ -93,6 +93,88 @@ export const fireSuperSparkConfetti = () => {
 };
 
 /**
+ * Fires golden stars animation specifically for Super Chispa.
+ * Distinct from regular Chispa hearts - uses stars and gold exclusively.
+ */
+export const fireSuperSparkGoldenStars = () => {
+  // Pure gold and star colors
+  const goldenColors = ['#FFD700', '#FFA500', '#FBBF24', '#F59E0B', '#EAB308', '#FCD34D'];
+  
+  // Initial star burst from upper area (swipe up direction)
+  confetti({
+    particleCount: 50,
+    angle: 270,
+    spread: 70,
+    origin: { x: 0.5, y: 0.2 },
+    colors: goldenColors,
+    startVelocity: 40,
+    gravity: 0.6,
+    scalar: 1.6,
+    shapes: ['star'],
+    ticks: 100,
+  });
+  
+  // Side star trails
+  setTimeout(() => {
+    confetti({
+      particleCount: 30,
+      angle: 45,
+      spread: 40,
+      origin: { x: 0.2, y: 0.3 },
+      colors: goldenColors,
+      startVelocity: 35,
+      gravity: 0.7,
+      scalar: 1.4,
+      shapes: ['star'],
+      drift: 0.5,
+    });
+    confetti({
+      particleCount: 30,
+      angle: 135,
+      spread: 40,
+      origin: { x: 0.8, y: 0.3 },
+      colors: goldenColors,
+      startVelocity: 35,
+      gravity: 0.7,
+      scalar: 1.4,
+      shapes: ['star'],
+      drift: -0.5,
+    });
+  }, 100);
+  
+  // Golden rain from top
+  setTimeout(() => {
+    confetti({
+      particleCount: 60,
+      spread: 160,
+      origin: { x: 0.5, y: -0.1 },
+      colors: ['#FFD700', '#FCD34D', '#FBBF24'],
+      startVelocity: 15,
+      gravity: 0.9,
+      scalar: 1.3,
+      shapes: ['star', 'circle'],
+      ticks: 120,
+      drift: 0.2,
+    });
+  }, 180);
+  
+  // Final center star explosion
+  setTimeout(() => {
+    confetti({
+      particleCount: 40,
+      spread: 100,
+      origin: { x: 0.5, y: 0.4 },
+      colors: ['#FFD700', '#FFA500'],
+      startVelocity: 30,
+      gravity: 0.8,
+      scalar: 1.8,
+      shapes: ['star'],
+      ticks: 80,
+    });
+  }, 280);
+};
+
+/**
  * Fires a receiving animation when someone receives a Super Chispa.
  * Gentler but still impressive effect.
  */
