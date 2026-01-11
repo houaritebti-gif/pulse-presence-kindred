@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff, Loader2 } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, Plus, Sparkles, Clock, MessageCircle, Trash2, Pencil, EyeOff, Loader2, BellOff } from "lucide-react";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
@@ -17,6 +17,7 @@ import StateTransition from "@/components/StateTransition";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedadas, useCreateQuedada, useJoinQuedada, useLeaveQuedada, useDeleteQuedada, useUpdateQuedada, Quedada } from "@/hooks/useQuedadas";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
+import { useMutedQuedadas } from "@/hooks/useMutedQuedadas";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -25,6 +26,7 @@ import { playCelebrationSound } from "@/utils/notificationSound";
 import QuedadaCreatorHeader from "@/components/QuedadaCreatorHeader";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import { motion, AnimatePresence } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Quedadas = () => {
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ const Quedadas = () => {
   const deleteQuedada = useDeleteQuedada();
   const updateQuedada = useUpdateQuedada();
   const { earnEnergy, canDoAction } = useSparkEnergy();
+  const { isQuedadaMuted } = useMutedQuedadas();
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: quedadas });
 
@@ -430,6 +433,7 @@ const Quedadas = () => {
               const isFull = quedada.max_attendees && quedada.attendee_count >= quedada.max_attendees;
               const isCreator = quedada.creator_profile_id === profile?.id;
               const isExiting = exitingQuedadas.has(quedada.id);
+              const isMuted = isQuedadaMuted(quedada.id);
               
               return (
                 <div
@@ -449,7 +453,23 @@ const Quedadas = () => {
                   }}
                 >
                   {/* Header */}
-                  <QuedadaCreatorHeader creator={quedada.creator} title={quedada.title} />
+                  <div className="flex items-start justify-between gap-2">
+                    <QuedadaCreatorHeader creator={quedada.creator} title={quedada.title} />
+                    {isMuted && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                              <BellOff className="w-3.5 h-3.5 text-muted-foreground" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Notificaciones silenciadas</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
 
                   {/* Description */}
                   {quedada.description && (
