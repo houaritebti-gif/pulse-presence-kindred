@@ -825,8 +825,8 @@ const SparkChat = () => {
         </div>
       )}
 
-      {/* Input */}
-      <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80">
+      {/* Input - extra right padding to avoid floating widgets (AI assistant, shortcuts) */}
+      <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80 pr-24">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
