@@ -1083,3 +1083,195 @@ export const playHayVibraSound = () => {
     console.log("Could not play hay vibra sound:", error);
   }
 };
+
+// Sparkle Trail Sounds - different for each style
+
+// Stars sparkle sound - magical twinkling
+export const playSparkleStarsSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  if (!isActionSoundsEnabled()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Magical twinkling - high, light, sparkly
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    const gain2 = ctx.createGain();
+    
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+    gain1.connect(ctx.destination);
+    gain2.connect(ctx.destination);
+    
+    osc1.type = "sine";
+    osc2.type = "sine";
+    
+    // High sparkly notes
+    osc1.frequency.setValueAtTime(2093, ctx.currentTime); // C7
+    osc1.frequency.setValueAtTime(2637, ctx.currentTime + 0.05); // E7
+    osc1.frequency.setValueAtTime(3136, ctx.currentTime + 0.1); // G7
+    
+    osc2.frequency.setValueAtTime(1568, ctx.currentTime + 0.02); // G6
+    osc2.frequency.setValueAtTime(1976, ctx.currentTime + 0.07); // B6
+    
+    gain1.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+    
+    gain2.gain.setValueAtTime(0.03, ctx.currentTime + 0.02);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    
+    osc1.start(ctx.currentTime);
+    osc2.start(ctx.currentTime + 0.02);
+    osc1.stop(ctx.currentTime + 0.2);
+    osc2.stop(ctx.currentTime + 0.18);
+  } catch (error) {
+    console.log("Could not play sparkle stars sound:", error);
+  }
+};
+
+// Fire sparkle sound - crackling, warm
+export const playSparkleFireSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  if (!isActionSoundsEnabled()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Fire crackling - warm, low rumble with pops
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const noiseGain = ctx.createGain();
+    const gain1 = ctx.createGain();
+    const gain2 = ctx.createGain();
+    
+    // Create white noise for crackle
+    const bufferSize = ctx.sampleRate * 0.15;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    
+    // Low pass filter for warmer crackle
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 1500;
+    
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+    gain1.connect(ctx.destination);
+    gain2.connect(ctx.destination);
+    
+    osc1.type = "triangle";
+    osc2.type = "sawtooth";
+    
+    // Warm low tones
+    osc1.frequency.setValueAtTime(110, ctx.currentTime); // A2
+    osc1.frequency.setValueAtTime(165, ctx.currentTime + 0.08); // E3
+    
+    osc2.frequency.setValueAtTime(220, ctx.currentTime + 0.03); // A3
+    osc2.frequency.exponentialRampToValueAtTime(330, ctx.currentTime + 0.12);
+    
+    noiseGain.gain.setValueAtTime(0.02, ctx.currentTime);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
+    
+    gain1.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+    
+    gain2.gain.setValueAtTime(0.03, ctx.currentTime + 0.03);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    
+    noise.start(ctx.currentTime);
+    osc1.start(ctx.currentTime);
+    osc2.start(ctx.currentTime + 0.03);
+    noise.stop(ctx.currentTime + 0.15);
+    osc1.stop(ctx.currentTime + 0.2);
+    osc2.stop(ctx.currentTime + 0.18);
+  } catch (error) {
+    console.log("Could not play sparkle fire sound:", error);
+  }
+};
+
+// Hearts sparkle sound - soft, romantic, gentle
+export const playSparkleHeartsSound = () => {
+  if (isSoundMuted()) return;
+  if (isInDndPeriod()) return;
+  if (!isActionSoundsEnabled()) return;
+  
+  try {
+    const ctx = getAudioContext();
+    
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    
+    // Romantic soft sound - gentle, warm, ascending
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    const gain2 = ctx.createGain();
+    
+    osc1.connect(gain1);
+    osc2.connect(gain2);
+    gain1.connect(ctx.destination);
+    gain2.connect(ctx.destination);
+    
+    osc1.type = "sine";
+    osc2.type = "sine";
+    
+    // Soft romantic notes - gentle third intervals
+    osc1.frequency.setValueAtTime(523, ctx.currentTime); // C5
+    osc1.frequency.setValueAtTime(659, ctx.currentTime + 0.08); // E5
+    osc1.frequency.setValueAtTime(784, ctx.currentTime + 0.16); // G5
+    
+    osc2.frequency.setValueAtTime(392, ctx.currentTime); // G4
+    osc2.frequency.setValueAtTime(494, ctx.currentTime + 0.1); // B4
+    
+    gain1.gain.setValueAtTime(0.04, ctx.currentTime);
+    gain1.gain.setValueAtTime(0.05, ctx.currentTime + 0.1);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+    
+    gain2.gain.setValueAtTime(0.03, ctx.currentTime);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    
+    osc1.start(ctx.currentTime);
+    osc2.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.28);
+    osc2.stop(ctx.currentTime + 0.22);
+  } catch (error) {
+    console.log("Could not play sparkle hearts sound:", error);
+  }
+};
+
+// Generic function to play sparkle sound based on style
+export const playSparkleTrailSound = (style: "stars" | "fire" | "hearts") => {
+  switch (style) {
+    case "stars":
+      playSparkleStarsSound();
+      break;
+    case "fire":
+      playSparkleFireSound();
+      break;
+    case "hearts":
+      playSparkleHeartsSound();
+      break;
+  }
+};
