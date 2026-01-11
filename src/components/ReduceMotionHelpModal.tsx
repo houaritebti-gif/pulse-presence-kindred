@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { X, ExternalLink, Copy, Check, Monitor, Smartphone, Apple, HelpCircle } from "lucide-react";
+import { ExternalLink, Copy, Check, Monitor, Smartphone, Apple, HelpCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Dialog, 
   DialogContent, 
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 type DetectedOS = "windows" | "macos" | "ios" | "android" | "unknown";
 
@@ -348,15 +350,40 @@ const osInstructionsData: Record<DetectedOS, OSInstruction> = {
   }
 };
 
+// Animation variants for step transitions
+const stepVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 100 : -100,
+    opacity: 0,
+    scale: 0.95,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? 100 : -100,
+    opacity: 0,
+    scale: 0.95,
+  }),
+};
+
+const stepIndicatorVariants = {
+  inactive: { scale: 1 },
+  active: { scale: 1.15 },
+};
+
 export const ReduceMotionHelpModal = () => {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [direction, setDirection] = useState(0);
   const detectedOS = useMemo(() => detectOS(), []);
   const [selectedOS, setSelectedOS] = useState<DetectedOS>(detectedOS);
+  const reduceMotion = useReducedMotion();
   
   const currentOSData = osInstructionsData[selectedOS];
-  const currentStepData = currentOSData.steps[currentStep];
 
   const handleCopy = async () => {
     const allSteps = currentOSData.steps
@@ -383,10 +410,8 @@ export const ReduceMotionHelpModal = () => {
     if (!currentOSData.deepLink) return;
     
     if (selectedOS === "ios") {
-      // iOS deep link
       window.location.href = currentOSData.deepLink;
     } else if (selectedOS === "android") {
-      // Android intent - try multiple approaches
       const intentUrl = `intent://${currentOSData.deepLink}#Intent;scheme=android.settings;end`;
       window.location.href = intentUrl;
     }
@@ -395,6 +420,27 @@ export const ReduceMotionHelpModal = () => {
   const handleTabChange = (value: string) => {
     setSelectedOS(value as DetectedOS);
     setCurrentStep(0);
+    setDirection(0);
+  };
+
+  const goToStep = (index: number) => {
+    setDirection(index > currentStep ? 1 : -1);
+    setCurrentStep(index);
+  };
+
+  const goNext = (os: DetectedOS) => {
+    const maxStep = osInstructionsData[os].steps.length - 1;
+    if (currentStep < maxStep) {
+      setDirection(1);
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const goPrev = () => {
+    if (currentStep > 0) {
+      setDirection(-1);
+      setCurrentStep(prev => prev - 1);
+    }
   };
 
   const availableOS: DetectedOS[] = ["windows", "macos", "ios", "android"];
@@ -440,72 +486,120 @@ export const ReduceMotionHelpModal = () => {
             <TabsContent key={os} value={os} className="flex-1 mt-0 p-4">
               <ScrollArea className="h-[350px] pr-4">
                 <div className="space-y-4">
-                  {/* Step indicator */}
+                  {/* Step indicator with animations */}
                   <div className="flex items-center justify-center gap-2">
                     {osInstructionsData[os].steps.map((_, index) => (
-                      <button
+                      <motion.button
                         key={index}
-                        onClick={() => setCurrentStep(index)}
+                        onClick={() => goToStep(index)}
+                        variants={reduceMotion ? undefined : stepIndicatorVariants}
+                        initial={false}
+                        animate={currentStep === index ? "active" : "inactive"}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
                         className={cn(
-                          "w-8 h-8 rounded-full text-xs font-medium transition-all",
+                          "w-8 h-8 rounded-full text-xs font-medium transition-colors",
                           currentStep === index
-                            ? "bg-primary text-primary-foreground scale-110"
+                            ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground hover:bg-muted/80"
                         )}
                       >
                         {index + 1}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
 
-                  {/* Current step content */}
-                  <div className="space-y-3">
-                    <h3 className="font-medium text-sm text-center">
-                      Paso {currentStep + 1}: {osInstructionsData[os].steps[currentStep].title}
-                    </h3>
-                    
-                    {/* Visual representation */}
-                    <div className="aspect-video flex items-center justify-center">
-                      {osInstructionsData[os].steps[currentStep].visual}
-                    </div>
-                    
-                    <p className="text-xs text-muted-foreground text-center px-4">
-                      {osInstructionsData[os].steps[currentStep].description}
-                    </p>
+                  {/* Animated step content */}
+                  <div className="relative overflow-hidden min-h-[200px]">
+                    <AnimatePresence mode="wait" custom={direction}>
+                      <motion.div
+                        key={`${os}-${currentStep}`}
+                        custom={direction}
+                        variants={reduceMotion ? undefined : stepVariants}
+                        initial={reduceMotion ? { opacity: 1 } : "enter"}
+                        animate={reduceMotion ? { opacity: 1 } : "center"}
+                        exit={reduceMotion ? { opacity: 0 } : "exit"}
+                        transition={reduceMotion 
+                          ? { duration: 0 } 
+                          : { 
+                              type: "spring", 
+                              stiffness: 300, 
+                              damping: 30,
+                              opacity: { duration: 0.2 }
+                            }
+                        }
+                        className="space-y-3"
+                      >
+                        <motion.h3 
+                          className="font-medium text-sm text-center"
+                          initial={reduceMotion ? undefined : { opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: reduceMotion ? 0 : 0.1 }}
+                        >
+                          Paso {currentStep + 1}: {osInstructionsData[os].steps[currentStep].title}
+                        </motion.h3>
+                        
+                        {/* Visual representation with scale animation */}
+                        <motion.div 
+                          className="aspect-video flex items-center justify-center"
+                          initial={reduceMotion ? undefined : { scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: reduceMotion ? 0 : 0.15, type: "spring", stiffness: 400 }}
+                        >
+                          {osInstructionsData[os].steps[currentStep].visual}
+                        </motion.div>
+                        
+                        <motion.p 
+                          className="text-xs text-muted-foreground text-center px-4"
+                          initial={reduceMotion ? undefined : { opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: reduceMotion ? 0 : 0.2 }}
+                        >
+                          {osInstructionsData[os].steps[currentStep].description}
+                        </motion.p>
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
 
-                  {/* Navigation buttons */}
+                  {/* Navigation buttons with icons */}
                   <div className="flex items-center justify-between pt-2">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+                      onClick={goPrev}
                       disabled={currentStep === 0}
-                      className="text-xs"
+                      className="text-xs gap-1"
                     >
-                      ← Anterior
+                      <ChevronLeft className="w-4 h-4" />
+                      Anterior
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setCurrentStep(prev => Math.min(osInstructionsData[os].steps.length - 1, prev + 1))}
+                      onClick={() => goNext(os)}
                       disabled={currentStep === osInstructionsData[os].steps.length - 1}
-                      className="text-xs"
+                      className="text-xs gap-1"
                     >
-                      Siguiente →
+                      Siguiente
+                      <ChevronRight className="w-4 h-4" />
                     </Button>
                   </div>
 
                   {/* Deep link button for mobile */}
                   {osInstructionsData[os].deepLink && (
-                    <Button
-                      onClick={handleOpenSettings}
-                      className="w-full gap-2"
-                      variant="default"
+                    <motion.div
+                      initial={reduceMotion ? undefined : { opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
                     >
-                      <ExternalLink className="w-4 h-4" />
-                      Abrir Ajustes de Accesibilidad
-                    </Button>
+                      <Button
+                        onClick={handleOpenSettings}
+                        className="w-full gap-2"
+                        variant="default"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Abrir Ajustes de Accesibilidad
+                      </Button>
+                    </motion.div>
                   )}
                 </div>
               </ScrollArea>
