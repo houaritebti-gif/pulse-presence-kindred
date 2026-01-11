@@ -738,11 +738,11 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full cursor-help transition-all",
+                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full cursor-help transition-all relative overflow-hidden",
                     compatibility >= 5
-                      ? "bg-gradient-to-r from-primary to-accent animate-pulse"
+                      ? "bg-gradient-to-r from-primary to-accent animate-perfect-glow"
                       : compatibility >= 4 
-                        ? "bg-gradient-to-r from-primary to-accent shadow-lg shadow-primary/30" 
+                        ? "bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-shimmer-badge shadow-lg shadow-primary/30" 
                         : "bg-black/40 backdrop-blur-md"
                   )}>
                     <Heart className={cn(
