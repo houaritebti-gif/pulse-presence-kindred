@@ -508,8 +508,8 @@ export const ReduceMotionHelpModal = () => {
                     ))}
                   </div>
 
-                  {/* Animated step content */}
-                  <div className="relative overflow-hidden min-h-[200px]">
+                  {/* Animated step content with swipe support */}
+                  <div className="relative overflow-hidden min-h-[220px] touch-pan-y">
                     <AnimatePresence mode="wait" custom={direction}>
                       <motion.div
                         key={`${os}-${currentStep}`}
@@ -527,10 +527,31 @@ export const ReduceMotionHelpModal = () => {
                               opacity: { duration: 0.2 }
                             }
                         }
-                        className="space-y-3"
+                        drag={reduceMotion ? false : "x"}
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.2}
+                        onDragEnd={(_, info) => {
+                          const swipeThreshold = 50;
+                          const velocity = info.velocity.x;
+                          const offset = info.offset.x;
+                          
+                          // Swipe left = next step
+                          if (offset < -swipeThreshold || velocity < -500) {
+                            if (currentStep < osInstructionsData[os].steps.length - 1) {
+                              goNext(os);
+                            }
+                          }
+                          // Swipe right = previous step
+                          else if (offset > swipeThreshold || velocity > 500) {
+                            if (currentStep > 0) {
+                              goPrev();
+                            }
+                          }
+                        }}
+                        className="space-y-3 cursor-grab active:cursor-grabbing"
                       >
                         <motion.h3 
-                          className="font-medium text-sm text-center"
+                          className="font-medium text-sm text-center pointer-events-none"
                           initial={reduceMotion ? undefined : { opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: reduceMotion ? 0 : 0.1 }}
@@ -540,7 +561,7 @@ export const ReduceMotionHelpModal = () => {
                         
                         {/* Visual representation with scale animation */}
                         <motion.div 
-                          className="aspect-video flex items-center justify-center"
+                          className="aspect-video flex items-center justify-center pointer-events-none select-none"
                           initial={reduceMotion ? undefined : { scale: 0.9, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{ delay: reduceMotion ? 0 : 0.15, type: "spring", stiffness: 400 }}
@@ -549,13 +570,33 @@ export const ReduceMotionHelpModal = () => {
                         </motion.div>
                         
                         <motion.p 
-                          className="text-xs text-muted-foreground text-center px-4"
+                          className="text-xs text-muted-foreground text-center px-4 pointer-events-none"
                           initial={reduceMotion ? undefined : { opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: reduceMotion ? 0 : 0.2 }}
                         >
                           {osInstructionsData[os].steps[currentStep].description}
                         </motion.p>
+                        
+                        {/* Swipe hint for mobile - only on first step */}
+                        {currentStep === 0 && !reduceMotion && (
+                          <motion.div 
+                            className="flex items-center justify-center gap-2 pt-2"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.5 }}
+                          >
+                            <motion.div
+                              animate={{ x: [-5, 5, -5] }}
+                              transition={{ repeat: 2, duration: 0.6 }}
+                              className="text-[10px] text-muted-foreground/60 flex items-center gap-1"
+                            >
+                              <ChevronLeft className="w-3 h-3" />
+                              <span>Desliza para navegar</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </motion.div>
+                          </motion.div>
+                        )}
                       </motion.div>
                     </AnimatePresence>
                   </div>
