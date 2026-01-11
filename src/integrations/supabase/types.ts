@@ -299,6 +299,42 @@ export type Database = {
           },
         ]
       }
+      muted_quedadas: {
+        Row: {
+          id: string
+          muted_at: string
+          profile_id: string
+          quedada_id: string
+        }
+        Insert: {
+          id?: string
+          muted_at?: string
+          profile_id: string
+          quedada_id: string
+        }
+        Update: {
+          id?: string
+          muted_at?: string
+          profile_id?: string
+          quedada_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "muted_quedadas_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "muted_quedadas_quedada_id_fkey"
+            columns: ["quedada_id"]
+            isOneToOne: false
+            referencedRelation: "quedadas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
