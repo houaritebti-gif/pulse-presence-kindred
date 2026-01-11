@@ -129,9 +129,9 @@ const SocialProofCounter = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 4.2 }}
     >
-      <p className="text-sm text-foreground/40" style={{ fontFamily: 'Arial, sans-serif' }}>
+      <p className="text-sm text-white/50" style={{ fontFamily: 'Arial, sans-serif' }}>
         Ya somos{' '}
-        <span className="text-primary font-semibold">
+        <span className="text-[#E63946] font-semibold">
           +{count}
         </span>
         {' '}personas diferentes
@@ -315,11 +315,11 @@ const Landing = () => {
   ];
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background overflow-x-hidden relative">
+    <div ref={containerRef} className="min-h-screen overflow-x-hidden relative dark bg-[#0a0a0a]">
       <ParallaxBackground variant="landing" />
       <MouseFollower />
       
-      {/* Hero Section */}
+      {/* Hero Section - Premium Dark Theme */}
       <section className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden">
         <FloatingParticles />
         
@@ -328,77 +328,80 @@ const Landing = () => {
           className="absolute inset-0 overflow-hidden pointer-events-none" 
           style={{ y: backgroundY }}
         >
-          {/* Main gradient orb with morphing animation */}
+          {/* Premium dark background with intense red glow */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0a0a0a] to-[#111111]" />
+          
+          {/* Main gradient orb - more intense red glow */}
           <motion.div 
-            className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] animate-morph"
+            className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px]"
             style={{
-              background: "radial-gradient(circle, hsl(var(--primary) / 0.25) 0%, hsl(var(--primary) / 0.05) 50%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(230,57,70,0.35) 0%, rgba(230,57,70,0.08) 40%, transparent 65%)",
             }}
             animate={{
-              scale: [1, 1.1, 1],
+              scale: [1, 1.15, 1],
               rotate: [0, 180, 360],
             }}
             transition={{
-              duration: 20,
+              duration: 25,
               repeat: Infinity,
               ease: "linear",
             }}
           />
           
-          {/* Animated rings */}
+          {/* Animated rings - brighter */}
           <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-primary/10"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-[#E63946]/20"
             animate={{ rotate: 360, scale: [1, 1.05, 1] }}
             transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
           />
           <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-primary/20"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-[#E63946]/30"
             animate={{ rotate: -360, scale: [1, 1.1, 1] }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           />
           
-          {/* Animated ambient glow orbs - matching Auth page style */}
+          {/* Premium ambient glow orbs - more intense */}
           <motion.div 
-            className="absolute top-1/4 left-1/4 w-[500px] h-[400px] bg-primary/15 rounded-full blur-[150px]"
-            animate={{
-              scale: [1, 1.15, 1],
-              opacity: [0.15, 0.25, 0.15],
-              y: [0, -30, 0],
-              x: [0, 20, 0],
-            }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div 
-            className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] bg-accent/12 rounded-full blur-[120px]"
+            className="absolute top-1/4 left-1/4 w-[600px] h-[500px] bg-[#E63946]/25 rounded-full blur-[180px]"
             animate={{
               scale: [1, 1.2, 1],
-              opacity: [0.12, 0.22, 0.12],
-              x: [0, -30, 0],
-              y: [0, 40, 0],
-            }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          />
-          <motion.div 
-            className="absolute top-1/2 left-0 w-[350px] h-[350px] bg-primary/10 rounded-full blur-[100px]"
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.1, 0.18, 0.1],
+              opacity: [0.25, 0.4, 0.25],
               y: [0, -40, 0],
+              x: [0, 30, 0],
             }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div 
-            className="absolute bottom-1/3 right-0 w-[300px] h-[300px] bg-accent/10 rounded-full blur-[100px]"
+            className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-[#FF6B6B]/20 rounded-full blur-[150px]"
+            animate={{
+              scale: [1, 1.25, 1],
+              opacity: [0.2, 0.35, 0.2],
+              x: [0, -40, 0],
+              y: [0, 50, 0],
+            }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          />
+          <motion.div 
+            className="absolute top-1/2 left-0 w-[400px] h-[400px] bg-[#E63946]/15 rounded-full blur-[120px]"
             animate={{
               scale: [1, 1.15, 1],
-              opacity: [0.1, 0.2, 0.1],
-              x: [0, 20, 0],
+              opacity: [0.15, 0.28, 0.15],
+              y: [0, -50, 0],
             }}
-            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 3 }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          />
+          <motion.div 
+            className="absolute bottom-1/3 right-0 w-[350px] h-[350px] bg-[#FF4D6D]/15 rounded-full blur-[120px]"
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.15, 0.3, 0.15],
+              x: [0, 25, 0],
+            }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 3 }}
           />
           
-          {/* Subtle grid pattern */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--primary)/0.03)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+          {/* Grid pattern - more visible on dark */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(230,57,70,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(230,57,70,0.05)_1px,transparent_1px)] bg-[size:60px_60px]" />
         </motion.div>
         
         <motion.div 
@@ -422,10 +425,10 @@ const Landing = () => {
               <KikiLogo size="hero" animate={true} />
             </div>
             
-            {/* Slogan - Para gente diferente, y punto - with typographic contrast */}
+            {/* Slogan - Para gente diferente, y punto - premium white text */}
             <div className="flex flex-col items-center">
               <motion.span 
-                className="text-xl md:text-2xl text-foreground/80 tracking-wide"
+                className="text-xl md:text-2xl text-white/90 tracking-wide"
                 style={{ fontFamily: 'Arial, sans-serif', fontWeight: 400 }}
                 initial={{ opacity: 1 }}
               >
@@ -441,7 +444,7 @@ const Landing = () => {
                 ))}
               </motion.span>
               <motion.span 
-                className="text-2xl md:text-3xl font-bold text-foreground tracking-tight inline-flex items-center relative"
+                className="text-2xl md:text-3xl font-bold text-white tracking-tight inline-flex items-center relative"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                 initial={{ opacity: 1 }}
               >
@@ -517,10 +520,10 @@ const Landing = () => {
                       }}
                     />
                   )}
-                  {/* Animated underline */}
+                  {/* Animated underline - white for dark theme */}
                   {landingConfig.showUnderline && (
                     <motion.span
-                      className="absolute -bottom-1 left-0 h-0.5 bg-foreground rounded-full"
+                      className="absolute -bottom-1 left-0 h-0.5 bg-white rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: "100%" }}
                       transition={{ 
@@ -531,9 +534,9 @@ const Landing = () => {
                     />
                   )}
                 </span>
-                {/* Blinking cursor */}
+                {/* Blinking cursor - white */}
                 <motion.span
-                  className="inline-block w-0.5 h-5 md:h-6 bg-foreground ml-0.5"
+                  className="inline-block w-0.5 h-5 md:h-6 bg-white ml-0.5"
                   initial={{ opacity: 0 }}
                   animate={{ 
                     opacity: [0, 1, 1, 0],
@@ -558,7 +561,7 @@ const Landing = () => {
             transition={{ duration: 0.7, delay: 2.3 }}
           >
             <p 
-              className="text-base md:text-lg text-foreground/60 font-medium tracking-wide"
+              className="text-base md:text-lg text-white/60 font-medium tracking-wide"
               style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}
             >
               ¿A qué esperas?
@@ -578,7 +581,7 @@ const Landing = () => {
                 variant="kiki" 
                 size="lg" 
                 onClick={() => navigate("/auth")} 
-                className="px-10 relative group overflow-hidden shadow-[0_0_30px_hsl(var(--primary)/0.25)]"
+                className="px-10 relative group overflow-hidden shadow-[0_0_40px_rgba(230,57,70,0.4)] hover:shadow-[0_0_60px_rgba(230,57,70,0.6)]"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <Heart className="w-4 h-4 fill-current" />
@@ -602,14 +605,14 @@ const Landing = () => {
             transition={{ duration: 0.8, delay: 2.6, ease: "easeOut" }}
           >
             <motion.p 
-              className="text-lg md:text-xl text-foreground/80 leading-tight font-medium tracking-wide"
+              className="text-lg md:text-xl text-white/80 leading-tight font-medium tracking-wide"
               style={{ fontFamily: 'Arial, sans-serif' }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 2.8, duration: 0.5 }}
             >
               Aquí no hay <motion.span 
-                className="line-through decoration-primary/50 decoration-2"
+                className="line-through decoration-[#E63946]/70 decoration-2"
                 initial={{ backgroundSize: "0% 2px" }}
                 animate={{ backgroundSize: "100% 2px" }}
                 transition={{ delay: 3, duration: 0.4 }}
@@ -622,7 +625,7 @@ const Landing = () => {
               transition={{ delay: 3, duration: 0.5 }}
             >
               <motion.p 
-                className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-primary"
+                className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-[#E63946] drop-shadow-[0_0_20px_rgba(230,57,70,0.5)]"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
               >
                 hay chispa
@@ -635,7 +638,7 @@ const Landing = () => {
                 }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Sparkles className="w-5 h-5 md:w-7 md:h-7 text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
+                <Sparkles className="w-5 h-5 md:w-7 md:h-7 text-[#E63946] drop-shadow-[0_0_12px_rgba(230,57,70,0.8)]" />
               </motion.span>
             </motion.div>
           </motion.div>
@@ -648,14 +651,14 @@ const Landing = () => {
             transition={{ duration: 0.8, delay: 3.2 }}
           >
             <motion.p 
-              className="text-base md:text-lg text-foreground/70 max-w-xs mx-auto leading-relaxed relative"
+              className="text-base md:text-lg text-white/70 max-w-xs mx-auto leading-relaxed relative"
               style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}
               whileHover={{ scale: 1.02 }}
             >
-              <span className="text-primary text-2xl leading-none mr-1 font-serif">«</span>
+              <span className="text-[#E63946] text-2xl leading-none mr-1 font-serif">«</span>
               Un espacio para quienes buscan{' '}
-              <span className="text-primary font-semibold not-italic">conexiones reales</span>
-              <span className="text-primary text-2xl leading-none ml-1 font-serif">»</span>
+              <span className="text-[#E63946] font-semibold not-italic">conexiones reales</span>
+              <span className="text-[#E63946] text-2xl leading-none ml-1 font-serif">»</span>
             </motion.p>
           </motion.div>
 
@@ -678,7 +681,7 @@ const Landing = () => {
             ].map((tag, index) => (
               <motion.div 
                 key={index} 
-                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-sm shadow-sm"
+                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#E63946]/20 to-[#E63946]/10 border border-[#E63946]/30 backdrop-blur-sm shadow-lg shadow-[#E63946]/10"
                 variants={{
                   hidden: { opacity: 0, y: 20, scale: 0.9 },
                   visible: { 
@@ -690,12 +693,12 @@ const Landing = () => {
                 }}
                 whileHover={{ 
                   scale: 1.08, 
-                  boxShadow: "0 4px 20px hsl(var(--primary) / 0.2)",
-                  borderColor: "hsl(var(--primary) / 0.4)" 
+                  boxShadow: "0 4px 25px rgba(230, 57, 70, 0.35)",
+                  borderColor: "rgba(230, 57, 70, 0.5)" 
                 }}
               >
-                <span className="text-sm font-medium text-foreground/90 flex items-center gap-2" style={{ fontFamily: 'Arial, sans-serif' }}>
-                  <span className="text-primary text-xs">{tag.icon}</span>
+                <span className="text-sm font-medium text-white/90 flex items-center gap-2" style={{ fontFamily: 'Arial, sans-serif' }}>
+                  <span className="text-[#E63946] text-xs">{tag.icon}</span>
                   {tag.text}
                 </span>
               </motion.div>
@@ -713,12 +716,12 @@ const Landing = () => {
             transition={{ duration: 1, delay: 2.2 }}
           >
             <motion.div 
-              className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full mx-auto flex justify-center relative overflow-hidden"
+              className="w-6 h-10 border-2 border-white/30 rounded-full mx-auto flex justify-center relative overflow-hidden"
               animate={{ y: [0, 8, 0] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             >
               <motion.div 
-                className="w-1.5 h-3 bg-primary rounded-full mt-2"
+                className="w-1.5 h-3 bg-[#E63946] rounded-full mt-2"
                 animate={{ 
                   y: [0, 12, 0],
                   opacity: [1, 0, 1],
@@ -730,9 +733,9 @@ const Landing = () => {
         </motion.div>
       </section>
 
-      {/* Features Section */}
-      <section className="min-h-screen flex items-center py-24 px-6 relative noise-bg">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-card/30 to-background" />
+      {/* Features Section - Dark Theme */}
+      <section className="min-h-screen flex items-center py-24 px-6 relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#111111] to-[#0a0a0a]" />
         
         <div className="max-w-6xl mx-auto w-full relative z-10">
           <motion.div 
@@ -743,7 +746,7 @@ const Landing = () => {
             variants={fadeInUp}
           >
             <motion.h2 
-              className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4"
+              className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4"
               style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
               whileInView={{ 
                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
@@ -752,7 +755,7 @@ const Landing = () => {
             >
               Diferente por diseño
             </motion.h2>
-            <p className="text-base text-muted-foreground max-w-xl mx-auto" style={{ fontFamily: 'Arial, sans-serif' }}>
+            <p className="text-base text-white/60 max-w-xl mx-auto" style={{ fontFamily: 'Arial, sans-serif' }}>
               No es otra app de citas. Es un espacio donde las conexiones nacen de forma natural.
             </p>
           </motion.div>
@@ -768,23 +771,23 @@ const Landing = () => {
               <motion.div 
                 key={index} 
                 variants={scaleIn} 
-                className="group p-8 rounded-3xl bg-card border border-border/30 hover:border-primary/40 transition-all duration-500 relative overflow-hidden"
+                className="group p-8 rounded-3xl bg-[#161616] border border-white/10 hover:border-[#E63946]/50 transition-all duration-500 relative overflow-hidden"
                 whileHover={{ 
                   y: -10,
-                  boxShadow: "0 20px 60px -20px hsl(var(--primary) / 0.3)",
+                  boxShadow: "0 20px 60px -20px rgba(230, 57, 70, 0.4)",
                 }}
               >
                 {/* Hover gradient overlay */}
                 <motion.div 
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{
-                    background: "radial-gradient(circle at 50% 0%, hsl(var(--primary) / 0.1) 0%, transparent 60%)",
+                    background: "radial-gradient(circle at 50% 0%, rgba(230, 57, 70, 0.15) 0%, transparent 60%)",
                   }}
                 />
                 
                 <div className="mb-6 relative">
                   <motion.div 
-                    className="absolute inset-0 bg-primary/20 blur-xl rounded-full"
+                    className="absolute inset-0 bg-[#E63946]/30 blur-xl rounded-full"
                     initial={{ scale: 0 }}
                     whileHover={{ scale: 1.5 }}
                     transition={{ duration: 0.5 }}
@@ -793,23 +796,23 @@ const Landing = () => {
                     whileHover={{ rotate: 360, scale: 1.2 }}
                     transition={{ duration: 0.5 }}
                   >
-                    <feature.icon className="relative w-10 h-10 text-primary" />
+                    <feature.icon className="relative w-10 h-10 text-[#E63946]" />
                   </motion.div>
                 </div>
-                <h3 className="text-lg font-bold text-card-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>{feature.title}</h3>
-                <p className="text-card-foreground text-sm leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>{feature.description}</p>
+                <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>{feature.title}</h3>
+                <p className="text-white/70 text-sm leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>{feature.description}</p>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* How it works Section */}
-      <section className="min-h-screen flex items-center py-24 px-6 relative overflow-hidden">
+      {/* How it works Section - Dark Theme */}
+      <section className="min-h-screen flex items-center py-24 px-6 relative overflow-hidden bg-[#0a0a0a]">
         <motion.div 
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
           style={{
-            background: "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(230, 57, 70, 0.2) 0%, transparent 70%)",
           }}
           animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
@@ -823,10 +826,10 @@ const Landing = () => {
             viewport={{ once: true, margin: "-100px" }} 
             variants={fadeInUp}
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
               Así funciona
             </h2>
-            <p className="text-base text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+            <p className="text-base text-white/60" style={{ fontFamily: 'Arial, sans-serif' }}>
               Simple. Sin complicaciones. Sin drama.
             </p>
           </motion.div>
@@ -848,7 +851,7 @@ const Landing = () => {
               >
                 <div className="flex-shrink-0 relative">
                   <motion.span 
-                    className="text-5xl md:text-6xl font-bold text-primary/20 group-hover:text-primary/50 transition-colors duration-500"
+                    className="text-5xl md:text-6xl font-bold text-[#E63946]/25 group-hover:text-[#E63946]/60 transition-colors duration-500"
                     style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
                     whileHover={{ scale: 1.1 }}
                   >
@@ -860,14 +863,14 @@ const Landing = () => {
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 + index * 0.2 }}
                   >
-                    <item.icon className="w-6 h-6 text-primary" />
+                    <item.icon className="w-6 h-6 text-[#E63946]" />
                   </motion.div>
                 </div>
                 <div className="pt-4">
-                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                     {item.title}
                   </h3>
-                  <p className="text-base text-muted-foreground leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>
+                  <p className="text-base text-white/60 leading-relaxed" style={{ fontFamily: 'Arial, sans-serif' }}>
                     {item.description}
                   </p>
                 </div>
@@ -877,16 +880,16 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Philosophy Section */}
-      <section className="min-h-screen flex items-center py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
+      {/* Philosophy Section - Dark Theme */}
+      <section className="min-h-screen flex items-center py-24 px-6 relative overflow-hidden bg-[#111111]">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#111111] to-[#0a0a0a]" />
         
         {/* Animated background quotes */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-5">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
           {[...Array(3)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute text-[200px] font-bold text-primary whitespace-nowrap"
+              className="absolute text-[200px] font-bold text-[#E63946] whitespace-nowrap"
               style={{ top: `${20 + i * 30}%` }}
               animate={{ x: ["-100%", "100%"] }}
               transition={{ 
@@ -921,14 +924,14 @@ const Landing = () => {
                 transition={{ delay: index * 0.2 }}
               >
                 <motion.div
-                  className="absolute -left-8 top-0 text-primary/20"
+                  className="absolute -left-8 top-0 text-[#E63946]/30"
                   initial={{ opacity: 0, scale: 0 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 + index * 0.2 }}
                 >
                   <Star className="w-8 h-8 fill-current" />
                 </motion.div>
-                <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+                <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
                   "{quote}"
                 </p>
               </motion.div>
@@ -943,13 +946,13 @@ const Landing = () => {
       {/* FAQ Section */}
       <FAQSection />
 
-      {/* Final CTA Section */}
-      <section className="min-h-[70vh] flex items-center justify-center py-24 px-6 relative overflow-hidden">
+      {/* Final CTA Section - Dark Theme */}
+      <section className="min-h-[70vh] flex items-center justify-center py-24 px-6 relative overflow-hidden bg-[#0a0a0a]">
         <div className="absolute inset-0">
           <motion.div 
             className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full blur-3xl"
             style={{
-              background: "radial-gradient(circle, hsl(var(--primary) / 0.4) 0%, hsl(var(--primary) / 0.1) 50%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(230, 57, 70, 0.5) 0%, rgba(230, 57, 70, 0.15) 50%, transparent 70%)",
             }}
             animate={{ 
               scale: [1, 1.2, 1],
@@ -971,11 +974,11 @@ const Landing = () => {
             whileHover={{ scale: 1.1, rotate: [0, -10, 10, 0] }}
             transition={{ duration: 0.5 }}
           >
-            <Heart className="w-20 h-20 text-primary fill-primary mx-auto animate-heartbeat drop-shadow-[0_0_40px_hsl(var(--primary)/0.6)]" />
+            <Heart className="w-20 h-20 text-[#E63946] fill-[#E63946] mx-auto animate-heartbeat drop-shadow-[0_0_50px_rgba(230,57,70,0.7)]" />
           </motion.div>
           
           <motion.h2 
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground" 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-white" 
             style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
             variants={fadeInUp}
           >
@@ -983,7 +986,7 @@ const Landing = () => {
           </motion.h2>
           
           <motion.p 
-            className="text-base text-muted-foreground" 
+            className="text-base text-white/60" 
             style={{ fontFamily: 'Arial, sans-serif' }}
             variants={fadeInUp}
           >
@@ -999,14 +1002,14 @@ const Landing = () => {
                 variant="kiki" 
                 size="xl" 
                 onClick={() => navigate("/auth")} 
-                className="relative group overflow-hidden shadow-[0_0_50px_hsl(var(--primary)/0.4)]"
+                className="relative group overflow-hidden shadow-[0_0_60px_rgba(230,57,70,0.5)] hover:shadow-[0_0_80px_rgba(230,57,70,0.7)]"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <Zap className="w-5 h-5" />
                   Unirme a KIKI
                 </span>
                 <motion.div 
-                  className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary"
+                  className="absolute inset-0 bg-gradient-to-r from-[#E63946] via-[#FF6B6B] to-[#E63946]"
                   style={{ backgroundSize: "200% 100%" }}
                   animate={{ backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -1020,7 +1023,7 @@ const Landing = () => {
         <motion.div 
           className="absolute bottom-0 left-0 right-0 h-px"
           style={{
-            background: "linear-gradient(to right, transparent, hsl(var(--primary) / 0.5), transparent)",
+            background: "linear-gradient(to right, transparent, rgba(230, 57, 70, 0.6), transparent)",
           }}
           animate={{ 
             opacity: [0.3, 1, 0.3],
