@@ -440,6 +440,38 @@ export const FullScreenPresenceList = memo(({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isMobile, allProfiles, handleSwipeLeft, handleSwipeRight, handleSwipeUp, handleSwipeDown, handleUndo, handleRewind, showUndo, lastAction]);
 
+  // Show empty state when all profiles have been viewed
+  if (allProfiles.length === 0 && totalProfiles > 0) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="h-[calc(100vh-200px)] flex flex-col items-center justify-center px-6 text-center"
+      >
+        <div className="relative w-24 h-24 mb-6">
+          <div className="w-full h-full rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center animate-pulse">
+            <Radio className="w-10 h-10 text-primary" />
+          </div>
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-primary/30"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        </div>
+        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+          ¡Has visto todos los perfiles!
+        </h3>
+        <p className="font-body text-sm text-muted-foreground max-w-[280px] mx-auto leading-relaxed mb-4">
+          Vuelve más tarde para descubrir gente nueva o ajusta tus filtros para ampliar tu búsqueda.
+        </p>
+        <p className="text-xs text-muted-foreground/70">
+          {viewedCount} {viewedCount === 1 ? 'perfil visto' : 'perfiles vistos'}
+        </p>
+      </motion.div>
+    );
+  }
+
   if (profiles.length === 0) return null;
 
   return (
