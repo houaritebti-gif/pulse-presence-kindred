@@ -598,7 +598,7 @@ const OfflineQueueManager = () => {
                     </ToggleGroupItem>
                     <ToggleGroupItem value="spark" className="text-xs px-2 h-7">
                       <MessageSquare className="w-3 h-3 mr-1" />
-                      Spark
+                      Chispa
                     </ToggleGroupItem>
                     <ToggleGroupItem value="quedada" className="text-xs px-2 h-7">
                       <Calendar className="w-3 h-3 mr-1" />
