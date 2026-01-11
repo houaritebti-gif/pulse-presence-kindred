@@ -25,7 +25,7 @@ type FilterType = "all" | "spark" | "message" | "quedada";
 
 const FILTERS: { key: FilterType; label: string; icon: React.ReactNode }[] = [
   { key: "all", label: "Todas", icon: <Bell className="w-4 h-4" /> },
-  { key: "spark", label: "Sparks", icon: <Sparkles className="w-4 h-4" /> },
+  { key: "spark", label: "Chispas", icon: <Sparkles className="w-4 h-4" /> },
   { key: "message", label: "Mensajes", icon: <MessageCircle className="w-4 h-4" /> },
   { key: "quedada", label: "Quedadas", icon: <Calendar className="w-4 h-4" /> },
 ];
