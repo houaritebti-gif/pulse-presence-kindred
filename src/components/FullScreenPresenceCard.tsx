@@ -1067,32 +1067,58 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
 
       {/* Profile view confirmation modal */}
       <Dialog open={showProfileConfirmModal} onOpenChange={setShowProfileConfirmModal}>
-        <DialogContent className="max-w-xs">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <User className="w-5 h-5 text-primary" />
-              Ver perfil
-            </DialogTitle>
-            <DialogDescription>
-              ¿Quieres ver el perfil completo de {presence.profile?.name || "esta persona"}?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex flex-row gap-2 sm:flex-row">
-            <Button
-              variant="ghost"
-              onClick={() => setShowProfileConfirmModal(false)}
-              className="flex-1"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={confirmViewProfile}
-              className="flex-1"
-            >
-              <User className="w-4 h-4 mr-2" />
-              Ver perfil
-            </Button>
-          </DialogFooter>
+        <DialogContent className="max-w-xs overflow-hidden">
+          <AnimatePresence>
+            {showProfileConfirmModal && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 350, 
+                  damping: 25 
+                }}
+              >
+                <DialogHeader>
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.05 }}
+                    className="flex items-center gap-2"
+                  >
+                    <User className="w-5 h-5 text-primary" />
+                    <DialogTitle>Ver perfil</DialogTitle>
+                  </motion.div>
+                  <DialogDescription>
+                    ¿Quieres ver el perfil completo de {presence.profile?.name || "esta persona"}?
+                  </DialogDescription>
+                </DialogHeader>
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <DialogFooter className="flex flex-row gap-2 sm:flex-row pt-4">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowProfileConfirmModal(false)}
+                      className="flex-1"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={confirmViewProfile}
+                      className="flex-1"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      Ver perfil
+                    </Button>
+                  </DialogFooter>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </DialogContent>
       </Dialog>
     </>

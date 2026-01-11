@@ -1,5 +1,5 @@
 import { memo, useRef, useState, useCallback, useEffect } from "react";
-import { Radio } from "lucide-react";
+import { Radio, RotateCcw } from "lucide-react";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import SwipeTutorial from "./SwipeTutorial";
 import PresenceActionButtons from "./PresenceActionButtons";
@@ -446,12 +446,34 @@ export const FullScreenPresenceList = memo(({
       ref={containerRef}
       className="h-[calc(100vh-200px)] flex flex-col"
     >
-      {/* Profile counter - now shows remaining */}
-      <div className="fixed top-24 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <div className="px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border border-border">
-          <span className="text-sm font-medium text-foreground">
-            {remainingCount} {remainingCount === 1 ? 'perfil restante' : 'perfiles restantes'}
-          </span>
+      {/* Top badges row: Profile counter + Rewind counter */}
+      <div className="fixed top-24 left-0 right-0 z-30 pointer-events-none px-4">
+        <div className="flex items-center justify-between max-w-md mx-auto">
+          {/* Profile counter */}
+          <div className="px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border border-border">
+            <span className="text-sm font-medium text-foreground">
+              {remainingCount} {remainingCount === 1 ? 'perfil' : 'perfiles'}
+            </span>
+          </div>
+
+          {/* Rewind counter badge */}
+          <motion.div 
+            className="px-3 py-1.5 rounded-full bg-background/80 backdrop-blur-md shadow-lg border border-border flex items-center gap-1.5"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-sm font-medium text-foreground">
+              {isRewindUnlimited ? (
+                <span className="text-amber-500">∞</span>
+              ) : (
+                <span className={rewindRemaining === 0 ? "text-muted-foreground" : ""}>
+                  {rewindRemaining}
+                </span>
+              )}
+            </span>
+          </motion.div>
         </div>
       </div>
 
