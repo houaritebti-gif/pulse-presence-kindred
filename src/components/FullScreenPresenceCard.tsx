@@ -647,20 +647,66 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
               </div>
             )}
 
-            {/* Activity status */}
-            <div className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full backdrop-blur-md",
-              "bg-black/40"
-            )}>
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                activityStatus.color,
-                activityStatus.isActive && "animate-pulse shadow-sm shadow-green-500/50"
-              )} />
-              <span className="text-xs font-medium text-white">
-                {activityStatus.label}
-              </span>
-            </div>
+            {/* Activity status with tooltip */}
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full backdrop-blur-md cursor-help",
+                    "bg-black/40"
+                  )}>
+                    <div className={cn(
+                      "w-2 h-2 rounded-full",
+                      activityStatus.color,
+                      activityStatus.isActive && "animate-pulse shadow-sm shadow-green-500/50"
+                    )} />
+                    <span className="text-xs font-medium text-white">
+                      {activityStatus.label}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[240px] p-3">
+                  {canSeeRealtimePresence ? (
+                    <div className="space-y-1.5">
+                      <p className="font-medium text-sm flex items-center gap-1.5">
+                        {activityStatus.isActive ? (
+                          <>
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            Conectado ahora
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-2 h-2 rounded-full bg-muted-foreground/60" />
+                            Última conexión
+                          </>
+                        )}
+                      </p>
+                      {presence.last_pulse && (
+                        <p className="text-xs text-muted-foreground">
+                          {activityStatus.isActive 
+                            ? "Está navegando en KIKI ahora mismo"
+                            : `${activityStatus.label}`
+                          }
+                        </p>
+                      )}
+                      <p className="text-xs text-primary/80 mt-1">
+                        ✨ Ventaja Premium activa
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <p className="font-medium text-sm">Estado de actividad</p>
+                      <p className="text-xs text-muted-foreground">
+                        Suscríbete a Plus o Premium para ver la actividad en tiempo real
+                      </p>
+                      <p className="text-xs text-primary/80 mt-1 flex items-center gap-1">
+                        👑 Desbloquea con Plus
+                      </p>
+                    </div>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {/* Right side - menu and compatibility */}
