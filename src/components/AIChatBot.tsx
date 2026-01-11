@@ -12,6 +12,7 @@ import { useCreateQuedada, useDeleteQuedada } from "@/hooks/useQuedadas";
 import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useChatInput } from "@/contexts/ChatInputContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const SUGGESTED_QUESTIONS = [
   "¿Cuáles son mis quedadas?",
@@ -501,6 +502,7 @@ export const AIChatBot = () => {
   const deleteQuedada = useDeleteQuedada();
   const { canAccessChatbot, canCreateQuedadas, canDeleteQuedadas, tier } = useSubscription();
   const { isTypingInChat } = useChatInput();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -622,13 +624,17 @@ export const AIChatBot = () => {
 
   return (
     <>
-      {/* Floating Button - smooth fade animation when hiding/showing */}
+      {/* Floating Button - compact on mobile, smooth fade animation */}
       <Button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full shadow-lg",
+          "fixed z-50 rounded-full shadow-lg",
           "bg-primary hover:bg-primary/90 text-primary-foreground",
           "transition-all duration-300 ease-out",
+          // Compact mode on mobile: smaller size, closer to edge
+          isMobile 
+            ? "bottom-[4.5rem] right-3 h-11 w-11" 
+            : "bottom-20 right-4 h-14 w-14",
           shouldHideButton 
             ? "opacity-0 scale-75 pointer-events-none" 
             : "opacity-100 scale-100 hover:scale-110"
@@ -638,11 +644,11 @@ export const AIChatBot = () => {
         tabIndex={shouldHideButton ? -1 : 0}
       >
         {canAccessChatbot ? (
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
         ) : (
           <div className="relative">
-            <MessageCircle className="h-6 w-6" />
-            <Lock className="h-3 w-3 absolute -bottom-1 -right-1" />
+            <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
+            <Lock className={cn("absolute -bottom-1 -right-1", isMobile ? "h-2.5 w-2.5" : "h-3 w-3")} />
           </div>
         )}
       </Button>
