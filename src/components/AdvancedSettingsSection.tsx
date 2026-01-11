@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock, Database, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ReduceMotionHelpModal } from "@/components/ReduceMotionHelpModal";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { useAdvancedSettings, Theme, TextSize, SparkleStyle } from "@/hooks/useA
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { clearAllCachedProfiles, getCacheStats } from "@/utils/profileCacheDB";
 import { 
   isThemeSoundEnabled, 
   setThemeSoundEnabled, 
@@ -180,6 +181,67 @@ const ReduceMotionSetting = ({
         {/* Help modal */}
         <ReduceMotionHelpModal />
       </div>
+    </div>
+  );
+};
+
+// Profile Cache Settings Component
+const ProfileCacheSettings = () => {
+  const [cacheCount, setCacheCount] = useState<number>(0);
+  const [isClearing, setIsClearing] = useState(false);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const stats = await getCacheStats();
+        setCacheCount(stats.validCount);
+      } catch (e) {
+        console.error('[ProfileCache] Error loading stats:', e);
+      }
+    };
+    loadStats();
+  }, []);
+
+  const handleClearCache = async () => {
+    setIsClearing(true);
+    try {
+      await clearAllCachedProfiles();
+      setCacheCount(0);
+      toast.success("Caché de perfiles limpiada", {
+        description: "Los perfiles se cargarán desde el servidor"
+      });
+    } catch (error) {
+      console.error('[ProfileCache] Error clearing cache:', error);
+      toast.error("Error al limpiar la caché");
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+      <div className="flex items-center gap-3">
+        <Database className="w-5 h-5 text-muted-foreground" />
+        <div>
+          <span className="font-body text-sm text-foreground block">
+            Caché de perfiles
+          </span>
+          <span className="font-body text-xs text-muted-foreground">
+            {cacheCount > 0 
+              ? `${cacheCount} perfiles guardados offline`
+              : "Sin perfiles en caché"
+            }
+          </span>
+        </div>
+      </div>
+      <button
+        onClick={handleClearCache}
+        disabled={isClearing || cacheCount === 0}
+        className="px-3 py-1.5 text-xs font-medium bg-muted hover:bg-muted/80 text-foreground rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+      >
+        <Trash2 className="w-3 h-3" />
+        {isClearing ? "Limpiando..." : "Limpiar"}
+      </button>
     </div>
   );
 };
@@ -974,6 +1036,9 @@ const AdvancedSettingsSection = () => {
               Resetear
             </button>
           </div>
+
+          {/* Clear Profile Cache */}
+          <ProfileCacheSettings />
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star } from "lucide-react";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star, CloudOff } from "lucide-react";
 import { KikiLogo } from "@/components/KikiLogo";
 import ErrorState from "@/components/ErrorState";
 import PublicProfileSkeleton from "@/components/PublicProfileSkeleton";
@@ -230,6 +230,21 @@ const PublicProfile = () => {
             {(profile as any).email_verified && <VerifiedBadge type="email" size="sm" />}
             {(profile as any).identity_verified && <VerifiedBadge type="identity" size="sm" />}
             {subscriptionTier === 'premium' && <PremiumBadge size="md" />}
+            {/* Offline cache indicator */}
+            {publicProfile?.fromCache && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted text-muted-foreground animate-fade-in">
+                      <CloudOff className="w-3 h-3" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs">Datos en caché offline</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
           
           {/* Compact info row: vibe + city + organizer */}
