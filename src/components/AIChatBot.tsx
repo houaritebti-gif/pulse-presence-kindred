@@ -618,18 +618,24 @@ export const AIChatBot = () => {
     }
   };
 
+  const shouldHideButton = isOpen || isTypingInChat;
+
   return (
     <>
-      {/* Floating Button - hidden when user is typing in chat */}
+      {/* Floating Button - smooth fade animation when hiding/showing */}
       <Button
         onClick={() => setIsOpen(true)}
         className={cn(
           "fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full shadow-lg",
           "bg-primary hover:bg-primary/90 text-primary-foreground",
-          "transition-all duration-300 hover:scale-110",
-          (isOpen || isTypingInChat) && "hidden"
+          "transition-all duration-300 ease-out",
+          shouldHideButton 
+            ? "opacity-0 scale-75 pointer-events-none" 
+            : "opacity-100 scale-100 hover:scale-110"
         )}
         size="icon"
+        aria-hidden={shouldHideButton}
+        tabIndex={shouldHideButton ? -1 : 0}
       >
         {canAccessChatbot ? (
           <MessageCircle className="h-6 w-6" />
