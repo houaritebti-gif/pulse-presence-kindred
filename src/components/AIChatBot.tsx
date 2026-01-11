@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,6 +13,9 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useChatInput } from "@/contexts/ChatInputContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { motion, useDragControls, PanInfo } from "framer-motion";
+
+const POSITION_STORAGE_KEY = "ai-chatbot-position";
 
 const SUGGESTED_QUESTIONS = [
   "¿Cuáles son mis quedadas?",
@@ -493,9 +496,20 @@ const SubscriptionPaywall = ({ onClose }: { onClose: () => void }) => {
 export const AIChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(() => {
+    try {
+      const stored = localStorage.getItem(POSITION_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  
   const { messages, isLoading, error, sendMessage, clearChat, unreadCount, markAsRead, incrementUnread } = useAIChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const createQuedada = useCreateQuedada();
@@ -504,6 +518,79 @@ export const AIChatBot = () => {
   const { isTypingInChat } = useChatInput();
   const isMobile = useIsMobile();
   const prevMessagesLength = useRef(messages.length);
+  const dragControls = useDragControls();
+
+  // Get default position based on device
+  const getDefaultPosition = useCallback(() => {
+    const buttonSize = isMobile ? 44 : 56;
+    return {
+      x: window.innerWidth - buttonSize - (isMobile ? 12 : 16),
+      y: window.innerHeight - buttonSize - (isMobile ? 72 : 80),
+    };
+  }, [isMobile]);
+
+  // Initialize position on mount
+  useEffect(() => {
+    if (!position) {
+      setPosition(getDefaultPosition());
+    }
+  }, [position, getDefaultPosition]);
+
+  // Handle window resize - keep button in bounds
+  useEffect(() => {
+    const handleResize = () => {
+      if (position) {
+        const buttonSize = isMobile ? 44 : 56;
+        const maxX = window.innerWidth - buttonSize - 8;
+        const maxY = window.innerHeight - buttonSize - 8;
+        const minX = 8;
+        const minY = 8;
+        
+        setPosition({
+          x: Math.min(Math.max(position.x, minX), maxX),
+          y: Math.min(Math.max(position.y, minY), maxY),
+        });
+      }
+    };
+    
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [position, isMobile]);
+
+  const handleDragEnd = useCallback((event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (!position) return;
+    
+    const buttonSize = isMobile ? 44 : 56;
+    const newX = position.x + info.offset.x;
+    const newY = position.y + info.offset.y;
+    
+    // Clamp to screen bounds
+    const maxX = window.innerWidth - buttonSize - 8;
+    const maxY = window.innerHeight - buttonSize - 8;
+    const minX = 8;
+    const minY = 8;
+    
+    const clampedPosition = {
+      x: Math.min(Math.max(newX, minX), maxX),
+      y: Math.min(Math.max(newY, minY), maxY),
+    };
+    
+    setPosition(clampedPosition);
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(clampedPosition));
+    } catch {}
+    
+    // Small delay to prevent click after drag
+    setTimeout(() => setIsDragging(false), 100);
+  }, [position, isMobile]);
+
+  const handleButtonClick = useCallback(() => {
+    if (!isDragging) {
+      setIsOpen(true);
+    }
+  }, [isDragging]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -640,50 +727,78 @@ export const AIChatBot = () => {
   };
 
   const shouldHideButton = isOpen || isTypingInChat;
+  const buttonSize = isMobile ? 44 : 56;
 
   return (
     <>
-      {/* Floating Button - compact on mobile, smooth fade animation */}
-      <Button
-        onClick={() => setIsOpen(true)}
-        className={cn(
-          "fixed z-50 rounded-full shadow-lg",
-          "bg-primary hover:bg-primary/90 text-primary-foreground",
-          "transition-all duration-300 ease-out",
-          // Compact mode on mobile: smaller size, closer to edge
-          isMobile 
-            ? "bottom-[4.5rem] right-3 h-11 w-11" 
-            : "bottom-20 right-4 h-14 w-14",
-          shouldHideButton 
-            ? "opacity-0 scale-75 pointer-events-none" 
-            : "opacity-100 scale-100 hover:scale-110"
-        )}
-        size="icon"
-        aria-hidden={shouldHideButton}
-        tabIndex={shouldHideButton ? -1 : 0}
-      >
-        {canAccessChatbot ? (
-          <div className="relative">
-            <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
-            {/* Unread badge */}
-            {unreadCount > 0 && (
-              <span className={cn(
-                "absolute flex items-center justify-center rounded-full bg-destructive text-destructive-foreground font-bold animate-in zoom-in-50 duration-200",
-                isMobile 
-                  ? "-top-1.5 -right-1.5 h-4 w-4 text-[9px]" 
-                  : "-top-2 -right-2 h-5 w-5 text-[10px]"
-              )}>
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </div>
-        ) : (
-          <div className="relative">
-            <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
-            <Lock className={cn("absolute -bottom-1 -right-1", isMobile ? "h-2.5 w-2.5" : "h-3 w-3")} />
-          </div>
-        )}
-      </Button>
+      {/* Floating Draggable Button */}
+      {position && (
+        <motion.button
+          ref={buttonRef}
+          drag
+          dragMomentum={false}
+          dragElastic={0.1}
+          onDragStart={() => setIsDragging(true)}
+          onDragEnd={handleDragEnd}
+          onClick={handleButtonClick}
+          initial={false}
+          animate={{
+            x: 0,
+            y: 0,
+            opacity: shouldHideButton ? 0 : 1,
+            scale: shouldHideButton ? 0.75 : (isDragging ? 1.1 : 1),
+          }}
+          whileHover={!isDragging ? { scale: 1.1 } : undefined}
+          whileTap={!isDragging ? { scale: 0.95 } : undefined}
+          transition={{ 
+            type: "spring", 
+            stiffness: 300, 
+            damping: 25,
+            opacity: { duration: 0.2 }
+          }}
+          style={{
+            position: "fixed",
+            left: position.x,
+            top: position.y,
+            width: buttonSize,
+            height: buttonSize,
+            zIndex: 50,
+            pointerEvents: shouldHideButton ? "none" : "auto",
+            touchAction: "none",
+          }}
+          className={cn(
+            "flex items-center justify-center rounded-full shadow-lg cursor-grab active:cursor-grabbing",
+            "bg-primary hover:bg-primary/90 text-primary-foreground",
+            "border-2 border-transparent",
+            isDragging && "border-primary-foreground/30 shadow-2xl"
+          )}
+          aria-hidden={shouldHideButton}
+          tabIndex={shouldHideButton ? -1 : 0}
+          aria-label="Abrir asistente IA"
+        >
+          {canAccessChatbot ? (
+            <div className="relative">
+              <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
+              {/* Unread badge */}
+              {unreadCount > 0 && (
+                <span className={cn(
+                  "absolute flex items-center justify-center rounded-full bg-destructive text-destructive-foreground font-bold animate-in zoom-in-50 duration-200",
+                  isMobile 
+                    ? "-top-1.5 -right-1.5 h-4 w-4 text-[9px]" 
+                    : "-top-2 -right-2 h-5 w-5 text-[10px]"
+                )}>
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="relative">
+              <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
+              <Lock className={cn("absolute -bottom-1 -right-1", isMobile ? "h-2.5 w-2.5" : "h-3 w-3")} />
+            </div>
+          )}
+        </motion.button>
+      )}
 
       {/* Chat Window */}
       {isOpen && (
