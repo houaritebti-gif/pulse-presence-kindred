@@ -493,7 +493,7 @@ const SubscriptionPaywall = ({ onClose }: { onClose: () => void }) => {
 export const AIChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
-  const { messages, isLoading, error, sendMessage, clearChat } = useAIChat();
+  const { messages, isLoading, error, sendMessage, clearChat, unreadCount, markAsRead, incrementUnread } = useAIChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -503,12 +503,31 @@ export const AIChatBot = () => {
   const { canAccessChatbot, canCreateQuedadas, canDeleteQuedadas, tier } = useSubscription();
   const { isTypingInChat } = useChatInput();
   const isMobile = useIsMobile();
+  const prevMessagesLength = useRef(messages.length);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Track new assistant messages when chat is closed
+  useEffect(() => {
+    if (!isOpen && messages.length > prevMessagesLength.current) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage?.role === "assistant" && lastMessage.content) {
+        incrementUnread();
+      }
+    }
+    prevMessagesLength.current = messages.length;
+  }, [messages, isOpen, incrementUnread]);
+
+  // Mark as read when opening chat
+  useEffect(() => {
+    if (isOpen && unreadCount > 0) {
+      markAsRead();
+    }
+  }, [isOpen, unreadCount, markAsRead]);
 
   useEffect(() => {
     if (isOpen && inputRef.current && canAccessChatbot) {
@@ -644,7 +663,20 @@ export const AIChatBot = () => {
         tabIndex={shouldHideButton ? -1 : 0}
       >
         {canAccessChatbot ? (
-          <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
+          <div className="relative">
+            <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
+            {/* Unread badge */}
+            {unreadCount > 0 && (
+              <span className={cn(
+                "absolute flex items-center justify-center rounded-full bg-destructive text-destructive-foreground font-bold animate-in zoom-in-50 duration-200",
+                isMobile 
+                  ? "-top-1.5 -right-1.5 h-4 w-4 text-[9px]" 
+                  : "-top-2 -right-2 h-5 w-5 text-[10px]"
+              )}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </div>
         ) : (
           <div className="relative">
             <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
