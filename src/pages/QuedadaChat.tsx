@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, Loader2, EyeOff, UserX, X } from "lucide-react";
+import { ArrowLeft, Send, Calendar, Users, MapPin, Clock, Sparkles, Loader2, EyeOff, UserX, X, MoreVertical, Flag, BellOff, Bell } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuedada, useQuedadaMessages, useSendQuedadaMessage, useMarkQuedadaRead, useQuedadaAttendees, useExpelAttendee } from "@/hooks/useQuedadas";
@@ -26,6 +27,7 @@ import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import QuedadaAttendeeItem from "@/components/QuedadaAttendeeItem";
 import QuedadaMessageSender from "@/components/QuedadaMessageSender";
+import UserModerationModal from "@/components/UserModerationModal";
 
 import { useGroupTypingIndicator } from "@/hooks/useGroupTypingIndicator";
 import { useQuedadaReactions } from "@/hooks/useQuedadaReactions";
@@ -102,6 +104,8 @@ const QuedadaChat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [showAttendees, setShowAttendees] = useState(false);
+  const [showModerationModal, setShowModerationModal] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Get pending messages for this chat
@@ -411,19 +415,57 @@ const QuedadaChat = () => {
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
             <ThemeToggle />
-            <button 
-              onClick={() => setShowAttendees(true)}
-              className="flex items-center gap-1 text-muted-foreground hover:text-accent transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              aria-label="Ver asistentes"
-              title="Ver asistentes"
-            >
-              {quedada.private_attendees && !quedada.is_creator && !quedada.is_attending ? (
-                <EyeOff className="w-4 h-4" />
-              ) : (
-                <Users className="w-4 h-4" />
-              )}
-              <span className="font-body text-xs">{quedada.attendee_count}</span>
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button 
+                  className="text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  aria-label="Más opciones"
+                  title="Más opciones"
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-popover border border-border shadow-lg">
+                <DropdownMenuItem
+                  onClick={() => setShowAttendees(true)}
+                  className="gap-2"
+                >
+                  {quedada.private_attendees && !quedada.is_creator && !quedada.is_attending ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Users className="w-4 h-4" />
+                  )}
+                  Ver participantes ({quedada.attendee_count})
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setIsMuted(!isMuted);
+                    triggerHaptic('light');
+                  }}
+                  className="gap-2"
+                >
+                  {isMuted ? (
+                    <>
+                      <Bell className="w-4 h-4" />
+                      Activar notificaciones
+                    </>
+                  ) : (
+                    <>
+                      <BellOff className="w-4 h-4" />
+                      Silenciar
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setShowModerationModal(true)}
+                  className="gap-2 text-destructive focus:text-destructive"
+                >
+                  <Flag className="w-4 h-4" />
+                  Reportar quedada
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </motion.div>
         </header>
         
@@ -759,6 +801,16 @@ const QuedadaChat = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* Moderation Modal */}
+      {showModerationModal && quedada?.creator?.id && (
+        <UserModerationModal
+          profileId={quedada.creator.id}
+          profileName={quedada.creator.name || "Organizador"}
+          onClose={() => setShowModerationModal(false)}
+          initialMode="report"
+        />
       )}
 
       {/* Footer */}
