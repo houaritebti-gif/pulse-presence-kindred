@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star } from "lucide-react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star, Flame } from "lucide-react";
 import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from "framer-motion";
 import { ALL_GENDERS, VIBES, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
 import { firePerfectCompatibilityConfetti } from "@/utils/sparkConfetti";
+import { SuperSparkButton } from "@/components/SuperSparkButton";
 
 interface CompatibilityBreakdown {
   tribes: number;

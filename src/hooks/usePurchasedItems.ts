@@ -25,6 +25,8 @@ const ITEM_DURATIONS: Partial<Record<ShopItemKey, number>> = {
 const ITEM_QUANTITIES: Partial<Record<ShopItemKey, number>> = {
   ghost_message_1: 1,
   ghost_message_3: 3,
+  super_spark: 1,
+  super_spark_3: 3,
 };
 
 export function usePurchasedItems() {
@@ -204,5 +206,29 @@ export function useSecondChance() {
   return {
     availableSecondChances: getAvailableQuantity("second_chance"),
     useSecondChance: () => useItem("second_chance"),
+  };
+}
+
+// Hook for Super Spark availability
+export function useSuperSpark() {
+  const { getAvailableQuantity, useItem, recordPurchase, isRecording } = usePurchasedItems();
+  
+  const availableSuperSparks = getAvailableQuantity("super_spark") + getAvailableQuantity("super_spark_3");
+  
+  const useSuperSparkItem = async () => {
+    // Try to use from single sparks first, then packs
+    if (getAvailableQuantity("super_spark") > 0) {
+      return useItem("super_spark");
+    } else if (getAvailableQuantity("super_spark_3") > 0) {
+      return useItem("super_spark_3");
+    }
+    throw new Error("No hay super chispas disponibles");
+  };
+  
+  return {
+    availableSuperSparks,
+    useSuperSpark: useSuperSparkItem,
+    recordPurchase,
+    isRecording,
   };
 }
