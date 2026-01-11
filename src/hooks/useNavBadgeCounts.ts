@@ -7,6 +7,7 @@ export interface NavBadgeCounts {
   unreadQuedadas: number;
   unreadNotifications: number;
   unreadGhostMessages: number;
+  unreadSuperSparks: number;
   pendingConnections: number;
   totalAlerts: number;
 }
@@ -27,6 +28,7 @@ export const useNavBadgeCounts = () => {
           unreadQuedadas: 0,
           unreadNotifications: 0,
           unreadGhostMessages: 0,
+          unreadSuperSparks: 0,
           pendingConnections: 0,
           totalAlerts: 0,
         };
@@ -38,6 +40,7 @@ export const useNavBadgeCounts = () => {
         quedadaCountResult,
         notificationsResult,
         ghostMessagesResult,
+        superSparksResult,
         connectionRequestsResult,
       ] = await Promise.all([
         // 1. Spark chats with unread messages
@@ -56,7 +59,14 @@ export const useNavBadgeCounts = () => {
           .select("*", { count: "exact", head: true })
           .eq("to_profile_id", profile.id)
           .is("read_at", null),
-        // 5. Pending connection requests count
+        // 5. Unread SUPER SPARK messages count
+        supabase
+          .from("ghost_messages")
+          .select("*", { count: "exact", head: true })
+          .eq("to_profile_id", profile.id)
+          .eq("is_super_spark", true)
+          .is("read_at", null),
+        // 6. Pending connection requests count
         supabase
           .from("connection_requests")
           .select("*", { count: "exact", head: true })
@@ -68,6 +78,7 @@ export const useNavBadgeCounts = () => {
       const unreadQuedadas = quedadaCountResult;
       const unreadNotifications = notificationsResult.count || 0;
       const unreadGhostMessages = ghostMessagesResult.count || 0;
+      const unreadSuperSparks = superSparksResult.count || 0;
       const pendingConnections = connectionRequestsResult.count || 0;
 
       return {
@@ -75,6 +86,7 @@ export const useNavBadgeCounts = () => {
         unreadQuedadas,
         unreadNotifications,
         unreadGhostMessages,
+        unreadSuperSparks,
         pendingConnections,
         totalAlerts: unreadNotifications + unreadGhostMessages + pendingConnections,
       };

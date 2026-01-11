@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useReceivedGhostMessages } from "./useReceivedGhostMessages";
 import { fireSuperSparkReceived } from "@/utils/superSparkConfetti";
 import { triggerHaptic } from "@/utils/haptics";
+import { toast } from "sonner";
 
 const SUPER_SPARK_SEEN_KEY = "kiki_super_spark_seen_ids";
 
@@ -42,6 +43,19 @@ export const useSuperSparkWelcome = () => {
         // Fire the reception confetti!
         fireSuperSparkReceived();
         triggerHaptic("success");
+
+        // Show welcome toast with count
+        const count = newSuperSparks.length;
+        toast.success(
+          count === 1
+            ? "¡Tienes 1 Super Chispa nueva! ⚡"
+            : `¡Tienes ${count} Super Chispas nuevas! ⚡`,
+          {
+            description: "Alguien invirtió energía extra en contactarte 💜",
+            duration: 5000,
+            icon: "🔥",
+          }
+        );
 
         // Update seen IDs in localStorage
         const allSeenIds = [

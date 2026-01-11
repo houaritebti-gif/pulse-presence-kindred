@@ -192,6 +192,16 @@ export default {
           "0%": { transform: "scale(0)", opacity: "0.6" },
           "100%": { transform: "scale(1)", opacity: "0" },
         },
+        "super-spark-pulse": {
+          "0%, 100%": { 
+            filter: "drop-shadow(0 0 0 transparent)",
+            transform: "scale(1)"
+          },
+          "50%": { 
+            filter: "drop-shadow(0 0 8px hsl(270 70% 60%)) drop-shadow(0 0 12px hsl(220 80% 60%))",
+            transform: "scale(1.1)"
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -218,6 +228,7 @@ export default {
         "wiggle": "wiggle 0.3s ease-in-out",
         "shake": "shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97)",
         "ripple": "ripple 0.6s ease-out forwards",
+        "super-spark-pulse": "super-spark-pulse 1.5s ease-in-out infinite",
       },
       // Granular animation delays for staggered lists
       animationDelay: {
