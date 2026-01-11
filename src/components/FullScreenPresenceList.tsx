@@ -6,12 +6,17 @@ import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
+import { useSparkDetection } from "@/hooks/useSparkDetection";
+import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { fireSparkConfetti } from "@/utils/sparkConfetti";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface CompatibilityBreakdown {
   tribes: number;
@@ -46,7 +51,10 @@ export const FullScreenPresenceList = memo(({
   const { canSeeRealtimePresence } = useSubscription();
   const { data: myProfile } = useProfile();
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
+  const { checkForNewSpark } = useSparkDetection();
+  const { earnEnergy, canDoAction } = useSparkEnergy();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -106,9 +114,49 @@ export const FullScreenPresenceList = memo(({
           throw error;
         }
       } else {
-        toast.success("👻 Mensaje ghost enviado");
         refetchLimit();
         queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
+        
+        // Award energy for sending ghost message
+        if (canDoAction("send_ghost")) {
+          try {
+            await earnEnergy({ 
+              action: "send_ghost", 
+              description: "Ghost message enviado" 
+            });
+          } catch (e) {
+            console.log("[SparkEnergy] Could not award energy:", e);
+          }
+        }
+        
+        // Check for mutual spark
+        const hasNewSpark = await checkForNewSpark(presence.profile!.id);
+        
+        if (hasNewSpark) {
+          // 🔥 MUTUAL SPARK! Fire celebration!
+          fireSparkConfetti();
+          triggerHaptic('success');
+          
+          // Award mutual spark energy
+          try {
+            await earnEnergy({ 
+              action: "mutual_spark", 
+              description: "¡Chispa mutua!" 
+            });
+          } catch (e) {
+            console.log("[SparkEnergy] Could not award mutual spark energy:", e);
+          }
+          
+          toast.success("🔥 ¡Chispa mutua!", {
+            description: "¡Hay conexión! Ya pueden chatear.",
+            action: {
+              label: "Ver perfil",
+              onClick: () => navigate(`/user/${presence.profile!.id}`),
+            },
+          });
+        } else {
+          toast.success("👻 Mensaje ghost enviado");
+        }
       }
     } catch (error: any) {
       toast.error("Error al enviar: " + error.message);
@@ -116,7 +164,7 @@ export const FullScreenPresenceList = memo(({
 
     // Dismiss the card
     setDismissedIds(prev => new Set(prev).add(presence.id));
-  }, [myProfile?.id, limitData?.canSend, refetchLimit, queryClient]);
+  }, [myProfile?.id, limitData?.canSend, refetchLimit, queryClient, checkForNewSpark, earnEnergy, canDoAction, navigate]);
 
   if (profiles.length === 0) return null;
 
