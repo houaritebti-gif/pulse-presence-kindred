@@ -30,7 +30,7 @@
     --secondary-foreground: 0 0% 15%;
 
     --muted: 346 40% 94%;
-    --muted-foreground: 0 0% 40%;
+    --muted-foreground: 0 0% 30%; /* WCAG AA: 30% provides 7:1 contrast on white */
 
     --accent: 355 82% 56%;
     --accent-foreground: 0 0% 100%;
