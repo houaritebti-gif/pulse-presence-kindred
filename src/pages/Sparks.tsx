@@ -1,8 +1,9 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2, X } from "lucide-react";
+import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2, X, BellOff } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useSparkChats, useExtinguishSpark } from "@/hooks/useSparks";
+import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useListKeyboardNavigation } from "@/hooks/useListKeyboardNavigation";
@@ -16,14 +17,22 @@ import SparksListSkeleton from "@/components/SparksListSkeleton";
 import StateTransition from "@/components/StateTransition";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import SwipeableListItem from "@/components/SwipeableListItem";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 
 const Sparks = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { data: chats, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useSparkChats();
+  const { mutedChats } = useMutedSparkChats();
   const extinguishSpark = useExtinguishSpark();
   const { execute: executeUndoable, isPending: isUndoPending, pendingIds } = useUndoableAction();
+  
+  // Count muted chats that are in the current chat list
+  const mutedCount = useMemo(() => {
+    if (!chats || !mutedChats) return 0;
+    return chats.filter(chat => mutedChats.includes(chat.id)).length;
+  }, [chats, mutedChats]);
   
   // Track sparks being extinguished with exit animation
   const [exitingSparks, setExitingSparks] = useState<Set<string>>(new Set());
@@ -132,6 +141,24 @@ const Sparks = () => {
           <p className="text-base sm:text-lg text-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
             Conexiones mutuas. Conversaciones reales.
           </p>
+          {/* Muted indicator */}
+          {mutedCount > 0 && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-muted/50 text-muted-foreground">
+                    <BellOff className="w-3.5 h-3.5" />
+                    <span className="text-xs font-body">
+                      {mutedCount} silenciada{mutedCount > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Gestiona tus chats silenciados en tu perfil</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {/* Swipe hint */}
           <p className="text-xs sm:text-sm text-muted-foreground/60 mt-3" style={{ fontFamily: 'Arial, sans-serif' }}>
             Desliza hacia la izquierda para apagar

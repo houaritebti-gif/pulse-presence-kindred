@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,8 @@ import { SparkFlame } from "@/components/SparkFlame";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { AchievementsDisplay } from "@/components/AchievementsDisplay";
 import { useRipple } from "@/hooks/useRipple";
+import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
+import { useMutedQuedadas } from "@/hooks/useMutedQuedadas";
 
 // Spark Energy Card Component for Profile with ripple effect
 const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
@@ -1031,6 +1035,9 @@ const Profile = () => {
         {/* My Reports History Section */}
         <MyReportsHistorySection />
 
+        {/* Muted Chats Section */}
+        <MutedChatsSection />
+
         {/* Advanced Settings Section */}
         <AdvancedSettingsSection />
 
@@ -1526,6 +1533,200 @@ const MyReportsHistorySection = () => {
                 </div>
               );
             })
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Muted Chats/Quedadas Section Component
+const MutedChatsSection = () => {
+  const navigate = useNavigate();
+  const { mutedChats, unmuteChat } = useMutedSparkChats();
+  const { mutedQuedadas, unmuteQuedada } = useMutedQuedadas();
+  const [expanded, setExpanded] = useState(false);
+
+  // Fetch spark chat details for muted chats
+  const { data: sparkChatsDetails } = useQuery({
+    queryKey: ["muted-spark-chats-details", mutedChats],
+    queryFn: async () => {
+      if (mutedChats.length === 0) return [];
+      
+      const { data, error } = await supabase
+        .from("spark_chats")
+        .select(`
+          id,
+          profile_a:profiles!spark_chats_profile_a_id_fkey(id, name, avatar_url),
+          profile_b:profiles!spark_chats_profile_b_id_fkey(id, name, avatar_url)
+        `)
+        .in("id", mutedChats);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: mutedChats.length > 0,
+  });
+
+  // Fetch quedada details for muted quedadas
+  const { data: quedadasDetails } = useQuery({
+    queryKey: ["muted-quedadas-details", mutedQuedadas],
+    queryFn: async () => {
+      if (mutedQuedadas.length === 0) return [];
+      
+      const { data, error } = await supabase
+        .from("quedadas")
+        .select("id, title, event_date")
+        .in("id", mutedQuedadas);
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: mutedQuedadas.length > 0,
+  });
+
+  const totalMuted = mutedChats.length + mutedQuedadas.length;
+  const hasMuted = totalMuted > 0;
+
+  // Get current user profile to determine other profile in chat
+  const { data: currentProfile } = useProfile();
+
+  const getOtherProfile = (chat: any) => {
+    if (!currentProfile) return null;
+    const profileA = chat.profile_a as { id: string; name: string | null; avatar_url: string | null } | null;
+    const profileB = chat.profile_b as { id: string; name: string | null; avatar_url: string | null } | null;
+    
+    if (profileA?.id === currentProfile.id) return profileB;
+    return profileA;
+  };
+
+  return (
+    <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '525ms', animationFillMode: 'forwards' }}>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between mb-4"
+      >
+        <div className="flex items-center gap-2">
+          <BellOff className="w-5 h-5 text-muted-foreground" />
+          <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+            Silenciados
+          </h2>
+          {hasMuted && (
+            <span className="text-xs text-muted-foreground">
+              ({totalMuted})
+            </span>
+          )}
+        </div>
+        {expanded ? (
+          <ChevronUp className="w-5 h-5 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="space-y-4">
+          {!hasMuted ? (
+            <p className="text-sm text-muted-foreground font-body p-4 bg-secondary/50 rounded-xl">
+              No tienes chats ni quedadas silenciadas.
+            </p>
+          ) : (
+            <>
+              {/* Muted Spark Chats */}
+              {sparkChatsDetails && sparkChatsDetails.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground font-body flex items-center gap-1.5">
+                    <Flame className="w-3.5 h-3.5" />
+                    Chispas silenciadas
+                  </p>
+                  {sparkChatsDetails.map((chat) => {
+                    const otherProfile = getOtherProfile(chat);
+                    if (!otherProfile) return null;
+                    
+                    return (
+                      <div 
+                        key={chat.id} 
+                        className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl"
+                      >
+                        <button
+                          onClick={() => navigate(`/spark/${chat.id}`)}
+                          className="flex items-center gap-3 flex-1 text-left"
+                        >
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={otherProfile.avatar_url || undefined} />
+                            <AvatarFallback className="bg-muted text-muted-foreground text-sm">
+                              {otherProfile.name?.charAt(0)?.toUpperCase() || "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-body text-sm text-foreground">
+                              {otherProfile.name || "Sin nombre"}
+                            </p>
+                            <p className="font-body text-xs text-muted-foreground">
+                              Chispa
+                            </p>
+                          </div>
+                        </button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => unmuteChat.mutate(chat.id)}
+                          disabled={unmuteChat.isPending}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Bell className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Muted Quedadas */}
+              {quedadasDetails && quedadasDetails.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground font-body flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5" />
+                    Quedadas silenciadas
+                  </p>
+                  {quedadasDetails.map((quedada) => (
+                    <div 
+                      key={quedada.id} 
+                      className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl"
+                    >
+                      <button
+                        onClick={() => navigate(`/quedada/${quedada.id}`)}
+                        className="flex items-center gap-3 flex-1 text-left"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                          <Calendar className="w-5 h-5 text-accent" />
+                        </div>
+                        <div>
+                          <p className="font-body text-sm text-foreground">
+                            {quedada.title}
+                          </p>
+                          <p className="font-body text-xs text-muted-foreground">
+                            {new Date(quedada.event_date).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'short',
+                            })}
+                          </p>
+                        </div>
+                      </button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => unmuteQuedada.mutate(quedada.id)}
+                        disabled={unmuteQuedada.isPending}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Bell className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
