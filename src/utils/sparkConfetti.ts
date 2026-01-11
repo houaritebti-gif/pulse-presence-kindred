@@ -426,3 +426,108 @@ export const firePerfectCompatibilityConfetti = () => {
     });
   }, 350);
 };
+
+/**
+ * Fires a special hearts animation for perfect compatibility match (5/5).
+ * Uses pink and red hearts with romantic sparkles for maximum emotional impact.
+ */
+export const firePerfectMatchHearts = () => {
+  // Heart colors: romantic pinks, reds, and rose gold
+  const heartColors = ['#FF1493', '#FF69B4', '#E91E63', '#F06292', '#EC407A', '#D81B60', '#C2185B'];
+  
+  // Use heart-like shapes (circles work well for heart effect)
+  const heartShapes: confetti.Shape[] = ['circle'];
+  
+  // Initial romantic burst from center
+  confetti({
+    particleCount: 120,
+    spread: 90,
+    origin: { x: 0.5, y: 0.5 },
+    colors: heartColors,
+    startVelocity: 45,
+    gravity: 0.6,
+    scalar: 1.5,
+    shapes: heartShapes,
+    ticks: 150,
+    drift: 0,
+  });
+  
+  // Floating hearts from left
+  setTimeout(() => {
+    confetti({
+      particleCount: 40,
+      angle: 60,
+      spread: 40,
+      origin: { x: 0, y: 0.7 },
+      colors: heartColors,
+      startVelocity: 35,
+      gravity: 0.5,
+      scalar: 1.4,
+      shapes: heartShapes,
+      drift: 1,
+    });
+  }, 100);
+  
+  // Floating hearts from right
+  setTimeout(() => {
+    confetti({
+      particleCount: 40,
+      angle: 120,
+      spread: 40,
+      origin: { x: 1, y: 0.7 },
+      colors: heartColors,
+      startVelocity: 35,
+      gravity: 0.5,
+      scalar: 1.4,
+      shapes: heartShapes,
+      drift: -1,
+    });
+  }, 150);
+  
+  // Gentle heart rain from top
+  setTimeout(() => {
+    confetti({
+      particleCount: 80,
+      spread: 160,
+      origin: { x: 0.5, y: -0.1 },
+      colors: ['#FF69B4', '#FFB6C1', '#FFC0CB', '#FF1493'],
+      startVelocity: 15,
+      gravity: 0.8,
+      scalar: 1.6,
+      shapes: heartShapes,
+      ticks: 200,
+      drift: 0.5,
+    });
+  }, 250);
+  
+  // Second wave of hearts from top
+  setTimeout(() => {
+    confetti({
+      particleCount: 60,
+      spread: 180,
+      origin: { x: 0.5, y: -0.1 },
+      colors: heartColors,
+      startVelocity: 12,
+      gravity: 0.7,
+      scalar: 1.8,
+      shapes: heartShapes,
+      ticks: 220,
+      drift: -0.3,
+    });
+  }, 400);
+  
+  // Final burst from center-bottom - the "explosion of love"
+  setTimeout(() => {
+    confetti({
+      particleCount: 100,
+      spread: 120,
+      origin: { x: 0.5, y: 0.9 },
+      colors: ['#FF1493', '#E91E63', '#FFD700', '#FF69B4'],
+      startVelocity: 50,
+      gravity: 0.9,
+      scalar: 1.3,
+      shapes: heartShapes,
+      ticks: 130,
+    });
+  }, 550);
+};

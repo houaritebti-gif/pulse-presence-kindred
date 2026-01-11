@@ -198,7 +198,11 @@ export const useSetPresence = () => {
   const { data: profile } = useProfile();
 
   return useMutation({
-    mutationFn: async ({ isPresent, visibleToOthers = true }: { isPresent: boolean; visibleToOthers?: boolean }) => {
+    mutationFn: async ({ isPresent, visibleToOthers = true, notifyHighCompatibility = false }: { 
+      isPresent: boolean; 
+      visibleToOthers?: boolean;
+      notifyHighCompatibility?: boolean;
+    }) => {
       if (!profile) throw new Error("No profile");
 
       // Use upsert to avoid race conditions with duplicate key errors
@@ -214,6 +218,18 @@ export const useSetPresence = () => {
         });
 
       if (error) throw error;
+
+      // Notify high compatibility users when going online (only on initial connect)
+      if (isPresent && visibleToOthers && notifyHighCompatibility) {
+        try {
+          await supabase.functions.invoke('notify-high-compatibility', {
+            body: { profile_id: profile.id },
+          });
+        } catch (e) {
+          // Don't fail the presence update if notification fails
+          console.log('[Presence] High compatibility notification failed:', e);
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my_presence", profile?.id] });

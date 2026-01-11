@@ -15,7 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { fireSparkConfetti } from "@/utils/sparkConfetti";
+import { fireSparkConfetti, firePerfectMatchHearts } from "@/utils/sparkConfetti";
 import { triggerHaptic } from "@/utils/haptics";
 import { Button } from "@/components/ui/button";
 
@@ -207,27 +207,44 @@ export const FullScreenPresenceList = memo(({
         const hasNewSpark = await checkForNewSpark(presence.profile!.id);
         
         if (hasNewSpark) {
+          // Get compatibility for this match
+          const matchCompatibility = getCompatibility(presence);
+          
           // 🔥 MUTUAL SPARK! Fire celebration!
-          fireSparkConfetti();
-          triggerHaptic('success');
+          // Use hearts animation for perfect compatibility (5/5)
+          if (matchCompatibility >= 5) {
+            firePerfectMatchHearts();
+            triggerHaptic('success');
+            
+            toast.success("💖 ¡Match perfecto!", {
+              description: "¡Compatibilidad perfecta! Esto es especial.",
+              action: {
+                label: "Ver perfil",
+                onClick: () => navigate(`/user/${presence.profile!.id}`),
+              },
+            });
+          } else {
+            fireSparkConfetti();
+            triggerHaptic('success');
+            
+            toast.success("🔥 ¡Chispa mutua!", {
+              description: "¡Hay conexión! Ya pueden chatear.",
+              action: {
+                label: "Ver perfil",
+                onClick: () => navigate(`/user/${presence.profile!.id}`),
+              },
+            });
+          }
           
           // Award mutual spark energy
           try {
             await earnEnergy({ 
               action: "mutual_spark", 
-              description: "¡Chispa mutua!" 
+              description: matchCompatibility >= 5 ? "¡Match perfecto!" : "¡Chispa mutua!" 
             });
           } catch (e) {
             console.log("[SparkEnergy] Could not award mutual spark energy:", e);
           }
-          
-          toast.success("🔥 ¡Chispa mutua!", {
-            description: "¡Hay conexión! Ya pueden chatear.",
-            action: {
-              label: "Ver perfil",
-              onClick: () => navigate(`/user/${presence.profile!.id}`),
-            },
-          });
         } else {
           toast.success("👻 Mensaje ghost enviado");
         }

@@ -125,7 +125,8 @@ const Presence = () => {
   // Auto-set presence when entering
   useEffect(() => {
     if (profile && !myPresence) {
-      setPresence.mutate({ isPresent: true, visibleToOthers: true });
+      // Notify high compatibility users on initial connection
+      setPresence.mutate({ isPresent: true, visibleToOthers: true, notifyHighCompatibility: true });
     }
   }, [profile, myPresence]);
 
