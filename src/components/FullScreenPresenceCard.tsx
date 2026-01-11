@@ -430,17 +430,17 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
           </div>
         </motion.div>
         
-        {/* RIGHT - Chispa */}
+        {/* RIGHT - Chispa (Like) */}
         <motion.div 
           style={{ opacity: rightIndicatorOpacity }}
           className="absolute top-1/2 right-6 -translate-y-1/2 z-30 pointer-events-none"
         >
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/90 backdrop-blur-md border-2 border-primary shadow-xl shadow-primary/40">
-              <Ghost className="w-8 h-8 text-primary-foreground" />
+              <Sparkles className="w-8 h-8 text-primary-foreground" />
             </div>
             <span className="text-xs font-medium text-white bg-primary/80 backdrop-blur-sm px-2 py-1 rounded-full">
-              Chispa 👻
+              Chispa ✨
             </span>
           </div>
         </motion.div>
@@ -492,7 +492,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                 currentSwipeDirection === "down" && "bg-accent/70",
               )}>
                 {currentSwipeDirection === "left" && <X className="w-12 h-12 text-muted-foreground" />}
-                {currentSwipeDirection === "right" && <Ghost className="w-12 h-12 text-primary-foreground" />}
+                {currentSwipeDirection === "right" && <Sparkles className="w-12 h-12 text-primary-foreground" />}
                 {currentSwipeDirection === "up" && <Flame className="w-12 h-12 text-white" />}
                 {currentSwipeDirection === "down" && <User className="w-12 h-12 text-accent-foreground" />}
               </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Ghost, Flame, User, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
+import { X, Sparkles, Flame, User, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { triggerHaptic } from "@/utils/haptics";
 
@@ -23,20 +23,20 @@ const swipeDirections = [
   },
   {
     direction: "right",
-    icon: Ghost,
+    icon: Sparkles,
     arrow: ChevronRight,
     title: "→ Chispa",
-    description: "Desliza a la derecha para enviar un mensaje ghost y mostrar tu interés",
+    description: "Desliza a la derecha para enviar una Chispa ✨ Si hay interés mutuo, ¡habrá vibra!",
     color: "from-primary/80 to-primary",
     iconColor: "text-primary-foreground",
-    emoji: "👻",
+    emoji: "✨",
   },
   {
     direction: "up",
     icon: Flame,
     arrow: ChevronUp,
     title: "↑ Super Chispa",
-    description: "Desliza hacia arriba para enviar una Super Chispa ⚡ que destacará tu interés",
+    description: "Desliza hacia arriba para enviar una Super Chispa 🔥 que destacará tu interés especial",
     color: "from-purple-500 to-blue-500",
     iconColor: "text-white",
     emoji: "🔥",
