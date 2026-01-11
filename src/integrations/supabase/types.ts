@@ -177,6 +177,7 @@ export type Database = {
           id: string
           is_premium_message: boolean | null
           is_second_chance: boolean | null
+          is_super_spark: boolean | null
           read_at: string | null
           to_profile_id: string
         }
@@ -187,6 +188,7 @@ export type Database = {
           id?: string
           is_premium_message?: boolean | null
           is_second_chance?: boolean | null
+          is_super_spark?: boolean | null
           read_at?: string | null
           to_profile_id: string
         }
@@ -197,6 +199,7 @@ export type Database = {
           id?: string
           is_premium_message?: boolean | null
           is_second_chance?: boolean | null
+          is_super_spark?: boolean | null
           read_at?: string | null
           to_profile_id?: string
         }

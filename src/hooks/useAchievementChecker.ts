@@ -16,11 +16,13 @@ export const useAchievementChecker = () => {
     checkStreakAchievements, 
     checkEnergyAchievements,
     checkSparksSentAchievements,
+    checkSuperSparkAchievements,
   } = useAchievements();
   const { sparkEnergy } = useSparkEnergy();
   
   const lastCheckedEnergy = useRef<number>(0);
   const lastCheckedStreak = useRef<number>(0);
+  const lastCheckedSuperSparks = useRef<number>(0);
 
   // Check streak and energy achievements when sparkEnergy changes
   useEffect(() => {
@@ -108,6 +110,26 @@ export const useAchievementChecker = () => {
     };
 
     checkSparksSent();
+  }, [profile?.id]);
+
+  // Check super sparks sent achievements
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const checkSuperSparksSent = async () => {
+      const { count } = await supabase
+        .from('ghost_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('from_profile_id', profile.id)
+        .eq('is_super_spark', true);
+
+      if (count && count > 0 && count !== lastCheckedSuperSparks.current) {
+        lastCheckedSuperSparks.current = count;
+        checkSuperSparkAchievements(count);
+      }
+    };
+
+    checkSuperSparksSent();
   }, [profile?.id]);
 
   // Check identity verified achievement

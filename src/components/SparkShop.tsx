@@ -14,7 +14,8 @@ import {
   Loader2,
   Gift,
   Clock,
-  Package
+  Package,
+  Flame
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ import { triggerHaptic } from "@/utils/haptics";
 const ITEM_CONFIG: Record<ShopItemKey, { 
   icon: React.ReactNode; 
   gradient: string;
-  category: "messages" | "discovery" | "profile";
+  category: "messages" | "discovery" | "profile" | "super";
 }> = {
   ghost_message_1: { 
     icon: <MessageCircle className="w-5 h-5" />, 
@@ -46,6 +47,16 @@ const ITEM_CONFIG: Record<ShopItemKey, {
     icon: <Package className="w-5 h-5" />, 
     gradient: "from-pink-500 to-fuchsia-500",
     category: "messages"
+  },
+  super_spark: { 
+    icon: <Flame className="w-5 h-5" />, 
+    gradient: "from-blue-500 via-purple-500 to-pink-500",
+    category: "super"
+  },
+  super_spark_3: { 
+    icon: <Flame className="w-5 h-5" />, 
+    gradient: "from-purple-500 via-pink-500 to-orange-500",
+    category: "super"
   },
   highlighted_message: { 
     icon: <Sparkles className="w-5 h-5" />, 
@@ -86,6 +97,7 @@ const ITEM_CONFIG: Record<ShopItemKey, {
 
 // Item categories
 const ITEM_CATEGORIES = {
+  super: ["super_spark", "super_spark_3"] as ShopItemKey[],
   messages: ["ghost_message_1", "ghost_message_3", "highlighted_message"] as ShopItemKey[],
   discovery: ["reveal_spark", "visibility_boost", "second_chance"] as ShopItemKey[],
   profile: ["extra_filter", "profile_theme", "badge_loyal"] as ShopItemKey[],
@@ -516,6 +528,7 @@ export function SparkShop({ className }: SparkShopProps) {
       </motion.div>
 
       {/* Categories */}
+      {renderCategory("⚡ Super Chispa", <Flame className="w-4 h-4" />, ITEM_CATEGORIES.super, "from-blue-500 via-purple-500 to-pink-500")}
       {renderCategory("Mensajes", <MessageCircle className="w-4 h-4" />, ITEM_CATEGORIES.messages, "from-pink-500 to-rose-500")}
       {renderCategory("Descubrimiento", <Eye className="w-4 h-4" />, ITEM_CATEGORIES.discovery, "from-violet-500 to-purple-500")}
       {renderCategory("Perfil", <Palette className="w-4 h-4" />, ITEM_CATEGORIES.profile, "from-emerald-400 to-teal-500")}

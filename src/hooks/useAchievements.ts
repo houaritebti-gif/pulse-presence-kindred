@@ -12,6 +12,9 @@ export type AchievementKey =
   | 'first_match'
   | 'first_ghost_message'
   | 'first_quedada_joined'
+  | 'first_super_spark'
+  | 'super_spark_5'
+  | 'super_spark_10'
   | 'streak_3_days'
   | 'streak_7_days'
   | 'streak_14_days'
@@ -55,6 +58,11 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
   { key: 'first_ghost_message', name: 'Mensaje Fantasma', description: 'Envía tu primer mensaje fantasma', emoji: '👻', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
   { key: 'first_quedada_joined', name: 'Sociable', description: 'Únete a tu primera quedada', emoji: '🎉', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
   
+  // Super Spark achievements
+  { key: 'first_super_spark', name: 'Super Interés', description: 'Envía tu primera Super Chispa', emoji: '⚡', category: 'social', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'super_spark_5', name: 'Rayos', description: 'Envía 5 Super Chispas', emoji: '🌩️', category: 'milestone', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'super_spark_10', name: 'Electrizante', description: 'Envía 10 Super Chispas', emoji: '⚡', category: 'milestone', rarity: 'epic', energyReward: RARITY_ENERGY_REWARDS.epic },
+  
   // Streak achievements
   { key: 'streak_3_days', name: 'En Racha', description: 'Mantén una racha de 3 días', emoji: '🔥', category: 'streak', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
   { key: 'streak_7_days', name: 'Semana Ardiente', description: 'Mantén una racha de 7 días', emoji: '🌟', category: 'streak', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
@@ -63,8 +71,8 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
   
   // Energy achievements (no energy reward to avoid circular loop)
   { key: 'energy_100', name: 'Chispazo', description: 'Acumula 100 de energía total', emoji: '⚡', category: 'energy', rarity: 'common', energyReward: 0 },
-  { key: 'energy_500', name: 'Electrizante', description: 'Acumula 500 de energía total', emoji: '💥', category: 'energy', rarity: 'uncommon', energyReward: 0 },
-  { key: 'energy_1000', name: 'Alta Tensión', description: 'Acumula 1000 de energía total', emoji: '🌩️', category: 'energy', rarity: 'rare', energyReward: 0 },
+  { key: 'energy_500', name: 'Alta Tensión', description: 'Acumula 500 de energía total', emoji: '💥', category: 'energy', rarity: 'uncommon', energyReward: 0 },
+  { key: 'energy_1000', name: 'Potencia', description: 'Acumula 1000 de energía total', emoji: '🌩️', category: 'energy', rarity: 'rare', energyReward: 0 },
   { key: 'energy_2500', name: 'Supernova', description: 'Acumula 2500 de energía total', emoji: '☀️', category: 'energy', rarity: 'epic', energyReward: 0 },
   { key: 'energy_5000', name: 'Energía Infinita', description: 'Acumula 5000 de energía total', emoji: '🌌', category: 'energy', rarity: 'legendary', energyReward: 0 },
   
@@ -333,6 +341,19 @@ export const useAchievements = () => {
     }
   };
 
+  // Check super spark achievements
+  const checkSuperSparkAchievements = async (totalSuperSparks: number) => {
+    if (totalSuperSparks >= 1 && !isUnlocked('first_super_spark')) {
+      await checkAndUnlock('first_super_spark');
+    }
+    if (totalSuperSparks >= 5 && !isUnlocked('super_spark_5')) {
+      await checkAndUnlock('super_spark_5');
+    }
+    if (totalSuperSparks >= 10 && !isUnlocked('super_spark_10')) {
+      await checkAndUnlock('super_spark_10');
+    }
+  };
+
   return {
     achievements: ACHIEVEMENTS,
     unlockedAchievements,
@@ -343,6 +364,7 @@ export const useAchievements = () => {
     checkStreakAchievements,
     checkEnergyAchievements,
     checkSparksSentAchievements,
+    checkSuperSparkAchievements,
     unlockedCount: unlockedAchievements?.length ?? 0,
     totalCount: ACHIEVEMENTS.length,
   };
