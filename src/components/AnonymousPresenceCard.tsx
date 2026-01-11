@@ -502,31 +502,41 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             </Tooltip>
           </TooltipProvider>
 
-          {/* Ghost message button */}
-          <div className="mt-auto pt-2">
+          {/* Action buttons */}
+          <div className="mt-auto pt-2 flex gap-2">
+            {/* View Profile button */}
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic('light');
+                navigate(`/user/${presence.profile?.id}`);
+              }}
+              variant="outline"
+              className="flex-1 gap-2 h-10 text-sm hover:bg-secondary/80 transition-all duration-200"
+            >
+              <User className="w-4 h-4" />
+              <span>Ver perfil</span>
+            </Button>
+            
+            {/* Ghost message button */}
             {messageSent ? (
               <Button
                 variant="secondary"
                 disabled
-                className="w-full gap-2 h-10 text-sm transition-all duration-300"
+                className="flex-1 gap-2 h-10 text-sm transition-all duration-300"
               >
                 <Check className="w-4 h-4 animate-scale-in" />
-                Mensaje enviado
+                Enviado
               </Button>
             ) : (
               <Button
                 onClick={handleOpenDialog}
                 disabled={sending || !limitData?.canSend}
-                className="group w-full gap-2 h-10 text-sm active:scale-[0.96] hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
+                className="group flex-1 gap-2 h-10 text-sm active:scale-[0.96] hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
                 variant="default"
               >
                 <Ghost className="w-4 h-4 group-hover:animate-bounce transition-transform" />
-                <span>Enviar ghost</span>
-                {limitData && (
-                  <span className="text-xs opacity-80 ml-1">
-                    ({limitData.remaining}/5)
-                  </span>
-                )}
+                <span>Ghost</span>
               </Button>
             )}
           </div>

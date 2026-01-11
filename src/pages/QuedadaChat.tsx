@@ -603,48 +603,33 @@ const QuedadaChat = () => {
       )}
 
 
-      {/* Input */}
-      <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80">
+      {/* Input - with extra padding on desktop to avoid AI chatbot overlap */}
+      <form onSubmit={handleSend} className="relative z-10 px-6 py-4 border-t border-border/20 backdrop-blur-sm bg-background/80 lg:pr-24">
         <div className="flex gap-3 items-center">
-
-          {/* Voice record button */}
-          <VoiceRecordButton
-            isRecording={isRecording}
-            isUploading={isUploadingVoice}
-            formattedDuration={formattedDuration}
-            onStartRecording={startRecording}
-            onStopRecording={handleStopRecording}
-            onCancelRecording={cancelRecording}
-          />
-          
-          {/* Text input - hide when recording */}
-          {!isRecording && (
-            <>
-              <div className="flex-1 relative">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => {
-                    setNewMessage(e.target.value);
-                    handleTyping();
-                  }}
-                  placeholder="Escribe algo..."
-                  className="h-12 font-body bg-card/50 text-card-foreground border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
-                />
-              </div>
-              <Button
-                type="submit"
-                size="icon"
-                className="h-12 w-12 rounded-xl bg-accent hover:bg-accent/90 shadow-lg shadow-accent/30 hover:shadow-accent/50 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                disabled={!newMessage.trim() || sendMessage.isPending || isUploading}
-              >
-                {isUploading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
-            </>
-          )}
+          {/* Text input */}
+          <div className="flex-1 relative">
+            <Input
+              value={newMessage}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                handleTyping();
+              }}
+              placeholder="Escribe algo..."
+              className="h-12 font-body bg-card/50 text-card-foreground border-border/30 focus:border-accent/50 focus:ring-2 focus:ring-accent/20 pr-4 pl-4 rounded-xl transition-all duration-300 placeholder:text-muted-foreground"
+            />
+          </div>
+          <Button
+            type="submit"
+            size="icon"
+            className="h-12 w-12 rounded-xl bg-accent hover:bg-accent/90 shadow-lg shadow-accent/30 hover:shadow-accent/50 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+            disabled={!newMessage.trim() || sendMessage.isPending || isUploading}
+          >
+            {isUploading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </Button>
         </div>
       </form>
 
