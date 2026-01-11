@@ -47,11 +47,22 @@ const ReduceMotionSetting = ({
   setReduceMotion: (value: boolean) => void;
 }) => {
   const [isManual, setIsManual] = useState(() => getManualReduceMotionPreference() !== null);
+  const [systemPrefersReduced, setSystemPrefersReduced] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
   
   useEffect(() => {
     const checkManualPreference = () => {
       setIsManual(getManualReduceMotionPreference() !== null);
     };
+    
+    // Listen for system preference changes
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleSystemChange = (e: MediaQueryListEvent) => {
+      setSystemPrefersReduced(e.matches);
+    };
+    mediaQuery.addEventListener("change", handleSystemChange);
     
     window.addEventListener("reduceMotionChanged", checkManualPreference);
     window.addEventListener("storage", (e) => {
@@ -59,6 +70,7 @@ const ReduceMotionSetting = ({
     });
     
     return () => {
+      mediaQuery.removeEventListener("change", handleSystemChange);
       window.removeEventListener("reduceMotionChanged", checkManualPreference);
     };
   }, []);
@@ -75,44 +87,61 @@ const ReduceMotionSetting = ({
   };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
-      <div className="flex items-center gap-3">
-        <Sparkles className={`w-5 h-5 ${!reduceMotion ? "text-primary" : "text-muted-foreground"}`} />
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="font-body text-sm text-foreground">
-              Reducir animaciones
-            </span>
-            <Badge 
-              variant={isManual ? "default" : "secondary"}
-              className="text-[10px] px-1.5 py-0 h-4 font-normal"
-            >
-              {isManual ? "Manual" : "Sistema"}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-body text-xs text-muted-foreground">
-              {reduceMotion 
-                ? "Movimiento reducido para accesibilidad" 
-                : "Animaciones completas activas"
-              }
-            </span>
-            {isManual && (
-              <button 
-                onClick={resetToSystem}
-                className="text-[10px] text-primary hover:underline"
+    <div className="p-4 bg-secondary/50 rounded-xl space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Sparkles className={`w-5 h-5 ${!reduceMotion ? "text-primary" : "text-muted-foreground"}`} />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-body text-sm text-foreground">
+                Reducir animaciones
+              </span>
+              <Badge 
+                variant={isManual ? "default" : "secondary"}
+                className="text-[10px] px-1.5 py-0 h-4 font-normal"
               >
-                Usar sistema
-              </button>
-            )}
+                {isManual ? "Manual" : "Sistema"}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-body text-xs text-muted-foreground">
+                {reduceMotion 
+                  ? "Movimiento reducido para accesibilidad" 
+                  : "Animaciones completas activas"
+                }
+              </span>
+              {isManual && (
+                <button 
+                  onClick={resetToSystem}
+                  className="text-[10px] text-primary hover:underline"
+                >
+                  Usar sistema
+                </button>
+              )}
+            </div>
           </div>
         </div>
+        <Switch
+          checked={reduceMotion}
+          onCheckedChange={handleChange}
+          aria-label="Forzar reducción de movimiento"
+        />
       </div>
-      <Switch
-        checked={reduceMotion}
-        onCheckedChange={handleChange}
-        aria-label="Forzar reducción de movimiento"
-      />
+      
+      {/* System preference indicator */}
+      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs ${
+        systemPrefersReduced 
+          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" 
+          : "bg-muted/50 text-muted-foreground"
+      }`}>
+        <Monitor className="w-3.5 h-3.5" />
+        <span>
+          Tu sistema {systemPrefersReduced ? "prefiere movimiento reducido" : "permite animaciones completas"}
+        </span>
+        {systemPrefersReduced && (
+          <span className="ml-auto font-medium">Activo</span>
+        )}
+      </div>
     </div>
   );
 };
