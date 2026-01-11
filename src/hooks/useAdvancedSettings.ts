@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   TEXT_SIZE: "kiki_text_size",
   COMPACT_MODE: "kiki_compact_mode",
   HIGH_CONTRAST: "kiki_high_contrast",
+  SPARKLE_TRAIL: "kiki_sparkle_trail",
 } as const;
 
 export type Theme = "light" | "dark" | "system";
@@ -112,6 +113,17 @@ export const applyHighContrast = (enabled: boolean) => {
   document.documentElement.classList.toggle("high-contrast", enabled);
 };
 
+// Sparkle Trail
+export const getSparkleTrailEnabled = (): boolean => {
+  const stored = localStorage.getItem(STORAGE_KEYS.SPARKLE_TRAIL);
+  // Default to true (enabled)
+  return stored === null ? true : stored === "true";
+};
+
+export const setSparkleTrailEnabled = (enabled: boolean) => {
+  localStorage.setItem(STORAGE_KEYS.SPARKLE_TRAIL, String(enabled));
+};
+
 // Initialize settings on app load
 export const initializeAdvancedSettings = () => {
   applyTheme(getTheme());
@@ -147,6 +159,7 @@ export const useAdvancedSettings = () => {
   const [textSize, setTextSizeState] = useState<TextSize>(getTextSize);
   const [compactMode, setCompactModeState] = useState<boolean>(getCompactMode);
   const [highContrast, setHighContrastState] = useState<boolean>(getHighContrast);
+  const [sparkleTrailEnabled, setSparkleTrailState] = useState<boolean>(getSparkleTrailEnabled);
 
   useEffect(() => {
     initializeAdvancedSettings();
@@ -177,16 +190,23 @@ export const useAdvancedSettings = () => {
     setHighContrast(enabled);
   };
 
+  const handleSparkleTrailChange = (enabled: boolean) => {
+    setSparkleTrailState(enabled);
+    setSparkleTrailEnabled(enabled);
+  };
+
   return {
     theme,
     reduceMotion,
     textSize,
     compactMode,
     highContrast,
+    sparkleTrailEnabled,
     setTheme: handleThemeChange,
     setReduceMotion: handleReduceMotionChange,
     setTextSize: handleTextSizeChange,
     setCompactMode: handleCompactModeChange,
     setHighContrast: handleHighContrastChange,
+    setSparkleTrailEnabled: handleSparkleTrailChange,
   };
 };
