@@ -15,6 +15,7 @@ import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { usePurchasedItems } from "@/hooks/usePurchasedItems";
 import { useRewindLimit } from "@/hooks/useRewindLimit";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePrefetchAdjacent } from "@/hooks/useProfilePrefetch";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { RewindLimitModal } from "@/components/RewindLimitModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -143,6 +144,12 @@ export const FullScreenPresenceList = memo(({
   const totalProfiles = [...activeProfiles, ...inactiveProfiles].length;
   const viewedCount = dismissedIds.size;
   const remainingCount = totalProfiles - viewedCount;
+
+  // Prefetch next profiles into IndexedDB cache for instant loading
+  const prefetchableProfiles = allProfiles
+    .filter(p => p.profile?.id)
+    .map(p => ({ id: p.profile!.id }));
+  usePrefetchAdjacent(prefetchableProfiles, 0, 3);
 
   const handleUndo = useCallback(async () => {
     if (!lastAction) return;
