@@ -17,7 +17,7 @@ const NotFound = () => {
   const quickLinks = [
     { to: "/", icon: Home, label: "Inicio", description: "Volver a la página principal" },
     { to: "/presence", icon: Users, label: "Presencia", description: "Descubre quién está activo" },
-    { to: "/spark", icon: Flame, label: "Chispa", description: "Encuentra tu próxima conexión" },
+    { to: "/sparks", icon: Flame, label: "Chispa", description: "Encuentra tu próxima conexión" },
   ];
 
   return (
