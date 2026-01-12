@@ -5,6 +5,7 @@ import { useAchievements } from "@/hooks/useAchievements";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 import { useProfileInterests } from "@/hooks/useInterests";
+import { useChallengeStreak } from "@/hooks/useChallengeStreak";
 
 /**
  * Hook that automatically checks and unlocks achievements based on user activity.
@@ -19,14 +20,17 @@ export const useAchievementChecker = () => {
     checkEnergyAchievements,
     checkSparksSentAchievements,
     checkSuperSparkAchievements,
+    checkChallengeStreakAchievements,
   } = useAchievements();
   const { sparkEnergy } = useSparkEnergy();
   const { data: photos } = useProfilePhotos(profile?.id);
   const { data: interests } = useProfileInterests(profile?.id);
+  const { data: challengeStreakData } = useChallengeStreak();
   
   const lastCheckedEnergy = useRef<number>(0);
   const lastCheckedStreak = useRef<number>(0);
   const lastCheckedSuperSparks = useRef<number>(0);
+  const lastCheckedChallengeStreak = useRef<number>(0);
 
   // Check streak and energy achievements when sparkEnergy changes
   useEffect(() => {
@@ -221,4 +225,16 @@ export const useAchievementChecker = () => {
 
     checkFirstPresence();
   }, [profile?.id, isUnlocked]);
+
+  // Check daily challenge streak achievements
+  useEffect(() => {
+    if (!profile?.id || !challengeStreakData) return;
+
+    const { currentStreak } = challengeStreakData;
+    
+    if (currentStreak !== lastCheckedChallengeStreak.current) {
+      lastCheckedChallengeStreak.current = currentStreak;
+      checkChallengeStreakAchievements(currentStreak);
+    }
+  }, [profile?.id, challengeStreakData?.currentStreak, checkChallengeStreakAchievements]);
 };
