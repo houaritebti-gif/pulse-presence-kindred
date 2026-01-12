@@ -158,7 +158,7 @@ export const useAppNotifications = () => {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_messages" },
-        (payload) => {
+        async (payload) => {
           if (isInitialLoadRef.current) return;
 
           const newMessage = payload.new as { 
@@ -178,25 +178,44 @@ export const useAppNotifications = () => {
           
           const description = newMessage.content.slice(0, 50) + (newMessage.content.length > 50 ? "..." : "");
           
+          // Get sender name for push notification
+          const { data: senderProfile } = await supabase
+            .from("profiles")
+            .select("name")
+            .eq("id", newMessage.sender_profile_id)
+            .maybeSingle();
+          
+          const senderName = senderProfile?.name || "Alguien";
+          
+          // Send push notification to the recipient (current user)
+          sendPushNotification({
+            profileId: profile.id,
+            title: `💬 ${senderName}`,
+            body: description,
+            url: currentChatPath,
+            tag: `message-${newMessage.id}`,
+            sparkChatId: newMessage.chat_id,
+          });
+          
           // Save to notification center
           createNotification({
             profile_id: profile.id,
             type: "message",
-            title: "💬 Nuevo mensaje",
+            title: `💬 ${senderName}`,
             description,
             link: currentChatPath,
           });
           
           notifyUser("message");
-          announce(`Nuevo mensaje: ${description}`, "polite");
-          toast("💬 Nuevo mensaje", {
+          announce(`Nuevo mensaje de ${senderName}: ${description}`, "polite");
+          toast(`💬 ${senderName}`, {
             description,
             action: {
               label: "Abrir",
               onClick: () => navigate(currentChatPath),
             },
           });
-          showBrowserNotification("💬 Nuevo mensaje", {
+          showBrowserNotification(`💬 ${senderName}`, {
             body: description,
             tag: "message-" + newMessage.id,
             onClick: () => navigate(currentChatPath),
