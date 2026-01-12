@@ -4,6 +4,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { toast } from "sonner";
 import { triggerHaptic } from "@/utils/haptics";
+import { sendPushNotification } from "@/utils/pushNotifications";
 
 // Daily challenge definitions
 export interface ChallengeDefinition {
@@ -131,6 +132,8 @@ export const useDailyChallenges = () => {
       
       const newProgress = Math.min(existing.current_progress + increment, existing.target_value);
       const isNowComplete = newProgress >= existing.target_value;
+      const wasAlmostComplete = existing.current_progress / existing.target_value < 0.8;
+      const isNowAlmostComplete = newProgress / existing.target_value >= 0.8;
       
       const { data, error } = await supabase
         .from('daily_challenge_progress')
@@ -143,6 +146,21 @@ export const useDailyChallenges = () => {
         .single();
       
       if (error) throw error;
+      
+      // Send push notification if challenge just reached 80%+ progress
+      if (!isNowComplete && wasAlmostComplete && isNowAlmostComplete) {
+        const challenge = todaysChallenges.find(c => c.key === challengeKey);
+        if (challenge) {
+          sendPushNotification({
+            profileId: profile.id,
+            title: `${challenge.emoji} ¡Casi lo tienes!`,
+            body: `${challenge.name}: ${newProgress}/${existing.target_value} - ¡Solo te falta un poco!`,
+            url: '/profile',
+            tag: `challenge-almost-${challengeKey}`,
+          });
+        }
+      }
+      
       return data;
     },
     onSuccess: (data) => {
