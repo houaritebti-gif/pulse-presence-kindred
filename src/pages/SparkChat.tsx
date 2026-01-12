@@ -58,6 +58,10 @@ const SparkChat = () => {
   // Get other user's subscription tier
   const { data: otherUserTier } = useUserSubscription(chat?.other_profile?.id);
   
+  // Get current user's subscription tier (for typing indicator visibility)
+  const { data: currentUserTier } = useUserSubscription(profile?.id);
+  const isPaidUser = currentUserTier === 'plus' || currentUserTier === 'premium';
+  
   // Get the other user's read status
   const { data: otherUserLastRead } = useOtherUserReadStatus(chatId, chat?.other_profile?.id);
   
@@ -776,8 +780,8 @@ const SparkChat = () => {
           })
         )}
         
-        {/* Typing indicator */}
-        {isOtherTyping && (
+        {/* Typing indicator - only for Plus/Premium users */}
+        {isPaidUser && isOtherTyping && (
           <div className="flex items-center gap-2 animate-fade-up">
             <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
               {chat?.other_profile?.avatar_url ? (
