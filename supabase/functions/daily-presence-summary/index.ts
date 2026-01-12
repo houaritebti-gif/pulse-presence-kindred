@@ -123,12 +123,13 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        // Send push notification
+        // Send push notification with internal secret
+        const internalSecret = Deno.env.get("INTERNAL_FUNCTION_SECRET") || "kiki-internal-f19d23e8-91ab-4cd0-8e72-66d8ef2cb1a4";
         const pushResponse = await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
+            "x-internal-secret": internalSecret,
           },
           body: JSON.stringify({
             profile_id: recipientProfileId,
