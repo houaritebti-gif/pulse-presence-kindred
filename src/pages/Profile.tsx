@@ -50,6 +50,7 @@ import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
 import { useMutedQuedadas } from "@/hooks/useMutedQuedadas";
 import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 import ProfileStatsCard from "@/components/ProfileStatsCard";
+import { QuickTipsCard } from "@/components/QuickTipsCard";
 // Spark Energy Card Component for Profile with ripple effect
 const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
   const { sparkEnergy, currentLevel, progressToNext, isLoading } = useSparkEnergy();
@@ -726,6 +727,11 @@ const Profile = () => {
         {/* Achievements */}
         <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '190ms', animationFillMode: 'forwards' }}>
           <AchievementsDisplay compact />
+        </div>
+
+        {/* Quick Tips */}
+        <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '192ms', animationFillMode: 'forwards' }}>
+          <QuickTipsCard />
         </div>
 
         {/* Profile Completeness */}
