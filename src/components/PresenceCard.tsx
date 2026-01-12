@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, MoreVertical, Flag, Ban, Zap, MapPin, Sparkles } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import VisitedIndicator from "@/components/VisitedIndicator";
 import { ALL_GENDERS } from "@/constants/profileOptions";
 import {
   DropdownMenu,
@@ -19,6 +20,7 @@ import UserModerationModal from "@/components/UserModerationModal";
 import PhotoCarousel from "@/components/PhotoCarousel";
 import SharedPhotoTransition from "@/components/SharedPhotoTransition";
 import { triggerHaptic } from "@/utils/haptics";
+import { checkProfileVisited } from "@/hooks/useVisitedProfiles";
 
 interface PresenceProfile {
   id: string;
@@ -126,6 +128,14 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
   const navigate = useNavigate();
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
+  const [isVisited, setIsVisited] = useState(false);
+
+  // Check if this profile has been visited before
+  useEffect(() => {
+    if (presence.profile?.id) {
+      checkProfileVisited(presence.profile.id).then(setIsVisited);
+    }
+  }, [presence.profile?.id]);
 
   const handleCardClick = () => {
     navigate(`/user/${presence.profile?.id}`);
@@ -243,6 +253,16 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
               </TooltipContent>
           </Tooltip>
           </TooltipProvider>
+
+          {/* Visited indicator - bottom right, subtle */}
+          {isVisited && (
+            <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 z-10">
+              <VisitedIndicator 
+                className="bg-black/40 backdrop-blur-md text-white/70" 
+                showTooltip={true} 
+              />
+            </div>
+          )}
 
           {/* City badge - bottom left */}
           {presence.profile?.city && (
