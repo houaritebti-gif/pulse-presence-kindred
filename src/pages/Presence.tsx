@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { PresenceTopCards } from "@/components/PresenceTopCards";
+import { PresenceHeaderActions } from "@/components/PresenceHeaderActions";
 import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock, Zap, HelpCircle } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Sparkles, Loader2, Eye, EyeOff, Flame, Bell, Radio, Crown, Lock } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
@@ -408,102 +407,19 @@ const Presence = () => {
         backLabel="Perfil" 
         backTo="/profile" 
         rightContent={
-          <>
-            {/* Help/Tutorial button */}
-            <button
-              onClick={openTutorial}
-              className="text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              title="Cómo funciona KIKI"
-              aria-label="Ver tutorial"
-            >
-              <HelpCircle className="w-5 h-5" />
-            </button>
-            {/* Connection requests button */}
-            <button
-              onClick={() => navigate("/connections")}
-              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              title="Solicitudes de conexión"
-              aria-label="Solicitudes de conexión"
-            >
-              <UserPlus className={`w-5 h-5 ${pendingConnectionCount > 0 ? "text-primary" : ""}`} />
-              {pendingConnectionCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
-                  {pendingConnectionCount > 9 ? "9+" : pendingConnectionCount}
-                </span>
-              )}
-            </button>
-            {/* Ghost messages button */}
-            <button
-              onClick={() => navigate("/ghost-messages")}
-              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              title="Mensajes fantasma"
-              aria-label="Mensajes fantasma"
-            >
-              <Ghost className={`w-5 h-5 ${unreadGhostCount > 0 ? "text-primary" : ""}`} />
-              {unreadGhostCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
-                  {unreadGhostCount > 9 ? "9+" : unreadGhostCount}
-                </span>
-              )}
-            </button>
-            {/* Notifications button */}
-            <button
-              onClick={() => navigate("/notifications")}
-              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              title="Notificaciones"
-              aria-label="Notificaciones"
-            >
-              <Bell className={`w-5 h-5 ${unreadCount > 0 ? "text-primary" : ""}`} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </button>
-            {/* Quedadas button */}
-            <button
-              onClick={() => navigate("/quedadas")}
-              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              title="Quedadas"
-              aria-label="Quedadas"
-            >
-              <Calendar className={`w-5 h-5 ${quedadaCount > 0 ? "text-accent" : ""}`} />
-              {quedadaCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center">
-                  {quedadaCount}
-                </span>
-              )}
-            </button>
-            {/* Sparks button with badge */}
-            <button
-              onClick={() => {
-                markAllAsSeen();
-                navigate("/sparks");
-              }}
-              className="relative text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              title="Tus chispas"
-              aria-label="Tus chispas"
-            >
-              <Flame className={`w-5 h-5 ${totalSparkCount > 0 ? "text-primary" : ""}`} />
-              {hasNewSparks && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center animate-pulse-soft">
-                  {newSparkCount}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={toggleVisibility}
-              className="text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              title={myPresence?.visible_to_others ? "Modo visible" : "Modo invisible"}
-              aria-label={myPresence?.visible_to_others ? "Cambiar a modo invisible" : "Cambiar a modo visible"}
-            >
-              {myPresence?.visible_to_others ? (
-                <Eye className="w-4 h-4" />
-              ) : (
-                <EyeOff className="w-4 h-4" />
-              )}
-            </button>
-          </>
+          <PresenceHeaderActions
+            pendingConnectionCount={pendingConnectionCount}
+            unreadGhostCount={unreadGhostCount}
+            unreadCount={unreadCount}
+            quedadaCount={quedadaCount}
+            totalSparkCount={totalSparkCount}
+            hasNewSparks={hasNewSparks}
+            newSparkCount={newSparkCount}
+            markAllAsSeen={markAllAsSeen}
+            myPresenceVisible={myPresence?.visible_to_others ?? true}
+            toggleVisibility={toggleVisibility}
+            openTutorial={openTutorial}
+          />
         }
       />
 
