@@ -29,12 +29,14 @@ import UserModerationModal from "@/components/UserModerationModal";
 import LazyImage from "@/components/LazyImage";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import SparkleTrail from "@/components/SparkleTrail";
+import VisitedIndicator from "@/components/VisitedIndicator";
 import { getSparkleTrailEnabled } from "@/hooks/useAdvancedSettings";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { usePurchasedItems } from "@/hooks/usePurchasedItems";
+import { checkProfileVisited } from "@/hooks/useVisitedProfiles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -175,7 +177,15 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const [showCompatibilityDetails, setShowCompatibilityDetails] = useState(false);
   const [hasShownPerfectConfetti, setHasShownPerfectConfetti] = useState(false);
   const [currentSwipeDirection, setCurrentSwipeDirection] = useState<SwipeDirection>(null);
+  const [isVisited, setIsVisited] = useState(false);
   const confettiShownRef = useRef(false);
+
+  // Check if this profile has been visited before (cached in IndexedDB)
+  useEffect(() => {
+    if (presence.profile?.id) {
+      checkProfileVisited(presence.profile.id).then(setIsVisited);
+    }
+  }, [presence.profile?.id]);
 
   // Check available Super Spark items
   const availableSuperSparks = getAvailableQuantity("super_spark");
@@ -858,6 +868,14 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+
+            {/* Visited indicator - subtle, non-invasive */}
+            {isVisited && (
+              <VisitedIndicator 
+                className="bg-black/40 backdrop-blur-md text-white/70" 
+                showTooltip={true} 
+              />
+            )}
           </div>
         </div>
 
