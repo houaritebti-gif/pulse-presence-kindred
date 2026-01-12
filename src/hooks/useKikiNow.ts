@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { toast } from "sonner";
+import { fireKikiNowBoostConfetti } from "@/utils/sparkConfetti";
+import { triggerHaptic } from "@/utils/haptics";
 
 // Check if current user has an active boost
 export const useMyKikiNowBoost = () => {
@@ -131,6 +133,9 @@ export const useVerifyKikiNowBoost = () => {
     },
     onSuccess: (data) => {
       if (!data.already_active) {
+        // Fire celebration confetti and haptic
+        fireKikiNowBoostConfetti();
+        triggerHaptic('success');
         toast.success("🚀 ¡KIKI Now activado! Estarás destacado durante 1 hora");
       }
       queryClient.invalidateQueries({ queryKey: ["my_kiki_now_boost"] });

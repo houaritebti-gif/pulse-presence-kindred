@@ -707,3 +707,75 @@ export const fireRareAchievementConfetti = () => {
     });
   }, 220);
 };
+
+/**
+ * Fires an energetic confetti animation for KIKI Now boost activation.
+ * Uses electric/rocket themed colors with upward bursts for boost energy.
+ */
+export const fireKikiNowBoostConfetti = () => {
+  // Boost colors: electric yellows, oranges, and energetic pinks
+  const boostColors = ['#FFD700', '#FFA500', '#FF6B35', '#FF4500', '#FF1493', '#00D4FF', '#7C3AED'];
+  
+  // Initial rocket burst from bottom
+  confetti({
+    particleCount: 100,
+    spread: 60,
+    origin: { x: 0.5, y: 0.9 },
+    colors: boostColors,
+    startVelocity: 55,
+    gravity: 0.8,
+    scalar: 1.3,
+    shapes: ['circle', 'square'],
+    ticks: 120,
+  });
+  
+  // Side energy bursts
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      angle: 60,
+      spread: 50,
+      origin: { x: 0.1, y: 0.7 },
+      colors: ['#FFD700', '#FFA500', '#00D4FF'],
+      startVelocity: 40,
+      gravity: 0.7,
+    });
+    confetti({
+      particleCount: 50,
+      angle: 120,
+      spread: 50,
+      origin: { x: 0.9, y: 0.7 },
+      colors: ['#FFD700', '#FFA500', '#00D4FF'],
+      startVelocity: 40,
+      gravity: 0.7,
+    });
+  }, 100);
+  
+  // Electric sparks from center
+  setTimeout(() => {
+    confetti({
+      particleCount: 80,
+      spread: 100,
+      origin: { x: 0.5, y: 0.5 },
+      colors: ['#00D4FF', '#7C3AED', '#FFD700'],
+      startVelocity: 35,
+      gravity: 0.9,
+      scalar: 1.4,
+      ticks: 100,
+    });
+  }, 200);
+  
+  // Final golden shower from top
+  setTimeout(() => {
+    confetti({
+      particleCount: 70,
+      spread: 140,
+      origin: { x: 0.5, y: 0 },
+      colors: ['#FFD700', '#FFA500', '#FF6B35'],
+      startVelocity: 25,
+      gravity: 1.1,
+      scalar: 1.2,
+      ticks: 100,
+    });
+  }, 350);
+};
