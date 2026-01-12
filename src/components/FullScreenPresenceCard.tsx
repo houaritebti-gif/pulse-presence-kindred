@@ -138,8 +138,9 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealti
 };
 
 const SWIPE_THRESHOLD = 80;
-const SWIPE_VERTICAL_THRESHOLD = 100;
+const SWIPE_VERTICAL_THRESHOLD = 140; // Higher threshold to prevent accidental Super Chispa during scroll
 const SWIPE_VELOCITY_THRESHOLD = 400;
+const SWIPE_VERTICAL_VELOCITY_THRESHOLD = 600; // Higher velocity threshold for vertical swipes
 
 const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCardProps>(({ 
   presence, 
@@ -315,7 +316,13 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
       }
     } else {
       // Vertical swipe: up (super spark) or down (view profile)
-      if (absY > SWIPE_VERTICAL_THRESHOLD || Math.abs(velocity.y) > SWIPE_VELOCITY_THRESHOLD) {
+      // Use higher threshold to prevent accidental triggers during scroll
+      const verticalVelocityMet = Math.abs(velocity.y) > SWIPE_VERTICAL_VELOCITY_THRESHOLD;
+      const verticalOffsetMet = absY > SWIPE_VERTICAL_THRESHOLD;
+      
+      // Require BOTH significant offset AND velocity for vertical swipes
+      // This prevents accidental Super Chispa when user is just scrolling
+      if (verticalOffsetMet && verticalVelocityMet) {
         if (offset.y < 0) {
           // Swipe up - Super Chispa
           setExitDirection("up");
