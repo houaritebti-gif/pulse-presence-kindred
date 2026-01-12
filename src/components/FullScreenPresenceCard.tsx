@@ -660,11 +660,12 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
         <div className="absolute top-4 left-4 right-4 flex items-start justify-between z-20">
           {/* Left side badges */}
           <div className="flex flex-col gap-2">
-            {/* KIKI Now boost badge */}
+            {/* KIKI Now HOT badge with flame animation */}
             {isBoosted && (
-              <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg animate-pulse">
-                <Zap className="w-3.5 h-3.5 text-white fill-white" />
-                <span className="text-xs font-bold text-white uppercase tracking-wide">Now</span>
+              <div className="relative flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 shadow-lg shadow-orange-500/40 animate-hot-badge">
+                <Flame className="w-4 h-4 text-white fill-white animate-flame" />
+                <span className="text-xs font-extrabold text-white uppercase tracking-wider">HOT</span>
+                <Zap className="w-3 h-3 text-yellow-300 fill-yellow-300 animate-pulse" />
               </div>
             )}
 
