@@ -767,6 +767,7 @@ export type Database = {
           notify_summary_hour: number
           share_typing_status: boolean | null
           shaved_head: boolean | null
+          show_achievements: boolean
           show_aesthetic_details: boolean | null
           show_birth_year: boolean | null
           show_city: boolean | null
@@ -807,6 +808,7 @@ export type Database = {
           notify_summary_hour?: number
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
+          show_achievements?: boolean
           show_aesthetic_details?: boolean | null
           show_birth_year?: boolean | null
           show_city?: boolean | null
@@ -847,6 +849,7 @@ export type Database = {
           notify_summary_hour?: number
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
+          show_achievements?: boolean
           show_aesthetic_details?: boolean | null
           show_birth_year?: boolean | null
           show_city?: boolean | null

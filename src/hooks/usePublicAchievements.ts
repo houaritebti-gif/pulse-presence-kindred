@@ -29,6 +29,31 @@ export const usePublicAchievements = (profileId: string | undefined) => {
   });
 };
 
+export const useAchievementsVisibility = (profileId: string | undefined) => {
+  const { data, isLoading } = useQuery({
+    queryKey: ['achievements_visibility', profileId],
+    queryFn: async () => {
+      if (!profileId) return { show_achievements: true };
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('show_achievements')
+        .eq('id', profileId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return { show_achievements: (data as any)?.show_achievements ?? true };
+    },
+    enabled: !!profileId,
+    staleTime: 1000 * 60 * 5,
+  });
+  
+  return {
+    showAchievements: data?.show_achievements ?? true,
+    isLoading,
+  };
+};
+
 export const usePublicAchievementBadges = (profileId: string | undefined) => {
   const { data: achievements, isLoading } = usePublicAchievements(profileId);
   
