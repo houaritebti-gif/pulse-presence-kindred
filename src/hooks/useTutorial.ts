@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import { useLocalStorage, STORAGE_KEYS } from "./useLocalStorage";
+import { useLocalStorage } from "./useLocalStorage";
+import { useQueryClient } from "@tanstack/react-query";
 
 const TUTORIAL_SEEN_KEY = "kiki-tutorial-completed";
 
@@ -9,6 +10,7 @@ export const useTutorial = () => {
     false
   );
   const [isOpen, setIsOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const openTutorial = useCallback(() => {
     setIsOpen(true);
@@ -21,7 +23,9 @@ export const useTutorial = () => {
   const completeTutorial = useCallback(() => {
     setHasSeenTutorial(true);
     setIsOpen(false);
-  }, [setHasSeenTutorial]);
+    // Invalidate achievements to trigger the tutorial_completed check
+    queryClient.invalidateQueries({ queryKey: ['achievements'] });
+  }, [setHasSeenTutorial, queryClient]);
 
   const resetTutorial = useCallback(() => {
     setHasSeenTutorial(false);
