@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { 
   Bell, Send, Zap, Clock, CheckCircle2, XCircle, 
   AlertTriangle, RefreshCw, Activity, Shield, 
-  Loader2, Play, Trash2, BarChart3, Download, Ban
+  Loader2, Play, Trash2, BarChart3, Download, Ban,
+  Filter, AlertOctagon, Settings2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,17 +20,20 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, subDays, startOfHour, eachHourOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 
 interface TestLog {
   id: string;
   timestamp: Date;
-  type: 'in-app' | 'push' | 'rate-limit' | 'rotation';
+  type: 'in-app' | 'push' | 'rate-limit' | 'rotation' | 'alert';
   status: 'success' | 'error' | 'warning';
   message: string;
   details?: string;
@@ -54,6 +58,14 @@ interface RateLimitChartData {
   date: Date;
 }
 
+interface RateLimitAlert {
+  id: string;
+  timestamp: Date;
+  profileId: string;
+  requestCount: number;
+  threshold: number;
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -69,6 +81,9 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+const LOG_TYPES = ['all', 'in-app', 'push', 'rate-limit', 'rotation', 'alert'] as const;
+const LOG_STATUSES = ['all', 'success', 'error', 'warning'] as const;
+
 const AdminNotificationTestCenter = () => {
   const { user } = useAuth();
   const [logs, setLogs] = useState<TestLog[]>([]);
@@ -76,17 +91,73 @@ const AdminNotificationTestCenter = () => {
   const [notificationTitle, setNotificationTitle] = useState("🔔 Test de notificación");
   const [notificationBody, setNotificationBody] = useState("Este es un mensaje de prueba desde el centro de testing.");
   const [notificationType, setNotificationType] = useState<string>("connection_request");
-const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
+  const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
   const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo[]>([]);
   const [rateLimitChartData, setRateLimitChartData] = useState<RateLimitChartData[]>([]);
+  
+  // Log filters
+  const [filterType, setFilterType] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  
+  // Rate limit threshold alerts
+  const [alertThreshold, setAlertThreshold] = useState<number>(20);
+  const [alertsEnabled, setAlertsEnabled] = useState<boolean>(true);
+  const [rateLimitAlerts, setRateLimitAlerts] = useState<RateLimitAlert[]>([]);
 
-  const addLog = (log: Omit<TestLog, 'id' | 'timestamp'>) => {
+  const addLog = useCallback((log: Omit<TestLog, 'id' | 'timestamp'>) => {
     setLogs(prev => [{
       ...log,
       id: crypto.randomUUID(),
       timestamp: new Date(),
-    }, ...prev].slice(0, 50));
-  };
+    }, ...prev].slice(0, 100));
+  }, []);
+  
+  // Check for rate limit threshold exceeded
+  const checkRateLimitThreshold = useCallback((records: RateLimitInfo[]) => {
+    if (!alertsEnabled) return;
+    
+    const exceededRecords = records.filter(r => r.request_count >= alertThreshold);
+    
+    exceededRecords.forEach(record => {
+      const existingAlert = rateLimitAlerts.find(
+        a => a.profileId === record.profile_id && 
+        new Date().getTime() - a.timestamp.getTime() < 60000 // Don't duplicate within 1 min
+      );
+      
+      if (!existingAlert) {
+        const newAlert: RateLimitAlert = {
+          id: crypto.randomUUID(),
+          timestamp: new Date(),
+          profileId: record.profile_id,
+          requestCount: record.request_count,
+          threshold: alertThreshold,
+        };
+        
+        setRateLimitAlerts(prev => [newAlert, ...prev].slice(0, 10));
+        
+        addLog({
+          type: 'alert',
+          status: 'warning',
+          message: `⚠️ Umbral de rate limit superado: ${record.request_count}/${alertThreshold}`,
+          details: `Profile: ${record.profile_id.substring(0, 8)}...`,
+        });
+        
+        toast.warning(`Rate limit excedido: ${record.request_count} requests`, {
+          description: `Perfil ${record.profile_id.substring(0, 8)}... superó el umbral de ${alertThreshold}`,
+          duration: 5000,
+        });
+      }
+    });
+  }, [alertsEnabled, alertThreshold, rateLimitAlerts, addLog]);
+
+  // Filtered logs
+  const filteredLogs = useMemo(() => {
+    return logs.filter(log => {
+      const typeMatch = filterType === 'all' || log.type === filterType;
+      const statusMatch = filterStatus === 'all' || log.status === filterStatus;
+      return typeMatch && statusMatch;
+    });
+  }, [logs, filterType, filterStatus]);
 
   const clearLogs = () => {
     setLogs([]);
@@ -263,6 +334,11 @@ const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
       if (error) throw error;
 
       setRateLimitInfo(data || []);
+      
+      // Check threshold alerts
+      if (data) {
+        checkRateLimitThreshold(data);
+      }
 
       addLog({
         type: 'rate-limit',
@@ -527,6 +603,7 @@ const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
       case 'in-app': return <Bell className="w-4 h-4" />;
       case 'push': return <Send className="w-4 h-4" />;
       case 'rate-limit': return <Zap className="w-4 h-4" />;
+      case 'alert': return <AlertOctagon className="w-4 h-4 text-destructive" />;
       case 'rotation': return <RefreshCw className="w-4 h-4" />;
     }
   };
@@ -752,6 +829,73 @@ const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
                 </div>
               )}
             </CardContent>
+        </Card>
+        </motion.div>
+        
+        {/* Alert Configuration */}
+        <motion.div variants={itemVariants}>
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertOctagon className="w-4 h-4" />
+                Alertas Automáticas
+              </CardTitle>
+              <CardDescription>
+                Configura alertas cuando el rate limit supere un umbral
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="alerts-enabled" className="flex items-center gap-2">
+                  <Settings2 className="w-4 h-4" />
+                  Alertas activadas
+                </Label>
+                <Switch
+                  id="alerts-enabled"
+                  checked={alertsEnabled}
+                  onCheckedChange={setAlertsEnabled}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="threshold">Umbral de alerta (requests)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="threshold"
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={alertThreshold}
+                    onChange={(e) => setAlertThreshold(Math.max(1, Math.min(30, parseInt(e.target.value) || 20)))}
+                    className="w-24"
+                    disabled={!alertsEnabled}
+                  />
+                  <span className="text-sm text-muted-foreground self-center">/ 30 máximo</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Se mostrará una alerta cuando un perfil supere {alertThreshold} requests por minuto
+                </p>
+              </div>
+              
+              {rateLimitAlerts.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm">Alertas recientes</Label>
+                  <ScrollArea className="h-[120px]">
+                    {rateLimitAlerts.map((alert) => (
+                      <Alert key={alert.id} variant="destructive" className="mb-2">
+                        <AlertOctagon className="h-4 w-4" />
+                        <AlertTitle className="text-sm">
+                          {alert.requestCount}/{alert.threshold} requests
+                        </AlertTitle>
+                        <AlertDescription className="text-xs">
+                          Perfil {alert.profileId.substring(0, 8)}... • {format(alert.timestamp, 'HH:mm:ss')}
+                        </AlertDescription>
+                      </Alert>
+                    ))}
+                  </ScrollArea>
+                </div>
+              )}
+            </CardContent>
           </Card>
         </motion.div>
       </div>
@@ -844,27 +988,67 @@ const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
       <motion.div variants={itemVariants}>
         <Card className="border-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Activity className="w-4 h-4" />
-              Logs de actividad
-              {logs.length > 0 && (
-                <Badge variant="outline" className="ml-2">
-                  {logs.length}
-                </Badge>
-              )}
-            </CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Activity className="w-4 h-4" />
+                Logs de actividad
+                {logs.length > 0 && (
+                  <Badge variant="outline" className="ml-2">
+                    {filteredLogs.length}/{logs.length}
+                  </Badge>
+                )}
+              </CardTitle>
+              
+              {/* Filters */}
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-muted-foreground" />
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="w-[120px] h-8 text-xs">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos tipos</SelectItem>
+                    <SelectItem value="in-app">In-App</SelectItem>
+                    <SelectItem value="push">Push</SelectItem>
+                    <SelectItem value="rate-limit">Rate Limit</SelectItem>
+                    <SelectItem value="rotation">Rotación</SelectItem>
+                    <SelectItem value="alert">Alertas</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-[110px] h-8 text-xs">
+                    <SelectValue placeholder="Estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos estados</SelectItem>
+                    <SelectItem value="success">Éxito</SelectItem>
+                    <SelectItem value="error">Error</SelectItem>
+                    <SelectItem value="warning">Advertencia</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[300px]">
-              {logs.length === 0 ? (
+              {filteredLogs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-10">
                   <Activity className="w-10 h-10 mb-3 opacity-50" />
-                  <p>No hay logs aún</p>
-                  <p className="text-sm">Ejecuta una prueba para ver los resultados</p>
+                  {logs.length === 0 ? (
+                    <>
+                      <p>No hay logs aún</p>
+                      <p className="text-sm">Ejecuta una prueba para ver los resultados</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>Sin resultados</p>
+                      <p className="text-sm">Ajusta los filtros para ver más logs</p>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {logs.map((log) => (
+                  {filteredLogs.map((log) => (
                     <div 
                       key={log.id}
                       className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/50"
