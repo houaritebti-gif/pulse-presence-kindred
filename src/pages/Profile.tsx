@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag, Flame, ChevronRight } from "lucide-react";
+import { Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag, Flame, ChevronRight, Eye, EyeOff } from "lucide-react";
 import ErrorState from "@/components/ErrorState";
 import ProfileSkeleton from "@/components/ProfileSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -170,6 +170,7 @@ const Profile = () => {
   
   // Privacy settings
   const [shareTypingStatus, setShareTypingStatus] = useState<boolean>(true);
+  const [notifyProfileVisits, setNotifyProfileVisits] = useState<boolean>(true);
   
   // Music section collapsed state
   const [musicExpanded, setMusicExpanded] = useState(false);
@@ -307,6 +308,7 @@ const Profile = () => {
       setVintageStyle((profile as any).vintage_style);
       setGothicStyle((profile as any).gothic_style);
       setShareTypingStatus(profile.share_typing_status !== false);
+      setNotifyProfileVisits((profile as any).notify_profile_visits !== false);
       setBio((profile as any).bio || "");
       setSelectedLookingFor((profile as any).looking_for || []);
       setSelectedGender((profile as any).gender || null);
@@ -547,6 +549,7 @@ const Profile = () => {
         vintage_style: vintageStyle,
         gothic_style: gothicStyle,
         share_typing_status: shareTypingStatus,
+        notify_profile_visits: notifyProfileVisits,
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
         gender: selectedGender,
@@ -1080,7 +1083,7 @@ const Profile = () => {
         {/* Privacy Settings */}
         <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '560ms', animationFillMode: 'forwards' }}>
           <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-            Privacidad del chat
+            Privacidad
           </h2>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
@@ -1099,6 +1102,31 @@ const Profile = () => {
                 checked={shareTypingStatus}
                 onCheckedChange={(checked) => {
                   setShareTypingStatus(checked);
+                  setHasChanges(true);
+                }}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+              <div className="flex items-center gap-3">
+                {notifyProfileVisits ? (
+                  <Eye className="w-5 h-5 text-foreground" />
+                ) : (
+                  <EyeOff className="w-5 h-5 text-muted-foreground" />
+                )}
+                <div>
+                  <span className="font-body text-sm text-foreground block">
+                    Notificar visitas al perfil
+                  </span>
+                  <span className="font-body text-xs text-muted-foreground">
+                    Recibe alertas cuando alguien visita tu perfil
+                  </span>
+                </div>
+              </div>
+              <Switch
+                checked={notifyProfileVisits}
+                onCheckedChange={(checked) => {
+                  setNotifyProfileVisits(checked);
                   setHasChanges(true);
                 }}
               />
