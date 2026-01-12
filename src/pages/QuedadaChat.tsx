@@ -57,6 +57,10 @@ const QuedadaChat = () => {
   // Subscription check for creator
   const { data: creatorTier } = useUserSubscription(quedada?.creator?.id);
   
+  // Subscription check for current user (to show typing indicator)
+  const { data: userTier } = useUserSubscription(profile?.id);
+  const isPaidUser = userTier === 'plus' || userTier === 'premium';
+  
   // Typing indicator
   const { typingUsers, isAnyoneTyping, typingText, handleTyping, stopTyping } = useGroupTypingIndicator(quedadaId);
   
@@ -621,8 +625,8 @@ const QuedadaChat = () => {
           />
         ))}
         
-        {/* Typing indicator */}
-        {isAnyoneTyping && (
+        {/* Typing indicator - only for Plus/Premium users */}
+        {isPaidUser && isAnyoneTyping && (
           <div className="flex items-center gap-2 animate-fade-up">
             <div className="flex -space-x-2">
               {typingUsers.slice(0, 3).map((user) => (
