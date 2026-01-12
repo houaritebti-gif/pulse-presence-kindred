@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
-import { useQueryClient } from "@tanstack/react-query";
 import { notifyUser } from "@/utils/notificationSound";
 import { useBlockedUsers } from "./useUserModeration";
 import { useActiveBoostedProfiles } from "./useKikiNow";
@@ -105,8 +104,8 @@ export const useReceivedGhostMessages = () => {
 
   // Track if this is initial load to avoid playing sound on mount
   const isInitialLoad = useRef(true);
-
-  // Track if this is initial load to avoid playing sound on mount
+  
+  // Track boosted profiles for KIKI Now toast notifications
   const boostedIdsRef = useRef<Set<string>>(new Set());
   
   // Keep boostedIds ref updated
