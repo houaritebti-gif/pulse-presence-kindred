@@ -58,6 +58,8 @@ const Presence = () => {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [invisibleAnimating, setInvisibleAnimating] = useState(false);
   const realtimeUpsellShownRef = useRef(false);
+  const profileCardsRef = useRef<HTMLDivElement>(null);
+  const hasAutoScrolledRef = useRef(false);
 
   // Callback for realtime upsell toast (only for free users)
   const handleRealtimeUpsell = useCallback(() => {
@@ -354,6 +356,25 @@ const Presence = () => {
     });
   }, [otherProfiles, filters, myTribeNames, myStyleNames, activeBoostedData?.boostedIds, visitedMap]);
 
+  // Auto-scroll to center profile cards when loaded
+  useEffect(() => {
+    if (!isLoading && filteredProfiles.length > 0 && profileCardsRef.current && !hasAutoScrolledRef.current) {
+      hasAutoScrolledRef.current = true;
+      // Small delay to ensure DOM is fully rendered
+      requestAnimationFrame(() => {
+        const element = profileCardsRef.current;
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const scrollTop = window.scrollY + rect.top - 80; // 80px offset from top for header
+          window.scrollTo({
+            top: scrollTop,
+            behavior: 'smooth'
+          });
+        }
+      });
+    }
+  }, [isLoading, filteredProfiles.length]);
+
   const handleRefresh = async () => {
     await refetch();
   };
@@ -600,42 +621,44 @@ const Presence = () => {
           )}
         </div>
 
-        {/* Profile cards */}
-        {isLoading ? (
-          <FullScreenPresenceSkeleton showStackedCards />
-        ) : isError ? (
-          <ErrorState
-            icon={Sparkles}
-            description="No pudimos cargar la presencia. Revisa tu conexión."
-            onRetry={() => refetch()}
-            isRetrying={isFetching}
-          />
-        ) : filteredProfiles.length === 0 ? (
-          <EmptyState
-            icon={Sparkles}
-            title={otherProfiles.length === 0 ? "Nadie más está presente" : "Sin coincidencias"}
-            description={otherProfiles.length === 0 
-              ? "Quédate un rato. Alguien aparecerá."
-              : "No hay personas que coincidan con tus filtros. Prueba con otros criterios."}
-          />
-        ) : (
-          <>
-            <FullScreenPresenceList
-              profiles={filteredProfiles}
-              connectedProfileIds={connectedProfileIds}
-              photosMap={photosMap}
-              getCompatibility={getCompatibility}
-              getCompatibilityBreakdown={getCompatibilityBreakdown}
+        {/* Profile cards with auto-scroll ref */}
+        <div ref={profileCardsRef}>
+          {isLoading ? (
+            <FullScreenPresenceSkeleton showStackedCards />
+          ) : isError ? (
+            <ErrorState
+              icon={Sparkles}
+              description="No pudimos cargar la presencia. Revisa tu conexión."
+              onRetry={() => refetch()}
+              isRetrying={isFetching}
             />
-            {/* Infinite scroll trigger */}
-            <div ref={loadMoreRef} className="h-4" />
-            {isFetchingNextPage && (
-              <div className="flex justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-              </div>
-            )}
-          </>
-        )}
+          ) : filteredProfiles.length === 0 ? (
+            <EmptyState
+              icon={Sparkles}
+              title={otherProfiles.length === 0 ? "Nadie más está presente" : "Sin coincidencias"}
+              description={otherProfiles.length === 0 
+                ? "Quédate un rato. Alguien aparecerá."
+                : "No hay personas que coincidan con tus filtros. Prueba con otros criterios."}
+            />
+          ) : (
+            <>
+              <FullScreenPresenceList
+                profiles={filteredProfiles}
+                connectedProfileIds={connectedProfileIds}
+                photosMap={photosMap}
+                getCompatibility={getCompatibility}
+                getCompatibilityBreakdown={getCompatibilityBreakdown}
+              />
+              {/* Infinite scroll trigger */}
+              <div ref={loadMoreRef} className="h-4" />
+              {isFetchingNextPage && (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
         {/* Footer note */}
         <p className="text-center font-body text-xs text-muted-foreground/60 mt-10 animate-fade-up animate-delay-500">
