@@ -43,9 +43,12 @@ import { triggerHaptic } from "@/utils/haptics";
 import { SparkFlame } from "@/components/SparkFlame";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { AchievementsDisplay } from "@/components/AchievementsDisplay";
+import { ProfileCompletenessCard } from "@/components/ProfileCompletenessCard";
+import { useProfileCompleteness } from "@/hooks/useProfileCompleteness";
 import { useRipple } from "@/hooks/useRipple";
 import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
 import { useMutedQuedadas } from "@/hooks/useMutedQuedadas";
+import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 
 // Spark Energy Card Component for Profile with ripple effect
 const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
@@ -127,6 +130,7 @@ const Profile = () => {
   const { data: organizedCount } = useOrganizedQuedadasCount(profile?.id);
   const { data: genderPreferences } = useProfileGenderPreferences(profile?.id);
   const { data: interests } = useProfileInterests(profile?.id);
+  const { data: photos } = useProfilePhotos(profile?.id);
   const updateProfile = useUpdateProfile();
   const updateTribes = useUpdateTribes();
   const updateMusicStyles = useUpdateMusicStyles();
@@ -172,6 +176,15 @@ const Profile = () => {
   
   // Interests state
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+
+  // Profile completeness
+  const profileCompleteness = useProfileCompleteness(
+    profile,
+    selectedTribes,
+    selectedMusicStyles,
+    selectedInterests,
+    photos
+  );
   
   const [soundMuted, setSoundMutedState] = useState(() => {
     return localStorage.getItem("kiki_sound_muted") === "true";
@@ -708,9 +721,20 @@ const Profile = () => {
         <SparkEnergyCard navigate={navigate} />
 
         {/* Achievements */}
-        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '190ms', animationFillMode: 'forwards' }}>
+        <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '190ms', animationFillMode: 'forwards' }}>
           <AchievementsDisplay compact />
         </div>
+
+        {/* Profile Completeness */}
+        {profileCompleteness.percentage < 100 && (
+          <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '195ms', animationFillMode: 'forwards' }}>
+            <ProfileCompletenessCard
+              percentage={profileCompleteness.percentage}
+              missingFields={profileCompleteness.missingFields}
+              completedFields={profileCompleteness.completedFields}
+            />
+          </div>
+        )}
 
         {/* Name & City */}
         <div className="space-y-4 mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
