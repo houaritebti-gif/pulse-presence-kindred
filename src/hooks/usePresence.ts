@@ -1,8 +1,9 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useCallback, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "./useProfile";
+import { useOnlineStatus } from "./useOnlineStatus";
 
 export interface PresenceWithProfile {
   id: string;
@@ -32,9 +33,64 @@ export interface PresenceWithProfile {
 }
 
 const PRESENCE_PAGE_SIZE = 20;
+const MAX_RETRIES = 5;
+const BASE_DELAY_MS = 1000;
+const MAX_DELAY_MS = 30000;
+
+// Calculate exponential backoff delay with jitter
+const calculateBackoffDelay = (attempt: number): number => {
+  const exponentialDelay = Math.min(
+    BASE_DELAY_MS * Math.pow(2, attempt),
+    MAX_DELAY_MS
+  );
+  // Add jitter (±25%)
+  const jitter = exponentialDelay * 0.25 * (Math.random() * 2 - 1);
+  return Math.round(exponentialDelay + jitter);
+};
+
+// Check if error is retryable (network errors, timeouts, 5xx errors)
+const isRetryableError = (error: unknown): boolean => {
+  if (!error) return false;
+  
+  // Network errors
+  if (error instanceof TypeError && error.message.includes('fetch')) return true;
+  
+  // Supabase/Postgres errors
+  if (typeof error === 'object' && error !== null) {
+    const err = error as { code?: string; status?: number; message?: string };
+    // Connection errors
+    if (err.code === 'PGRST301' || err.code === 'PGRST000') return true;
+    // Server errors (5xx)
+    if (err.status && err.status >= 500) return true;
+    // Timeout
+    if (err.message?.toLowerCase().includes('timeout')) return true;
+    if (err.message?.toLowerCase().includes('network')) return true;
+  }
+  
+  return false;
+};
 
 export const usePresenceList = (showAllProfiles: boolean = false) => {
   const queryClient = useQueryClient();
+  const { isOnline } = useOnlineStatus();
+  const [retryCount, setRetryCount] = useState(0);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear retry count when online status changes to online
+  useEffect(() => {
+    if (isOnline) {
+      setRetryCount(0);
+    }
+  }, [isOnline]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const query = useInfiniteQuery({
     queryKey: ["presence_list", showAllProfiles],
@@ -120,6 +176,9 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
         });
       }
 
+      // Reset retry count on success
+      setRetryCount(0);
+
       const items = (presenceData || []).map(p => ({
         ...p,
         tribes: tribesMap[p.profile?.id] || [],
@@ -136,6 +195,12 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
     staleTime: 1000 * 60 * 2, // 2 minutes - has realtime updates
+    retry: (failureCount, error) => {
+      // Only retry retryable errors up to MAX_RETRIES
+      if (!isRetryableError(error)) return false;
+      return failureCount < MAX_RETRIES;
+    },
+    retryDelay: (attemptIndex) => calculateBackoffDelay(attemptIndex),
   });
 
   // Flatten pages for easy consumption
@@ -190,6 +255,11 @@ export const useMyPresence = () => {
     },
     enabled: !!profile?.id,
     staleTime: 1000 * 60 * 3, // 3 minutes
+    retry: (failureCount, error) => {
+      if (!isRetryableError(error)) return false;
+      return failureCount < MAX_RETRIES;
+    },
+    retryDelay: (attemptIndex) => calculateBackoffDelay(attemptIndex),
   });
 };
 
