@@ -361,6 +361,16 @@ export const useAppNotifications = () => {
           const senderName = senderProfile?.name || "Alguien";
           const description = `${senderName}: ${newMessage.content.slice(0, 40)}${newMessage.content.length > 40 ? "..." : ""}`;
           
+          // Send push notification
+          sendPushNotification({
+            profileId: profile.id,
+            title: `💬 ${quedada.title}`,
+            body: description,
+            url: currentChatPath,
+            tag: `quedada-msg-${newMessage.id}`,
+            quedadaId: newMessage.quedada_id,
+          });
+          
           // Save to notification center
           createNotification({
             profile_id: profile.id,
