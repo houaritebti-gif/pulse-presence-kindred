@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { format } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -781,7 +782,7 @@ const SparkChat = () => {
                           <TooltipContent side="left" className="max-w-[200px]">
                             {isPremiumUser ? (
                               otherUserLastRead && new Date(msg.created_at) <= otherUserLastRead ? (
-                                <p className="text-xs">Mensaje leído ✓</p>
+                                <p className="text-xs">Leído a las {format(otherUserLastRead, 'HH:mm')}</p>
                               ) : (
                                 <p className="text-xs">Mensaje enviado</p>
                               )
