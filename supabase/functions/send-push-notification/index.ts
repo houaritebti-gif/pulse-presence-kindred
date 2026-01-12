@@ -3,11 +3,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-internal-secret',
 };
 
-// Simplified push - send without payload encryption (notification shows generic message)
-// The service worker will display a default notification
+// Internal-only push notification function
+// Only callable by other edge functions or triggers using internal secret
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -18,6 +18,26 @@ serve(async (req) => {
     const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const internalSecret = Deno.env.get('INTERNAL_FUNCTION_SECRET');
+    
+    // SECURITY: Validate this is an internal call, not from a user
+    // Option 1: Check for internal secret header (from other edge functions)
+    const providedSecret = req.headers.get('x-internal-secret');
+    
+    // Option 2: Check if called with service_role key (from triggers/internal)
+    const authHeader = req.headers.get('Authorization') || '';
+    const isServiceRole = authHeader.includes(supabaseServiceKey);
+    
+    // Validate internal access
+    const isInternalCall = (internalSecret && providedSecret === internalSecret) || isServiceRole;
+    
+    if (!isInternalCall) {
+      console.error('Unauthorized: This function is for internal use only');
+      return new Response(JSON.stringify({ error: 'Unauthorized: Internal function only' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     if (!vapidPublicKey || !vapidPrivateKey) {
       console.error('VAPID keys not configured');
@@ -32,7 +52,7 @@ serve(async (req) => {
       throw new Error('profile_id and title are required');
     }
     
-    console.log(`Sending push to profile: ${profile_id}, title: ${title}`);
+    console.log(`[Internal] Sending push to profile: ${profile_id}, title: ${title}`);
     
     // Check if this is a quedada notification and user has muted it
     if (quedada_id) {
