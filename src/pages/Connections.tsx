@@ -1,9 +1,20 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, X, UserCheck, Clock, Users, Sparkles, Link2, MessageCircle, Heart } from "lucide-react";
+import { Check, X, UserCheck, Clock, Users, Sparkles, Link2, MessageCircle, Heart, Unlink } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import EmptyState from "@/components/EmptyState";
 import {
   useReceivedConnectionRequests,
@@ -12,7 +23,9 @@ import {
   useAcceptConnectionRequest,
   useRejectConnectionRequest,
   useCancelConnectionRequest,
+  useDisconnectConnection,
   useConnectionRequestsRealtime,
+  useActiveConnectionsRealtime,
   ConnectionRequestWithProfile,
   ActiveConnection,
 } from "@/hooks/useConnectionRequests";
@@ -23,15 +36,19 @@ import { motion } from "framer-motion";
 
 const Connections = () => {
   const navigate = useNavigate();
+  const [disconnectTarget, setDisconnectTarget] = useState<ActiveConnection | null>(null);
+  
   const { data: receivedRequests, isLoading: loadingReceived } = useReceivedConnectionRequests();
   const { data: sentRequests, isLoading: loadingSent } = useSentConnectionRequests();
   const { data: activeConnections, isLoading: loadingActive } = useActiveConnections();
   const acceptRequest = useAcceptConnectionRequest();
   const rejectRequest = useRejectConnectionRequest();
   const cancelRequest = useCancelConnectionRequest();
+  const disconnectConnection = useDisconnectConnection();
 
   // Subscribe to realtime updates
   useConnectionRequestsRealtime();
+  useActiveConnectionsRealtime();
 
   const handleAccept = (requestId: string) => {
     triggerHaptic('success');
@@ -166,6 +183,18 @@ const Connections = () => {
     </div>
   );
 
+  const handleDisconnect = (connection: ActiveConnection) => {
+    triggerHaptic('warning');
+    setDisconnectTarget(connection);
+  };
+
+  const confirmDisconnect = () => {
+    if (disconnectTarget) {
+      disconnectConnection.mutate(disconnectTarget.id);
+      setDisconnectTarget(null);
+    }
+  };
+
   const ActiveConnectionCard = ({ connection }: { connection: ActiveConnection }) => (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -235,6 +264,14 @@ const Connections = () => {
             onClick={() => navigate(`/user/${connection.connected_profile?.id}`)}
           >
             Perfil
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => handleDisconnect(connection)}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <Unlink className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -361,6 +398,29 @@ const Connections = () => {
           </div>
         </div>
       </div>
+
+      {/* Disconnect confirmation dialog */}
+      <AlertDialog open={!!disconnectTarget} onOpenChange={() => setDisconnectTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar conexión?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará la conexión con{" "}
+              <span className="font-semibold">{disconnectTarget?.connected_profile?.name || "este usuario"}</span>.
+              Ya no podrás ver su perfil completo ni chatear directamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDisconnect}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 };

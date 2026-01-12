@@ -426,7 +426,32 @@ export const useCancelConnectionRequest = () => {
   });
 };
 
-// Subscribe to realtime updates
+// Disconnect an active connection
+export const useDisconnectConnection = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (requestId: string) => {
+      const { error } = await supabase
+        .from("connection_requests")
+        .delete()
+        .eq("id", requestId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["connection_requests"] });
+      queryClient.invalidateQueries({ queryKey: ["connection_status"] });
+      toast.success("Conexión eliminada");
+    },
+    onError: (error) => {
+      console.error("Error disconnecting:", error);
+      toast.error("No se pudo eliminar la conexión");
+    },
+  });
+};
+
+// Subscribe to realtime updates for connection requests
 export const useConnectionRequestsRealtime = () => {
   const queryClient = useQueryClient();
   const { data: profile } = useProfile();
@@ -456,6 +481,53 @@ export const useConnectionRequestsRealtime = () => {
               },
             });
           }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, queryClient]);
+};
+
+// Subscribe to realtime updates for unread messages in active connections
+export const useActiveConnectionsRealtime = () => {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    // Listen for new chat messages to update unread counts
+    const channel = supabase
+      .channel("active_connections_messages")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
+        },
+        (payload) => {
+          // Only invalidate if the message is not from the current user
+          const newMessage = payload.new as { sender_profile_id: string };
+          if (newMessage.sender_profile_id !== profile.id) {
+            queryClient.invalidateQueries({ queryKey: ["connection_requests", "active"] });
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "spark_read_status",
+          filter: `profile_id=eq.${profile.id}`,
+        },
+        () => {
+          // When read status changes, update unread counts
+          queryClient.invalidateQueries({ queryKey: ["connection_requests", "active"] });
         }
       )
       .subscribe();
