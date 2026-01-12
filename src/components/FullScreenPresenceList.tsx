@@ -57,20 +57,12 @@ interface FullScreenPresenceListProps {
   getCompatibilityBreakdown: (presence: PresenceWithProfile) => CompatibilityBreakdown;
 }
 
-interface UndoAction {
-  type: 'swipe_left' | 'swipe_right';
-  presenceId: string;
-  ghostMessageId?: string;
-}
-
 const isProfileActive = (presence: PresenceWithProfile) => {
   if (!presence.last_pulse || !presence.is_present) return false;
   const pulseTime = new Date(presence.last_pulse).getTime();
   const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
   return pulseTime >= fiveMinutesAgo;
 };
-
-const UNDO_BUTTON_TIMEOUT = 4000; // 4 seconds
 
 export const FullScreenPresenceList = memo(({
   profiles,
@@ -103,29 +95,6 @@ export const FullScreenPresenceList = memo(({
   const [showHayVibra, setShowHayVibra] = useState(false);
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   
-  // Undo state
-  const [lastAction, setLastAction] = useState<UndoAction | null>(null);
-  const [showUndo, setShowUndo] = useState(false);
-  const undoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Hide undo button after timeout
-  useEffect(() => {
-    if (lastAction) {
-      setShowUndo(true);
-      if (undoTimeoutRef.current) {
-        clearTimeout(undoTimeoutRef.current);
-      }
-      undoTimeoutRef.current = setTimeout(() => {
-        setShowUndo(false);
-        setLastAction(null);
-      }, UNDO_BUTTON_TIMEOUT);
-    }
-    return () => {
-      if (undoTimeoutRef.current) {
-        clearTimeout(undoTimeoutRef.current);
-      }
-    };
-  }, [lastAction]);
 
   // Separate active and inactive profiles
   const activeProfiles = canSeeRealtimePresence 
@@ -151,36 +120,6 @@ export const FullScreenPresenceList = memo(({
     .map(p => ({ id: p.profile!.id }));
   usePrefetchAdjacent(prefetchableProfiles, 0, 3);
 
-  const handleUndo = useCallback(async () => {
-    if (!lastAction) return;
-
-    triggerHaptic('light');
-
-    // If it was a swipe right with a ghost message, delete the message
-    if (lastAction.type === 'swipe_right' && lastAction.ghostMessageId) {
-      try {
-        await supabase
-          .from("ghost_messages")
-          .delete()
-          .eq("id", lastAction.ghostMessageId);
-        refetchLimit();
-        queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
-      } catch (e) {
-        console.log("[Undo] Could not delete ghost message:", e);
-      }
-    }
-
-    // Restore the dismissed profile
-    setDismissedIds(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(lastAction.presenceId);
-      return newSet;
-    });
-
-    setLastAction(null);
-    setShowUndo(false);
-    toast.success("Acción deshecha", { duration: 2000 });
-  }, [lastAction, refetchLimit, queryClient]);
 
   const handleSwipeLeft = useCallback((presence: PresenceWithProfile) => {
     // Pass - dismiss the card and save to rewind history
@@ -191,7 +130,6 @@ export const FullScreenPresenceList = memo(({
     setRewindHistory(prev => [presence, ...prev].slice(0, 10));
     
     setDismissedIds(prev => new Set(prev).add(presence.id));
-    setLastAction({ type: 'swipe_left', presenceId: presence.id });
     if (currentIndex < allProfiles.length - 1) {
       setCurrentIndex(prev => prev);
     }
@@ -286,12 +224,6 @@ export const FullScreenPresenceList = memo(({
           });
         }
 
-        // Store action for undo
-        setLastAction({
-          type: 'swipe_right',
-          presenceId: presence.id,
-          ghostMessageId: insertedMessage?.id,
-        });
       }
     } catch (error: any) {
       toast.error("Error al enviar: " + error.message);
@@ -429,13 +361,6 @@ export const FullScreenPresenceList = memo(({
           e.preventDefault();
           handleSwipeDown(currentPresence);
           break;
-        case "z":
-        case "Z":
-          if (showUndo && lastAction) {
-            e.preventDefault();
-            handleUndo();
-          }
-          break;
         case "r":
         case "R":
           e.preventDefault();
@@ -446,7 +371,7 @@ export const FullScreenPresenceList = memo(({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isMobile, allProfiles, handleSwipeLeft, handleSwipeRight, handleSwipeUp, handleSwipeDown, handleUndo, handleRewind, showUndo, lastAction]);
+  }, [isMobile, allProfiles, handleSwipeLeft, handleSwipeRight, handleSwipeUp, handleSwipeDown, handleRewind]);
 
   // Track exhaustion state for push notifications
   useEffect(() => {
@@ -726,8 +651,6 @@ export const FullScreenPresenceList = memo(({
               if (currentPresence) handleSwipeUp(currentPresence);
             }}
             onRewind={handleRewind}
-            onUndo={handleUndo}
-            showUndo={showUndo && !!lastAction}
             canRewind={canRewind && rewindHistory.length > 0}
             rewindRemaining={rewindRemaining}
             isRewindUnlimited={isRewindUnlimited}
