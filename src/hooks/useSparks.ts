@@ -1,9 +1,9 @@
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { sendPushNotification } from "@/utils/pushNotifications";
-import { vibrateDevice } from "@/utils/notificationSound";
+import { vibrateDevice, playNotificationSound } from "@/utils/notificationSound";
 
 export interface SparkChat {
   id: string;
@@ -142,8 +142,15 @@ export const useSparkChats = () => {
           } as SparkChat;
         });
 
-      // Sort by last message (most recent first)
+      // Sort: prioritize unread messages first, then by last message time
       const sortedChats = chats.sort((a, b) => {
+        // First priority: unread messages
+        const aHasUnread = (a.unread_count || 0) > 0;
+        const bHasUnread = (b.unread_count || 0) > 0;
+        if (aHasUnread && !bHasUnread) return -1;
+        if (!aHasUnread && bHasUnread) return 1;
+        
+        // Second priority: most recent message
         const timeA = new Date(a.last_message_at || a.created_at).getTime();
         const timeB = new Date(b.last_message_at || b.created_at).getTime();
         return timeB - timeA;
@@ -637,12 +644,29 @@ export const useOtherUserReadStatus = (chatId: string | undefined, otherProfileI
 };
 
 // Subscribe to realtime updates for unread messages in spark chats list
-export const useSparkChatsRealtime = () => {
+export const useSparkChatsRealtime = (options?: { playSound?: boolean }) => {
   const queryClient = useQueryClient();
   const { data: profile } = useProfile();
+  const { playSound = true } = options || {};
+  
+  // Track if we've received at least one update to avoid sound on initial load
+  const hasReceivedInitialData = useRef(false);
+  
+  // Sound callback - memoized to avoid re-subscribing
+  const playMessageSound = useCallback(() => {
+    if (playSound && hasReceivedInitialData.current) {
+      playNotificationSound("message");
+      vibrateDevice("message");
+    }
+  }, [playSound]);
 
   useEffect(() => {
     if (!profile?.id) return;
+    
+    // Mark as initialized after a short delay to avoid sound on page load
+    const initTimer = setTimeout(() => {
+      hasReceivedInitialData.current = true;
+    }, 1500);
 
     // Listen for new chat messages to update unread counts
     const channel = supabase
@@ -655,10 +679,11 @@ export const useSparkChatsRealtime = () => {
           table: "chat_messages",
         },
         (payload) => {
-          // Only invalidate if the message is not from the current user
+          // Only invalidate and notify if the message is not from the current user
           const newMessage = payload.new as { sender_profile_id: string };
           if (newMessage.sender_profile_id !== profile.id) {
             queryClient.invalidateQueries({ queryKey: ["spark_chats", profile.id] });
+            playMessageSound();
           }
         }
       )
@@ -678,7 +703,8 @@ export const useSparkChatsRealtime = () => {
       .subscribe();
 
     return () => {
+      clearTimeout(initTimer);
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, queryClient]);
+  }, [profile?.id, queryClient, playMessageSound]);
 };
