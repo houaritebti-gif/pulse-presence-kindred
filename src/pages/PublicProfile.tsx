@@ -33,6 +33,7 @@ import ProfilePhotoGallery from "@/components/ProfilePhotoGallery";
 import PublicAchievementsBadges from "@/components/PublicAchievementsBadges";
 import { triggerHaptic } from "@/utils/haptics";
 import ParallaxBackground from "@/components/ParallaxBackground";
+import { getZodiacSign, getBirthYear } from "@/utils/zodiacUtils";
 
 // Helper to calculate age from birthdate
 const calculateAge = (birthdate: string | null | undefined): number | null => {
@@ -246,6 +247,46 @@ const PublicProfile = () => {
               </TooltipProvider>
             )}
           </div>
+          
+          {/* Zodiac + Birth year row (respects visibility settings) */}
+          {(profile as any).birthdate && (
+            <div className="flex items-center justify-center gap-2 flex-wrap mt-1">
+              {/* Zodiac sign - only if show_zodiac is true */}
+              {((profile as any).show_zodiac !== false) && (() => {
+                const zodiac = getZodiacSign((profile as any).birthdate);
+                return zodiac ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex items-center gap-1 text-muted-foreground text-sm cursor-help">
+                          <span>{zodiac.emoji}</span>
+                          <span>{zodiac.name}</span>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p className="text-xs">{zodiac.dateRange}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : null;
+              })()}
+              
+              {/* Birth year - only if show_birth_year is true */}
+              {((profile as any).show_birth_year !== false) && (() => {
+                const birthYear = getBirthYear((profile as any).birthdate);
+                return birthYear ? (
+                  <>
+                    {((profile as any).show_zodiac !== false) && getZodiacSign((profile as any).birthdate) && (
+                      <span className="text-foreground/30">·</span>
+                    )}
+                    <span className="text-muted-foreground text-sm">
+                      Nacido en {birthYear}
+                    </span>
+                  </>
+                ) : null;
+              })()}
+            </div>
+          )}
           
           {/* Compact info row: vibe + city + organizer */}
           <div className="flex items-center justify-center gap-2 flex-wrap mt-1.5">
