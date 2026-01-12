@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { 
   Bell, Send, Zap, Clock, CheckCircle2, XCircle, 
   AlertTriangle, RefreshCw, Activity, Shield, 
-  Loader2, Play, Trash2, BarChart3
+  Loader2, Play, Trash2, BarChart3, Download, Ban
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -384,6 +384,136 @@ const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
     }
   };
 
+  // Export logs to CSV
+  const exportLogsToCSV = () => {
+    if (logs.length === 0) {
+      toast.warning("No hay logs para exportar");
+      return;
+    }
+
+    const headers = ['Timestamp', 'Type', 'Status', 'Message', 'Details'];
+    const csvRows = [headers.join(',')];
+
+    logs.forEach(log => {
+      const row = [
+        format(log.timestamp, 'yyyy-MM-dd HH:mm:ss'),
+        log.type,
+        log.status,
+        `"${log.message.replace(/"/g, '""')}"`,
+        `"${(log.details || '').replace(/"/g, '""')}"`,
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `kiki-test-logs-${format(new Date(), 'yyyy-MM-dd-HHmm')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    addLog({
+      type: 'in-app',
+      status: 'success',
+      message: 'Logs exportados a CSV',
+      details: `${logs.length} registros exportados`,
+    });
+    toast.success("Logs exportados correctamente");
+  };
+
+  // Simulate rate limit exceeded
+  const simulateRateLimitExceeded = async () => {
+    setIsLoading('simulate-rate');
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (!profile) {
+        throw new Error('No se encontró el perfil');
+      }
+
+      // Send multiple push requests rapidly to trigger rate limit
+      const results: Array<{ success: boolean; error?: string }> = [];
+      
+      for (let i = 0; i < 35; i++) {
+        try {
+          const { data, error } = await supabase.functions.invoke('send-push-notification', {
+            body: {
+              profile_id: profile.id,
+              title: `Rate Limit Test #${i + 1}`,
+              body: 'Testing rate limit behavior',
+              url: '/admin',
+              tag: 'rate-limit-test',
+              test_mode: true,
+            },
+          });
+
+          if (error) {
+            results.push({ success: false, error: error.message });
+            // If we get rate limited, log it and stop
+            if (error.message.includes('rate limit') || error.message.includes('429')) {
+              addLog({
+                type: 'rate-limit',
+                status: 'warning',
+                message: `Rate limit alcanzado en request #${i + 1}`,
+                details: error.message,
+              });
+              toast.warning(`Rate limit alcanzado después de ${i + 1} requests`);
+              break;
+            }
+          } else {
+            results.push({ success: true });
+          }
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : 'Error';
+          results.push({ success: false, error: errMsg });
+          if (errMsg.includes('rate limit') || errMsg.includes('429')) {
+            addLog({
+              type: 'rate-limit',
+              status: 'warning',
+              message: `Rate limit alcanzado en request #${i + 1}`,
+              details: errMsg,
+            });
+            toast.warning(`Rate limit alcanzado después de ${i + 1} requests`);
+            break;
+          }
+        }
+      }
+
+      const successCount = results.filter(r => r.success).length;
+      const failCount = results.filter(r => !r.success).length;
+
+      addLog({
+        type: 'rate-limit',
+        status: failCount > 0 ? 'warning' : 'success',
+        message: `Simulación completada: ${successCount} exitosos, ${failCount} bloqueados`,
+        details: `Total de requests enviados: ${results.length}`,
+      });
+
+      // Refresh rate limit info after simulation
+      await fetchRateLimitInfo();
+      
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error en simulación';
+      addLog({
+        type: 'rate-limit',
+        status: 'error',
+        message: 'Error al simular rate limit',
+        details: message,
+      });
+      toast.error(message);
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
   const getStatusIcon = (status: TestLog['status']) => {
     switch (status) {
       case 'success': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
@@ -409,7 +539,7 @@ const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
       className="space-y-6"
     >
       {/* Header */}
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
+      <motion.div variants={itemVariants} className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Activity className="w-5 h-5 text-primary" />
@@ -419,10 +549,21 @@ const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
             Prueba el sistema de notificaciones y monitorea la seguridad
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={clearLogs} disabled={logs.length === 0}>
-          <Trash2 className="w-4 h-4 mr-2" />
-          Limpiar logs
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={exportLogsToCSV} 
+            disabled={logs.length === 0}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Exportar CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={clearLogs} disabled={logs.length === 0}>
+            <Trash2 className="w-4 h-4 mr-2" />
+            Limpiar logs
+          </Button>
+        </div>
       </motion.div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -551,14 +692,26 @@ const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
                   disabled={isLoading === 'logs'}
                   variant="outline"
                   size="sm"
-                  className="col-span-2"
                 >
                   {isLoading === 'logs' ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
                     <Clock className="w-4 h-4 mr-2" />
                   )}
-                  Cargar logs de rotación
+                  Logs de rotación
+                </Button>
+                <Button 
+                  onClick={simulateRateLimitExceeded}
+                  disabled={isLoading === 'simulate-rate'}
+                  variant="destructive"
+                  size="sm"
+                >
+                  {isLoading === 'simulate-rate' ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Ban className="w-4 h-4 mr-2" />
+                  )}
+                  Simular Rate Limit
                 </Button>
               </div>
 
