@@ -23,13 +23,40 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const internalSecret = Deno.env.get('INTERNAL_FUNCTION_SECRET');
     
-    // SECURITY: Validate this is an internal call, not from a user
+// SECURITY: Validate this is an internal call, not from a user
     const providedSecret = req.headers.get('x-internal-secret');
     const authHeader = req.headers.get('Authorization') || '';
     const isServiceRole = authHeader.includes(supabaseServiceKey);
     
     // Create supabase client early for secret validation
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Parse body early to check for test_mode
+    const body = await req.json();
+    const { profile_id, title, body: notificationBody, url, tag, quedada_id, spark_chat_id, test_mode } = body;
+    
+    // Option 3: Admin test_mode - authenticated admin user can skip internal secret
+    let isAdminTestMode = false;
+    if (test_mode === true && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      const supabaseWithAuth = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      
+      const { data: claims, error: claimsError } = await supabaseWithAuth.auth.getClaims(token);
+      if (!claimsError && claims?.claims?.sub) {
+        const userId = claims.claims.sub;
+        // Check if user is admin
+        const { data: isAdmin } = await supabase.rpc('has_role', { 
+          _user_id: userId, 
+          _role: 'admin' 
+        });
+        if (isAdmin === true) {
+          isAdminTestMode = true;
+          console.log(`[Admin Test Mode] Authorized admin user: ${userId}`);
+        }
+      }
+    }
     
     // Option 1: Check hardcoded internal secret (for backward compatibility during rotation)
     const isLegacySecret = internalSecret && providedSecret === internalSecret;
@@ -45,7 +72,7 @@ serve(async (req) => {
     }
     
     // Validate internal access
-    const isInternalCall = isLegacySecret || isRotatedSecret || isServiceRole;
+    const isInternalCall = isLegacySecret || isRotatedSecret || isServiceRole || isAdminTestMode;
     
     if (!isInternalCall) {
       console.error('Unauthorized: This function is for internal use only');
@@ -55,18 +82,16 @@ serve(async (req) => {
       });
     }
     
-    if (!vapidPublicKey || !vapidPrivateKey) {
+if (!vapidPublicKey || !vapidPrivateKey) {
       console.error('VAPID keys not configured');
       throw new Error('VAPID keys not configured');
     }
-    
-    const { profile_id, title, body, url, tag, quedada_id, spark_chat_id } = await req.json();
     
     if (!profile_id || !title) {
       throw new Error('profile_id and title are required');
     }
     
-    console.log(`[Internal] Sending push to profile: ${profile_id}, title: ${title}`);
+    console.log(`[Internal] Sending push to profile: ${profile_id}, title: ${title}${isAdminTestMode ? ' [ADMIN TEST]' : ''}`);
     
     // RATE LIMITING: Check if this profile has exceeded the rate limit
     const { data: withinLimit, error: rateLimitError } = await supabase.rpc('check_push_rate_limit', {

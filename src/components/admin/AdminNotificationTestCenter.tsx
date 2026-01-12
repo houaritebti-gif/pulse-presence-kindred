@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Bell, Send, Zap, Clock, CheckCircle2, XCircle, 
   AlertTriangle, RefreshCw, Activity, Shield, 
-  Loader2, Play, Trash2
+  Loader2, Play, Trash2, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +22,9 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { format } from "date-fns";
+import { format, subDays, startOfHour, eachHourOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface TestLog {
   id: string;
@@ -45,6 +46,12 @@ interface RateLimitInfo {
   profile_id: string;
   window_start: string;
   request_count: number;
+}
+
+interface RateLimitChartData {
+  hour: string;
+  requests: number;
+  date: Date;
 }
 
 const containerVariants = {
@@ -69,8 +76,9 @@ const AdminNotificationTestCenter = () => {
   const [notificationTitle, setNotificationTitle] = useState("🔔 Test de notificación");
   const [notificationBody, setNotificationBody] = useState("Este es un mensaje de prueba desde el centro de testing.");
   const [notificationType, setNotificationType] = useState<string>("connection_request");
-  const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
+const [rotationInfo, setRotationInfo] = useState<RotationInfo | null>(null);
   const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo[]>([]);
+  const [rateLimitChartData, setRateLimitChartData] = useState<RateLimitChartData[]>([]);
 
   const addLog = (log: Omit<TestLog, 'id' | 'timestamp'>) => {
     setLogs(prev => [{
@@ -271,6 +279,77 @@ const AdminNotificationTestCenter = () => {
         details: message,
       });
       toast.info("Rate limits no accesibles (solo service_role)");
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
+  // Fetch rate limit chart data for the last 7 days
+  const fetchRateLimitChartData = async () => {
+    setIsLoading('chart');
+    try {
+      const sevenDaysAgo = subDays(new Date(), 7);
+      
+      const { data, error } = await supabase
+        .from('push_rate_limits')
+        .select('window_start, request_count')
+        .gte('window_start', sevenDaysAgo.toISOString())
+        .order('window_start', { ascending: true });
+
+      if (error) throw error;
+
+      // Group by hour
+      const hourlyData = new Map<string, number>();
+      const hours = eachHourOfInterval({
+        start: sevenDaysAgo,
+        end: new Date(),
+      });
+
+      // Initialize all hours with 0
+      hours.forEach(hour => {
+        const key = format(hour, 'yyyy-MM-dd HH:00');
+        hourlyData.set(key, 0);
+      });
+
+      // Aggregate actual data
+      (data || []).forEach(record => {
+        const hourKey = format(new Date(record.window_start), 'yyyy-MM-dd HH:00');
+        const current = hourlyData.get(hourKey) || 0;
+        hourlyData.set(hourKey, current + record.request_count);
+      });
+
+      // Convert to chart data - sample every 4 hours for readability
+      const chartData: RateLimitChartData[] = [];
+      let counter = 0;
+      hourlyData.forEach((requests, hour) => {
+        if (counter % 4 === 0) {
+          const date = new Date(hour);
+          chartData.push({
+            hour: format(date, 'dd/MM HH:mm'),
+            requests,
+            date,
+          });
+        }
+        counter++;
+      });
+
+      setRateLimitChartData(chartData);
+
+      addLog({
+        type: 'rate-limit',
+        status: 'success',
+        message: 'Datos del gráfico cargados',
+        details: `${chartData.length} puntos de datos de los últimos 7 días`,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo obtener datos';
+      addLog({
+        type: 'rate-limit',
+        status: 'error',
+        message: 'Error al cargar gráfico',
+        details: message,
+      });
+      toast.info("Datos de rate limit no accesibles");
     } finally {
       setIsLoading(null);
     }
@@ -523,6 +602,90 @@ const AdminNotificationTestCenter = () => {
           </Card>
         </motion.div>
       </div>
+
+      {/* Rate Limit Chart */}
+      <motion.div variants={itemVariants}>
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Rate Limiting - Últimos 7 días
+            </CardTitle>
+            <CardDescription>
+              Solicitudes de push notifications por hora
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-end mb-4">
+              <Button 
+                onClick={fetchRateLimitChartData}
+                disabled={isLoading === 'chart'}
+                variant="outline"
+                size="sm"
+              >
+                {isLoading === 'chart' ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                )}
+                Cargar datos
+              </Button>
+            </div>
+            {rateLimitChartData.length > 0 ? (
+              <div className="h-[250px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={rateLimitChartData}>
+                    <defs>
+                      <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="hour" 
+                      tick={{ fontSize: 10 }} 
+                      tickLine={false}
+                      axisLine={false}
+                      interval="preserveStartEnd"
+                      className="text-muted-foreground"
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 10 }} 
+                      tickLine={false}
+                      axisLine={false}
+                      className="text-muted-foreground"
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        fontSize: '12px'
+                      }}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="requests" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorRequests)"
+                      name="Requests"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
+                <BarChart3 className="w-10 h-10 mb-3 opacity-50" />
+                <p>Haz clic en "Cargar datos" para ver el gráfico</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Logs */}
       <motion.div variants={itemVariants}>
