@@ -772,9 +772,9 @@ const SparkChat = () => {
                           <TooltipTrigger asChild>
                             <div className="flex-shrink-0 mb-0.5 cursor-help">
                               {isPremiumUser && otherUserLastRead && new Date(msg.created_at) <= otherUserLastRead ? (
-                                <CheckCheck className="w-4 h-4 text-primary/70" />
+                                <CheckCheck className="w-4 h-4 text-primary/70 animate-[scale-in_0.3s_ease-out]" />
                               ) : (
-                                <Check className="w-4 h-4 text-muted-foreground/70" />
+                                <Check className="w-4 h-4 text-muted-foreground/70 transition-all duration-300" />
                               )}
                             </div>
                           </TooltipTrigger>
