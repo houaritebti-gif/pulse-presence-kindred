@@ -6,7 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-internal-secret',
 };
 
-// Internal-only push notification function
+// Rate limit: max 30 requests per profile per minute
+const RATE_LIMIT_MAX_REQUESTS = 30;
+
+// Internal-only push notification function with rate limiting
 // Only callable by other edge functions or triggers using internal secret
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,15 +24,28 @@ serve(async (req) => {
     const internalSecret = Deno.env.get('INTERNAL_FUNCTION_SECRET');
     
     // SECURITY: Validate this is an internal call, not from a user
-    // Option 1: Check for internal secret header (from other edge functions)
     const providedSecret = req.headers.get('x-internal-secret');
-    
-    // Option 2: Check if called with service_role key (from triggers/internal)
     const authHeader = req.headers.get('Authorization') || '';
     const isServiceRole = authHeader.includes(supabaseServiceKey);
     
+    // Create supabase client early for secret validation
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    // Option 1: Check hardcoded internal secret (for backward compatibility during rotation)
+    const isLegacySecret = internalSecret && providedSecret === internalSecret;
+    
+    // Option 2: Check rotated secret from database (supports current + previous with grace period)
+    let isRotatedSecret = false;
+    if (providedSecret && !isLegacySecret) {
+      const { data: isValid } = await supabase.rpc('validate_internal_secret', {
+        p_secret_name: 'trigger_internal_secret',
+        p_provided_secret: providedSecret
+      });
+      isRotatedSecret = isValid === true;
+    }
+    
     // Validate internal access
-    const isInternalCall = (internalSecret && providedSecret === internalSecret) || isServiceRole;
+    const isInternalCall = isLegacySecret || isRotatedSecret || isServiceRole;
     
     if (!isInternalCall) {
       console.error('Unauthorized: This function is for internal use only');
@@ -43,8 +59,6 @@ serve(async (req) => {
       console.error('VAPID keys not configured');
       throw new Error('VAPID keys not configured');
     }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     const { profile_id, title, body, url, tag, quedada_id, spark_chat_id } = await req.json();
     
@@ -53,6 +67,27 @@ serve(async (req) => {
     }
     
     console.log(`[Internal] Sending push to profile: ${profile_id}, title: ${title}`);
+    
+    // RATE LIMITING: Check if this profile has exceeded the rate limit
+    const { data: withinLimit, error: rateLimitError } = await supabase.rpc('check_push_rate_limit', {
+      p_profile_id: profile_id,
+      p_max_requests: RATE_LIMIT_MAX_REQUESTS
+    });
+    
+    if (rateLimitError) {
+      console.error('Error checking rate limit:', rateLimitError);
+      // Continue anyway - fail open for rate limiting to not break notifications
+    } else if (withinLimit === false) {
+      console.warn(`Rate limit exceeded for profile: ${profile_id}`);
+      return new Response(JSON.stringify({ 
+        error: 'Rate limit exceeded', 
+        sent: 0,
+        rate_limited: true 
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     // Check if this is a quedada notification and user has muted it
     if (quedada_id) {
@@ -177,7 +212,6 @@ serve(async (req) => {
         const authorization = `vapid t=${jwt}, k=${vapidPublicKey}`;
         
         // Send push notification without encrypted payload
-        // This triggers the service worker which shows a generic notification
         const response = await fetch(sub.endpoint, {
           method: 'POST',
           headers: {

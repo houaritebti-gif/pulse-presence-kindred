@@ -314,6 +314,36 @@ export type Database = {
           },
         ]
       }
+      internal_secrets_rotation: {
+        Row: {
+          created_at: string
+          current_secret: string
+          id: string
+          next_rotation_at: string
+          previous_secret: string | null
+          rotated_at: string
+          secret_name: string
+        }
+        Insert: {
+          created_at?: string
+          current_secret: string
+          id?: string
+          next_rotation_at?: string
+          previous_secret?: string | null
+          rotated_at?: string
+          secret_name: string
+        }
+        Update: {
+          created_at?: string
+          current_secret?: string
+          id?: string
+          next_rotation_at?: string
+          previous_secret?: string | null
+          rotated_at?: string
+          secret_name?: string
+        }
+        Relationships: []
+      }
       kiki_now_boosts: {
         Row: {
           created_at: string
@@ -914,6 +944,27 @@ export type Database = {
         }
         Relationships: []
       }
+      push_rate_limits: {
+        Row: {
+          id: string
+          profile_id: string
+          request_count: number
+          window_start: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          request_count?: number
+          window_start?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          request_count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -1145,6 +1196,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      secrets_rotation_log: {
+        Row: {
+          action: string
+          details: string | null
+          executed_at: string
+          id: string
+          secret_name: string
+        }
+        Insert: {
+          action: string
+          details?: string | null
+          executed_at?: string
+          id?: string
+          secret_name: string
+        }
+        Update: {
+          action?: string
+          details?: string | null
+          executed_at?: string
+          id?: string
+          secret_name?: string
+        }
+        Relationships: []
       }
       spark_chats: {
         Row: {
@@ -1550,10 +1625,20 @@ export type Database = {
         Args: { target_profile_id: string; viewer_user_id: string }
         Returns: boolean
       }
+      check_push_rate_limit: {
+        Args: {
+          p_max_requests?: number
+          p_profile_id: string
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
+      cleanup_old_rate_limits: { Args: never; Returns: number }
       contains_blacklisted_words: {
         Args: { text_to_check: string }
         Returns: boolean
       }
+      generate_internal_secret: { Args: never; Returns: string }
       get_available_item_quantity: {
         Args: { p_item_key: string; p_profile_id: string }
         Returns: number
@@ -1586,8 +1671,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      rotate_internal_secret: {
+        Args: { p_secret_name: string }
+        Returns: string
+      }
       use_purchased_item: {
         Args: { p_item_key: string; p_profile_id: string }
+        Returns: boolean
+      }
+      validate_internal_secret: {
+        Args: { p_provided_secret: string; p_secret_name: string }
         Returns: boolean
       }
     }
