@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Flame, Trophy, Calendar, Zap } from "lucide-react";
+import { ChevronDown, Flame, Trophy, Calendar, Zap, Gift, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useChallengeStreak, StreakDay } from "@/hooks/useChallengeStreak";
+import { Button } from "@/components/ui/button";
+import { useChallengeStreak, StreakDay, STREAK_BONUS_MILESTONES } from "@/hooks/useChallengeStreak";
+import { useSparkEnergy } from "@/hooks/useSparkEnergy";
+import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { triggerHaptic } from "@/utils/haptics";
 import { cn } from "@/lib/utils";
 
 const DayCell = ({ day, index }: { day: StreakDay; index: number }) => {
@@ -83,9 +90,116 @@ const StatBadge = ({
   </div>
 );
 
+// Streak bonus milestone component
+const StreakBonusMilestone = ({
+  milestone,
+  currentStreak,
+  isClaimed,
+  onClaim,
+  isClaiming,
+}: {
+  milestone: typeof STREAK_BONUS_MILESTONES[number];
+  currentStreak: number;
+  isClaimed: boolean;
+  onClaim: () => void;
+  isClaiming: boolean;
+}) => {
+  const isReached = currentStreak >= milestone.days;
+  const canClaim = isReached && !isClaimed;
+
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between p-3 rounded-xl border transition-all",
+        isClaimed && "bg-muted/30 border-muted opacity-60",
+        canClaim && "bg-gradient-to-r from-primary/10 to-primary/5 border-primary/30 shadow-sm",
+        !isReached && !isClaimed && "bg-muted/10 border-border/50"
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">{milestone.emoji}</span>
+        <div>
+          <div className="font-medium text-sm">
+            {milestone.days} días seguidos
+          </div>
+          <div className="text-xs text-muted-foreground">
+            +{milestone.bonus} ⚡ de bonus
+          </div>
+        </div>
+      </div>
+      
+      {isClaimed ? (
+        <div className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded-md">
+          ✓ Reclamado
+        </div>
+      ) : canClaim ? (
+        <Button
+          size="sm"
+          onClick={onClaim}
+          disabled={isClaiming}
+          className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5"
+        >
+          {isClaiming ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Gift className="h-3.5 w-3.5" />
+          )}
+          Reclamar
+        </Button>
+      ) : (
+        <div className="text-xs text-muted-foreground">
+          {milestone.days - currentStreak} días más
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const ChallengeStreakCalendar = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: streakData, isLoading } = useChallengeStreak();
+  const { data: profile } = useProfile();
+  const { earnEnergy } = useSparkEnergy();
+  const queryClient = useQueryClient();
+
+  // Mutation to claim streak bonus
+  const claimBonusMutation = useMutation({
+    mutationFn: async (days: number) => {
+      if (!profile?.id) throw new Error('No profile');
+
+      const milestone = STREAK_BONUS_MILESTONES.find(m => m.days === days);
+      if (!milestone) throw new Error('Invalid milestone');
+
+      // Check if already claimed
+      const { data: existing } = await supabase
+        .from('spark_transactions')
+        .select('id')
+        .eq('profile_id', profile.id)
+        .eq('action', `challenge_streak_bonus_${days}`)
+        .maybeSingle();
+
+      if (existing) throw new Error('Ya reclamaste este bonus');
+
+      // Award energy
+      await earnEnergy({
+        action: `challenge_streak_bonus_${days}`,
+        description: `Bonus racha ${days} días`,
+        customAmount: milestone.bonus,
+      });
+
+      return milestone;
+    },
+    onSuccess: (milestone) => {
+      triggerHaptic('success');
+      toast.success(`${milestone.emoji} ¡Bonus de racha reclamado!`, {
+        description: `+${milestone.bonus} ⚡ por ${milestone.days} días consecutivos`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['challenge_streak'] });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Error al reclamar');
+    },
+  });
 
   if (isLoading || !streakData) {
     return (
@@ -100,13 +214,18 @@ export const ChallengeStreakCalendar = () => {
     );
   }
 
-  const { currentStreak, longestStreak, totalDaysCompleted, last30Days } = streakData;
+  const { currentStreak, longestStreak, totalDaysCompleted, last30Days, streakBonusesClaimed } = streakData;
 
   // Split into weeks for display
   const weeks: StreakDay[][] = [];
   for (let i = 0; i < last30Days.length; i += 7) {
     weeks.push(last30Days.slice(i, i + 7));
   }
+
+  // Check for available bonuses
+  const availableBonuses = STREAK_BONUS_MILESTONES.filter(
+    m => currentStreak >= m.days && !streakBonusesClaimed.includes(m.days)
+  );
 
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
@@ -130,12 +249,19 @@ export const ChallengeStreakCalendar = () => {
               </p>
             </div>
           </div>
-          <motion.div
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronDown className="h-5 w-5 text-muted-foreground" />
-          </motion.div>
+          <div className="flex items-center gap-2">
+            {availableBonuses.length > 0 && (
+              <div className="px-2 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium animate-pulse">
+                🎁 {availableBonuses.length}
+              </div>
+            )}
+            <motion.div
+              animate={{ rotate: isExpanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+            </motion.div>
+          </div>
         </button>
 
         {/* Expandable content */}
@@ -169,6 +295,26 @@ export const ChallengeStreakCalendar = () => {
                     label="30 días"
                     color="bg-gradient-to-br from-primary/20 to-primary/10 text-primary"
                   />
+                </div>
+
+                {/* Streak Bonus Milestones */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Gift className="h-3.5 w-3.5" />
+                    <span>Bonus por racha</span>
+                  </div>
+                  <div className="space-y-2">
+                    {STREAK_BONUS_MILESTONES.map((milestone) => (
+                      <StreakBonusMilestone
+                        key={milestone.days}
+                        milestone={milestone}
+                        currentStreak={currentStreak}
+                        isClaimed={streakBonusesClaimed.includes(milestone.days)}
+                        onClaim={() => claimBonusMutation.mutate(milestone.days)}
+                        isClaiming={claimBonusMutation.isPending}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 {/* Calendar grid */}

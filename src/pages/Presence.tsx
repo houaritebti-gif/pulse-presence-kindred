@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import { PresenceTopCards } from "@/components/PresenceTopCards";
 import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -656,13 +657,107 @@ const Presence = () => {
               isRetrying={isFetching}
             />
           ) : filteredProfiles.length === 0 ? (
-            <EmptyState
-              icon={Sparkles}
-              title={otherProfiles.length === 0 ? "Nadie más está presente" : "Sin coincidencias"}
-              description={otherProfiles.length === 0 
-                ? "Quédate un rato. Alguien aparecerá."
-                : "No hay personas que coincidan con tus filtros. Prueba con otros criterios."}
-            />
+            <div className="flex flex-col items-center justify-center py-16 animate-fade-up">
+              {/* Animated icon */}
+              <div className="relative mb-6">
+                {/* Pulsing rings */}
+                <div className="absolute inset-0 w-24 h-24 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '2s' }} />
+                <div className="absolute inset-2 w-20 h-20 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+                
+                {/* Main icon container */}
+                <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.1, 1],
+                      rotate: [0, 5, -5, 0]
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <Sparkles className="w-10 h-10 text-primary" />
+                  </motion.div>
+                </div>
+                
+                {/* Floating sparkles */}
+                {[...Array(4)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-2 h-2 rounded-full bg-primary/60"
+                    style={{
+                      left: `${20 + i * 20}%`,
+                      top: `${10 + (i % 2) * 60}%`,
+                    }}
+                    animate={{
+                      y: [-5, 5, -5],
+                      opacity: [0.4, 1, 0.4],
+                      scale: [0.8, 1.2, 0.8],
+                    }}
+                    transition={{
+                      duration: 2 + i * 0.5,
+                      repeat: Infinity,
+                      delay: i * 0.3,
+                    }}
+                  />
+                ))}
+              </div>
+              
+              {/* Text content with stagger animation */}
+              <motion.h3
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="font-display text-xl font-semibold text-foreground mb-2 text-center"
+              >
+                {otherProfiles.length === 0 
+                  ? "¡Has visto a todos!" 
+                  : "Sin coincidencias"}
+              </motion.h3>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="font-body text-sm text-muted-foreground max-w-[280px] mx-auto text-center leading-relaxed mb-6"
+              >
+                {otherProfiles.length === 0 
+                  ? "No hay más personas conectadas ahora. Activa notificaciones para saber cuando alguien nuevo aparezca."
+                  : "No hay personas que coincidan con tus filtros. Prueba con otros criterios."}
+              </motion.p>
+              
+              {/* Actions */}
+              {otherProfiles.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex flex-col gap-3 w-full max-w-[240px]"
+                >
+                  <Button
+                    onClick={() => navigate('/profile')}
+                    variant="outline"
+                    className="w-full gap-2"
+                  >
+                    <Bell className="w-4 h-4" />
+                    Configurar notificaciones
+                  </Button>
+                  <button
+                    onClick={() => refetch()}
+                    disabled={isFetching}
+                    className="text-sm text-primary hover:text-primary/80 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    {isFetching ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Radio className="w-3.5 h-3.5" />
+                    )}
+                    Refrescar presencia
+                  </button>
+                </motion.div>
+              )}
+            </div>
           ) : (
             <>
               <FullScreenPresenceList
