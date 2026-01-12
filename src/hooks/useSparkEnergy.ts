@@ -66,6 +66,7 @@ export const DAILY_LIMITS: Record<string, number> = {
   conversation_active: 2,
   join_quedada: 1,
   update_profile: 1, // weekly limit handled separately
+  daily_challenge: 10, // Multiple challenges per day
 };
 
 // Energy amounts per action
@@ -81,6 +82,7 @@ export const ENERGY_AMOUNTS: Record<string, number> = {
   join_quedada: 25,
   update_profile: 10,
   complete_profile: 100, // one-time
+  daily_challenge: 10, // Variable, uses customAmount
 };
 
 // Daily max earning cap
