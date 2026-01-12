@@ -3,6 +3,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import { cn } from "@/lib/utils";
+import { triggerHaptic } from "@/utils/haptics";
 
 interface PresenceTopCardsProps {
   myPresence: { visible_to_others?: boolean } | null | undefined;
@@ -35,8 +36,9 @@ export const PresenceTopCards = ({
     <div className="space-y-4 mb-8">
       {/* Presence toggle card */}
       <div 
+        onClick={() => triggerHaptic('light')}
         className={cn(
-          "rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default",
+          "rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default active:scale-[0.98]",
           myPresence?.visible_to_others 
             ? "bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border-primary/30" 
             : "bg-card border-border",
@@ -103,8 +105,9 @@ export const PresenceTopCards = ({
 
       {/* KIKI Now Boost Card */}
       <div 
+        onClick={() => triggerHaptic('light')}
         className={cn(
-          "rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default",
+          "rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default active:scale-[0.98]",
           boostTimeRemaining 
             ? "bg-gradient-to-r from-primary/20 via-accent/15 to-primary/20 border-primary/40" 
             : "bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-primary/20",
