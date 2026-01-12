@@ -566,24 +566,39 @@ export const FullScreenPresenceList = memo(({
             return (
               <motion.div
                 key={presence.id}
-                initial={{ scale: 0.95, opacity: 0 }}
+                initial={{ 
+                  scale: 0.85, 
+                  opacity: 0, 
+                  y: 40,
+                  rotateX: 15
+                }}
                 animate={{ 
                   scale: isTop ? 1 : 0.95, 
-                  opacity: isTop ? 1 : 0.7,
+                  opacity: isTop ? 1 : 0.6,
+                  y: isTop ? 0 : 8,
+                  rotateX: 0,
                   zIndex: isTop ? 10 : 5
                 }}
                 exit={{ 
                   x: 0, 
                   opacity: 0, 
-                  scale: 0.9,
-                  transition: { duration: 0.2 }
+                  scale: 0.85,
+                  y: -20,
+                  transition: { duration: 0.25, ease: "easeIn" }
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 25,
+                  mass: 0.8
                 }}
                 className={cn(
                   "absolute w-full max-w-md",
                   !isTop && "pointer-events-none"
                 )}
                 style={{
-                  transform: !isTop ? 'translateY(10px)' : undefined
+                  perspective: "1000px",
+                  transformStyle: "preserve-3d"
                 }}
               >
                 <FullScreenPresenceCard
