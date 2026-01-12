@@ -209,17 +209,26 @@ const Connections = () => {
         </div>
         
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            onClick={() => {
-              triggerHaptic('selection');
-              navigate(`/chat/${connection.connected_profile?.id}`);
-            }}
-            className="gap-1.5"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            Chat
-          </Button>
+          <div className="relative">
+            <Button
+              size="sm"
+              onClick={() => {
+                triggerHaptic('selection');
+                navigate(`/chat/${connection.connected_profile?.id}`);
+              }}
+              className="gap-1.5"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              Chat
+            </Button>
+            {connection.unread_count > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1.5 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/50 animate-pulse-soft ring-2 ring-card">
+                <span className="text-[10px] font-bold text-primary-foreground">
+                  {connection.unread_count > 9 ? "9+" : connection.unread_count}
+                </span>
+              </span>
+            )}
+          </div>
           <Button
             size="sm"
             variant="outline"
