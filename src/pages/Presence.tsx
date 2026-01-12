@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock, Zap } from "lucide-react";
@@ -28,6 +28,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useMyKikiNowBoost, useCreateKikiNowCheckout, useVerifyKikiNowBoost, useActiveBoostedProfiles, getBoostTimeRemaining } from "@/hooks/useKikiNow";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -55,6 +56,22 @@ const Presence = () => {
   const { canUseInvisibleMode, isPremium, tier } = useSubscription();
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [invisibleAnimating, setInvisibleAnimating] = useState(false);
+  const realtimeUpsellShownRef = useRef(false);
+
+  // Callback for realtime upsell toast (only for free users)
+  const handleRealtimeUpsell = useCallback(() => {
+    if (tier === 'free' && !realtimeUpsellShownRef.current) {
+      realtimeUpsellShownRef.current = true;
+      toast("Ve quién está conectado en tiempo real", {
+        description: "Con Plus puedes ver la actividad en vivo de otros usuarios.",
+        action: {
+          label: "Ver Plus",
+          onClick: () => navigate("/subscription"),
+        },
+        duration: 5000,
+      });
+    }
+  }, [tier, navigate]);
 
   // KIKI Now boost hooks
   const { data: myBoost } = useMyKikiNowBoost();
@@ -490,146 +507,124 @@ const Presence = () => {
           </p>
         </div>
 
-        {/* Presence toggle - prominent - optimized for mobile */}
-        <div className={`rounded-2xl p-3 sm:p-4 mb-10 animate-fade-up border shadow-sm transition-all duration-300 ${
-          myPresence?.visible_to_others 
-            ? "bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border-primary/30" 
-            : "bg-card border-border"
-        } ${invisibleAnimating ? "animate-invisible-glow" : ""}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                myPresence?.visible_to_others
-                  ? "bg-primary/30 shadow-lg shadow-primary/20" 
-                  : "bg-muted"
-              }`}>
-                {myPresence?.visible_to_others ? (
-                  <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse" />
-                ) : (
-                  <EyeOff className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
-                )}
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                  <p className={`font-display font-semibold text-sm sm:text-base ${
-                    myPresence?.visible_to_others ? "text-primary" : "text-card-foreground"
-                  }`}>
-                    {myPresence?.visible_to_others ? "Estoy por aquí" : "Modo invisible"}
-                  </p>
-                  {!canUseInvisibleMode && !myPresence?.visible_to_others && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
-                      <Crown className="w-3 h-3" />
-                      Premium
-                    </span>
-                  )}
-                  {canUseInvisibleMode && !myPresence?.visible_to_others && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
-                      ✨ Activado
-                    </span>
+        {/* Cards container - symmetric spacing */}
+        <div className="space-y-4 mb-8 animate-fade-up">
+          {/* Presence toggle card */}
+          <div className={`rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300 ${
+            myPresence?.visible_to_others 
+              ? "bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border-primary/30" 
+              : "bg-card border-border"
+          } ${invisibleAnimating ? "animate-invisible-glow" : ""}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  myPresence?.visible_to_others
+                    ? "bg-primary/30 shadow-lg shadow-primary/20" 
+                    : "bg-muted"
+                }`}>
+                  {myPresence?.visible_to_others ? (
+                    <Radio className="w-5 h-5 text-primary animate-pulse" />
+                  ) : (
+                    <EyeOff className="w-5 h-5 text-muted-foreground" />
                   )}
                 </div>
-                <p className="font-body text-xs text-muted-foreground">
-                  {myPresence?.visible_to_others 
-                    ? "Otros pueden verte en la lista" 
-                    : canUseInvisibleMode 
-                      ? "Nadie puede verte, pero tú sí" 
-                      : "Activa Premium para ser invisible"}
-                </p>
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className={`font-display font-semibold text-sm ${
+                      myPresence?.visible_to_others ? "text-primary" : "text-card-foreground"
+                    }`}>
+                      {myPresence?.visible_to_others ? "Estoy por aquí" : "Modo invisible"}
+                    </p>
+                    {!canUseInvisibleMode && !myPresence?.visible_to_others && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
+                        <Crown className="w-3 h-3" />
+                        Premium
+                      </span>
+                    )}
+                    {canUseInvisibleMode && !myPresence?.visible_to_others && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold">
+                        ✨ Activo
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-body text-xs text-muted-foreground">
+                    {myPresence?.visible_to_others 
+                      ? "Otros pueden verte" 
+                      : canUseInvisibleMode 
+                        ? "Nadie te ve" 
+                        : "Premium para ser invisible"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {!canUseInvisibleMode && (
+                  <Lock className="w-4 h-4 text-amber-500" />
+                )}
+                <Switch
+                  checked={myPresence?.visible_to_others ?? true}
+                  onCheckedChange={toggleVisibility}
+                  disabled={setPresence.isPending}
+                  className={myPresence?.visible_to_others ? "data-[state=checked]:bg-primary" : ""}
+                />
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {!canUseInvisibleMode && (
-                <Lock className="w-4 h-4 text-amber-500" />
+          </div>
+
+          {/* KIKI Now Boost Card */}
+          <div className={`rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300 ${
+            boostTimeRemaining 
+              ? "bg-gradient-to-r from-primary/20 via-accent/15 to-primary/20 border-primary/40" 
+              : "bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-primary/20"
+          }`}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shrink-0 ${
+                  boostTimeRemaining 
+                    ? "bg-gradient-to-br from-primary to-accent animate-pulse" 
+                    : "bg-primary/20"
+                }`}>
+                  <Zap className={`w-5 h-5 ${boostTimeRemaining ? "text-white" : "text-primary"}`} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className="font-display font-semibold text-card-foreground text-sm">
+                      KIKI Now
+                    </p>
+                    {boostTimeRemaining && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold animate-pulse">
+                        🔥 {boostTimeRemaining.minutes}:{boostTimeRemaining.seconds.toString().padStart(2, '0')}
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-body text-xs text-muted-foreground">
+                    {boostTimeRemaining 
+                      ? "¡Destacado! Primero en la lista" 
+                      : "Destaca 1 hora — 1,99€"}
+                  </p>
+                </div>
+              </div>
+              {!boostTimeRemaining && (
+                <Button
+                  variant="kiki"
+                  size="sm"
+                  onClick={() => createCheckout.mutate()}
+                  disabled={createCheckout.isPending}
+                  className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                >
+                  {createCheckout.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4 mr-1" />
+                      Activar
+                    </>
+                  )}
+                </Button>
               )}
-              <Switch
-                checked={myPresence?.visible_to_others ?? true}
-                onCheckedChange={toggleVisibility}
-                disabled={setPresence.isPending}
-                className={myPresence?.visible_to_others ? "data-[state=checked]:bg-primary" : ""}
-              />
             </div>
           </div>
         </div>
 
-        {/* KIKI Now Boost Card - optimized for mobile */}
-        <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 rounded-2xl p-3 sm:p-4 mb-6 sm:mb-8 animate-fade-up border border-primary/20">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${
-                boostTimeRemaining 
-                  ? "bg-gradient-to-br from-primary to-accent animate-pulse" 
-                  : "bg-primary/20"
-              }`}>
-                <Zap className={`w-4 h-4 sm:w-5 sm:h-5 ${boostTimeRemaining ? "text-white" : "text-primary"}`} />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                  <p className="font-display font-semibold text-card-foreground text-sm sm:text-base">
-                    KIKI Now
-                  </p>
-                  {boostTimeRemaining && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold animate-pulse">
-                      🔥 {boostTimeRemaining.minutes}:{boostTimeRemaining.seconds.toString().padStart(2, '0')}
-                    </span>
-                  )}
-                </div>
-                <p className="font-body text-xs text-muted-foreground">
-                  {boostTimeRemaining 
-                    ? "¡Estás destacado! Apareces primero en la lista" 
-                    : "Destaca durante 1 hora — 1,99€"}
-                </p>
-              </div>
-            </div>
-            {!boostTimeRemaining && (
-              <Button
-                variant="kiki"
-                size="sm"
-                onClick={() => createCheckout.mutate()}
-                disabled={createCheckout.isPending}
-                className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
-              >
-                {createCheckout.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4 mr-1" />
-                    Activar
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Realtime Presence Upsell Banner - Only for Free users - optimized for mobile */}
-        {tier === 'free' && (
-          <button
-            onClick={() => navigate("/subscription")}
-            className="w-full mb-6 sm:mb-8 bg-gradient-to-br from-primary/15 via-accent/10 to-primary/15 rounded-2xl p-4 sm:p-5 animate-fade-up border border-primary/30 hover:border-primary/50 transition-all hover:scale-[1.01] group shadow-lg shadow-primary/10"
-          >
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-primary/40 to-accent/30 flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
-                <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse" />
-              </div>
-              <div className="flex-1 text-left min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                  <p className="font-display font-bold text-primary text-base sm:text-lg leading-tight">
-                    ¿Quién está activo ahora?
-                  </p>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/30 text-accent-foreground text-[11px] font-bold shadow-sm">
-                    Plus
-                  </span>
-                </div>
-                <p className="font-body text-sm text-card-foreground/85">
-                  Ve en tiempo real quién está conectado
-                </p>
-              </div>
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/25 flex items-center justify-center opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all shrink-0">
-                <span className="text-primary font-bold text-base sm:text-lg">→</span>
-              </div>
-            </div>
-          </button>
-        )}
 
         <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
           <DialogContent className="max-w-sm bg-card border-border">
@@ -688,7 +683,12 @@ const Presence = () => {
         </Dialog>
 
         {/* Filters */}
-        <PresenceFiltersComponent filters={filters} onChange={setFilters} availableCities={availableCities} />
+        <PresenceFiltersComponent 
+          filters={filters} 
+          onChange={setFilters} 
+          availableCities={availableCities}
+          onRealtimeUpsell={handleRealtimeUpsell}
+        />
 
         {/* Presence indicator */}
         <div className="flex items-center justify-center gap-2 mb-10 animate-fade-up animate-delay-100">

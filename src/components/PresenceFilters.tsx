@@ -29,14 +29,10 @@ interface PresenceFiltersProps {
   filters: PresenceFilters;
   onChange: (filters: PresenceFilters) => void;
   availableCities?: string[];
+  onRealtimeUpsell?: () => void;
 }
 
-interface PresenceFiltersProps {
-  filters: PresenceFilters;
-  onChange: (filters: PresenceFilters) => void;
-}
-
-const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: PresenceFiltersProps) => {
+const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onRealtimeUpsell }: PresenceFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [interestSearch, setInterestSearch] = useState("");
@@ -181,7 +177,15 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
         {/* Segmented control for Active/All toggle */}
         <div className="flex bg-card rounded-xl p-1 border border-foreground/5 dark:border-border shadow-md shadow-foreground/10 dark:shadow-foreground/5 w-full sm:w-auto">
           <button
-            onClick={() => !filters.showAllProfiles || toggleShowAllProfiles()}
+            onClick={() => {
+              if (filters.showAllProfiles) {
+                toggleShowAllProfiles();
+              }
+              // Trigger upsell callback when switching to "Activos ahora"
+              if (onRealtimeUpsell && filters.showAllProfiles) {
+                onRealtimeUpsell();
+              }
+            }}
             className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               !filters.showAllProfiles
                 ? "bg-primary text-primary-foreground shadow-sm"
@@ -240,68 +244,6 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
         </motion.button>
       </div>
 
-      {/* Quick filters - always visible */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
-        {/* Hide visited toggle - quick access */}
-        <button
-          onClick={() => {
-            triggerHaptic('light');
-            onChange({ ...filters, hideVisited: !filters.hideVisited });
-          }}
-          className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
-            filters.hideVisited
-              ? "bg-secondary text-secondary-foreground shadow-sm"
-              : "bg-card text-card-foreground border border-foreground/5 dark:border-border hover:border-secondary/30"
-          }`}
-        >
-          {filters.hideVisited ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-          Solo nuevos
-        </button>
-
-        {/* Quick preset chips - show first 3 */}
-        {presets.slice(0, 3).map((preset) => (
-          <button
-            key={preset.id}
-            onClick={() => handleLoadPreset(preset)}
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 bg-gradient-to-r from-accent/20 to-primary/20 text-card-foreground border border-accent/30 hover:border-primary/50"
-          >
-            <span>{preset.emoji}</span>
-            {preset.name}
-          </button>
-        ))}
-
-        {/* Compatibility filter chips */}
-        {[1, 2, 3, 4].map((level) => (
-          <button
-            key={level}
-            onClick={() => handleMinCompatibilityChange(filters.minCompatibility === level ? 0 : level)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
-              filters.minCompatibility === level
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-card text-card-foreground border border-foreground/5 dark:border-border hover:border-primary/30"
-            }`}
-          >
-            <Heart className={`w-3.5 h-3.5 ${filters.minCompatibility === level ? "fill-current" : ""}`} />
-            {level}+ afín
-          </button>
-        ))}
-        
-        {/* Quick city filter - show top 3 cities */}
-        {sortedCities.slice(0, 3).map((city) => (
-          <button
-            key={city}
-            onClick={() => toggleCity(city)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
-              (filters.cities ?? []).includes(city)
-                ? "bg-accent text-accent-foreground shadow-sm"
-                : "bg-card text-card-foreground border border-foreground/5 dark:border-border hover:border-accent/30"
-            }`}
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            {city}
-          </button>
-        ))}
-      </div>
 
       {/* Active filters summary - show when filters are active */}
       {hasActiveFilters && (
@@ -438,6 +380,72 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
             className="overflow-hidden"
           >
             <div className="bg-card rounded-2xl p-4 border border-foreground/5 dark:border-border shadow-md shadow-foreground/10 dark:shadow-foreground/5">
+
+              {/* Quick filters section - at the very top */}
+              <div className="mb-5 pb-4 border-b border-border">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <span className="font-display text-sm font-semibold text-card-foreground block">
+                      Accesos rápidos
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      Filtros frecuentes
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {/* Hide visited toggle */}
+                  <button
+                    onClick={() => {
+                      triggerHaptic('light');
+                      onChange({ ...filters, hideVisited: !filters.hideVisited });
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
+                      filters.hideVisited
+                        ? "bg-secondary text-secondary-foreground shadow-sm"
+                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                    }`}
+                  >
+                    {filters.hideVisited ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    Solo nuevos
+                  </button>
+
+                  {/* Compatibility filter chips */}
+                  {[1, 2, 3, 4].map((level) => (
+                    <button
+                      key={level}
+                      onClick={() => handleMinCompatibilityChange(filters.minCompatibility === level ? 0 : level)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
+                        filters.minCompatibility === level
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                      }`}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${filters.minCompatibility === level ? "fill-current" : ""}`} />
+                      {level}+ afín
+                    </button>
+                  ))}
+                  
+                  {/* Quick city filter - show top 3 cities */}
+                  {sortedCities.slice(0, 3).map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => toggleCity(city)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
+                        (filters.cities ?? []).includes(city)
+                          ? "bg-accent text-accent-foreground shadow-sm"
+                          : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                      }`}
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Presets section - always at top */}
               <div className="mb-5 pb-4 border-b border-border">
