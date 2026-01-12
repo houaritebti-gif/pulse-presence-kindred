@@ -17,6 +17,7 @@ import UploadProgress from "@/components/UploadProgress";
 import ImageCropModal from "@/components/ImageCropModal";
 import { triggerHaptic } from "@/utils/haptics";
 import BirthdateSelector from "@/components/BirthdateSelector";
+import OnboardingProgressIndicator from "@/components/OnboardingProgressIndicator";
 
 const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
@@ -71,6 +72,24 @@ const Onboarding = () => {
 
   const currentStep = STEPS.find(s => s.id === step)!;
   const progress = (step / STEPS.length) * 100;
+
+  // Calculate completed fields for progress indicator
+  const getCompletedFields = useMemo(() => {
+    const fields: string[] = [];
+    if (name.trim()) fields.push("Nombre");
+    if (city.trim()) fields.push("Ciudad");
+    if (birthdate && !birthdate.includes("0000")) fields.push("Edad");
+    if (selectedGender) fields.push("Género");
+    if (selectedGenderPreferences.length > 0) fields.push("Preferencias");
+    if (selectedInterests.length >= 3) fields.push("Intereses");
+    if (selectedVibe) fields.push("Vibra");
+    if (selectedTribes.length > 0) fields.push("Tribus");
+    if (selectedMusicStyles.length > 0) fields.push("Música");
+    if (selectedLookingFor.length > 0) fields.push("Busco");
+    if (bio.trim()) fields.push("Bio");
+    if (avatarUrl) fields.push("Foto");
+    return fields;
+  }, [name, city, birthdate, selectedGender, selectedGenderPreferences, selectedInterests, selectedVibe, selectedTribes, selectedMusicStyles, selectedLookingFor, bio, avatarUrl]);
 
   // Calculate age from birthdate
   const calculateAge = useCallback((birthdateStr: string): number => {
@@ -1076,6 +1095,14 @@ const Onboarding = () => {
           transition={{ duration: 0.5, ease: "easeOut" }}
         />
       </motion.div>
+
+      {/* Enhanced progress indicator */}
+      <OnboardingProgressIndicator
+        currentStep={step}
+        totalSteps={STEPS.length}
+        completedFields={getCompletedFields}
+        currentStepName={currentStep.title}
+      />
 
       {/* Header with step indicator */}
       <div className="text-center mb-10">

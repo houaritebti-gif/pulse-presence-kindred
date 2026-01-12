@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin, Sparkles, Music, Heart, Search, Palette, Star, Save, Bookmark, Trash2, Plus } from "lucide-react";
+import { Filter, X, ChevronDown, ChevronUp, Users, Radio, Calendar, User, MapPin, Sparkles, Music, Heart, Search, Palette, Star, Save, Bookmark, Trash2, Plus, Eye, EyeOff } from "lucide-react";
 import { TRIBES, MUSIC_CATEGORIES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, ALL_GENDERS, CULTURAL_INTERESTS } from "@/constants/profileOptions";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
@@ -22,6 +22,7 @@ export interface PresenceFilters {
   showAllProfiles?: boolean;
   ageRange?: [number, number];
   minCompatibility?: number;
+  hideVisited?: boolean;
 }
 
 interface PresenceFiltersProps {
@@ -49,8 +50,9 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
   const hasCityFilter = filters.cities?.length > 0;
   const hasCompatibilityFilter = filters.minCompatibility && filters.minCompatibility > 0;
   const hasInterestsFilter = (filters.interests?.length ?? 0) > 0;
-  const hasActiveFilters = (filters.tribes?.length ?? 0) > 0 || (filters.musicStyles?.length ?? 0) > 0 || (filters.details?.length ?? 0) > 0 || (filters.lookingFor?.length ?? 0) > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter || hasCompatibilityFilter || hasInterestsFilter;
-  const activeCount = (filters.tribes?.length ?? 0) + (filters.musicStyles?.length ?? 0) + (filters.details?.length ?? 0) + (filters.lookingFor?.length ?? 0) + (filters.genders?.length ?? 0) + (filters.cities?.length ?? 0) + (filters.interests?.length ?? 0) + (hasAgeFilter ? 1 : 0) + (hasCompatibilityFilter ? 1 : 0);
+  const hasHideVisitedFilter = filters.hideVisited === true;
+  const hasActiveFilters = (filters.tribes?.length ?? 0) > 0 || (filters.musicStyles?.length ?? 0) > 0 || (filters.details?.length ?? 0) > 0 || (filters.lookingFor?.length ?? 0) > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter || hasCompatibilityFilter || hasInterestsFilter || hasHideVisitedFilter;
+  const activeCount = (filters.tribes?.length ?? 0) + (filters.musicStyles?.length ?? 0) + (filters.details?.length ?? 0) + (filters.lookingFor?.length ?? 0) + (filters.genders?.length ?? 0) + (filters.cities?.length ?? 0) + (filters.interests?.length ?? 0) + (hasAgeFilter ? 1 : 0) + (hasCompatibilityFilter ? 1 : 0) + (hasHideVisitedFilter ? 1 : 0);
 
   // Sort cities alphabetically
   const sortedCities = useMemo(() => 
@@ -159,7 +161,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
 
   const clearFilters = () => {
     triggerHaptic('medium');
-    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], ageRange: undefined, minCompatibility: undefined });
+    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], ageRange: undefined, minCompatibility: undefined, hideVisited: false });
   };
 
   const handleMinCompatibilityChange = (value: number) => {
@@ -240,6 +242,22 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [] }: P
 
       {/* Quick filters - always visible */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+        {/* Hide visited toggle - quick access */}
+        <button
+          onClick={() => {
+            triggerHaptic('light');
+            onChange({ ...filters, hideVisited: !filters.hideVisited });
+          }}
+          className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
+            filters.hideVisited
+              ? "bg-secondary text-secondary-foreground shadow-sm"
+              : "bg-card text-card-foreground border border-foreground/5 dark:border-border hover:border-secondary/30"
+          }`}
+        >
+          {filters.hideVisited ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          Solo nuevos
+        </button>
+
         {/* Quick preset chips - show first 3 */}
         {presets.slice(0, 3).map((preset) => (
           <button

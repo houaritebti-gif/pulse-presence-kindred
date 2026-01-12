@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock, Zap } from "lucide-react";
@@ -20,6 +20,7 @@ import { useBlockedUsers } from "@/hooks/useUserModeration";
 import { useMultipleProfilePhotos } from "@/hooks/useProfilePhotos";
 import { useSentConnectionRequests, usePendingConnectionRequestCount } from "@/hooks/useConnectionRequests";
 import PresenceFiltersComponent, { PresenceFilters } from "@/components/PresenceFilters";
+import { useVisitedProfilesLoader } from "@/hooks/useVisitedProfiles";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import FullScreenPresenceList from "@/components/FullScreenPresenceList";
 import FullScreenPresenceSkeleton from "@/components/FullScreenPresenceSkeleton";
@@ -37,7 +38,7 @@ const Presence = () => {
   // Filters state persisted to localStorage - moved up to use in hook
   const [filters, setFilters] = useLocalStorage<PresenceFilters>(
     STORAGE_KEYS.PRESENCE_FILTERS,
-    { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], showAllProfiles: false }
+    { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], showAllProfiles: false, hideVisited: false }
   );
   
   const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles || false);
@@ -184,6 +185,9 @@ const Presence = () => {
   // Fetch all photos in one query
   const { data: photosMap } = useMultipleProfilePhotos(profileIds);
 
+  // Load visited status for all profiles (for hideVisited filter)
+  const { visitedMap } = useVisitedProfilesLoader(filters.hideVisited ? profileIds : []);
+
   // Calculate compatibility for each presence (tribes + music + looking_for + interests)
   const getCompatibility = (presence: typeof otherProfiles[0]) => {
     const sharedTribes = presence.tribes.filter(t => myTribeNames.includes(t));
@@ -292,6 +296,12 @@ const Presence = () => {
         if (!hasMatchingInterest) return false;
       }
 
+      // Hide visited filter - hide profiles already visited
+      if (filters.hideVisited) {
+        const profileId = presence.profile?.id;
+        if (profileId && visitedMap[profileId]) return false;
+      }
+
       return true;
     });
 
@@ -324,7 +334,7 @@ const Presence = () => {
       // Among inactive users, sort by last connection (most recent first)
       return bLastPulse - aLastPulse;
     });
-  }, [otherProfiles, filters, myTribeNames, myStyleNames, activeBoostedData?.boostedIds]);
+  }, [otherProfiles, filters, myTribeNames, myStyleNames, activeBoostedData?.boostedIds, visitedMap]);
 
   const handleRefresh = async () => {
     await refetch();
