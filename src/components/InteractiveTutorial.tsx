@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -291,7 +292,8 @@ interface InteractiveTutorialProps {
   onComplete?: () => void;
 }
 
-export const InteractiveTutorial = ({ isOpen, onClose, onComplete }: InteractiveTutorialProps) => {
+export const InteractiveTutorial = React.forwardRef<HTMLDivElement, InteractiveTutorialProps>(
+  ({ isOpen, onClose, onComplete }, ref) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -524,6 +526,9 @@ export const InteractiveTutorial = ({ isOpen, onClose, onComplete }: Interactive
       )}
     </AnimatePresence>
   );
-};
+  }
+);
+
+InteractiveTutorial.displayName = "InteractiveTutorial";
 
 export default InteractiveTutorial;
