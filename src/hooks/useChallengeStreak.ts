@@ -14,6 +14,7 @@ export interface StreakData {
   longestStreak: number;
   totalDaysCompleted: number;
   last30Days: StreakDay[];
+  streakBonusesClaimed: number[]; // Which streak milestones have been claimed (3, 7, 14, 30)
 }
 
 export const useChallengeStreak = () => {
@@ -144,16 +145,36 @@ export const useChallengeStreak = () => {
       // Count total days with all challenges completed
       const totalDaysCompleted = last30Days.filter(d => d.allCompleted).length;
 
+      // Check which streak bonuses have been claimed from transactions
+      const { data: bonusTransactions } = await supabase
+        .from('spark_transactions')
+        .select('action')
+        .eq('profile_id', profile.id)
+        .like('action', 'challenge_streak_bonus_%');
+
+      const streakBonusesClaimed = (bonusTransactions || [])
+        .map(t => parseInt(t.action.replace('challenge_streak_bonus_', ''), 10))
+        .filter(n => !isNaN(n));
+
       return {
         currentStreak,
         longestStreak: Math.max(longestStreak, currentStreak),
         totalDaysCompleted,
         last30Days,
+        streakBonusesClaimed,
       };
     },
     enabled: !!profile?.id,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 };
+
+// Streak bonus milestones
+export const STREAK_BONUS_MILESTONES = [
+  { days: 3, bonus: 25, emoji: '🎯' },
+  { days: 7, bonus: 50, emoji: '🏅' },
+  { days: 14, bonus: 100, emoji: '🥇' },
+  { days: 30, bonus: 200, emoji: '👑' },
+] as const;
 
 export default useChallengeStreak;
