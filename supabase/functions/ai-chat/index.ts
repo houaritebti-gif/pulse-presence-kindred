@@ -162,6 +162,24 @@ Si el usuario pide eliminar una quedada que no es suya, explica que solo puede e
 
 Solo sugiere acciones cuando sean relevantes para la conversación. No las uses en cada mensaje.
 
+SUGERENCIAS CONTEXTUALES (MUY IMPORTANTE):
+Al final de CADA respuesta, SIEMPRE añade 2-3 sugerencias de seguimiento relevantes basadas en el tema de la conversación actual.
+Usa este formato exacto:
+[[suggestion:emoji|texto de la sugerencia]]
+
+Las sugerencias deben:
+- Ser naturales y continuar la conversación actual
+- Estar relacionadas con lo que acaba de responder el usuario o lo que acabas de explicar
+- Variar según el contexto (no repetir siempre las mismas)
+- Ser cortas (máximo 6 palabras)
+
+Ejemplos de sugerencias por tema:
+- Si hablaste de quedadas: [[suggestion:📅|¿Cómo creo una quedada?]] [[suggestion:👥|¿Quién va a mis quedadas?]] [[suggestion:✏️|Editar una quedada]]
+- Si hablaste de sparks: [[suggestion:💬|¿Cómo inicio conversación?]] [[suggestion:❤️|Ver mis sparks activos]] [[suggestion:🔥|Consejos para conectar]]
+- Si hablaste de perfil: [[suggestion:📸|Mejorar mi foto de perfil]] [[suggestion:✨|Optimizar mi bio]] [[suggestion:🔒|Opciones de privacidad]]
+- Si hablaste de presencia: [[suggestion:👀|¿Quién me ha visto?]] [[suggestion:🟢|Activar modo presencia]] [[suggestion:🔔|Configurar notificaciones]]
+- Generales: [[suggestion:❓|¿Cómo funciona la app?]] [[suggestion:💡|Dame un consejo]] [[suggestion:🚀|Novedades de KIKI]]
+
 Responde siempre en español de forma concisa y amable. Usa emojis ocasionalmente para ser más cercano. Si te preguntan sobre quedadas o sparks específicos, usa la información proporcionada.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
