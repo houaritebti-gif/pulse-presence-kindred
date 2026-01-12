@@ -494,43 +494,113 @@ export const FullScreenPresenceList = memo(({
   if (allProfiles.length === 0 && totalProfiles > 0) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
         className="h-[calc(100vh-200px)] flex flex-col items-center justify-center px-6 text-center"
       >
-        <div className="relative w-24 h-24 mb-6">
-          <div className="w-full h-full rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center animate-pulse">
-            <Radio className="w-10 h-10 text-primary" />
-          </div>
+        {/* Animated icon with multiple rings */}
+        <div className="relative w-28 h-28 mb-8">
+          {/* Outer pulsing ring */}
           <motion.div
-            className="absolute inset-0 rounded-full border-2 border-primary/30"
-            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 rounded-full border border-primary/20"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: [1, 1.4, 1], opacity: [0.3, 0, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* Middle pulsing ring */}
+          <motion.div
+            className="absolute inset-2 rounded-full border border-primary/30"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0, 0.4] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          />
+          {/* Inner gradient circle */}
+          <motion.div 
+            className="absolute inset-4 rounded-full bg-gradient-to-br from-primary/20 via-accent/10 to-primary/20"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          />
+          {/* Icon container */}
+          <motion.div
+            className="absolute inset-4 rounded-full flex items-center justify-center"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.3 }}
+          >
+            <Radio className="w-10 h-10 text-primary" />
+          </motion.div>
+          {/* Floating sparkles */}
+          <motion.div
+            className="absolute top-0 right-2 w-2 h-2 rounded-full bg-primary/60"
+            animate={{ y: [-2, -8, -2], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute bottom-2 left-0 w-1.5 h-1.5 rounded-full bg-accent/60"
+            animate={{ y: [2, 8, 2], opacity: [0.4, 0.8, 0.4] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
           />
         </div>
-        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-          ¡Has visto todos los perfiles!
-        </h3>
-        <p className="font-body text-sm text-muted-foreground max-w-[280px] mx-auto leading-relaxed mb-4">
-          Te notificaremos cuando haya gente nueva. También puedes ajustar tus filtros para ampliar tu búsqueda.
-        </p>
-        <div className="flex items-center gap-2 text-xs text-primary/70 mb-6">
-          <Bell className="w-3.5 h-3.5" />
-          <span>Recibirás una notificación push</span>
-        </div>
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={handleReset}
-          className="gap-2 mb-4"
+
+        {/* Text content with staggered animation */}
+        <motion.h3 
+          className="font-display text-xl font-semibold text-foreground mb-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
         >
-          <RefreshCw className="w-4 h-4" />
-          Restablecer perfiles
-        </Button>
-        <p className="text-xs text-muted-foreground/70">
+          ¡Has visto todos los perfiles!
+        </motion.h3>
+        <motion.p 
+          className="font-body text-sm text-muted-foreground max-w-[280px] mx-auto leading-relaxed mb-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+        >
+          Te notificaremos cuando haya gente nueva. También puedes ajustar tus filtros para ampliar tu búsqueda.
+        </motion.p>
+        <motion.div 
+          className="flex items-center gap-2 text-xs text-primary/70 mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.6 }}
+        >
+          <motion.div
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          >
+            <Bell className="w-3.5 h-3.5" />
+          </motion.div>
+          <span>Recibirás una notificación push</span>
+        </motion.div>
+
+        {/* Button with entrance animation */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.7, type: "spring" }}
+        >
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={handleReset}
+            className="gap-2 mb-4 hover:scale-105 transition-transform"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Restablecer perfiles
+          </Button>
+        </motion.div>
+
+        <motion.p 
+          className="text-xs text-muted-foreground/70"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.8 }}
+        >
           {viewedCount} {viewedCount === 1 ? 'perfil visto' : 'perfiles vistos'}
-        </p>
+        </motion.p>
       </motion.div>
     );
   }
