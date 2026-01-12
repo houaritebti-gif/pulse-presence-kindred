@@ -31,7 +31,7 @@ export interface ConnectionRequestWithProfile extends ConnectionRequest {
   to_tribes?: string[];
 }
 
-// Fetch sent connection requests
+// Fetch sent connection requests (only pending)
 export const useSentConnectionRequests = () => {
   const { data: profile } = useProfile();
 
@@ -49,7 +49,7 @@ export const useSentConnectionRequests = () => {
           )
         `)
         .eq("from_profile_id", profile.id)
-        .neq("status", "rejected")
+        .eq("status", "pending")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -59,6 +59,98 @@ export const useSentConnectionRequests = () => {
     staleTime: 1000 * 60 * 3, // 3 minutes - has realtime updates
   });
 };
+
+// Fetch all active (accepted) connections
+export const useActiveConnections = () => {
+  const { data: profile } = useProfile();
+
+  return useQuery({
+    queryKey: ["connection_requests", "active", profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+
+      // Fetch connections where I sent and it was accepted
+      const { data: sentAccepted, error: sentError } = await supabase
+        .from("connection_requests")
+        .select(`
+          *,
+          to_profile:profiles!connection_requests_to_profile_id_fkey(
+            id, name, avatar_url, city
+          )
+        `)
+        .eq("from_profile_id", profile.id)
+        .eq("status", "accepted")
+        .order("responded_at", { ascending: false });
+
+      if (sentError) throw sentError;
+
+      // Fetch connections where I received and accepted
+      const { data: receivedAccepted, error: receivedError } = await supabase
+        .from("connection_requests")
+        .select(`
+          *,
+          from_profile:profiles!connection_requests_from_profile_id_fkey(
+            id, name, avatar_url, city
+          )
+        `)
+        .eq("to_profile_id", profile.id)
+        .eq("status", "accepted")
+        .order("responded_at", { ascending: false });
+
+      if (receivedError) throw receivedError;
+
+      // Normalize to a unified structure
+      const connections: ActiveConnection[] = [
+        ...(sentAccepted || []).map(c => ({
+          id: c.id,
+          from_profile_id: c.from_profile_id,
+          to_profile_id: c.to_profile_id,
+          status: c.status as "accepted",
+          message: c.message,
+          created_at: c.created_at,
+          responded_at: c.responded_at,
+          connected_profile: c.to_profile,
+          direction: "sent" as const,
+        })),
+        ...(receivedAccepted || []).map(c => ({
+          id: c.id,
+          from_profile_id: c.from_profile_id,
+          to_profile_id: c.to_profile_id,
+          status: c.status as "accepted",
+          message: c.message,
+          created_at: c.created_at,
+          responded_at: c.responded_at,
+          connected_profile: c.from_profile,
+          direction: "received" as const,
+        })),
+      ].sort((a, b) => 
+        new Date(b.responded_at || b.created_at).getTime() - 
+        new Date(a.responded_at || a.created_at).getTime()
+      );
+
+      return connections;
+    },
+    enabled: !!profile?.id,
+    staleTime: 1000 * 60 * 3,
+  });
+};
+
+export interface ActiveConnection {
+  id: string;
+  from_profile_id: string;
+  to_profile_id: string;
+  status: "pending" | "accepted" | "rejected";
+  message: string | null;
+  created_at: string;
+  responded_at: string | null;
+  connected_profile?: {
+    id: string;
+    name: string | null;
+    avatar_url: string | null;
+    city: string | null;
+  } | null;
+  direction: "sent" | "received";
+}
 
 // Fetch received connection requests (only pending)
 export const useReceivedConnectionRequests = () => {
