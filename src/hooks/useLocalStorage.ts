@@ -64,4 +64,7 @@ export const STORAGE_KEYS = {
   SEEN_SPARKS: "kiki_seen_sparks",
   AI_CHAT_HISTORY: "kiki_ai_chat_history",
   CROP_GUIDE_SEEN: "kiki_crop_guide_seen",
+  ADMIN_ALERT_THRESHOLD: "kiki_admin_alert_threshold",
+  ADMIN_ALERTS_ENABLED: "kiki_admin_alerts_enabled",
+  ADMIN_EMAIL_ALERTS_ENABLED: "kiki_admin_email_alerts_enabled",
 } as const;
