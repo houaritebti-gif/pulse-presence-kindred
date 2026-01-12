@@ -52,6 +52,7 @@ import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 import ProfileStatsCard from "@/components/ProfileStatsCard";
 import { QuickTipsCard } from "@/components/QuickTipsCard";
 import { DailyChallengesCard } from "@/components/DailyChallengesCard";
+import { ChallengeStreakCalendar } from "@/components/ChallengeStreakCalendar";
 // Spark Energy Card Component for Profile with ripple effect
 const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
   const { sparkEnergy, currentLevel, progressToNext, isLoading } = useSparkEnergy();
@@ -733,6 +734,11 @@ const Profile = () => {
         {/* Daily Challenges */}
         <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '192ms', animationFillMode: 'forwards' }}>
           <DailyChallengesCard />
+        </div>
+
+        {/* Challenge Streak Calendar */}
+        <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '193ms', animationFillMode: 'forwards' }}>
+          <ChallengeStreakCalendar />
         </div>
 
         {/* Quick Tips */}
