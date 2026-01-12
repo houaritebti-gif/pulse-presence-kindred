@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { 
   Shield, Users, Flag, UserCog, Search, 
   Trash2, Check, X, Clock, Ban, Plus, RefreshCw,
-  Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle, History, ShieldCheck, HardDrive, Loader2, Download, Filter
+  Camera, Eye, ThumbsUp, ThumbsDown, TrendingUp, CheckCircle2, XCircle, History, ShieldCheck, HardDrive, Loader2, Download, Filter, Activity
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -72,6 +72,7 @@ import AdminUserCard from "@/components/admin/AdminUserCard";
 import AdminReportCard from "@/components/admin/AdminReportCard";
 import AdminVerificationCard from "@/components/admin/AdminVerificationCard";
 import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminNotificationTestCenter from "@/components/admin/AdminNotificationTestCenter";
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -302,7 +303,7 @@ const Admin = () => {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 h-14 p-1.5 bg-muted/60 border-2 border-border rounded-xl">
+          <TabsList className="grid w-full grid-cols-7 h-14 p-1.5 bg-muted/60 border-2 border-border rounded-xl">
             <TabsTrigger value="dashboard" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg font-semibold text-sm">
               <TrendingUp className="w-4 h-4" />
               <span className="hidden sm:inline">Dashboard</span>
@@ -336,6 +337,10 @@ const Admin = () => {
             <TabsTrigger value="blacklist" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg font-semibold text-sm">
               <Ban className="w-4 h-4" />
               <span className="hidden sm:inline">Blacklist</span>
+            </TabsTrigger>
+            <TabsTrigger value="testing" className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-md rounded-lg font-semibold text-sm">
+              <Activity className="w-4 h-4" />
+              <span className="hidden sm:inline">Testing</span>
             </TabsTrigger>
           </TabsList>
 
@@ -978,6 +983,11 @@ const Admin = () => {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          {/* Testing Tab */}
+          <TabsContent value="testing" className="space-y-6">
+            <AdminNotificationTestCenter />
           </TabsContent>
         </Tabs>
       </div>
