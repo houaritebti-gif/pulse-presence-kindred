@@ -1,5 +1,5 @@
 import { Trophy } from "lucide-react";
-import { usePublicAchievementBadges } from "@/hooks/usePublicAchievements";
+import { usePublicAchievementBadges, useAchievementsVisibility } from "@/hooks/usePublicAchievements";
 import { AchievementBadge } from "@/components/AchievementBadge";
 import { getRarityColor, ACHIEVEMENTS } from "@/hooks/useAchievements";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,8 +11,9 @@ interface PublicAchievementsBadgesProps {
 
 const PublicAchievementsBadges = ({ profileId, maxDisplay = 6 }: PublicAchievementsBadgesProps) => {
   const { achievements, isLoading, count } = usePublicAchievementBadges(profileId);
+  const { showAchievements, isLoading: visibilityLoading } = useAchievementsVisibility(profileId);
   
-  if (isLoading) {
+  if (isLoading || visibilityLoading) {
     return (
       <div className="animate-fade-up">
         <div className="flex items-center gap-1.5 mb-2">
@@ -26,6 +27,11 @@ const PublicAchievementsBadges = ({ profileId, maxDisplay = 6 }: PublicAchieveme
         </div>
       </div>
     );
+  }
+  
+  // Don't show if user has disabled achievements visibility
+  if (!showAchievements) {
+    return null;
   }
   
   if (count === 0) {

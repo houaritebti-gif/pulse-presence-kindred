@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
-import { ChevronDown, ChevronUp, Eye, EyeOff, MapPin, Calendar, Sparkles, Music, Heart, Star, Palette, Users } from "lucide-react";
+import { ChevronDown, ChevronUp, Eye, EyeOff, MapPin, Calendar, Sparkles, Music, Heart, Star, Palette, Users, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ interface VisibilitySettings {
   show_interests: boolean;
   show_looking_for: boolean;
   show_aesthetic_details: boolean;
+  show_achievements: boolean;
 }
 
 const VISIBILITY_OPTIONS = [
@@ -31,6 +32,7 @@ const VISIBILITY_OPTIONS = [
   { key: "show_interests", label: "Intereses", icon: Heart, description: "Tus intereses culturales" },
   { key: "show_looking_for", label: "Qué buscas", icon: Heart, description: "Lo que buscas en KIKI" },
   { key: "show_aesthetic_details", label: "Detalles estéticos", icon: Palette, description: "Tatuajes, piercings, estilo..." },
+  { key: "show_achievements", label: "Logros", icon: Trophy, description: "Tus logros y medallas" },
 ] as const;
 
 const ProfileVisibilitySection = () => {
@@ -50,6 +52,7 @@ const ProfileVisibilitySection = () => {
     show_interests: true,
     show_looking_for: true,
     show_aesthetic_details: true,
+    show_achievements: true,
   });
 
   // Load current settings
@@ -60,7 +63,7 @@ const ProfileVisibilitySection = () => {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("show_birth_year, show_zodiac, show_gender, show_city, show_vibe, show_tribes, show_music_styles, show_interests, show_looking_for, show_aesthetic_details")
+          .select("show_birth_year, show_zodiac, show_gender, show_city, show_vibe, show_tribes, show_music_styles, show_interests, show_looking_for, show_aesthetic_details, show_achievements")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -78,6 +81,7 @@ const ProfileVisibilitySection = () => {
             show_interests: data.show_interests ?? true,
             show_looking_for: data.show_looking_for ?? true,
             show_aesthetic_details: data.show_aesthetic_details ?? true,
+            show_achievements: (data as any).show_achievements ?? true,
           });
         }
       } catch (error) {
