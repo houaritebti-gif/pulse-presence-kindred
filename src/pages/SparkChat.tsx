@@ -15,6 +15,7 @@ import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { triggerHaptic } from "@/utils/haptics";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
 import ImageLightbox from "@/components/ImageLightbox";
 import UploadProgress from "@/components/UploadProgress";
@@ -766,13 +767,32 @@ const SparkChat = () => {
                     )}
                     {/* Read indicator for own messages - Premium only for read receipts */}
                     {isOwn && (
-                      <div className="flex-shrink-0 mb-0.5">
-                        {isPremiumUser && otherUserLastRead && new Date(msg.created_at) <= otherUserLastRead ? (
-                          <CheckCheck className="w-4 h-4 text-primary/70" />
-                        ) : (
-                          <Check className="w-4 h-4 text-muted-foreground/70" />
-                        )}
-                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex-shrink-0 mb-0.5 cursor-help">
+                              {isPremiumUser && otherUserLastRead && new Date(msg.created_at) <= otherUserLastRead ? (
+                                <CheckCheck className="w-4 h-4 text-primary/70" />
+                              ) : (
+                                <Check className="w-4 h-4 text-muted-foreground/70" />
+                              )}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-[200px]">
+                            {isPremiumUser ? (
+                              otherUserLastRead && new Date(msg.created_at) <= otherUserLastRead ? (
+                                <p className="text-xs">Mensaje leído ✓</p>
+                              ) : (
+                                <p className="text-xs">Mensaje enviado</p>
+                              )
+                            ) : (
+                              <p className="text-xs">
+                                <span className="font-semibold text-primary">Premium:</span> Ver cuándo leen tus mensajes
+                              </p>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </div>
                 )}
