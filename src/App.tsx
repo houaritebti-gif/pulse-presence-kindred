@@ -23,6 +23,7 @@ import { EnergyGainProvider } from "@/components/EnergyGainAnimation";
 import { useAchievementChecker } from "@/hooks/useAchievementChecker";
 import { useSuperSparkWelcome } from "@/hooks/useSuperSparkWelcome";
 import { useDailyChallengeTracker } from "@/hooks/useDailyChallengeTracker";
+import { useDailyChallengeExpiry } from "@/hooks/useDailyChallengeExpiry";
 
 // Lazy load heavy components
 const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
@@ -77,6 +78,7 @@ const KeyboardNavigationWrapper = ({ children }: { children: React.ReactNode }) 
   useAchievementChecker(); // Check and unlock achievements
   useSuperSparkWelcome(); // Show confetti for new Super Chispas
   useDailyChallengeTracker(); // Track daily challenge progress
+  useDailyChallengeExpiry(); // Notify when challenges are about to expire
   const location = useLocation();
   
   // Show shortcuts help only on main pages (not landing/auth)
