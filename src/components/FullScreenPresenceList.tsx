@@ -545,12 +545,40 @@ export const FullScreenPresenceList = memo(({
       {/* Active profiles section header */}
       {canSeeRealtimePresence && activeProfiles.length > 0 && (
         <div className="snap-start flex items-center justify-center py-4">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 backdrop-blur-sm">
+          <motion.div 
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 backdrop-blur-sm"
+            initial={{ scale: 1 }}
+            animate={boostedIds.size > 0 ? {
+              scale: [1, 1.05, 1, 1.03, 1],
+              boxShadow: [
+                "0 0 0 0 rgba(34, 197, 94, 0)",
+                "0 0 12px 4px rgba(34, 197, 94, 0.4)",
+                "0 0 0 0 rgba(34, 197, 94, 0)",
+                "0 0 8px 2px rgba(34, 197, 94, 0.3)",
+                "0 0 0 0 rgba(34, 197, 94, 0)"
+              ]
+            } : {}}
+            transition={{
+              duration: 2,
+              ease: "easeInOut",
+              times: [0, 0.25, 0.5, 0.75, 1]
+            }}
+          >
             <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
             <span className="text-sm font-semibold text-green-500">
               {activeProfiles.length} activos ahora
             </span>
-          </div>
+            {boostedIds.size > 0 && (
+              <motion.span 
+                className="text-xs text-orange-400 font-medium ml-1"
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                🔥 {boostedIds.size} NOW
+              </motion.span>
+            )}
+          </motion.div>
         </div>
       )}
 
