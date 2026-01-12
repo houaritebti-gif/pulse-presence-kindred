@@ -702,6 +702,45 @@ export type Database = {
           },
         ]
       }
+      profile_visits: {
+        Row: {
+          id: string
+          visit_date: string
+          visited_at: string
+          visited_profile_id: string
+          visitor_profile_id: string
+        }
+        Insert: {
+          id?: string
+          visit_date?: string
+          visited_at?: string
+          visited_profile_id: string
+          visitor_profile_id: string
+        }
+        Update: {
+          id?: string
+          visit_date?: string
+          visited_at?: string
+          visited_profile_id?: string
+          visitor_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_visits_visited_profile_id_fkey"
+            columns: ["visited_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_visits_visitor_profile_id_fkey"
+            columns: ["visitor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           alternative_aesthetic: boolean | null
@@ -723,6 +762,7 @@ export type Database = {
           notify_max_age: number | null
           notify_min_age: number | null
           notify_new_presence: boolean
+          notify_profile_visits: boolean
           notify_same_city_only: boolean
           notify_summary_hour: number
           share_typing_status: boolean | null
@@ -762,6 +802,7 @@ export type Database = {
           notify_max_age?: number | null
           notify_min_age?: number | null
           notify_new_presence?: boolean
+          notify_profile_visits?: boolean
           notify_same_city_only?: boolean
           notify_summary_hour?: number
           share_typing_status?: boolean | null
@@ -801,6 +842,7 @@ export type Database = {
           notify_max_age?: number | null
           notify_min_age?: number | null
           notify_new_presence?: boolean
+          notify_profile_visits?: boolean
           notify_same_city_only?: boolean
           notify_summary_hour?: number
           share_typing_status?: boolean | null

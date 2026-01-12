@@ -34,6 +34,7 @@ import PublicAchievementsBadges from "@/components/PublicAchievementsBadges";
 import { triggerHaptic } from "@/utils/haptics";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import { getZodiacSign, getBirthYear } from "@/utils/zodiacUtils";
+import { useRecordProfileVisit } from "@/hooks/useProfileVisits";
 
 // Helper to calculate age from birthdate
 const calculateAge = (birthdate: string | null | undefined): number | null => {
@@ -67,6 +68,9 @@ const PublicProfile = () => {
   // Spark energy for profile exploration
   const { earnEnergy, canDoAction } = useSparkEnergy();
   const hasEarnedRef = useRef<string | null>(null);
+  
+  // Record profile visit for notifications
+  useRecordProfileVisit(profileId);
   
   // Earn energy when viewing a different user's profile
   useEffect(() => {
