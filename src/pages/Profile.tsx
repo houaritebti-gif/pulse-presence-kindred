@@ -49,7 +49,7 @@ import { useRipple } from "@/hooks/useRipple";
 import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
 import { useMutedQuedadas } from "@/hooks/useMutedQuedadas";
 import { useProfilePhotos } from "@/hooks/useProfilePhotos";
-
+import ProfileStatsCard from "@/components/ProfileStatsCard";
 // Spark Energy Card Component for Profile with ripple effect
 const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
   const { sparkEnergy, currentLevel, progressToNext, isLoading } = useSparkEnergy();
@@ -735,6 +735,11 @@ const Profile = () => {
             />
           </div>
         )}
+
+        {/* Profile Stats */}
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '198ms', animationFillMode: 'forwards' }}>
+          <ProfileStatsCard />
+        </div>
 
         {/* Name & City */}
         <div className="space-y-4 mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
