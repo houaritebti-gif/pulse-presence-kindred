@@ -211,11 +211,21 @@ const Connections = () => {
         <div className="flex gap-2">
           <Button
             size="sm"
-            variant="outline"
-            onClick={() => navigate(`/user/${connection.connected_profile?.id}`)}
+            onClick={() => {
+              triggerHaptic('selection');
+              navigate(`/chat/${connection.connected_profile?.id}`);
+            }}
             className="gap-1.5"
           >
-            Ver perfil
+            <MessageCircle className="w-3.5 h-3.5" />
+            Chat
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate(`/user/${connection.connected_profile?.id}`)}
+          >
+            Perfil
           </Button>
         </div>
       </div>
