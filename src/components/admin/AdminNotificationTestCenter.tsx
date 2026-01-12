@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { 
   Bell, Send, Zap, Clock, CheckCircle2, XCircle, 
   AlertTriangle, RefreshCw, Activity, Shield, 
   Loader2, Play, Trash2, BarChart3, Download, Ban,
-  Filter, AlertOctagon, Settings2
+  Filter, AlertOctagon, Settings2, Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocalStorage, STORAGE_KEYS } from "@/hooks/useLocalStorage";
 import { format, subDays, startOfHour, eachHourOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
@@ -99,10 +100,17 @@ const AdminNotificationTestCenter = () => {
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   
-  // Rate limit threshold alerts
-  const [alertThreshold, setAlertThreshold] = useState<number>(20);
-  const [alertsEnabled, setAlertsEnabled] = useState<boolean>(true);
+  // Rate limit threshold alerts - persisted in localStorage
+  const [alertThreshold, setAlertThreshold] = useLocalStorage<number>(STORAGE_KEYS.ADMIN_ALERT_THRESHOLD, 20);
+  const [alertsEnabled, setAlertsEnabled] = useLocalStorage<boolean>(STORAGE_KEYS.ADMIN_ALERTS_ENABLED, true);
+  const [emailAlertsEnabled, setEmailAlertsEnabled] = useLocalStorage<boolean>(STORAGE_KEYS.ADMIN_EMAIL_ALERTS_ENABLED, false);
   const [rateLimitAlerts, setRateLimitAlerts] = useState<RateLimitAlert[]>([]);
+  const [isSendingEmailAlert, setIsSendingEmailAlert] = useState(false);
+  
+  // Track alerts for email notification (multiple alerts in short period)
+  const alertCountRef = useRef<{ count: number; windowStart: Date }>({ count: 0, windowStart: new Date() });
+  const EMAIL_ALERT_WINDOW_MINUTES = 5;
+  const EMAIL_ALERT_THRESHOLD = 3; // Send email after 3 alerts in 5 minutes
 
   const addLog = useCallback((log: Omit<TestLog, 'id' | 'timestamp'>) => {
     setLogs(prev => [{
@@ -112,11 +120,62 @@ const AdminNotificationTestCenter = () => {
     }, ...prev].slice(0, 100));
   }, []);
   
+  // Send email alert to admins
+  const sendEmailAlert = useCallback(async (alerts: RateLimitAlert[]) => {
+    if (!emailAlertsEnabled || isSendingEmailAlert) return;
+    
+    setIsSendingEmailAlert(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('rate-limit-alert-email', {
+        body: {
+          alertCount: alerts.length,
+          threshold: alertThreshold,
+          timeWindowMinutes: EMAIL_ALERT_WINDOW_MINUTES,
+          alerts: alerts.map(a => ({
+            profileId: a.profileId,
+            requestCount: a.requestCount,
+            timestamp: a.timestamp.toISOString(),
+          })),
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.sent) {
+        addLog({
+          type: 'alert',
+          status: 'success',
+          message: `📧 Email de alerta enviado a ${data.recipients} admin(s)`,
+          details: `ID: ${data.messageId || 'N/A'}`,
+        });
+        toast.success("Email de alerta enviado a administradores");
+      } else {
+        addLog({
+          type: 'alert',
+          status: 'warning',
+          message: `📧 Email no enviado: ${data?.reason || 'Razón desconocida'}`,
+        });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      addLog({
+        type: 'alert',
+        status: 'error',
+        message: '❌ Error al enviar email de alerta',
+        details: message,
+      });
+      console.error("Error sending rate limit alert email:", err);
+    } finally {
+      setIsSendingEmailAlert(false);
+    }
+  }, [emailAlertsEnabled, isSendingEmailAlert, alertThreshold, addLog]);
+  
   // Check for rate limit threshold exceeded
   const checkRateLimitThreshold = useCallback((records: RateLimitInfo[]) => {
     if (!alertsEnabled) return;
     
     const exceededRecords = records.filter(r => r.request_count >= alertThreshold);
+    const newAlerts: RateLimitAlert[] = [];
     
     exceededRecords.forEach(record => {
       const existingAlert = rateLimitAlerts.find(
@@ -133,7 +192,7 @@ const AdminNotificationTestCenter = () => {
           threshold: alertThreshold,
         };
         
-        setRateLimitAlerts(prev => [newAlert, ...prev].slice(0, 10));
+        newAlerts.push(newAlert);
         
         addLog({
           type: 'alert',
@@ -148,7 +207,29 @@ const AdminNotificationTestCenter = () => {
         });
       }
     });
-  }, [alertsEnabled, alertThreshold, rateLimitAlerts, addLog]);
+    
+    if (newAlerts.length > 0) {
+      setRateLimitAlerts(prev => [...newAlerts, ...prev].slice(0, 10));
+      
+      // Track alerts for email notification
+      const now = new Date();
+      const windowMs = EMAIL_ALERT_WINDOW_MINUTES * 60 * 1000;
+      
+      // Reset window if expired
+      if (now.getTime() - alertCountRef.current.windowStart.getTime() > windowMs) {
+        alertCountRef.current = { count: 0, windowStart: now };
+      }
+      
+      alertCountRef.current.count += newAlerts.length;
+      
+      // Send email if threshold reached
+      if (alertCountRef.current.count >= EMAIL_ALERT_THRESHOLD && emailAlertsEnabled) {
+        const recentAlerts = [...newAlerts, ...rateLimitAlerts].slice(0, EMAIL_ALERT_THRESHOLD);
+        sendEmailAlert(recentAlerts);
+        alertCountRef.current = { count: 0, windowStart: now }; // Reset after sending
+      }
+    }
+  }, [alertsEnabled, alertThreshold, rateLimitAlerts, addLog, emailAlertsEnabled, sendEmailAlert]);
 
   // Filtered logs
   const filteredLogs = useMemo(() => {
@@ -857,6 +938,27 @@ const AdminNotificationTestCenter = () => {
                 />
               </div>
               
+              <div className="flex items-center justify-between">
+                <Label htmlFor="email-alerts" className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Notificar por email
+                </Label>
+                <Switch
+                  id="email-alerts"
+                  checked={emailAlertsEnabled}
+                  onCheckedChange={setEmailAlertsEnabled}
+                  disabled={!alertsEnabled}
+                />
+              </div>
+              
+              {emailAlertsEnabled && (
+                <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                  📧 Se enviará email a admins cuando se detecten {EMAIL_ALERT_THRESHOLD}+ alertas en {EMAIL_ALERT_WINDOW_MINUTES} minutos
+                </p>
+              )}
+              
+              <Separator />
+              
               <div className="space-y-2">
                 <Label htmlFor="threshold">Umbral de alerta (requests)</Label>
                 <div className="flex gap-2">
@@ -874,6 +976,7 @@ const AdminNotificationTestCenter = () => {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Se mostrará una alerta cuando un perfil supere {alertThreshold} requests por minuto
+                  {alertsEnabled && " (configuración guardada)"}
                 </p>
               </div>
               
