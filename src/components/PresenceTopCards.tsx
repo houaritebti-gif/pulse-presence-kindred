@@ -36,12 +36,11 @@ export const PresenceTopCards = ({
       {/* Presence toggle card */}
       <div 
         className={cn(
-          "rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300",
+          "rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default",
           myPresence?.visible_to_others 
             ? "bg-gradient-to-r from-primary/15 via-accent/10 to-primary/15 border-primary/30" 
             : "bg-card border-border",
           invisibleAnimating && "animate-invisible-glow",
-          getItemProps(0).className
         )}
         style={getItemProps(0).style}
       >
@@ -105,7 +104,7 @@ export const PresenceTopCards = ({
       {/* KIKI Now Boost Card */}
       <div 
         className={cn(
-          "rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300",
+          "rounded-2xl p-3 sm:p-4 border shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-md cursor-default",
           boostTimeRemaining 
             ? "bg-gradient-to-r from-primary/20 via-accent/15 to-primary/20 border-primary/40" 
             : "bg-gradient-to-r from-primary/10 via-accent/5 to-primary/10 border-primary/20",
