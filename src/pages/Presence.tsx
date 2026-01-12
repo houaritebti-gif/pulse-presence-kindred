@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { PresenceTopCards } from "@/components/PresenceTopCards";
 import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock, Zap } from "lucide-react";
+import { Eye, EyeOff, Flame, Calendar, Bell, Sparkles, Ghost, UserPlus, Loader2, Radio, Crown, Lock, Zap, HelpCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
@@ -30,6 +30,8 @@ import { useMyKikiNowBoost, useCreateKikiNowCheckout, useVerifyKikiNowBoost, use
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { InteractiveTutorial } from "@/components/InteractiveTutorial";
+import { useTutorial } from "@/hooks/useTutorial";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -60,6 +62,18 @@ const Presence = () => {
   const realtimeUpsellShownRef = useRef(false);
   const profileCardsRef = useRef<HTMLDivElement>(null);
   const hasAutoScrolledRef = useRef(false);
+  
+  // Tutorial hook
+  const { isOpen: isTutorialOpen, openTutorial, closeTutorial, completeTutorial, checkAndOpenForNewUser } = useTutorial();
+  
+  // Auto-open tutorial for new users
+  useEffect(() => {
+    // Small delay to let the page load first
+    const timer = setTimeout(() => {
+      checkAndOpenForNewUser();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [checkAndOpenForNewUser]);
 
   // Callback for realtime upsell toast (only for free users)
   const handleRealtimeUpsell = useCallback(() => {
@@ -394,6 +408,15 @@ const Presence = () => {
         backTo="/profile" 
         rightContent={
           <>
+            {/* Help/Tutorial button */}
+            <button
+              onClick={openTutorial}
+              className="text-muted-foreground hover:text-foreground transition-colors rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              title="Cómo funciona KIKI"
+              aria-label="Ver tutorial"
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
             {/* Connection requests button */}
             <button
               onClick={() => navigate("/connections")}
@@ -667,6 +690,13 @@ const Presence = () => {
           Solo cercanía emocional.
         </p>
       </div>
+      
+      {/* Interactive Tutorial */}
+      <InteractiveTutorial 
+        isOpen={isTutorialOpen} 
+        onClose={closeTutorial} 
+        onComplete={completeTutorial}
+      />
     </main>
     </PullToRefresh>
   );
