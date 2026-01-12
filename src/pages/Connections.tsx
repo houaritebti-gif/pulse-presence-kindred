@@ -1,6 +1,5 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, X, UserCheck, Clock, Users, Sparkles, Link2 } from "lucide-react";
+import { Check, X, UserCheck, Clock, Users, Sparkles, Link2, MessageCircle, Heart } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -9,20 +8,24 @@ import EmptyState from "@/components/EmptyState";
 import {
   useReceivedConnectionRequests,
   useSentConnectionRequests,
+  useActiveConnections,
   useAcceptConnectionRequest,
   useRejectConnectionRequest,
   useCancelConnectionRequest,
   useConnectionRequestsRealtime,
   ConnectionRequestWithProfile,
+  ActiveConnection,
 } from "@/hooks/useConnectionRequests";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { triggerHaptic } from "@/utils/haptics";
+import { motion } from "framer-motion";
 
 const Connections = () => {
   const navigate = useNavigate();
   const { data: receivedRequests, isLoading: loadingReceived } = useReceivedConnectionRequests();
   const { data: sentRequests, isLoading: loadingSent } = useSentConnectionRequests();
+  const { data: activeConnections, isLoading: loadingActive } = useActiveConnections();
   const acceptRequest = useAcceptConnectionRequest();
   const rejectRequest = useRejectConnectionRequest();
   const cancelRequest = useCancelConnectionRequest();
@@ -140,20 +143,9 @@ const Connections = () => {
             <span className="text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
               {request.to_profile?.city || "Desconocida"}
             </span>
-            <span className={`flex items-center gap-1 text-xs ${
-              request.status === "accepted" ? "text-green-500" : "text-muted-foreground"
-            }`} style={{ fontFamily: 'Arial, sans-serif' }}>
-              {request.status === "accepted" ? (
-                <>
-                  <UserCheck className="w-3 h-3" />
-                  Conectado
-                </>
-              ) : (
-                <>
-                  <Clock className="w-3 h-3" />
-                  Pendiente
-                </>
-              )}
+            <span className="flex items-center gap-1 text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+              <Clock className="w-3 h-3" />
+              Pendiente
             </span>
           </div>
           <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -161,29 +153,73 @@ const Connections = () => {
           </span>
         </div>
         
-        {request.status === "pending" && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => handleCancel(request.id)}
-            disabled={cancelRequest.isPending}
-            className="text-muted-foreground"
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => handleCancel(request.id)}
+          disabled={cancelRequest.isPending}
+          className="text-muted-foreground"
+        >
+          Cancelar
+        </Button>
+      </div>
+    </div>
+  );
+
+  const ActiveConnectionCard = ({ connection }: { connection: ActiveConnection }) => (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-card rounded-xl p-4 border border-foreground/5 dark:border-transparent shadow-md shadow-foreground/10 dark:shadow-foreground/5"
+    >
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <Avatar 
+            className="w-14 h-14 border-2 border-green-500/30 cursor-pointer transition-transform hover:scale-105"
+            onClick={() => navigate(`/user/${connection.connected_profile?.id}`)}
           >
-            Cancelar
-          </Button>
-        )}
+            <AvatarImage src={connection.connected_profile?.avatar_url || undefined} />
+            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-lg">
+              {connection.connected_profile?.name?.[0]?.toUpperCase() || "?"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
+            <Heart className="w-2 h-2 text-white fill-white" />
+          </div>
+        </div>
         
-        {request.status === "accepted" && request.to_profile?.id && (
+        <div className="flex-1 min-w-0">
+          <button
+            onClick={() => navigate(`/user/${connection.connected_profile?.id}`)}
+            className="text-left hover:underline"
+          >
+            <span className="font-semibold text-card-foreground block" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+              {connection.connected_profile?.name || "Sin nombre"}
+            </span>
+          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
+              {connection.connected_profile?.city || ""}
+            </span>
+            <span className="text-[10px] text-green-500 flex items-center gap-1">
+              <UserCheck className="w-3 h-3" />
+              Conectado {formatTime(connection.responded_at || connection.created_at)}
+            </span>
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
           <Button
             size="sm"
             variant="outline"
-            onClick={() => navigate(`/user/${request.to_profile?.id}`)}
+            onClick={() => navigate(`/user/${connection.connected_profile?.id}`)}
+            className="gap-1.5"
           >
             Ver perfil
           </Button>
-        )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
@@ -213,22 +249,51 @@ const Connections = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="received" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="received" className="gap-2">
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="active" className="gap-1.5 text-xs sm:text-sm">
+              <UserCheck className="w-4 h-4" />
+              <span className="hidden sm:inline">Activas</span>
+              {(activeConnections?.length || 0) > 0 && (
+                <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-green-500 text-white text-[10px] font-bold">
+                  {activeConnections?.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="received" className="gap-1.5 text-xs sm:text-sm">
               <Users className="w-4 h-4" />
-              Recibidas
+              <span className="hidden sm:inline">Recibidas</span>
               {(receivedRequests?.length || 0) > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
                   {receivedRequests?.length}
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="sent" className="gap-2">
+            <TabsTrigger value="sent" className="gap-1.5 text-xs sm:text-sm">
               <Clock className="w-4 h-4" />
-              Enviadas
+              <span className="hidden sm:inline">Enviadas</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="active" className="space-y-4">
+            {loadingActive ? (
+              <div className="flex justify-center py-12">
+                <div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : !activeConnections?.length ? (
+              <EmptyState
+                icon={Heart}
+                title="Sin conexiones activas"
+                description="Cuando conectes con alguien, aparecerá aquí para que puedan seguir conociéndose."
+              />
+            ) : (
+              <div className="space-y-3">
+                {activeConnections.map((connection) => (
+                  <ActiveConnectionCard key={connection.id} connection={connection} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
           <TabsContent value="received" className="space-y-4">
             {loadingReceived ? (
@@ -257,7 +322,7 @@ const Connections = () => {
               <EmptyState
                 icon={Clock}
                 title="Sin solicitudes enviadas"
-                description="Las solicitudes que envíes aparecerán aquí."
+                description="Las solicitudes pendientes que envíes aparecerán aquí."
               />
             ) : (
               sentRequests.map((request) => (
