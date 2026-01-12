@@ -26,6 +26,7 @@ import { useBlockedUsersList, useUnblockUser, useMyReportHistory, REPORT_REASONS
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AdvancedSettingsSection from "@/components/AdvancedSettingsSection";
 import OfflineQueueManager from "@/components/OfflineQueueManager";
+import ProfileVisibilitySection from "@/components/ProfileVisibilitySection";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfilePhotoManager from "@/components/ProfilePhotoManager";
 import UploadProgress from "@/components/UploadProgress";
@@ -1044,8 +1045,11 @@ const Profile = () => {
         {/* Offline Queue Manager */}
         <OfflineQueueManager />
 
+        {/* Profile Visibility Settings */}
+        <ProfileVisibilitySection />
+
         {/* Privacy Settings */}
-        <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '550ms', animationFillMode: 'forwards' }}>
+        <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '560ms', animationFillMode: 'forwards' }}>
           <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Privacidad del chat
           </h2>

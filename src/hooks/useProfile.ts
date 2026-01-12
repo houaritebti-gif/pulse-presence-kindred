@@ -24,6 +24,17 @@ export interface Profile {
   identity_verified: boolean | null;
   birthdate: string | null;
   gender: GenderType | null;
+  // Visibility settings
+  show_birth_year: boolean | null;
+  show_zodiac: boolean | null;
+  show_gender: boolean | null;
+  show_city: boolean | null;
+  show_vibe: boolean | null;
+  show_tribes: boolean | null;
+  show_music_styles: boolean | null;
+  show_interests: boolean | null;
+  show_looking_for: boolean | null;
+  show_aesthetic_details: boolean | null;
   created_at: string;
   updated_at: string;
 }
