@@ -27,9 +27,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocalStorage, STORAGE_KEYS } from "@/hooks/useLocalStorage";
-import { format, subDays, startOfHour, eachHourOfInterval } from "date-fns";
+import { format, subDays, startOfHour, eachHourOfInterval, startOfDay, eachDayOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface TestLog {
   id: string;
@@ -56,6 +56,7 @@ interface RateLimitInfo {
 interface RateLimitChartData {
   hour: string;
   requests: number;
+  emails: number;
   date: Date;
 }
 
@@ -70,6 +71,7 @@ interface RateLimitAlert {
 interface EmailAlertHistory {
   id: string;
   sentAt: Date;
+  sentBy?: string;
   recipients: number;
   alertCount: number;
   threshold: number;
@@ -77,6 +79,7 @@ interface EmailAlertHistory {
   status: 'success' | 'error';
   messageId?: string;
   errorMessage?: string;
+  isFromRealtime?: boolean;
 }
 
 const containerVariants = {
@@ -133,6 +136,97 @@ const AdminNotificationTestCenter = () => {
     }, ...prev].slice(0, 100));
   }, []);
   
+  // Load email history from database on mount
+  const loadEmailHistoryFromDB = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('email_alert_history')
+        .select('*')
+        .order('sent_at', { ascending: false })
+        .limit(20);
+      
+      if (error) {
+        console.log('Could not load email history:', error.message);
+        return;
+      }
+      
+      const history: EmailAlertHistory[] = (data || []).map(record => ({
+        id: record.id,
+        sentAt: new Date(record.sent_at),
+        sentBy: record.sent_by || undefined,
+        recipients: record.recipients_count,
+        alertCount: record.alert_count || 0,
+        threshold: record.threshold || 0,
+        windowMinutes: record.time_window_minutes || 0,
+        status: record.status as 'success' | 'error',
+        messageId: record.message_id || undefined,
+        errorMessage: record.error_message || undefined,
+      }));
+      
+      setEmailAlertHistory(history);
+    } catch (err) {
+      console.log('Error loading email history:', err);
+    }
+  }, []);
+  
+  // Subscribe to realtime updates for email alert history
+  useEffect(() => {
+    loadEmailHistoryFromDB();
+    
+    const channel = supabase
+      .channel('email-alert-history-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'email_alert_history',
+        },
+        (payload) => {
+          const record = payload.new as any;
+          
+          // Check if this was sent by the current user (to avoid duplicates)
+          if (record.sent_by === user?.id) {
+            // Already added locally, no need to add again
+            return;
+          }
+          
+          const newEntry: EmailAlertHistory = {
+            id: record.id,
+            sentAt: new Date(record.sent_at),
+            sentBy: record.sent_by || undefined,
+            recipients: record.recipients_count,
+            alertCount: record.alert_count || 0,
+            threshold: record.threshold || 0,
+            windowMinutes: record.time_window_minutes || 0,
+            status: record.status as 'success' | 'error',
+            messageId: record.message_id || undefined,
+            errorMessage: record.error_message || undefined,
+            isFromRealtime: true,
+          };
+          
+          setEmailAlertHistory(prev => [newEntry, ...prev].slice(0, 20));
+          
+          // Show toast for realtime notification from other admin
+          toast.info('📧 Otro admin envió un email de alerta', {
+            description: `${record.recipients_count} destinatario(s) • ${record.alert_count || 0} alerta(s)`,
+          });
+          
+          addLog({
+            type: 'alert',
+            status: 'success',
+            message: '📧 [Realtime] Email de alerta enviado por otro admin',
+            details: `${record.recipients_count} destinatario(s)`,
+          });
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, loadEmailHistoryFromDB, addLog]);
+  
   // Send email alert to admins
   const sendEmailAlert = useCallback(async (alerts: RateLimitAlert[], isTest: boolean = false) => {
     if (isSendingEmailAlert) return;
@@ -155,9 +249,27 @@ const AdminNotificationTestCenter = () => {
 
       if (error) throw error;
 
+      // Save to database
+      const { error: dbError } = await supabase.from('email_alert_history').insert({
+        sent_by: user?.id,
+        recipients_count: data?.recipients || 0,
+        is_test: isTest,
+        status: data?.sent ? 'success' : 'error',
+        message_id: data?.messageId || null,
+        alert_count: alerts.length,
+        threshold: alertThreshold,
+        time_window_minutes: emailWindowMinutes,
+        error_message: data?.sent ? null : (data?.reason || 'Unknown error'),
+      });
+
+      if (dbError) {
+        console.log('Could not save email history to DB:', dbError.message);
+      }
+
       const historyEntry: EmailAlertHistory = {
         id: crypto.randomUUID(),
         sentAt: new Date(),
+        sentBy: user?.id,
         recipients: data?.recipients || 0,
         alertCount: alerts.length,
         threshold: alertThreshold,
@@ -494,22 +606,30 @@ const AdminNotificationTestCenter = () => {
     }
   };
 
-  // Fetch rate limit chart data for the last 7 days
+  // Fetch rate limit chart data for the last 7 days with email stats
   const fetchRateLimitChartData = async () => {
     setIsLoading('chart');
     try {
       const sevenDaysAgo = subDays(new Date(), 7);
       
-      const { data, error } = await supabase
+      // Fetch rate limit data
+      const { data: rateLimitData, error: rateLimitError } = await supabase
         .from('push_rate_limits')
         .select('window_start, request_count')
         .gte('window_start', sevenDaysAgo.toISOString())
         .order('window_start', { ascending: true });
 
-      if (error) throw error;
+      if (rateLimitError) throw rateLimitError;
 
-      // Group by hour
-      const hourlyData = new Map<string, number>();
+      // Fetch email alert history from database
+      const { data: emailData } = await supabase
+        .from('email_alert_history')
+        .select('*')
+        .gte('sent_at', sevenDaysAgo.toISOString())
+        .order('sent_at', { ascending: true });
+
+      // Group by hour for rate limits
+      const hourlyData = new Map<string, { requests: number; emails: number }>();
       const hours = eachHourOfInterval({
         start: sevenDaysAgo,
         end: new Date(),
@@ -518,25 +638,33 @@ const AdminNotificationTestCenter = () => {
       // Initialize all hours with 0
       hours.forEach(hour => {
         const key = format(hour, 'yyyy-MM-dd HH:00');
-        hourlyData.set(key, 0);
+        hourlyData.set(key, { requests: 0, emails: 0 });
       });
 
-      // Aggregate actual data
-      (data || []).forEach(record => {
+      // Aggregate rate limit data
+      (rateLimitData || []).forEach(record => {
         const hourKey = format(new Date(record.window_start), 'yyyy-MM-dd HH:00');
-        const current = hourlyData.get(hourKey) || 0;
-        hourlyData.set(hourKey, current + record.request_count);
+        const current = hourlyData.get(hourKey) || { requests: 0, emails: 0 };
+        hourlyData.set(hourKey, { ...current, requests: current.requests + record.request_count });
+      });
+
+      // Aggregate email data
+      (emailData || []).forEach(record => {
+        const hourKey = format(new Date(record.sent_at), 'yyyy-MM-dd HH:00');
+        const current = hourlyData.get(hourKey) || { requests: 0, emails: 0 };
+        hourlyData.set(hourKey, { ...current, emails: current.emails + 1 });
       });
 
       // Convert to chart data - sample every 4 hours for readability
       const chartData: RateLimitChartData[] = [];
       let counter = 0;
-      hourlyData.forEach((requests, hour) => {
+      hourlyData.forEach((data, hour) => {
         if (counter % 4 === 0) {
           const date = new Date(hour);
           chartData.push({
             hour: format(date, 'dd/MM HH:mm'),
-            requests,
+            requests: data.requests,
+            emails: data.emails,
             date,
           });
         }
@@ -549,7 +677,7 @@ const AdminNotificationTestCenter = () => {
         type: 'rate-limit',
         status: 'success',
         message: 'Datos del gráfico cargados',
-        details: `${chartData.length} puntos de datos de los últimos 7 días`,
+        details: `${chartData.length} puntos de datos, ${emailData?.length || 0} emails de alerta`,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo obtener datos';
@@ -1083,6 +1211,7 @@ const AdminNotificationTestCenter = () => {
                   <Label className="text-sm flex items-center gap-2">
                     <Mail className="w-3 h-3" />
                     Historial de emails ({emailAlertHistory.length})
+                    <Badge variant="outline" className="text-[10px] px-1">Realtime</Badge>
                   </Label>
                   <ScrollArea className="h-[150px]">
                     {emailAlertHistory.map((entry) => (
@@ -1092,7 +1221,7 @@ const AdminNotificationTestCenter = () => {
                           entry.status === 'success' 
                             ? 'bg-green-500/10 border-green-500/30' 
                             : 'bg-destructive/10 border-destructive/30'
-                        }`}
+                        } ${entry.isFromRealtime ? 'ring-1 ring-blue-500/50' : ''}`}
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex items-center gap-1">
@@ -1104,6 +1233,11 @@ const AdminNotificationTestCenter = () => {
                             <span className="font-medium">
                               {entry.status === 'success' ? 'Enviado' : 'Error'}
                             </span>
+                            {entry.isFromRealtime && (
+                              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                                Otro admin
+                              </Badge>
+                            )}
                           </div>
                           <span className="text-muted-foreground">
                             {format(entry.sentAt, 'dd/MM HH:mm:ss')}
@@ -1156,10 +1290,10 @@ const AdminNotificationTestCenter = () => {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
-              Rate Limiting - Últimos 7 días
+              Rate Limiting y Emails - Últimos 7 días
             </CardTitle>
             <CardDescription>
-              Solicitudes de push notifications por hora
+              Solicitudes de push notifications y emails de alerta por hora
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1179,13 +1313,17 @@ const AdminNotificationTestCenter = () => {
               </Button>
             </div>
             {rateLimitChartData.length > 0 ? (
-              <div className="h-[250px]">
+              <div className="h-[280px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={rateLimitChartData}>
                     <defs>
                       <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorEmails" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -1198,10 +1336,20 @@ const AdminNotificationTestCenter = () => {
                       className="text-muted-foreground"
                     />
                     <YAxis 
+                      yAxisId="requests"
                       tick={{ fontSize: 10 }} 
                       tickLine={false}
                       axisLine={false}
                       className="text-muted-foreground"
+                    />
+                    <YAxis 
+                      yAxisId="emails"
+                      orientation="right"
+                      tick={{ fontSize: 10 }} 
+                      tickLine={false}
+                      axisLine={false}
+                      className="text-muted-foreground"
+                      domain={[0, 'auto']}
                     />
                     <Tooltip 
                       contentStyle={{ 
@@ -1212,14 +1360,29 @@ const AdminNotificationTestCenter = () => {
                       }}
                       labelStyle={{ color: 'hsl(var(--foreground))' }}
                     />
+                    <Legend 
+                      wrapperStyle={{ fontSize: '12px' }}
+                      iconType="circle"
+                    />
                     <Area 
+                      yAxisId="requests"
                       type="monotone" 
                       dataKey="requests" 
                       stroke="hsl(var(--primary))" 
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#colorRequests)"
-                      name="Requests"
+                      name="Push Requests"
+                    />
+                    <Area 
+                      yAxisId="emails"
+                      type="stepAfter" 
+                      dataKey="emails" 
+                      stroke="hsl(var(--destructive))" 
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorEmails)"
+                      name="Emails de Alerta"
                     />
                   </AreaChart>
                 </ResponsiveContainer>

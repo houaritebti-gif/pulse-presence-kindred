@@ -216,6 +216,48 @@ export type Database = {
           },
         ]
       }
+      email_alert_history: {
+        Row: {
+          alert_count: number | null
+          error_message: string | null
+          id: string
+          is_test: boolean
+          message_id: string | null
+          recipients_count: number
+          sent_at: string
+          sent_by: string | null
+          status: string
+          threshold: number | null
+          time_window_minutes: number | null
+        }
+        Insert: {
+          alert_count?: number | null
+          error_message?: string | null
+          id?: string
+          is_test?: boolean
+          message_id?: string | null
+          recipients_count?: number
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          threshold?: number | null
+          time_window_minutes?: number | null
+        }
+        Update: {
+          alert_count?: number | null
+          error_message?: string | null
+          id?: string
+          is_test?: boolean
+          message_id?: string | null
+          recipients_count?: number
+          sent_at?: string
+          sent_by?: string | null
+          status?: string
+          threshold?: number | null
+          time_window_minutes?: number | null
+        }
+        Relationships: []
+      }
       ghost_messages: {
         Row: {
           content: string
