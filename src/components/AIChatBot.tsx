@@ -51,14 +51,21 @@ const ACTION_ICONS = {
   create: Users,
 };
 
+interface ContextualSuggestion {
+  emoji: string;
+  text: string;
+}
+
 // Extract actions and quedada data from AI response
 const extractActions = (text: string): { 
   cleanText: string; 
   actions: QuickAction[]; 
   quedadaData: QuedadaCreationData | null;
   quedadaDeletion: QuedadaDeletionData | null;
+  suggestions: ContextualSuggestion[];
 } => {
   const actions: QuickAction[] = [];
+  const suggestions: ContextualSuggestion[] = [];
   let quedadaData: QuedadaCreationData | null = null;
   let quedadaDeletion: QuedadaDeletionData | null = null;
   
@@ -95,15 +102,26 @@ const extractActions = (text: string): {
       });
     }
   }
+
+  // Extract contextual suggestions
+  const suggestionRegex = /\[\[suggestion:([^|]+)\|([^\]]+)\]\]/g;
+  let suggestionMatch;
+  while ((suggestionMatch = suggestionRegex.exec(text)) !== null) {
+    suggestions.push({
+      emoji: suggestionMatch[1].trim(),
+      text: suggestionMatch[2].trim(),
+    });
+  }
   
   // Clean the text
   let cleanText = text
     .replace(/\[\[create_quedada:[^\]]+\]\]/g, "")
     .replace(/\[\[delete_quedada:[^\]]+\]\]/g, "")
     .replace(/\[\[action:[^\]]+\]\]/g, "")
+    .replace(/\[\[suggestion:[^\]]+\]\]/g, "")
     .trim();
   
-  return { cleanText, actions, quedadaData, quedadaDeletion };
+  return { cleanText, actions, quedadaData, quedadaDeletion, suggestions };
 };
 
 // Parse markdown-like formatting
@@ -240,9 +258,12 @@ interface FormattedMessageProps {
   onNavigate: (route: string) => void;
   onCreateQuedada: (data: QuedadaCreationData) => void;
   onDeleteQuedada: (data: QuedadaDeletionData) => void;
+  onSuggestionClick?: (text: string) => void;
   showCopyButton?: boolean;
   canCreateQuedadas?: boolean;
   canDeleteQuedadas?: boolean;
+  isLastMessage?: boolean;
+  isLoading?: boolean;
 }
 
 const FormattedMessage = ({ 
@@ -251,15 +272,18 @@ const FormattedMessage = ({
   onNavigate, 
   onCreateQuedada, 
   onDeleteQuedada,
+  onSuggestionClick,
   showCopyButton,
   canCreateQuedadas = true,
   canDeleteQuedadas = true,
+  isLastMessage = false,
+  isLoading = false,
 }: FormattedMessageProps) => {
   const [copied, setCopied] = useState(false);
   const [quedadaCreated, setQuedadaCreated] = useState(false);
   const [quedadaDeleted, setQuedadaDeleted] = useState(false);
   
-  const { cleanText, actions, quedadaData, quedadaDeletion } = useMemo(() => 
+  const { cleanText, actions, quedadaData, quedadaDeletion, suggestions } = useMemo(() => 
     extractActions(content), [content]
   );
 
@@ -420,6 +444,47 @@ const FormattedMessage = ({
             );
           })}
         </div>
+      )}
+
+      {/* Contextual suggestions - only show on last message and when not loading */}
+      {isLastMessage && !isLoading && suggestions.length > 0 && onSuggestionClick && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.3 }}
+          className="mt-4 pt-3 border-t border-border/30"
+        >
+          <p className="text-[10px] text-muted-foreground mb-2 flex items-center gap-1">
+            <Sparkles className="h-3 w-3" />
+            Preguntas sugeridas
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {suggestions.map((suggestion, index) => (
+              <motion.button
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 + index * 0.1 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  onSuggestionClick(suggestion.text);
+                  triggerHaptic("light");
+                }}
+                className={cn(
+                  "flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-full",
+                  "bg-gradient-to-r from-primary/10 to-accent/10 hover:from-primary/20 hover:to-accent/20",
+                  "border border-primary/20 hover:border-primary/40",
+                  "transition-all duration-200",
+                  "text-foreground/80 hover:text-foreground"
+                )}
+              >
+                <span>{suggestion.emoji}</span>
+                <span>{suggestion.text}</span>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
       )}
     </div>
   );
@@ -1031,9 +1096,12 @@ export const AIChatBot = () => {
                             onNavigate={handleNavigate}
                             onCreateQuedada={handleCreateQuedada}
                             onDeleteQuedada={handleDeleteQuedada}
+                            onSuggestionClick={handleSuggestionClick}
                             showCopyButton={msg.role === "assistant" && msg.content !== ""}
                             canCreateQuedadas={canCreateQuedadas}
                             canDeleteQuedadas={canDeleteQuedadas}
+                            isLastMessage={i === messages.length - 1 && msg.role === "assistant"}
+                            isLoading={isLoading}
                           />
                         </div>
                         {msg.role === "user" && (
