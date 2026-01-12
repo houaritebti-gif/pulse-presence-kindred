@@ -169,6 +169,53 @@ export type Database = {
           },
         ]
       }
+      daily_challenge_progress: {
+        Row: {
+          challenge_date: string
+          challenge_key: string
+          completed_at: string | null
+          created_at: string
+          current_progress: number
+          energy_reward: number
+          id: string
+          profile_id: string
+          reward_claimed: boolean
+          target_value: number
+        }
+        Insert: {
+          challenge_date?: string
+          challenge_key: string
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number
+          energy_reward: number
+          id?: string
+          profile_id: string
+          reward_claimed?: boolean
+          target_value: number
+        }
+        Update: {
+          challenge_date?: string
+          challenge_key?: string
+          completed_at?: string | null
+          created_at?: string
+          current_progress?: number
+          energy_reward?: number
+          id?: string
+          profile_id?: string
+          reward_claimed?: boolean
+          target_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_challenge_progress_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ghost_messages: {
         Row: {
           content: string
