@@ -727,6 +727,16 @@ export type Database = {
           notify_summary_hour: number
           share_typing_status: boolean | null
           shaved_head: boolean | null
+          show_aesthetic_details: boolean | null
+          show_birth_year: boolean | null
+          show_city: boolean | null
+          show_gender: boolean | null
+          show_interests: boolean | null
+          show_looking_for: boolean | null
+          show_music_styles: boolean | null
+          show_tribes: boolean | null
+          show_vibe: boolean | null
+          show_zodiac: boolean | null
           updated_at: string | null
           user_id: string
           vibe: string | null
@@ -756,6 +766,16 @@ export type Database = {
           notify_summary_hour?: number
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
+          show_aesthetic_details?: boolean | null
+          show_birth_year?: boolean | null
+          show_city?: boolean | null
+          show_gender?: boolean | null
+          show_interests?: boolean | null
+          show_looking_for?: boolean | null
+          show_music_styles?: boolean | null
+          show_tribes?: boolean | null
+          show_vibe?: boolean | null
+          show_zodiac?: boolean | null
           updated_at?: string | null
           user_id: string
           vibe?: string | null
@@ -785,6 +805,16 @@ export type Database = {
           notify_summary_hour?: number
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
+          show_aesthetic_details?: boolean | null
+          show_birth_year?: boolean | null
+          show_city?: boolean | null
+          show_gender?: boolean | null
+          show_interests?: boolean | null
+          show_looking_for?: boolean | null
+          show_music_styles?: boolean | null
+          show_tribes?: boolean | null
+          show_vibe?: boolean | null
+          show_zodiac?: boolean | null
           updated_at?: string | null
           user_id?: string
           vibe?: string | null
