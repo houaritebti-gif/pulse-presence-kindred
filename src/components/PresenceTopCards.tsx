@@ -1,6 +1,7 @@
 import { Radio, EyeOff, Crown, Lock, Zap, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
@@ -131,9 +132,20 @@ export const PresenceTopCards = ({
                   KIKI Now
                 </p>
                 {boostTimeRemaining && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold animate-pulse">
-                    🔥 {boostTimeRemaining.minutes}:{boostTimeRemaining.seconds.toString().padStart(2, '0')}
-                  </span>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold animate-pulse cursor-help">
+                          🔥 {boostTimeRemaining.minutes}:{boostTimeRemaining.seconds.toString().padStart(2, '0')}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="bg-card border-border text-card-foreground">
+                        <p className="text-xs font-medium">
+                          ⏱️ Tu boost expira en {boostTimeRemaining.minutes} min {boostTimeRemaining.seconds} seg
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
               <p className="font-body text-xs text-muted-foreground">
