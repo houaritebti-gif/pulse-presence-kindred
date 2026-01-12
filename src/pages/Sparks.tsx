@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2, X, BellOff } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
-import { useSparkChats, useExtinguishSpark } from "@/hooks/useSparks";
+import { useSparkChats, useExtinguishSpark, useSparkChatsRealtime } from "@/hooks/useSparks";
 import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
@@ -27,6 +27,9 @@ const Sparks = () => {
   const { mutedChats } = useMutedSparkChats();
   const extinguishSpark = useExtinguishSpark();
   const { execute: executeUndoable, isPending: isUndoPending, pendingIds } = useUndoableAction();
+  
+  // Subscribe to realtime updates for unread counts
+  useSparkChatsRealtime();
   
   // Count muted chats that are in the current chat list
   const mutedCount = useMemo(() => {

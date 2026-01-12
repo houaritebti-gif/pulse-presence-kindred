@@ -635,3 +635,50 @@ export const useOtherUserReadStatus = (chatId: string | undefined, otherProfileI
 
   return query;
 };
+
+// Subscribe to realtime updates for unread messages in spark chats list
+export const useSparkChatsRealtime = () => {
+  const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    // Listen for new chat messages to update unread counts
+    const channel = supabase
+      .channel("spark_chats_unread_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
+        },
+        (payload) => {
+          // Only invalidate if the message is not from the current user
+          const newMessage = payload.new as { sender_profile_id: string };
+          if (newMessage.sender_profile_id !== profile.id) {
+            queryClient.invalidateQueries({ queryKey: ["spark_chats", profile.id] });
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "spark_read_status",
+          filter: `profile_id=eq.${profile.id}`,
+        },
+        () => {
+          // When read status changes, update unread counts
+          queryClient.invalidateQueries({ queryKey: ["spark_chats", profile.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, queryClient]);
+};
