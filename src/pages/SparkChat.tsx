@@ -61,6 +61,7 @@ const SparkChat = () => {
   // Get current user's subscription tier (for typing indicator visibility)
   const { data: currentUserTier } = useUserSubscription(profile?.id);
   const isPaidUser = currentUserTier === 'plus' || currentUserTier === 'premium';
+  const isPremiumUser = currentUserTier === 'premium';
   
   // Get the other user's read status
   const { data: otherUserLastRead } = useOtherUserReadStatus(chatId, chat?.other_profile?.id);
@@ -763,10 +764,10 @@ const SparkChat = () => {
                         )}
                       </div>
                     )}
-                    {/* Read indicator for own messages */}
+                    {/* Read indicator for own messages - Premium only for read receipts */}
                     {isOwn && (
                       <div className="flex-shrink-0 mb-0.5">
-                        {otherUserLastRead && new Date(msg.created_at) <= otherUserLastRead ? (
+                        {isPremiumUser && otherUserLastRead && new Date(msg.created_at) <= otherUserLastRead ? (
                           <CheckCheck className="w-4 h-4 text-primary/70" />
                         ) : (
                           <Check className="w-4 h-4 text-muted-foreground/70" />
