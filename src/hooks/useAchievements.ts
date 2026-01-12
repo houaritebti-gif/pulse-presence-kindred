@@ -36,7 +36,13 @@ export type AchievementKey =
   | 'sparks_250'
   | 'profile_complete'
   | 'identity_verified'
-  | 'early_adopter';
+  | 'early_adopter'
+  // Onboarding achievements
+  | 'tutorial_completed'
+  | 'first_photo_uploaded'
+  | 'bio_written'
+  | 'interests_selected'
+  | 'first_presence';
 
 export interface AchievementDefinition {
   key: AchievementKey;
@@ -92,6 +98,13 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
   { key: 'profile_complete', name: 'Perfil Completo', description: 'Completa todos los campos de tu perfil', emoji: '📝', category: 'special', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
   { key: 'identity_verified', name: 'Verificado', description: 'Verifica tu identidad', emoji: '✅', category: 'special', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
   { key: 'early_adopter', name: 'Early Adopter', description: 'Uno de los primeros usuarios', emoji: '🚀', category: 'special', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
+  
+  // Onboarding achievements
+  { key: 'tutorial_completed', name: 'Estudiante Aplicado', description: 'Completa el tutorial interactivo', emoji: '🎓', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_photo_uploaded', name: 'Fotogénico', description: 'Sube tu primera foto', emoji: '📸', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'bio_written', name: 'Escritor', description: 'Escribe tu bio por primera vez', emoji: '✍️', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'interests_selected', name: 'Diverso', description: 'Selecciona tus intereses culturales', emoji: '🎭', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_presence', name: 'Presente', description: 'Activa tu presencia por primera vez', emoji: '👋', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
 ];
 
 export const getAchievementDefinition = (key: AchievementKey): AchievementDefinition | undefined => {

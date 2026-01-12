@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { useAchievements } from "@/hooks/useAchievements";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
+import { useProfilePhotos } from "@/hooks/useProfilePhotos";
+import { useProfileInterests } from "@/hooks/useInterests";
 
 /**
  * Hook that automatically checks and unlocks achievements based on user activity.
@@ -19,6 +21,8 @@ export const useAchievementChecker = () => {
     checkSuperSparkAchievements,
   } = useAchievements();
   const { sparkEnergy } = useSparkEnergy();
+  const { data: photos } = useProfilePhotos(profile?.id);
+  const { data: interests } = useProfileInterests(profile?.id);
   
   const lastCheckedEnergy = useRef<number>(0);
   const lastCheckedStreak = useRef<number>(0);
@@ -157,4 +161,64 @@ export const useAchievementChecker = () => {
       checkAndUnlock('profile_complete');
     }
   }, [profile, isUnlocked]);
+
+  // ========== ONBOARDING ACHIEVEMENTS ==========
+
+  // Check tutorial completed achievement (from localStorage)
+  useEffect(() => {
+    if (!profile?.id || isUnlocked('tutorial_completed')) return;
+
+    const tutorialCompleted = localStorage.getItem('kiki-tutorial-completed');
+    if (tutorialCompleted === 'true') {
+      checkAndUnlock('tutorial_completed');
+    }
+  }, [profile?.id, isUnlocked]);
+
+  // Check first photo uploaded achievement
+  useEffect(() => {
+    if (!profile?.id || isUnlocked('first_photo_uploaded')) return;
+
+    // Check both avatar and gallery photos
+    const hasPhoto = profile.avatar_url || (photos && photos.length > 0);
+    if (hasPhoto) {
+      checkAndUnlock('first_photo_uploaded');
+    }
+  }, [profile?.id, profile?.avatar_url, photos, isUnlocked]);
+
+  // Check bio written achievement
+  useEffect(() => {
+    if (!profile?.id || isUnlocked('bio_written')) return;
+
+    if (profile.bio && profile.bio.trim().length >= 10) {
+      checkAndUnlock('bio_written');
+    }
+  }, [profile?.id, profile?.bio, isUnlocked]);
+
+  // Check interests selected achievement
+  useEffect(() => {
+    if (!profile?.id || isUnlocked('interests_selected')) return;
+
+    if (interests && interests.length >= 3) {
+      checkAndUnlock('interests_selected');
+    }
+  }, [profile?.id, interests, isUnlocked]);
+
+  // Check first presence achievement
+  useEffect(() => {
+    if (!profile?.id || isUnlocked('first_presence')) return;
+
+    const checkFirstPresence = async () => {
+      const { data } = await supabase
+        .from('presence')
+        .select('is_present')
+        .eq('profile_id', profile.id)
+        .single();
+
+      if (data?.is_present) {
+        checkAndUnlock('first_presence');
+      }
+    };
+
+    checkFirstPresence();
+  }, [profile?.id, isUnlocked]);
 };
