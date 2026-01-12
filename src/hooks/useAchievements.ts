@@ -42,7 +42,12 @@ export type AchievementKey =
   | 'first_photo_uploaded'
   | 'bio_written'
   | 'interests_selected'
-  | 'first_presence';
+  | 'first_presence'
+  // Daily challenge streak achievements
+  | 'challenge_streak_3'
+  | 'challenge_streak_7'
+  | 'challenge_streak_14'
+  | 'challenge_streak_30';
 
 export interface AchievementDefinition {
   key: AchievementKey;
@@ -105,6 +110,12 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
   { key: 'bio_written', name: 'Escritor', description: 'Escribe tu bio por primera vez', emoji: '✍️', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
   { key: 'interests_selected', name: 'Diverso', description: 'Selecciona tus intereses culturales', emoji: '🎭', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
   { key: 'first_presence', name: 'Presente', description: 'Activa tu presencia por primera vez', emoji: '👋', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  
+  // Daily challenge streak achievements
+  { key: 'challenge_streak_3', name: 'Retador', description: 'Completa todos los retos 3 días seguidos', emoji: '🎯', category: 'streak', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'challenge_streak_7', name: 'Semana Perfecta', description: 'Completa todos los retos 7 días seguidos', emoji: '🏅', category: 'streak', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'challenge_streak_14', name: 'Maestro de Retos', description: 'Completa todos los retos 14 días seguidos', emoji: '🥇', category: 'streak', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'challenge_streak_30', name: 'Leyenda de los Retos', description: 'Completa todos los retos 30 días seguidos', emoji: '👑', category: 'streak', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
 ];
 
 export const getAchievementDefinition = (key: AchievementKey): AchievementDefinition | undefined => {
@@ -385,6 +396,22 @@ export const useAchievements = () => {
     }
   };
 
+  // Check daily challenge streak achievements
+  const checkChallengeStreakAchievements = async (challengeStreak: number) => {
+    if (challengeStreak >= 3 && !isUnlocked('challenge_streak_3')) {
+      await checkAndUnlock('challenge_streak_3');
+    }
+    if (challengeStreak >= 7 && !isUnlocked('challenge_streak_7')) {
+      await checkAndUnlock('challenge_streak_7');
+    }
+    if (challengeStreak >= 14 && !isUnlocked('challenge_streak_14')) {
+      await checkAndUnlock('challenge_streak_14');
+    }
+    if (challengeStreak >= 30 && !isUnlocked('challenge_streak_30')) {
+      await checkAndUnlock('challenge_streak_30');
+    }
+  };
+
   return {
     achievements: ACHIEVEMENTS,
     unlockedAchievements,
@@ -396,6 +423,7 @@ export const useAchievements = () => {
     checkEnergyAchievements,
     checkSparksSentAchievements,
     checkSuperSparkAchievements,
+    checkChallengeStreakAchievements,
     unlockedCount: unlockedAchievements?.length ?? 0,
     totalCount: ACHIEVEMENTS.length,
   };
