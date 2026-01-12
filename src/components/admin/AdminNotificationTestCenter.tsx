@@ -67,6 +67,18 @@ interface RateLimitAlert {
   threshold: number;
 }
 
+interface EmailAlertHistory {
+  id: string;
+  sentAt: Date;
+  recipients: number;
+  alertCount: number;
+  threshold: number;
+  windowMinutes: number;
+  status: 'success' | 'error';
+  messageId?: string;
+  errorMessage?: string;
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -104,13 +116,14 @@ const AdminNotificationTestCenter = () => {
   const [alertThreshold, setAlertThreshold] = useLocalStorage<number>(STORAGE_KEYS.ADMIN_ALERT_THRESHOLD, 20);
   const [alertsEnabled, setAlertsEnabled] = useLocalStorage<boolean>(STORAGE_KEYS.ADMIN_ALERTS_ENABLED, true);
   const [emailAlertsEnabled, setEmailAlertsEnabled] = useLocalStorage<boolean>(STORAGE_KEYS.ADMIN_EMAIL_ALERTS_ENABLED, false);
+  const [emailAlertCount, setEmailAlertCount] = useLocalStorage<number>(STORAGE_KEYS.ADMIN_EMAIL_ALERT_COUNT, 3);
+  const [emailWindowMinutes, setEmailWindowMinutes] = useLocalStorage<number>(STORAGE_KEYS.ADMIN_EMAIL_WINDOW_MINUTES, 5);
   const [rateLimitAlerts, setRateLimitAlerts] = useState<RateLimitAlert[]>([]);
   const [isSendingEmailAlert, setIsSendingEmailAlert] = useState(false);
+  const [emailAlertHistory, setEmailAlertHistory] = useState<EmailAlertHistory[]>([]);
   
   // Track alerts for email notification (multiple alerts in short period)
   const alertCountRef = useRef<{ count: number; windowStart: Date }>({ count: 0, windowStart: new Date() });
-  const EMAIL_ALERT_WINDOW_MINUTES = 5;
-  const EMAIL_ALERT_THRESHOLD = 3; // Send email after 3 alerts in 5 minutes
 
   const addLog = useCallback((log: Omit<TestLog, 'id' | 'timestamp'>) => {
     setLogs(prev => [{
@@ -121,8 +134,8 @@ const AdminNotificationTestCenter = () => {
   }, []);
   
   // Send email alert to admins
-  const sendEmailAlert = useCallback(async (alerts: RateLimitAlert[]) => {
-    if (!emailAlertsEnabled || isSendingEmailAlert) return;
+  const sendEmailAlert = useCallback(async (alerts: RateLimitAlert[], isTest: boolean = false) => {
+    if (isSendingEmailAlert) return;
     
     setIsSendingEmailAlert(true);
     try {
@@ -130,25 +143,40 @@ const AdminNotificationTestCenter = () => {
         body: {
           alertCount: alerts.length,
           threshold: alertThreshold,
-          timeWindowMinutes: EMAIL_ALERT_WINDOW_MINUTES,
+          timeWindowMinutes: emailWindowMinutes,
           alerts: alerts.map(a => ({
             profileId: a.profileId,
             requestCount: a.requestCount,
             timestamp: a.timestamp.toISOString(),
           })),
+          isTest,
         },
       });
 
       if (error) throw error;
 
+      const historyEntry: EmailAlertHistory = {
+        id: crypto.randomUUID(),
+        sentAt: new Date(),
+        recipients: data?.recipients || 0,
+        alertCount: alerts.length,
+        threshold: alertThreshold,
+        windowMinutes: emailWindowMinutes,
+        status: data?.sent ? 'success' : 'error',
+        messageId: data?.messageId,
+        errorMessage: data?.sent ? undefined : (data?.reason || 'Unknown error'),
+      };
+      
+      setEmailAlertHistory(prev => [historyEntry, ...prev].slice(0, 20));
+
       if (data?.sent) {
         addLog({
           type: 'alert',
           status: 'success',
-          message: `📧 Email de alerta enviado a ${data.recipients} admin(s)`,
+          message: `📧 ${isTest ? '[TEST] ' : ''}Email de alerta enviado a ${data.recipients} admin(s)`,
           details: `ID: ${data.messageId || 'N/A'}`,
         });
-        toast.success("Email de alerta enviado a administradores");
+        toast.success(isTest ? "Email de prueba enviado" : "Email de alerta enviado a administradores");
       } else {
         addLog({
           type: 'alert',
@@ -158,6 +186,19 @@ const AdminNotificationTestCenter = () => {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
+      
+      const historyEntry: EmailAlertHistory = {
+        id: crypto.randomUUID(),
+        sentAt: new Date(),
+        recipients: 0,
+        alertCount: alerts.length,
+        threshold: alertThreshold,
+        windowMinutes: emailWindowMinutes,
+        status: 'error',
+        errorMessage: message,
+      };
+      setEmailAlertHistory(prev => [historyEntry, ...prev].slice(0, 20));
+      
       addLog({
         type: 'alert',
         status: 'error',
@@ -168,7 +209,19 @@ const AdminNotificationTestCenter = () => {
     } finally {
       setIsSendingEmailAlert(false);
     }
-  }, [emailAlertsEnabled, isSendingEmailAlert, alertThreshold, addLog]);
+  }, [isSendingEmailAlert, alertThreshold, emailWindowMinutes, addLog]);
+  
+  // Test email manually
+  const sendTestEmailAlert = useCallback(() => {
+    const testAlerts: RateLimitAlert[] = [{
+      id: crypto.randomUUID(),
+      timestamp: new Date(),
+      profileId: 'test-profile-' + crypto.randomUUID().substring(0, 8),
+      requestCount: alertThreshold + 5,
+      threshold: alertThreshold,
+    }];
+    sendEmailAlert(testAlerts, true);
+  }, [alertThreshold, sendEmailAlert]);
   
   // Check for rate limit threshold exceeded
   const checkRateLimitThreshold = useCallback((records: RateLimitInfo[]) => {
@@ -213,7 +266,7 @@ const AdminNotificationTestCenter = () => {
       
       // Track alerts for email notification
       const now = new Date();
-      const windowMs = EMAIL_ALERT_WINDOW_MINUTES * 60 * 1000;
+      const windowMs = emailWindowMinutes * 60 * 1000;
       
       // Reset window if expired
       if (now.getTime() - alertCountRef.current.windowStart.getTime() > windowMs) {
@@ -223,13 +276,13 @@ const AdminNotificationTestCenter = () => {
       alertCountRef.current.count += newAlerts.length;
       
       // Send email if threshold reached
-      if (alertCountRef.current.count >= EMAIL_ALERT_THRESHOLD && emailAlertsEnabled) {
-        const recentAlerts = [...newAlerts, ...rateLimitAlerts].slice(0, EMAIL_ALERT_THRESHOLD);
+      if (alertCountRef.current.count >= emailAlertCount && emailAlertsEnabled) {
+        const recentAlerts = [...newAlerts, ...rateLimitAlerts].slice(0, emailAlertCount);
         sendEmailAlert(recentAlerts);
         alertCountRef.current = { count: 0, windowStart: now }; // Reset after sending
       }
     }
-  }, [alertsEnabled, alertThreshold, rateLimitAlerts, addLog, emailAlertsEnabled, sendEmailAlert]);
+  }, [alertsEnabled, alertThreshold, rateLimitAlerts, addLog, emailAlertsEnabled, sendEmailAlert, emailWindowMinutes, emailAlertCount]);
 
   // Filtered logs
   const filteredLogs = useMemo(() => {
@@ -952,9 +1005,53 @@ const AdminNotificationTestCenter = () => {
               </div>
               
               {emailAlertsEnabled && (
-                <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-                  📧 Se enviará email a admins cuando se detecten {EMAIL_ALERT_THRESHOLD}+ alertas en {EMAIL_ALERT_WINDOW_MINUTES} minutos
-                </p>
+                <div className="space-y-3 bg-muted/50 p-3 rounded-lg">
+                  <p className="text-xs text-muted-foreground">
+                    📧 Se enviará email a admins cuando se detecten {emailAlertCount}+ alertas en {emailWindowMinutes} minutos
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="email-alert-count" className="text-xs">Nº alertas para email</Label>
+                      <Input
+                        id="email-alert-count"
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={emailAlertCount}
+                        onChange={(e) => setEmailAlertCount(Math.max(1, Math.min(10, parseInt(e.target.value) || 3)))}
+                        className="h-8"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="email-window" className="text-xs">Ventana (minutos)</Label>
+                      <Input
+                        id="email-window"
+                        type="number"
+                        min={1}
+                        max={60}
+                        value={emailWindowMinutes}
+                        onChange={(e) => setEmailWindowMinutes(Math.max(1, Math.min(60, parseInt(e.target.value) || 5)))}
+                        className="h-8"
+                      />
+                    </div>
+                  </div>
+                  
+                  <Button
+                    onClick={sendTestEmailAlert}
+                    disabled={isSendingEmailAlert}
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                  >
+                    {isSendingEmailAlert ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Mail className="w-4 h-4 mr-2" />
+                    )}
+                    Enviar email de prueba
+                  </Button>
+                </div>
               )}
               
               <Separator />
@@ -979,6 +1076,56 @@ const AdminNotificationTestCenter = () => {
                   {alertsEnabled && " (configuración guardada)"}
                 </p>
               </div>
+              
+              {/* Email Alert History */}
+              {emailAlertHistory.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm flex items-center gap-2">
+                    <Mail className="w-3 h-3" />
+                    Historial de emails ({emailAlertHistory.length})
+                  </Label>
+                  <ScrollArea className="h-[150px]">
+                    {emailAlertHistory.map((entry) => (
+                      <div 
+                        key={entry.id} 
+                        className={`p-2 mb-2 rounded-lg border text-xs ${
+                          entry.status === 'success' 
+                            ? 'bg-green-500/10 border-green-500/30' 
+                            : 'bg-destructive/10 border-destructive/30'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex items-center gap-1">
+                            {entry.status === 'success' ? (
+                              <CheckCircle2 className="w-3 h-3 text-green-500" />
+                            ) : (
+                              <XCircle className="w-3 h-3 text-destructive" />
+                            )}
+                            <span className="font-medium">
+                              {entry.status === 'success' ? 'Enviado' : 'Error'}
+                            </span>
+                          </div>
+                          <span className="text-muted-foreground">
+                            {format(entry.sentAt, 'dd/MM HH:mm:ss')}
+                          </span>
+                        </div>
+                        <div className="mt-1 text-muted-foreground">
+                          {entry.status === 'success' ? (
+                            <>
+                              {entry.recipients} destinatario(s) • {entry.alertCount} alerta(s)
+                              {entry.messageId && (
+                                <span className="block truncate">ID: {entry.messageId}</span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-destructive">{entry.errorMessage}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </ScrollArea>
+                </div>
+              )}
               
               {rateLimitAlerts.length > 0 && (
                 <div className="space-y-2">
