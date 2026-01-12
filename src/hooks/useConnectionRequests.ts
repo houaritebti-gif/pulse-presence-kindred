@@ -60,7 +60,7 @@ export const useSentConnectionRequests = () => {
   });
 };
 
-// Fetch all active (accepted) connections
+// Fetch all active (accepted) connections with unread message counts
 export const useActiveConnections = () => {
   const { data: profile } = useProfile();
 
@@ -100,7 +100,7 @@ export const useActiveConnections = () => {
       if (receivedError) throw receivedError;
 
       // Normalize to a unified structure
-      const connections: ActiveConnection[] = [
+      const baseConnections = [
         ...(sentAccepted || []).map(c => ({
           id: c.id,
           from_profile_id: c.from_profile_id,
@@ -123,15 +123,89 @@ export const useActiveConnections = () => {
           connected_profile: c.from_profile,
           direction: "received" as const,
         })),
-      ].sort((a, b) => 
-        new Date(b.responded_at || b.created_at).getTime() - 
-        new Date(a.responded_at || a.created_at).getTime()
+      ];
+
+      // Fetch spark chats and unread counts for each connection
+      const connectedProfileIds = baseConnections
+        .map(c => c.connected_profile?.id)
+        .filter(Boolean) as string[];
+
+      if (connectedProfileIds.length === 0) {
+        return baseConnections.map(c => ({ ...c, unread_count: 0 }));
+      }
+
+      // Get all spark chats involving the current user
+      const { data: sparkChats } = await supabase
+        .from("spark_chats")
+        .select("id, profile_a_id, profile_b_id, extinguished_by_a, extinguished_by_b")
+        .or(`profile_a_id.eq.${profile.id},profile_b_id.eq.${profile.id}`);
+
+      // Create map of connected profile -> chat
+      const chatByProfileMap = new Map<string, { chatId: string; isA: boolean; extinguished: boolean }>();
+      (sparkChats || []).forEach(chat => {
+        const isA = chat.profile_a_id === profile.id;
+        const otherProfileId = isA ? chat.profile_b_id : chat.profile_a_id;
+        const extinguished = isA ? chat.extinguished_by_a : chat.extinguished_by_b;
+        
+        if (connectedProfileIds.includes(otherProfileId) && !extinguished) {
+          chatByProfileMap.set(otherProfileId, { 
+            chatId: chat.id, 
+            isA, 
+            extinguished: !!extinguished 
+          });
+        }
+      });
+
+      // Get read status for all relevant chats
+      const chatIds = Array.from(chatByProfileMap.values()).map(c => c.chatId);
+      const { data: readStatusData } = await supabase
+        .from("spark_read_status")
+        .select("chat_id, last_read_at")
+        .eq("profile_id", profile.id)
+        .in("chat_id", chatIds.length > 0 ? chatIds : ["00000000-0000-0000-0000-000000000000"]);
+
+      const readStatusMap = new Map(
+        readStatusData?.map(rs => [rs.chat_id, new Date(rs.last_read_at)]) || []
       );
 
-      return connections;
+      // Calculate unread counts for each connection
+      const connections: ActiveConnection[] = await Promise.all(
+        baseConnections.map(async (conn) => {
+          const connectedId = conn.connected_profile?.id;
+          if (!connectedId) return { ...conn, unread_count: 0 };
+
+          const chatInfo = chatByProfileMap.get(connectedId);
+          if (!chatInfo) return { ...conn, unread_count: 0 };
+
+          const lastRead = readStatusMap.get(chatInfo.chatId);
+          
+          let countQuery = supabase
+            .from("chat_messages")
+            .select("*", { count: "exact", head: true })
+            .eq("chat_id", chatInfo.chatId)
+            .neq("sender_profile_id", profile.id);
+          
+          if (lastRead) {
+            countQuery = countQuery.gt("created_at", lastRead.toISOString());
+          }
+          
+          const { count } = await countQuery;
+          return { ...conn, unread_count: count || 0 };
+        })
+      );
+
+      // Sort by unread first, then by responded_at
+      return connections.sort((a, b) => {
+        // Prioritize connections with unread messages
+        if (a.unread_count > 0 && b.unread_count === 0) return -1;
+        if (b.unread_count > 0 && a.unread_count === 0) return 1;
+        
+        return new Date(b.responded_at || b.created_at).getTime() - 
+               new Date(a.responded_at || a.created_at).getTime();
+      });
     },
     enabled: !!profile?.id,
-    staleTime: 1000 * 60 * 3,
+    staleTime: 1000 * 60 * 2, // 2 minutes
   });
 };
 
@@ -150,6 +224,7 @@ export interface ActiveConnection {
     city: string | null;
   } | null;
   direction: "sent" | "received";
+  unread_count: number;
 }
 
 // Fetch received connection requests (only pending)
