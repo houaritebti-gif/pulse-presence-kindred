@@ -227,41 +227,90 @@ export const ChallengeStreakCalendar = () => {
     m => currentStreak >= m.days && !streakBonusesClaimed.includes(m.days)
   );
 
+  // Find next milestone to show progress
+  const nextMilestone = STREAK_BONUS_MILESTONES.find(
+    m => currentStreak < m.days && !streakBonusesClaimed.includes(m.days)
+  );
+  
+  // Calculate progress to next milestone
+  const getProgressToNextMilestone = () => {
+    if (!nextMilestone) return { progress: 100, daysLeft: 0 };
+    const previousMilestone = [...STREAK_BONUS_MILESTONES]
+      .reverse()
+      .find(m => m.days < nextMilestone.days && currentStreak >= m.days);
+    const startDays = previousMilestone?.days || 0;
+    const range = nextMilestone.days - startDays;
+    const progressDays = currentStreak - startDays;
+    return {
+      progress: Math.min(100, Math.round((progressDays / range) * 100)),
+      daysLeft: nextMilestone.days - currentStreak,
+    };
+  };
+
+  const { progress: progressPercent, daysLeft } = getProgressToNextMilestone();
+
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
       <CardContent className="p-0">
         {/* Header - Always visible */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
+          className="w-full p-4 flex flex-col gap-3 hover:bg-muted/30 transition-colors"
         >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white">
-              <Flame className="h-5 w-5" />
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 text-white">
+                <Flame className="h-5 w-5" />
+              </div>
+              <div className="text-left">
+                <h3 className="font-semibold text-foreground">Racha de retos</h3>
+                <p className="text-sm text-muted-foreground">
+                  {currentStreak > 0 
+                    ? `🔥 ${currentStreak} día${currentStreak > 1 ? 's' : ''} consecutivo${currentStreak > 1 ? 's' : ''}`
+                    : 'Completa todos los retos hoy'
+                  }
+                </p>
+              </div>
             </div>
-            <div className="text-left">
-              <h3 className="font-semibold text-foreground">Racha de retos</h3>
-              <p className="text-sm text-muted-foreground">
-                {currentStreak > 0 
-                  ? `🔥 ${currentStreak} día${currentStreak > 1 ? 's' : ''} consecutivo${currentStreak > 1 ? 's' : ''}`
-                  : 'Completa todos los retos hoy'
-                }
+            <div className="flex items-center gap-2">
+              {availableBonuses.length > 0 && (
+                <div className="px-2 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium animate-pulse">
+                  🎁 {availableBonuses.length}
+                </div>
+              )}
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="h-5 w-5 text-muted-foreground" />
+              </motion.div>
+            </div>
+          </div>
+          
+          {/* Progress bar to next milestone - shown when collapsed */}
+          {!isExpanded && nextMilestone && currentStreak > 0 && (
+            <div className="w-full space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">
+                  Próximo bonus: {nextMilestone.emoji} {nextMilestone.days} días
+                </span>
+                <span className="text-primary font-medium">
+                  +{nextMilestone.bonus} ⚡
+                </span>
+              </div>
+              <div className="relative h-2 w-full bg-muted/50 rounded-full overflow-hidden">
+                <motion.div
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercent}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground text-center">
+                {daysLeft === 1 ? '¡Solo 1 día más!' : `${daysLeft} días para el bonus`}
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {availableBonuses.length > 0 && (
-              <div className="px-2 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium animate-pulse">
-                🎁 {availableBonuses.length}
-              </div>
-            )}
-            <motion.div
-              animate={{ rotate: isExpanded ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-            </motion.div>
-          </div>
+          )}
         </button>
 
         {/* Expandable content */}
