@@ -49,7 +49,7 @@ export interface SparkLevelInfo {
 // =============================================
 
 export const SPARK_LEVELS: SparkLevelInfo[] = [
-  { level: 1, name: "Brasas", emoji: "🪨", minTotal: 0, discount: 0, bonusGhostMessages: 0 },
+  { level: 1, name: "Chispita", emoji: "✨", minTotal: 0, discount: 0, bonusGhostMessages: 0 },
   { level: 2, name: "Llama", emoji: "🕯️", minTotal: 500, discount: 10, bonusGhostMessages: 0 },
   { level: 3, name: "Fuego", emoji: "🔥", minTotal: 1500, discount: 10, bonusGhostMessages: 1 },
   { level: 4, name: "Hoguera", emoji: "🏕️", minTotal: 3500, discount: 20, bonusGhostMessages: 1 },

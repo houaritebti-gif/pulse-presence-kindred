@@ -25,8 +25,8 @@ const LEVEL_CONFIG: Record<SparkLevel, {
   intensity: number;
 }> = {
   1: {
-    name: "Brasas",
-    emoji: "🪨",
+    name: "Chispita",
+    emoji: "✨",
     colors: {
       outer: "#3D2914",
       middle: "#5C3D1E",
