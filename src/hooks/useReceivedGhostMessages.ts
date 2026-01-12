@@ -6,6 +6,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { notifyUser } from "@/utils/notificationSound";
 import { useBlockedUsers } from "./useUserModeration";
 import { useActiveBoostedProfiles } from "./useKikiNow";
+import { toast } from "sonner";
+import { triggerHaptic } from "@/utils/haptics";
 
 export interface ReceivedGhostMessage {
   id: string;
@@ -104,6 +106,14 @@ export const useReceivedGhostMessages = () => {
   // Track if this is initial load to avoid playing sound on mount
   const isInitialLoad = useRef(true);
 
+  // Track if this is initial load to avoid playing sound on mount
+  const boostedIdsRef = useRef<Set<string>>(new Set());
+  
+  // Keep boostedIds ref updated
+  useEffect(() => {
+    boostedIdsRef.current = boostedData?.boostedIds || new Set();
+  }, [boostedData?.boostedIds]);
+
   // Subscribe to realtime updates and play sound on new messages
   useEffect(() => {
     if (!profile?.id) return;
@@ -121,9 +131,31 @@ export const useReceivedGhostMessages = () => {
         async (payload) => {
           // Play ghost notification sound for new messages
           if (!isInitialLoad.current) {
-            const newMsg = payload.new as { is_super_spark?: boolean };
+            const newMsg = payload.new as { 
+              is_super_spark?: boolean; 
+              from_profile_id?: string;
+            };
+            
+            // Check if sender has KIKI Now boost
+            const senderHasKikiNow = newMsg.from_profile_id && 
+              boostedIdsRef.current.has(newMsg.from_profile_id);
+            
             // Super spark gets a special notification type
-            notifyUser(newMsg?.is_super_spark ? "superSpark" : "ghost");
+            if (newMsg?.is_super_spark) {
+              notifyUser("superSpark");
+            } else if (senderHasKikiNow) {
+              // KIKI Now sender - special toast and sound
+              notifyUser("ghost");
+              triggerHaptic("medium");
+              toast("🔥 Chispa de alguien NOW", {
+                description: "Alguien que quiere conectar ahora te envió una Chispa",
+                icon: "⚡",
+                duration: 5000,
+                className: "bg-gradient-to-r from-orange-500/20 to-amber-500/20 border-orange-500/30",
+              });
+            } else {
+              notifyUser("ghost");
+            }
           }
           queryClient.invalidateQueries({ queryKey: ["received_ghost_messages", profile.id] });
         }
