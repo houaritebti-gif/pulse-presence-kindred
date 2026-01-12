@@ -67,4 +67,6 @@ export const STORAGE_KEYS = {
   ADMIN_ALERT_THRESHOLD: "kiki_admin_alert_threshold",
   ADMIN_ALERTS_ENABLED: "kiki_admin_alerts_enabled",
   ADMIN_EMAIL_ALERTS_ENABLED: "kiki_admin_email_alerts_enabled",
+  ADMIN_EMAIL_ALERT_COUNT: "kiki_admin_email_alert_count",
+  ADMIN_EMAIL_WINDOW_MINUTES: "kiki_admin_email_window_minutes",
 } as const;
