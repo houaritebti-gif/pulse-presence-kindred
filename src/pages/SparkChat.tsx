@@ -828,6 +828,30 @@ const SparkChat = () => {
           </div>
         )}
         
+        {/* Premium upsell for typing indicators - shown once to free users */}
+        {!isPaidUser && (
+          <div className="flex justify-center py-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    onClick={() => navigate('/subscription')}
+                    className="text-xs text-muted-foreground/60 hover:text-primary transition-colors flex items-center gap-1"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>Ver cuando escriben</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">
+                    <span className="font-semibold text-primary">Plus/Premium:</span> Indicadores de escritura en tiempo real
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
+        
         {/* Pending messages (offline queue) */}
         {pendingMessages.map((queuedMsg) => (
           <PendingMessage
