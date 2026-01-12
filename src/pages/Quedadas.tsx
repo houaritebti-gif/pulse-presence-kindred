@@ -59,6 +59,7 @@ const Quedadas = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [editingQuedada, setEditingQuedada] = useState<Quedada | null>(null);
   const [activeTab, setActiveTab] = useState<"explore" | "mine">("explore");
+  const [showMutedOnly, setShowMutedOnly] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [locationHint, setLocationHint] = useState("");
@@ -71,14 +72,23 @@ const Quedadas = () => {
   const [exitingQuedadas, setExitingQuedadas] = useState<Set<string>>(new Set());
   const exitTimeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-  // Filter quedadas based on active tab
+  // Filter quedadas based on active tab and muted filter
   const filteredQuedadas = useMemo(() => {
     if (!quedadas || !profile?.id) return quedadas;
+    
+    let filtered = quedadas;
+    
     if (activeTab === "mine") {
-      return quedadas.filter(q => q.creator_profile_id === profile.id || q.is_attending);
+      filtered = quedadas.filter(q => q.creator_profile_id === profile.id || q.is_attending);
     }
-    return quedadas;
-  }, [quedadas, activeTab, profile?.id]);
+    
+    // Apply muted filter if enabled (only in "mine" tab)
+    if (showMutedOnly && activeTab === "mine") {
+      filtered = filtered.filter(q => isQuedadaMuted(q.id));
+    }
+    
+    return filtered;
+  }, [quedadas, activeTab, profile?.id, showMutedOnly, isQuedadaMuted]);
 
   // Count quedadas for each tab
   const exploreCount = quedadas?.length || 0;
@@ -391,7 +401,12 @@ const Quedadas = () => {
             )}
           </button>
           <button
-            onClick={() => setActiveTab("mine")}
+            onClick={() => {
+              setActiveTab("mine");
+              if (activeTab === "mine") {
+                // Reset muted filter when switching away
+              }
+            }}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-body text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
               activeTab === "mine"
                 ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
@@ -412,6 +427,31 @@ const Quedadas = () => {
             )}
           </button>
         </div>
+        
+        {/* Muted filter - only show in "mine" tab when there are muted quedadas */}
+        {activeTab === "mine" && mutedCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="flex items-center justify-between px-4 py-2 bg-muted/50 rounded-lg"
+          >
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <BellOff className="w-4 h-4" />
+              <span>{mutedCount} silenciada{mutedCount !== 1 ? 's' : ''}</span>
+            </div>
+            <button
+              onClick={() => setShowMutedOnly(!showMutedOnly)}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                showMutedOnly
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-card text-card-foreground hover:bg-card/80"
+              }`}
+            >
+              {showMutedOnly ? "Ver todas" : "Solo silenciadas"}
+            </button>
+          </motion.div>
+        )}
 
         {/* List with smooth state transitions */}
         <AnimatePresence mode="wait">
