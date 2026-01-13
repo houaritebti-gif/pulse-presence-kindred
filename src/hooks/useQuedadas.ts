@@ -132,29 +132,36 @@ export const useQuedadas = () => {
     [query.data?.pages]
   );
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates with debouncing
   useEffect(() => {
     if (!profile?.city) return;
+
+    let debounceTimer: NodeJS.Timeout | null = null;
+    const DEBOUNCE_MS = 1500; // 1.5 second debounce
+
+    const debouncedInvalidate = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["quedadas", profile.city] });
+      }, DEBOUNCE_MS);
+    };
 
     const channel = supabase
       .channel("quedadas-changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "quedadas" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["quedadas", profile.city] });
-        }
+        debouncedInvalidate
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "quedada_attendees" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["quedadas", profile.city] });
-        }
+        debouncedInvalidate
       )
       .subscribe();
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, [profile?.city, queryClient]);
@@ -456,7 +463,7 @@ export const useQuedadaMessages = (quedadaId: string | undefined) => {
     enabled: !!quedadaId,
   });
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates with optimistic update
   useEffect(() => {
     if (!quedadaId) return;
 
@@ -470,8 +477,18 @@ export const useQuedadaMessages = (quedadaId: string | undefined) => {
           table: "quedada_messages",
           filter: `quedada_id=eq.${quedadaId}`
         },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["quedada_messages", quedadaId] });
+        (payload) => {
+          // Optimistically add the new message to the cache
+          queryClient.setQueryData<QuedadaMessage[]>(
+            ["quedada_messages", quedadaId],
+            (old) => {
+              if (!old) return [];
+              const newMessage = payload.new as QuedadaMessage;
+              // Avoid duplicates
+              if (old.some(m => m.id === newMessage.id)) return old;
+              return [...old, newMessage];
+            }
+          );
         }
       )
       .subscribe();

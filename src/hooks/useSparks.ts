@@ -173,9 +173,12 @@ export const useSparkChats = () => {
     [query.data?.pages]
   );
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates with debouncing to prevent excessive re-renders
   useEffect(() => {
     if (!profile?.id) return;
+
+    let debounceTimer: NodeJS.Timeout | null = null;
+    const DEBOUNCE_MS = 1000; // 1 second debounce for batch updates
 
     const channel = supabase
       .channel("spark-chats-changes")
@@ -183,12 +186,17 @@ export const useSparkChats = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "spark_chats" },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["spark_chats", profile.id] });
+          // Debounce rapid updates
+          if (debounceTimer) clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ["spark_chats", profile.id] });
+          }, DEBOUNCE_MS);
         }
       )
       .subscribe();
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(channel);
     };
   }, [profile?.id, queryClient]);
@@ -251,7 +259,7 @@ export const useChatMessages = (chatId: string | undefined) => {
     enabled: !!chatId,
   });
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates with optimistic update for better UX
   useEffect(() => {
     if (!chatId) return;
 
@@ -265,8 +273,18 @@ export const useChatMessages = (chatId: string | undefined) => {
           table: "chat_messages",
           filter: `chat_id=eq.${chatId}`
         },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["chat_messages", chatId] });
+        (payload) => {
+          // Optimistically add the new message to the cache
+          const newMessage = payload.new as ChatMessage;
+          queryClient.setQueryData<ChatMessage[]>(
+            ["chat_messages", chatId],
+            (old) => {
+              if (!old) return [newMessage];
+              // Avoid duplicates
+              if (old.some(m => m.id === newMessage.id)) return old;
+              return [...old, newMessage];
+            }
+          );
         }
       )
       .subscribe();
