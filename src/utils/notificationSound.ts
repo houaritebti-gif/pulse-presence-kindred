@@ -3,6 +3,59 @@
 
 let audioContext: AudioContext | null = null;
 
+// Sound throttling to prevent audio overload
+const SOUND_THROTTLE_MS = 150; // Minimum time between same sound type
+const GLOBAL_SOUND_THROTTLE_MS = 80; // Minimum time between any sounds
+let lastSoundTimes: Record<string, number> = {};
+let lastGlobalSoundTime = 0;
+let activeOscillators: Set<OscillatorNode> = new Set();
+const MAX_ACTIVE_OSCILLATORS = 8; // Prevent audio overload
+
+// Clean up old oscillators from tracking
+const cleanupOscillator = (osc: OscillatorNode) => {
+  activeOscillators.delete(osc);
+};
+
+// Check if sound should be throttled
+const shouldThrottleSound = (type: string): boolean => {
+  const now = Date.now();
+  
+  // Global throttle check
+  if (now - lastGlobalSoundTime < GLOBAL_SOUND_THROTTLE_MS) {
+    return true;
+  }
+  
+  // Type-specific throttle check
+  const lastTime = lastSoundTimes[type] || 0;
+  if (now - lastTime < SOUND_THROTTLE_MS) {
+    return true;
+  }
+  
+  // Too many active oscillators - skip to prevent stuck sounds
+  if (activeOscillators.size >= MAX_ACTIVE_OSCILLATORS) {
+    console.log("Audio overload protection: skipping sound");
+    return true;
+  }
+  
+  // Update timestamps
+  lastSoundTimes[type] = now;
+  lastGlobalSoundTime = now;
+  return false;
+};
+
+// Stop all active sounds (emergency cleanup)
+export const stopAllSounds = () => {
+  activeOscillators.forEach((osc) => {
+    try {
+      osc.stop();
+      osc.disconnect();
+    } catch (e) {
+      // Already stopped
+    }
+  });
+  activeOscillators.clear();
+};
+
 const SOUND_MUTED_KEY = "kiki_sound_muted";
 const VIBRATION_ENABLED_KEY = "kiki_vibration_enabled";
 const DND_ENABLED_KEY = "kiki_dnd_enabled";
@@ -184,6 +237,10 @@ export const playNotificationSound = (type: "spark" | "superSpark" | "message" |
   // Check if sound is muted or in DND period
   if (isSoundMuted()) return;
   if (isInDndPeriod()) return;
+  
+  // Throttle sounds to prevent audio overload
+  if (shouldThrottleSound(type)) return;
+  
   try {
     const ctx = getAudioContext();
     
@@ -195,6 +252,18 @@ export const playNotificationSound = (type: "spark" | "superSpark" | "message" |
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
     const masterGain = getMasterGainNode();
+    
+    // Track oscillator for cleanup
+    activeOscillators.add(oscillator);
+    oscillator.onended = () => {
+      cleanupOscillator(oscillator);
+      try {
+        oscillator.disconnect();
+        gainNode.disconnect();
+      } catch (e) {
+        // Already disconnected
+      }
+    };
     
     oscillator.connect(gainNode);
     gainNode.connect(masterGain);
@@ -224,6 +293,12 @@ export const playNotificationSound = (type: "spark" | "superSpark" | "message" |
         const superGain1 = ctx.createGain();
         const superGain2 = ctx.createGain();
         const superGain3 = ctx.createGain();
+        
+        // Track all oscillators for cleanup
+        [superOsc1, superOsc2, superOsc3].forEach(osc => {
+          activeOscillators.add(osc);
+          osc.onended = () => cleanupOscillator(osc);
+        });
         
         superOsc1.connect(superGain1);
         superOsc2.connect(superGain2);
@@ -384,6 +459,9 @@ export const notifyUser = (type: "spark" | "superSpark" | "message" | "quedada" 
 
 // Celebration sound for completing onboarding or achievements
 export const playCelebrationSound = () => {
+  // Throttle celebration sounds to prevent audio overload
+  if (shouldThrottleSound('celebration')) return;
+  
   try {
     const ctx = getAudioContext();
     
