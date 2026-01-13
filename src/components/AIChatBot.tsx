@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,8 +13,20 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useChatInput } from "@/contexts/ChatInputContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { motion, AnimatePresence, useDragControls, PanInfo } from "framer-motion";
+import { motion, AnimatePresence, useDragControls, PanInfo, HTMLMotionProps } from "framer-motion";
 import { triggerHaptic } from "@/utils/haptics";
+
+// Forward ref wrapper for motion.button to work with AnimatePresence
+const MotionButton = forwardRef<HTMLButtonElement, HTMLMotionProps<"button">>((props, ref) => (
+  <motion.button ref={ref} {...props} />
+));
+MotionButton.displayName = "MotionButton";
+
+// Forward ref wrapper for motion.div to work with AnimatePresence
+const MotionDiv = forwardRef<HTMLDivElement, HTMLMotionProps<"div">>((props, ref) => (
+  <motion.div ref={ref} {...props} />
+));
+MotionDiv.displayName = "MotionDiv";
 
 const POSITION_STORAGE_KEY = "ai-chatbot-position";
 
@@ -838,7 +850,7 @@ export const AIChatBot = () => {
       {/* Floating Draggable Button */}
       <AnimatePresence mode="popLayout">
         {position && !shouldHideButton && (
-          <motion.button
+          <MotionButton
             key="ai-chatbot-button"
             ref={buttonRef}
             drag
@@ -916,14 +928,14 @@ export const AIChatBot = () => {
                 <Lock className={cn("absolute -bottom-0.5 -right-0.5 bg-background rounded-full p-0.5", isMobile ? "h-3 w-3" : "h-3.5 w-3.5")} />
               </div>
             )}
-          </motion.button>
+          </MotionButton>
         )}
       </AnimatePresence>
 
       {/* Chat Window */}
       <AnimatePresence mode="wait">
         {isOpen && (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -1158,7 +1170,7 @@ export const AIChatBot = () => {
               </form>
             </>
           )}
-          </motion.div>
+          </MotionDiv>
         )}
       </AnimatePresence>
     </>
