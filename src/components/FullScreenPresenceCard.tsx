@@ -26,7 +26,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
-import LazyImage from "@/components/LazyImage";
+import BlurPlaceholderImage from "@/components/BlurPlaceholderImage";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import SparkleTrail from "@/components/SparkleTrail";
 import VisitedIndicator from "@/components/VisitedIndicator";
@@ -642,11 +642,11 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
         {/* Full-screen photo background */}
         <div className="absolute inset-0">
           {displayPhoto ? (
-            <LazyImage 
+            <BlurPlaceholderImage 
               src={displayPhoto} 
               alt=""
-              className="w-full h-full object-cover"
-              placeholderClassName="w-full h-full"
+              className="w-full h-full"
+              enableBlurUp={true}
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10" />
