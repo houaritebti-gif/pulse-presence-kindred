@@ -28,6 +28,12 @@ const MotionDiv = forwardRef<HTMLDivElement, HTMLMotionProps<"div">>((props, ref
 ));
 MotionDiv.displayName = "MotionDiv";
 
+// Forward ref wrapper for motion.span to work with AnimatePresence
+const MotionSpan = forwardRef<HTMLSpanElement, HTMLMotionProps<"span">>((props, ref) => (
+  <motion.span ref={ref} {...props} />
+));
+MotionSpan.displayName = "MotionSpan";
+
 const POSITION_STORAGE_KEY = "ai-chatbot-position";
 
 const SUGGESTED_QUESTIONS = [
@@ -904,7 +910,7 @@ export const AIChatBot = () => {
                 {/* Enhanced Unread badge */}
                 <AnimatePresence mode="wait">
                   {unreadCount > 0 && (
-                    <motion.span
+                    <MotionSpan
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       exit={{ scale: 0 }}
@@ -918,7 +924,7 @@ export const AIChatBot = () => {
                       )}
                     >
                       {unreadCount > 9 ? "9+" : unreadCount}
-                    </motion.span>
+                    </MotionSpan>
                   )}
                 </AnimatePresence>
               </div>
