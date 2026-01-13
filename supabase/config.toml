@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.rotate-internal-secret]
 verify_jwt = false
+
+[functions.performance-alert]
+verify_jwt = false
