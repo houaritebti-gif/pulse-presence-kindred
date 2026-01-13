@@ -9,6 +9,10 @@ import { showBrowserNotification, requestNotificationPermission } from "@/utils/
 import { sendPushNotification } from "@/utils/pushNotifications";
 import { useScreenReaderAnnounce } from "@/components/ScreenReaderAnnouncer";
 
+// Notification queue to prevent simultaneous audio/UI overload
+const NOTIFICATION_DEBOUNCE_MS = 300; // Minimum time between sound notifications
+const MAX_QUEUED_TOASTS = 3; // Max toasts to show at once
+
 // Combined hook that handles all notifications with a single useProfile call
 export const useAppNotifications = () => {
   const { data: profile } = useProfile();
@@ -21,6 +25,47 @@ export const useAppNotifications = () => {
   const previousAttendeesRef = useRef<Set<string>>(new Set());
   const previousQuedadaMessagesRef = useRef<Set<string>>(new Set());
   const isInitialLoadRef = useRef(true);
+  
+  // Notification throttling state
+  const lastNotificationTimeRef = useRef(0);
+  const pendingToastsRef = useRef(0);
+
+  // Throttled notification function to prevent audio overload
+  const throttledNotify = useCallback((
+    type: Parameters<typeof notifyUser>[0],
+    toastConfig: { title: string; description?: string; action?: { label: string; onClick: () => void } },
+    browserNotifConfig?: { body?: string; tag: string; onClick?: () => void }
+  ) => {
+    const now = Date.now();
+    const timeSinceLast = now - lastNotificationTimeRef.current;
+    
+    // Always save to notification center (no throttle for persistence)
+    // But throttle audio/vibration
+    if (timeSinceLast >= NOTIFICATION_DEBOUNCE_MS) {
+      lastNotificationTimeRef.current = now;
+      notifyUser(type);
+    }
+    
+    // Throttle toasts to prevent UI overload
+    if (pendingToastsRef.current < MAX_QUEUED_TOASTS) {
+      pendingToastsRef.current++;
+      toast(toastConfig.title, {
+        description: toastConfig.description,
+        action: toastConfig.action,
+        onDismiss: () => {
+          pendingToastsRef.current = Math.max(0, pendingToastsRef.current - 1);
+        },
+        onAutoClose: () => {
+          pendingToastsRef.current = Math.max(0, pendingToastsRef.current - 1);
+        },
+      });
+    }
+    
+    // Browser notifications are naturally throttled by the browser
+    if (browserNotifConfig) {
+      showBrowserNotification(toastConfig.title, browserNotifConfig);
+    }
+  }, []);
 
   // Spark notifications
   useEffect(() => {
@@ -74,20 +119,23 @@ export const useAppNotifications = () => {
             });
             
             if (location.pathname !== "/sparks" && !location.pathname.startsWith("/user/")) {
-              notifyUser("spark");
               announce("Nueva chispa: Alguien conectó contigo", "assertive");
-              toast("✨ ¡Nueva chispa!", {
-                description: "Alguien conectó contigo",
-                action: {
-                  label: "Ver perfil",
-                  onClick: () => navigate(profileUrl),
+              throttledNotify(
+                "spark",
+                {
+                  title: "✨ ¡Nueva chispa!",
+                  description: "Alguien conectó contigo",
+                  action: {
+                    label: "Ver perfil",
+                    onClick: () => navigate(profileUrl),
+                  },
                 },
-              });
-              showBrowserNotification("✨ ¡Nueva chispa!", {
-                body: "Alguien conectó contigo",
-                tag: "spark-" + newChat.id,
-                onClick: () => navigate(profileUrl),
-              });
+                {
+                  body: "Alguien conectó contigo",
+                  tag: "spark-" + newChat.id,
+                  onClick: () => navigate(profileUrl),
+                }
+              );
             }
           }
         }
@@ -124,22 +172,25 @@ export const useAppNotifications = () => {
 
           if (location.pathname === "/connections") return;
 
-          notifyUser("connection");
           announce(`${newNotification.title}: ${newNotification.description || ""}`, "assertive");
-          toast(newNotification.title, {
-            description: newNotification.description || undefined,
-            action: newNotification.link
-              ? {
-                  label: "Ver",
-                  onClick: () => navigate(newNotification.link!),
-                }
-              : undefined,
-          });
-          showBrowserNotification(newNotification.title, {
-            body: newNotification.description || undefined,
-            tag: `connection-${newNotification.id}`,
-            onClick: () => newNotification.link && navigate(newNotification.link),
-          });
+          throttledNotify(
+            "connection",
+            {
+              title: newNotification.title,
+              description: newNotification.description || undefined,
+              action: newNotification.link
+                ? {
+                    label: "Ver",
+                    onClick: () => navigate(newNotification.link!),
+                  }
+                : undefined,
+            },
+            {
+              body: newNotification.description || undefined,
+              tag: `connection-${newNotification.id}`,
+              onClick: () => newNotification.link && navigate(newNotification.link),
+            }
+          );
         }
       )
       .subscribe();
@@ -147,7 +198,7 @@ export const useAppNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, location.pathname, navigate, announce]);
+  }, [profile?.id, location.pathname, navigate, announce, throttledNotify]);
 
   // Message notifications
   useEffect(() => {
@@ -206,20 +257,23 @@ export const useAppNotifications = () => {
             link: currentChatPath,
           });
           
-          notifyUser("message");
           announce(`Nuevo mensaje de ${senderName}: ${description}`, "polite");
-          toast(`💬 ${senderName}`, {
-            description,
-            action: {
-              label: "Abrir",
-              onClick: () => navigate(currentChatPath),
+          throttledNotify(
+            "message",
+            {
+              title: `💬 ${senderName}`,
+              description,
+              action: {
+                label: "Abrir",
+                onClick: () => navigate(currentChatPath),
+              },
             },
-          });
-          showBrowserNotification(`💬 ${senderName}`, {
-            body: description,
-            tag: "message-" + newMessage.id,
-            onClick: () => navigate(currentChatPath),
-          });
+            {
+              body: description,
+              tag: "message-" + newMessage.id,
+              onClick: () => navigate(currentChatPath),
+            }
+          );
         }
       )
       .subscribe();
@@ -227,7 +281,7 @@ export const useAppNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, location.pathname, navigate, announce]);
+  }, [profile?.id, location.pathname, navigate, announce, throttledNotify]);
 
   // Quedada attendee notifications
   useEffect(() => {
@@ -279,20 +333,23 @@ export const useAppNotifications = () => {
           });
           
           if (location.pathname !== "/quedadas") {
-            notifyUser("quedada");
             announce(`Nueva persona en tu quedada: ${description}`, "polite");
-            toast("📅 Nueva persona en tu quedada", {
-              description,
-              action: {
-                label: "Ver",
-                onClick: () => navigate("/quedadas"),
+            throttledNotify(
+              "quedada",
+              {
+                title: "📅 Nueva persona en tu quedada",
+                description,
+                action: {
+                  label: "Ver",
+                  onClick: () => navigate("/quedadas"),
+                },
               },
-            });
-            showBrowserNotification("📅 Nueva persona en tu quedada", {
-              body: description,
-              tag: "attendee-" + newAttendee.id,
-              onClick: () => navigate("/quedadas"),
-            });
+              {
+                body: description,
+                tag: "attendee-" + newAttendee.id,
+                onClick: () => navigate("/quedadas"),
+              }
+            );
           }
         }
       )
@@ -301,7 +358,7 @@ export const useAppNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, location.pathname, navigate, announce]);
+  }, [profile?.id, location.pathname, navigate, announce, throttledNotify]);
 
   // Quedada message notifications
   useEffect(() => {
@@ -380,20 +437,23 @@ export const useAppNotifications = () => {
             link: currentChatPath,
           });
           
-          notifyUser("quedada");
           announce(`Mensaje en ${quedada.title}: ${description}`, "polite");
-          toast(`💬 ${quedada.title}`, {
-            description,
-            action: {
-              label: "Abrir",
-              onClick: () => navigate(currentChatPath),
+          throttledNotify(
+            "quedada",
+            {
+              title: `💬 ${quedada.title}`,
+              description,
+              action: {
+                label: "Abrir",
+                onClick: () => navigate(currentChatPath),
+              },
             },
-          });
-          showBrowserNotification(`💬 ${quedada.title}`, {
-            body: description,
-            tag: "quedada-msg-" + newMessage.id,
-            onClick: () => navigate(currentChatPath),
-          });
+            {
+              body: description,
+              tag: "quedada-msg-" + newMessage.id,
+              onClick: () => navigate(currentChatPath),
+            }
+          );
         }
       )
       .subscribe();
@@ -401,7 +461,7 @@ export const useAppNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, location.pathname, navigate, announce]);
+  }, [profile?.id, location.pathname, navigate, announce, throttledNotify]);
 
   // Mark initial load as complete
   useEffect(() => {

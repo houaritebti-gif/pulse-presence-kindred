@@ -48,7 +48,7 @@ const benefits = [
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,6 +56,7 @@ const Auth = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [breachChecked, setBreachChecked] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   
   const { 
     checkPassword, 
@@ -65,12 +66,23 @@ const Auth = () => {
     reset: resetBreachCheck 
   } = usePasswordBreachCheck();
 
+  // Wait for auth state to be ready before showing form
+  useEffect(() => {
+    if (!authLoading) {
+      // Small delay to prevent flash of form before redirect
+      const timer = setTimeout(() => {
+        setAuthReady(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading]);
+
   // Redirect if already logged in
   useEffect(() => {
-    if (user) {
-      navigate("/presence");
+    if (user && !authLoading) {
+      navigate("/presence", { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   // Debounced breach check when password changes
   useEffect(() => {
@@ -162,6 +174,24 @@ const Auth = () => {
       toast.error("Error con Google: " + error.message);
     }
   };
+
+  // Show loading while auth state is being determined
+  if (authLoading || !authReady) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
+  }
+
+  // If user is already logged in, show nothing (redirect will happen)
+  if (user) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 relative overflow-hidden">
