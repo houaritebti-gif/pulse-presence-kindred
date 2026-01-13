@@ -192,17 +192,10 @@ const Presence = () => {
   // Filter out own profile and blocked users from list
   const otherProfiles = useMemo(() => {
     const blockedSet = new Set(blockedIds || []);
-    const filtered = presenceList?.filter(p => 
+    return presenceList?.filter(p => 
       p.profile?.id !== profile?.id && 
       !blockedSet.has(p.profile?.id || "")
     ) || [];
-    
-    // Debug logging
-    console.log('[Presence] Raw presenceList:', presenceList?.length || 0);
-    console.log('[Presence] After filtering (own + blocked):', filtered.length);
-    console.log('[Presence] My profile ID:', profile?.id);
-    
-    return filtered;
   }, [presenceList, profile?.id, blockedIds]);
 
   // Get unique cities from all profiles for filter
@@ -273,9 +266,6 @@ const Presence = () => {
 
   const filteredProfiles = useMemo(() => {
     const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
-    
-    console.log('[Presence] Filtering profiles. Other profiles:', otherProfiles.length);
-    console.log('[Presence] Active filters:', JSON.stringify(filters));
     
     const filtered = otherProfiles.filter(presence => {
       // Tribe filter - must have at least one matching tribe
@@ -379,7 +369,6 @@ const Presence = () => {
       return bLastPulse - aLastPulse;
     });
     
-    console.log('[Presence] After all filters:', filtered.length);
     return filtered;
   }, [otherProfiles, filters, myTribeNames, myStyleNames, activeBoostedData?.boostedIds, visitedMap]);
 

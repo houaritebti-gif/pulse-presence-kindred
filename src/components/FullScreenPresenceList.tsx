@@ -95,12 +95,6 @@ export const FullScreenPresenceList = memo(({
   const [showHayVibra, setShowHayVibra] = useState(false);
   const [matchData, setMatchData] = useState<MatchData | null>(null);
 
-  // Debug logging for presence issues
-  useEffect(() => {
-    console.log('[FullScreenPresenceList] Profiles received:', profiles.length);
-    console.log('[FullScreenPresenceList] canSeeRealtimePresence:', canSeeRealtimePresence);
-  }, [profiles.length, canSeeRealtimePresence]);
-
   // Separate active and inactive profiles
   const activeProfiles = canSeeRealtimePresence 
     ? profiles.filter(p => isProfileActive(p))
