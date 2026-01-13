@@ -94,7 +94,12 @@ export const FullScreenPresenceList = memo(({
   // Hay Vibra screen state
   const [showHayVibra, setShowHayVibra] = useState(false);
   const [matchData, setMatchData] = useState<MatchData | null>(null);
-  
+
+  // Debug logging for presence issues
+  useEffect(() => {
+    console.log('[FullScreenPresenceList] Profiles received:', profiles.length);
+    console.log('[FullScreenPresenceList] canSeeRealtimePresence:', canSeeRealtimePresence);
+  }, [profiles.length, canSeeRealtimePresence]);
 
   // Separate active and inactive profiles
   const activeProfiles = canSeeRealtimePresence 
@@ -414,6 +419,30 @@ export const FullScreenPresenceList = memo(({
     
     toast.success("Perfiles restablecidos", { description: "Puedes volver a explorar desde el inicio" });
   }, [myProfile?.id]);
+
+  // Show initial empty state when no profiles at all
+  if (profiles.length === 0) {
+    return (
+      <div className="h-[calc(100vh-280px)] flex flex-col items-center justify-center px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative w-24 h-24 mb-6"
+        >
+          <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" style={{ animationDuration: '2s' }} />
+          <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+            <Radio className="w-10 h-10 text-primary" />
+          </div>
+        </motion.div>
+        <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+          Nadie conectado ahora
+        </h3>
+        <p className="font-body text-sm text-muted-foreground max-w-[280px]">
+          No hay personas visibles en este momento. Vuelve más tarde o activa notificaciones.
+        </p>
+      </div>
+    );
+  }
 
   // Show empty state when all profiles have been viewed
   if (allProfiles.length === 0 && totalProfiles > 0) {
