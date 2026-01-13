@@ -836,9 +836,10 @@ export const AIChatBot = () => {
   return (
     <>
       {/* Floating Draggable Button */}
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout">
         {position && !shouldHideButton && (
           <motion.button
+            key="ai-chatbot-button"
             ref={buttonRef}
             drag
             dragMomentum={false}
@@ -889,7 +890,7 @@ export const AIChatBot = () => {
                   <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
                 </motion.div>
                 {/* Enhanced Unread badge */}
-                <AnimatePresence>
+                <AnimatePresence mode="wait">
                   {unreadCount > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
@@ -920,7 +921,7 @@ export const AIChatBot = () => {
       </AnimatePresence>
 
       {/* Chat Window */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
