@@ -31,7 +31,6 @@ export const useProfilePrefetch = () => {
         // Check if already cached
         const cached = await getCachedProfile(profileId);
         if (cached) {
-          console.log('[Prefetch] Already cached:', profileId);
           continue;
         }
 
@@ -62,10 +61,8 @@ export const useProfilePrefetch = () => {
           musicRes.data?.map(m => m.style) || [],
           interestsRes.data?.map(i => i.interest) || []
         );
-
-        console.log('[Prefetch] Cached profile:', profileId);
       } catch (error) {
-        console.warn('[Prefetch] Failed to prefetch:', profileId, error);
+        // Silent fail for prefetch - not critical
       }
     }
     
@@ -157,7 +154,6 @@ export const usePrefetchAdjacent = (
     }
 
     if (profilesToPrefetch.length > 0) {
-      console.log('[Prefetch] Prefetching adjacent profiles:', profilesToPrefetch.length);
       prefetchProfiles(profilesToPrefetch);
     }
   }, [currentIndex, profiles, prefetchCount, prefetchProfiles]);

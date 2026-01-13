@@ -1,4 +1,4 @@
-import { memo, useRef, useState, useCallback, useEffect } from "react";
+import { memo, useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { Radio, RotateCcw, Crown, Info, RefreshCw, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
@@ -95,29 +95,34 @@ export const FullScreenPresenceList = memo(({
   const [showHayVibra, setShowHayVibra] = useState(false);
   const [matchData, setMatchData] = useState<MatchData | null>(null);
 
-  // Separate active and inactive profiles
-  const activeProfiles = canSeeRealtimePresence 
-    ? profiles.filter(p => isProfileActive(p))
-    : [];
-  const inactiveProfiles = canSeeRealtimePresence 
-    ? profiles.filter(p => !isProfileActive(p))
-    : profiles;
+  // Memoize separated profile lists to avoid recalculation on every render
+  const { activeProfiles, inactiveProfiles } = useMemo(() => {
+    const active = canSeeRealtimePresence 
+      ? profiles.filter(p => isProfileActive(p))
+      : [];
+    const inactive = canSeeRealtimePresence 
+      ? profiles.filter(p => !isProfileActive(p))
+      : profiles;
+    return { activeProfiles: active, inactiveProfiles: inactive };
+  }, [profiles, canSeeRealtimePresence]);
 
-  // Filter out dismissed profiles
-  const allProfiles = [...activeProfiles, ...inactiveProfiles].filter(
-    p => !dismissedIds.has(p.id)
+  // Filter out dismissed profiles - memoized
+  const allProfiles = useMemo(() => 
+    [...activeProfiles, ...inactiveProfiles].filter(p => !dismissedIds.has(p.id)),
+    [activeProfiles, inactiveProfiles, dismissedIds]
   );
 
   // Total profiles for counter (including dismissed)
-  const totalProfiles = [...activeProfiles, ...inactiveProfiles].length;
+  const totalProfiles = activeProfiles.length + inactiveProfiles.length;
   const viewedCount = dismissedIds.size;
   const remainingCount = totalProfiles - viewedCount;
 
-  // Prefetch next profiles into IndexedDB cache for instant loading
-  const prefetchableProfiles = allProfiles
-    .filter(p => p.profile?.id)
-    .map(p => ({ id: p.profile!.id }));
-  usePrefetchAdjacent(prefetchableProfiles, 0, 3);
+  // Prefetch next profiles into IndexedDB cache for instant loading - memoized
+  const prefetchableProfiles = useMemo(() => 
+    allProfiles.filter(p => p.profile?.id).map(p => ({ id: p.profile!.id })),
+    [allProfiles]
+  );
+  usePrefetchAdjacent(prefetchableProfiles, currentIndex, 3);
 
 
   const handleSwipeLeft = useCallback((presence: PresenceWithProfile) => {

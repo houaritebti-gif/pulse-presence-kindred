@@ -36,6 +36,7 @@ const PRESENCE_PAGE_SIZE = 20;
 const MAX_RETRIES = 5;
 const BASE_DELAY_MS = 1000;
 const MAX_DELAY_MS = 30000;
+const REALTIME_DEBOUNCE_MS = 2000; // Debounce realtime updates to avoid excessive refetches
 
 // Calculate exponential backoff delay with jitter
 const calculateBackoffDelay = (attempt: number): number => {
@@ -195,6 +196,9 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
     getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
     staleTime: 1000 * 60 * 2, // 2 minutes - has realtime updates
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    refetchOnMount: false, // Don't refetch when component mounts if data is fresh
+    refetchOnWindowFocus: false, // Disable automatic refetch on window focus - we have realtime
     retry: (failureCount, error) => {
       // Only retry retryable errors up to MAX_RETRIES
       if (!isRetryableError(error)) return false;
@@ -209,20 +213,31 @@ export const usePresenceList = (showAllProfiles: boolean = false) => {
     [query.data?.pages]
   );
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates with debounce to avoid excessive refetches
   useEffect(() => {
+    let debounceTimeout: NodeJS.Timeout | null = null;
+    
     const channel = supabase
       .channel("presence-changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "presence" },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["presence_list"] });
+          // Debounce invalidation to avoid multiple rapid refetches
+          if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+          }
+          debounceTimeout = setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ["presence_list"] });
+          }, REALTIME_DEBOUNCE_MS);
         }
       )
       .subscribe();
 
     return () => {
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
