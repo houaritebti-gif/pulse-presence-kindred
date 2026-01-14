@@ -1,15 +1,42 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "./useProfile";
 import { useQueryClient } from "@tanstack/react-query";
 import { vibrateDevice, playNotificationSound } from "@/utils/notificationSound";
 import { fireSparkConfetti } from "@/utils/sparkConfetti";
 
+const CELEBRATED_SPARKS_KEY = "kiki_celebrated_spark_ids";
+
+// Get already celebrated spark IDs from localStorage
+const getCelebratedSparkIds = (): Set<string> => {
+  try {
+    const raw = localStorage.getItem(CELEBRATED_SPARKS_KEY);
+    return new Set<string>(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set<string>();
+  }
+};
+
+// Save celebrated spark ID to localStorage
+const markSparkAsCelebrated = (sparkId: string) => {
+  const celebrated = getCelebratedSparkIds();
+  celebrated.add(sparkId);
+  // Keep only last 200 to prevent bloat
+  const arr = [...celebrated].slice(-200);
+  localStorage.setItem(CELEBRATED_SPARKS_KEY, JSON.stringify(arr));
+};
+
+// Check if a spark has already been celebrated
+const hasBeenCelebrated = (sparkId: string): boolean => {
+  return getCelebratedSparkIds().has(sparkId);
+};
+
 interface SparkDetectionResult {
   sparkDetected: boolean;
   sparkChatId: string | null;
   otherProfileName: string | null;
   checkForNewSpark: (targetProfileId: string) => Promise<boolean>;
+  clearSparkDetection: () => void;
 }
 
 export const useSparkDetection = (): SparkDetectionResult => {
@@ -18,6 +45,45 @@ export const useSparkDetection = (): SparkDetectionResult => {
   const [sparkDetected, setSparkDetected] = useState(false);
   const [sparkChatId, setSparkChatId] = useState<string | null>(null);
   const [otherProfileName, setOtherProfileName] = useState<string | null>(null);
+  const celebrationCooldownRef = useRef<Set<string>>(new Set());
+
+  // Clear the spark detection state
+  const clearSparkDetection = useCallback(() => {
+    setSparkDetected(false);
+    setSparkChatId(null);
+    setOtherProfileName(null);
+  }, []);
+
+  // Function to celebrate a spark (only once per session + persisted)
+  const celebrateSpark = useCallback((chatId: string, otherName: string | null) => {
+    // Skip if already celebrated in this session
+    if (celebrationCooldownRef.current.has(chatId)) {
+      return;
+    }
+
+    // Skip if already celebrated in a previous session
+    if (hasBeenCelebrated(chatId)) {
+      // Still update state but don't show celebration
+      setSparkDetected(true);
+      setSparkChatId(chatId);
+      setOtherProfileName(otherName);
+      return;
+    }
+
+    // Mark as celebrated
+    celebrationCooldownRef.current.add(chatId);
+    markSparkAsCelebrated(chatId);
+
+    // Update state
+    setSparkDetected(true);
+    setSparkChatId(chatId);
+    setOtherProfileName(otherName);
+    
+    // Haptic, sound, and visual feedback for spark match!
+    vibrateDevice("spark");
+    playNotificationSound("spark");
+    fireSparkConfetti();
+  }, []);
 
   // Function to check if a spark was just created with a specific profile
   const checkForNewSpark = useCallback(async (targetProfileId: string): Promise<boolean> => {
@@ -45,19 +111,13 @@ export const useSparkDetection = (): SparkDetectionResult => {
       }
 
       if (sparkChat) {
-        setSparkDetected(true);
-        setSparkChatId(sparkChat.id);
-        
-        // Haptic, sound, and visual feedback for spark match!
-        vibrateDevice("spark");
-        playNotificationSound("spark");
-        fireSparkConfetti();
-        
         // Get other profile's name
         const otherProfile = sparkChat.profile_a?.id === profile.id 
           ? sparkChat.profile_b 
           : sparkChat.profile_a;
-        setOtherProfileName(otherProfile?.name || null);
+        
+        // Celebrate only if not already celebrated
+        celebrateSpark(sparkChat.id, otherProfile?.name || null);
         
         // Invalidate spark chats query to update UI
         queryClient.invalidateQueries({ queryKey: ["spark_chats", profile.id] });
@@ -70,7 +130,7 @@ export const useSparkDetection = (): SparkDetectionResult => {
       console.error("Error in spark detection:", error);
       return false;
     }
-  }, [profile?.id, queryClient]);
+  }, [profile?.id, queryClient, celebrateSpark]);
 
   // Subscribe to realtime spark_chats changes
   useEffect(() => {
@@ -105,14 +165,8 @@ export const useSparkDetection = (): SparkDetectionResult => {
               .eq("id", otherProfileId)
               .single();
             
-            setSparkDetected(true);
-            setSparkChatId(newChat.id);
-            setOtherProfileName(otherProfile?.name || null);
-            
-            // Trigger celebration for realtime spark detection
-            vibrateDevice("spark");
-            playNotificationSound("spark");
-            fireSparkConfetti();
+            // Celebrate only if not already celebrated
+            celebrateSpark(newChat.id, otherProfile?.name || null);
             
             // Invalidate queries
             queryClient.invalidateQueries({ queryKey: ["spark_chats", profile.id] });
@@ -124,12 +178,13 @@ export const useSparkDetection = (): SparkDetectionResult => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile?.id, queryClient]);
+  }, [profile?.id, queryClient, celebrateSpark]);
 
   return {
     sparkDetected,
     sparkChatId,
     otherProfileName,
     checkForNewSpark,
+    clearSparkDetection,
   };
 };
