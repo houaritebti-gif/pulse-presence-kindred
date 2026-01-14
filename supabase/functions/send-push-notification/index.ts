@@ -39,6 +39,8 @@ serve(async (req) => {
     let isAdminTestMode = false;
     // Option 4: Authenticated user sending to their own spark chat participant
     let isAuthorizedChatParticipant = false;
+    // Option 5: User sending notification to themselves (achievements, challenges, etc.)
+    let isSelfNotification = false;
     let senderUserId: string | null = null;
     
     if (authHeader.startsWith('Bearer ')) {
@@ -50,6 +52,13 @@ serve(async (req) => {
       const { data: claims, error: claimsError } = await supabaseWithAuth.auth.getClaims(token);
       if (!claimsError && claims?.claims?.sub) {
         senderUserId = claims.claims.sub as string;
+        
+        // Get sender's profile_id for all authorization checks
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', senderUserId)
+          .single();
         
         // Check if user is admin (for test_mode)
         if (test_mode === true) {
@@ -63,16 +72,15 @@ serve(async (req) => {
           }
         }
         
-        // Check if this is a spark chat message and user is a participant
-        if (spark_chat_id && !isAdminTestMode) {
-          // Get sender's profile_id
-          const { data: senderProfile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('user_id', senderUserId)
-            .single();
+        if (senderProfile) {
+          // Option 5: Check if user is sending notification to themselves
+          if (profile_id === senderProfile.id) {
+            isSelfNotification = true;
+            console.log(`[Self Notification] User ${senderUserId} sending notification to themselves`);
+          }
           
-          if (senderProfile) {
+          // Option 4: Check if this is a spark chat message and user is a participant
+          if (spark_chat_id && !isAdminTestMode && !isSelfNotification) {
             // Check if sender is a participant in this spark chat
             const { data: chat } = await supabase
               .from('spark_chats')
@@ -111,7 +119,7 @@ serve(async (req) => {
     }
     
     // Validate internal access
-    const isInternalCall = isLegacySecret || isRotatedSecret || isServiceRole || isAdminTestMode || isAuthorizedChatParticipant;
+    const isInternalCall = isLegacySecret || isRotatedSecret || isServiceRole || isAdminTestMode || isAuthorizedChatParticipant || isSelfNotification;
     
     if (!isInternalCall) {
       console.error('Unauthorized: This function is for internal use only');
