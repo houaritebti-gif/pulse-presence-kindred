@@ -10,7 +10,7 @@ import { useListKeyboardNavigation } from "@/hooks/useListKeyboardNavigation";
 import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import { useUndoableAction } from "@/hooks/useUndoableAction";
 import { PullToRefresh } from "@/components/PullToRefresh";
-import ErrorState from "@/components/ErrorState";
+import NetworkErrorInline from "@/components/NetworkErrorInline";
 import EmptyState from "@/components/EmptyState";
 import SparkChatItem from "@/components/SparkChatItem";
 import SparksListSkeleton from "@/components/SparksListSkeleton";
@@ -173,9 +173,8 @@ const Sparks = () => {
           state={currentState}
           loadingContent={<SparksListSkeleton count={4} />}
           errorContent={
-            <ErrorState
-              icon={Flame}
-              description="No pudimos cargar tus chispas. Revisa tu conexión e inténtalo de nuevo."
+            <NetworkErrorInline
+              message="No pudimos cargar tus chispas"
               onRetry={() => refetch()}
               isRetrying={isFetching}
             />
