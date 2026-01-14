@@ -27,7 +27,7 @@ const getEmptyFilters = (): PresenceFilters => ({
   genders: [],
   cities: [],
   interests: [],
-  showAllProfiles: false,
+  showAllProfiles: true,
   ageRange: undefined,
   minCompatibility: undefined,
 });
