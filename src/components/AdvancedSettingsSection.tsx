@@ -246,6 +246,70 @@ const ProfileCacheSettings = () => {
   );
 };
 
+// Celebration History Settings Component
+const CELEBRATED_SPARKS_KEY = "kiki_celebrated_spark_ids";
+
+const CelebrationHistorySettings = () => {
+  const [celebrationCount, setCelebrationCount] = useState<number>(0);
+  const [isClearing, setIsClearing] = useState(false);
+
+  useEffect(() => {
+    const loadCount = () => {
+      try {
+        const raw = localStorage.getItem(CELEBRATED_SPARKS_KEY);
+        const ids = raw ? JSON.parse(raw) : [];
+        setCelebrationCount(Array.isArray(ids) ? ids.length : 0);
+      } catch {
+        setCelebrationCount(0);
+      }
+    };
+    loadCount();
+  }, []);
+
+  const handleClearHistory = () => {
+    setIsClearing(true);
+    try {
+      localStorage.removeItem(CELEBRATED_SPARKS_KEY);
+      setCelebrationCount(0);
+      toast.success("Historial de celebraciones limpiado", {
+        description: "Verás confeti de nuevo en tus conexiones"
+      });
+    } catch (error) {
+      console.error('[CelebrationHistory] Error clearing:', error);
+      toast.error("Error al limpiar historial");
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-xl">
+      <div className="flex items-center gap-3">
+        <Sparkles className="w-5 h-5 text-muted-foreground" />
+        <div>
+          <span className="font-body text-sm text-foreground block">
+            Celebraciones de chispa
+          </span>
+          <span className="font-body text-xs text-muted-foreground">
+            {celebrationCount > 0 
+              ? `${celebrationCount} conexiones celebradas`
+              : "Sin historial de celebraciones"
+            }
+          </span>
+        </div>
+      </div>
+      <button
+        onClick={handleClearHistory}
+        disabled={isClearing || celebrationCount === 0}
+        className="px-3 py-1.5 text-xs font-medium bg-muted hover:bg-muted/80 text-foreground rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+      >
+        <Trash2 className="w-3 h-3" />
+        {isClearing ? "Limpiando..." : "Limpiar"}
+      </button>
+    </div>
+  );
+};
+
 const AdvancedSettingsSection = () => {
   const [expanded, setExpanded] = useState(false);
   const [themeSoundOn, setThemeSoundOn] = useState(true);
@@ -1039,6 +1103,9 @@ const AdvancedSettingsSection = () => {
 
           {/* Clear Profile Cache */}
           <ProfileCacheSettings />
+
+          {/* Clear Celebration History */}
+          <CelebrationHistorySettings />
         </div>
       )}
     </div>
