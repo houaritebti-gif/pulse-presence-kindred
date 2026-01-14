@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag, Flame, ChevronRight, Eye, EyeOff } from "lucide-react";
-import ErrorState from "@/components/ErrorState";
+import NetworkErrorInline from "@/components/NetworkErrorInline";
 import ProfileSkeleton from "@/components/ProfileSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
@@ -602,13 +602,12 @@ const Profile = () => {
 
   if (profileError) {
     return (
-      <ErrorState
-        icon={User}
-        title="Error al cargar perfil"
-        description="No pudimos cargar tu perfil. Revisa tu conexión e inténtalo de nuevo."
-        onRetry={() => window.location.reload()}
-        fullScreen
-      />
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+        <NetworkErrorInline
+          message="Error al cargar tu perfil"
+          onRetry={() => window.location.reload()}
+        />
+      </main>
     );
   }
 

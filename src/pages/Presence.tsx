@@ -9,7 +9,7 @@ import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } 
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useLocalStorage, STORAGE_KEYS } from "@/hooks/useLocalStorage";
-import ErrorState from "@/components/ErrorState";
+import NetworkErrorInline from "@/components/NetworkErrorInline";
 import EmptyState from "@/components/EmptyState";
 import { useProfile, useProfileTribes, useProfileMusicStyles } from "@/hooks/useProfile";
 import { useProfileInterests } from "@/hooks/useInterests";
@@ -568,12 +568,13 @@ const Presence = () => {
           {isLoading ? (
             <FullScreenPresenceSkeleton showStackedCards />
           ) : isError ? (
-            <ErrorState
-              icon={Sparkles}
-              description="No pudimos cargar la presencia. Revisa tu conexión."
-              onRetry={() => refetch()}
-              isRetrying={isFetching}
-            />
+            <div className="py-8">
+              <NetworkErrorInline
+                message="No pudimos cargar la presencia"
+                onRetry={() => refetch()}
+                isRetrying={isFetching}
+              />
+            </div>
           ) : filteredProfiles.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 animate-fade-up">
               {/* Animated icon */}
