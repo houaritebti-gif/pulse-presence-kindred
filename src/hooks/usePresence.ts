@@ -71,7 +71,7 @@ const isRetryableError = (error: unknown): boolean => {
   return false;
 };
 
-export const usePresenceList = (showAllProfiles: boolean = false) => {
+export const usePresenceList = (showAllProfiles: boolean = true) => {
   const queryClient = useQueryClient();
   const { isOnline } = useOnlineStatus();
   const [retryCount, setRetryCount] = useState(0);

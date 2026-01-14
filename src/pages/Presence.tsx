@@ -42,7 +42,7 @@ const Presence = () => {
   // Filters state persisted to localStorage - moved up to use in hook
   const [filters, setFilters] = useLocalStorage<PresenceFilters>(
     STORAGE_KEYS.PRESENCE_FILTERS,
-    { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], showAllProfiles: false, hideVisited: false }
+    { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], showAllProfiles: true, hideVisited: false }
   );
   
   const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles || false);
