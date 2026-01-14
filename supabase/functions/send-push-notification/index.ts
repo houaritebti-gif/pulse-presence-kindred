@@ -37,7 +37,11 @@ serve(async (req) => {
     
     // Option 3: Admin test_mode - authenticated admin user can skip internal secret
     let isAdminTestMode = false;
-    if (test_mode === true && authHeader.startsWith('Bearer ')) {
+    // Option 4: Authenticated user sending to their own spark chat participant
+    let isAuthorizedChatParticipant = false;
+    let senderUserId: string | null = null;
+    
+    if (authHeader.startsWith('Bearer ')) {
       const token = authHeader.replace('Bearer ', '');
       const supabaseWithAuth = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
         global: { headers: { Authorization: authHeader } }
@@ -45,15 +49,50 @@ serve(async (req) => {
       
       const { data: claims, error: claimsError } = await supabaseWithAuth.auth.getClaims(token);
       if (!claimsError && claims?.claims?.sub) {
-        const userId = claims.claims.sub;
-        // Check if user is admin
-        const { data: isAdmin } = await supabase.rpc('has_role', { 
-          _user_id: userId, 
-          _role: 'admin' 
-        });
-        if (isAdmin === true) {
-          isAdminTestMode = true;
-          console.log(`[Admin Test Mode] Authorized admin user: ${userId}`);
+        senderUserId = claims.claims.sub as string;
+        
+        // Check if user is admin (for test_mode)
+        if (test_mode === true) {
+          const { data: isAdmin } = await supabase.rpc('has_role', { 
+            _user_id: senderUserId, 
+            _role: 'admin' 
+          });
+          if (isAdmin === true) {
+            isAdminTestMode = true;
+            console.log(`[Admin Test Mode] Authorized admin user: ${senderUserId}`);
+          }
+        }
+        
+        // Check if this is a spark chat message and user is a participant
+        if (spark_chat_id && !isAdminTestMode) {
+          // Get sender's profile_id
+          const { data: senderProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('user_id', senderUserId)
+            .single();
+          
+          if (senderProfile) {
+            // Check if sender is a participant in this spark chat
+            const { data: chat } = await supabase
+              .from('spark_chats')
+              .select('profile_a_id, profile_b_id')
+              .eq('id', spark_chat_id)
+              .single();
+            
+            if (chat) {
+              const isParticipant = chat.profile_a_id === senderProfile.id || chat.profile_b_id === senderProfile.id;
+              // Ensure the target profile is the OTHER participant (not sending to self)
+              const isTargetOtherParticipant = 
+                (chat.profile_a_id === profile_id || chat.profile_b_id === profile_id) &&
+                profile_id !== senderProfile.id;
+              
+              if (isParticipant && isTargetOtherParticipant) {
+                isAuthorizedChatParticipant = true;
+                console.log(`[Chat Participant] User ${senderUserId} authorized to notify participant in chat ${spark_chat_id}`);
+              }
+            }
+          }
         }
       }
     }
@@ -72,7 +111,7 @@ serve(async (req) => {
     }
     
     // Validate internal access
-    const isInternalCall = isLegacySecret || isRotatedSecret || isServiceRole || isAdminTestMode;
+    const isInternalCall = isLegacySecret || isRotatedSecret || isServiceRole || isAdminTestMode || isAuthorizedChatParticipant;
     
     if (!isInternalCall) {
       console.error('Unauthorized: This function is for internal use only');
