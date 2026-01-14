@@ -24,6 +24,8 @@ import { useAchievementChecker } from "@/hooks/useAchievementChecker";
 import { useSuperSparkWelcome } from "@/hooks/useSuperSparkWelcome";
 import { useDailyChallengeTracker } from "@/hooks/useDailyChallengeTracker";
 import { useDailyChallengeExpiry } from "@/hooks/useDailyChallengeExpiry";
+import { NetworkErrorProvider } from "@/hooks/useNetworkError";
+import GlobalNetworkErrorToast from "@/components/GlobalNetworkErrorToast";
 
 // Lazy load heavy components
 const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
@@ -102,6 +104,7 @@ const App = () => {
       <AuthProvider>
         <TooltipProvider>
           <ScreenReaderAnnouncerProvider>
+            <NetworkErrorProvider>
               <EnergyGainProvider>
                 <ChatInputProvider>
                   <Toaster />
@@ -112,6 +115,7 @@ const App = () => {
                       <KeyboardNavigationWrapper>
                         <OfflineIndicator />
                         <PWAInstallPrompt />
+                        <GlobalNetworkErrorToast />
                         <Suspense fallback={null}>
                           <AIChatBot />
                         </Suspense>
@@ -123,7 +127,8 @@ const App = () => {
                   </BrowserRouter>
                 </ChatInputProvider>
               </EnergyGainProvider>
-            </ScreenReaderAnnouncerProvider>
+            </NetworkErrorProvider>
+          </ScreenReaderAnnouncerProvider>
         </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
