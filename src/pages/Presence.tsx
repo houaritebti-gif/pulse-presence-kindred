@@ -46,7 +46,7 @@ const Presence = () => {
   );
   
   const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles || false);
-  const { data: myPresence } = useMyPresence();
+  const { data: myPresence, isLoading: myPresenceLoading } = useMyPresence();
   const setPresence = useSetPresence();
   const { newSparkCount, hasNewSparks, totalSparkCount, markAllAsSeen, newSparks } = useNewSparks();
   const { data: quedadas } = useQuedadas();
@@ -157,13 +157,16 @@ const Presence = () => {
   // Enable heartbeat
   usePresenceHeartbeat();
 
-  // Auto-set presence when entering
+  // Auto-set presence when entering - wait for myPresence to load first
+  const hasAutoSetPresence = useRef(false);
   useEffect(() => {
-    if (profile && !myPresence) {
+    // Only auto-set once, after myPresence query has completed
+    if (profile && !myPresenceLoading && myPresence === null && !hasAutoSetPresence.current) {
+      hasAutoSetPresence.current = true;
       // Notify high compatibility users on initial connection
       setPresence.mutate({ isPresent: true, visibleToOthers: true, notifyHighCompatibility: true });
     }
-  }, [profile, myPresence]);
+  }, [profile, myPresence, myPresenceLoading]);
 
   const toggleVisibility = () => {
     // If trying to go invisible and not premium, show modal
