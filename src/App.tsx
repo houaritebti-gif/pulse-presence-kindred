@@ -30,15 +30,15 @@ import GlobalNetworkErrorToast from "@/components/GlobalNetworkErrorToast";
 // Lazy load heavy components
 const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
 
-// Exponential backoff retry function
+// Exponential backoff retry function with jitter
 const exponentialBackoff = (attemptIndex: number): number => {
-  // Base delay: 1s, max delay: 30s
-  const baseDelay = 1000;
-  const maxDelay = 30000;
-  const delay = Math.min(baseDelay * Math.pow(2, attemptIndex), maxDelay);
-  // Add jitter (±20%) to prevent thundering herd
-  const jitter = delay * 0.2 * (Math.random() - 0.5);
-  return delay + jitter;
+  // Base delay: 500ms, max delay: 15s (reduced for faster recovery)
+  const baseDelay = 500;
+  const maxDelay = 15000;
+  const delay = Math.min(baseDelay * Math.pow(1.8, attemptIndex), maxDelay);
+  // Add jitter (±30%) to prevent thundering herd
+  const jitter = delay * 0.3 * (Math.random() - 0.5);
+  return Math.max(200, delay + jitter);
 };
 
 // Check if error is a network/connection error worth retrying
@@ -51,7 +51,10 @@ const isNetworkError = (error: unknown): boolean => {
       message.includes("connection") ||
       message.includes("timeout") ||
       message.includes("failed to fetch") ||
-      message.includes("networkerror")
+      message.includes("networkerror") ||
+      message.includes("load failed") ||
+      message.includes("aborted") ||
+      error.name === 'TypeError' // fetch throws TypeError on network failure
     );
   }
   return false;
@@ -61,13 +64,25 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-        // Only retry network errors, up to 3 times
-        if (failureCount >= 3) return false;
+        // Retry network errors up to 4 times
+        if (failureCount >= 4) return false;
         return isNetworkError(error);
       },
       retryDelay: exponentialBackoff,
-      staleTime: 1000 * 60 * 3, // 3 minutes - reduce backend calls
+      staleTime: 1000 * 60 * 3, // 3 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes garbage collection
       refetchOnWindowFocus: false,
+      refetchOnReconnect: 'always', // Always refetch when back online
+      networkMode: 'offlineFirst', // Return cached data when offline
+    },
+    mutations: {
+      retry: (failureCount, error) => {
+        // Retry network errors on mutations too
+        if (failureCount >= 2) return false;
+        return isNetworkError(error);
+      },
+      retryDelay: exponentialBackoff,
+      networkMode: 'offlineFirst',
     },
   },
 });

@@ -1,6 +1,6 @@
 import React, { Component, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, WifiOff, AlertTriangle } from 'lucide-react';
+import { RefreshCw, WifiOff, AlertTriangle, ArrowLeft } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -10,37 +10,89 @@ interface State {
   hasError: boolean;
   isChunkError: boolean;
   isRetrying: boolean;
+  retryCount: number;
 }
+
+const MAX_AUTO_RETRIES = 2;
 
 /**
  * Error boundary specifically for handling chunk loading failures.
- * Shows a user-friendly modal with a reload button.
+ * Shows a user-friendly modal with retry options.
+ * Auto-retries a few times before showing the modal.
  */
 export class ChunkErrorBoundary extends Component<Props, State> {
+  private retryTimeoutId: NodeJS.Timeout | null = null;
+  
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, isChunkError: false, isRetrying: false };
+    this.state = { 
+      hasError: false, 
+      isChunkError: false, 
+      isRetrying: false,
+      retryCount: 0
+    };
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
+    const message = error.message.toLowerCase();
     const isChunkError = 
-      error.message.includes('Failed to fetch dynamically imported module') ||
-      error.message.includes('Loading chunk') ||
-      error.message.includes('Loading CSS chunk') ||
-      error.message.includes('ChunkLoadError') ||
-      error.message.includes('Failed to fetch');
+      message.includes('failed to fetch dynamically imported module') ||
+      message.includes('loading chunk') ||
+      message.includes('loading css chunk') ||
+      message.includes('chunkloaderror') ||
+      message.includes('failed to fetch') ||
+      message.includes('network error') ||
+      message.includes('load failed');
     
     return { hasError: true, isChunkError };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('[ChunkErrorBoundary] Caught error:', error, errorInfo);
+    
+    // Auto-retry for chunk errors
+    if (this.state.isChunkError && this.state.retryCount < MAX_AUTO_RETRIES) {
+      this.scheduleAutoRetry();
+    }
   }
+  
+  componentWillUnmount() {
+    if (this.retryTimeoutId) {
+      clearTimeout(this.retryTimeoutId);
+    }
+  }
+  
+  scheduleAutoRetry = () => {
+    const delay = 1000 * Math.pow(2, this.state.retryCount); // 1s, 2s, 4s...
+    
+    this.setState({ isRetrying: true });
+    
+    this.retryTimeoutId = setTimeout(() => {
+      this.setState(prev => ({
+        hasError: false,
+        isRetrying: false,
+        retryCount: prev.retryCount + 1
+      }));
+    }, delay);
+  };
+
+  handleRetry = () => {
+    this.setState({ 
+      hasError: false, 
+      isRetrying: true,
+      retryCount: 0
+    });
+    
+    // Brief delay to show loading state, then reset
+    setTimeout(() => {
+      this.setState({ isRetrying: false });
+    }, 300);
+  };
 
   handleReload = async () => {
     this.setState({ isRetrying: true });
     
-    // Clear any cached modules
+    // Clear cached modules
     if ('caches' in window) {
       try {
         const names = await caches.keys();
@@ -50,14 +102,27 @@ export class ChunkErrorBoundary extends Component<Props, State> {
       }
     }
     
-    // Small delay to show loading state
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Reload the page
     window.location.reload();
+  };
+  
+  handleGoBack = () => {
+    window.history.back();
   };
 
   render() {
+    // Auto-retrying state - show minimal loading
+    if (this.state.isRetrying && this.state.retryCount < MAX_AUTO_RETRIES) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+            <p className="text-sm text-muted-foreground">Reconectando...</p>
+          </div>
+        </div>
+      );
+    }
+    
     if (this.state.hasError) {
       const { isChunkError, isRetrying } = this.state;
       
@@ -89,47 +154,53 @@ export class ChunkErrorBoundary extends Component<Props, State> {
             {/* Content */}
             <div className="text-center space-y-3 mb-8">
               <h2 className="text-2xl font-bold text-foreground">
-                {isChunkError ? '¡Ups! Sin conexión' : 'Algo salió mal'}
+                {isChunkError ? 'Problema de conexión' : 'Algo salió mal'}
               </h2>
               <p className="text-muted-foreground leading-relaxed">
                 {isChunkError 
-                  ? 'La página no se pudo cargar. Revisa tu conexión a internet e inténtalo de nuevo.'
-                  : 'Ocurrió un error inesperado. Por favor, recarga la aplicación.'}
+                  ? 'No se pudo cargar la página. Revisa tu conexión a internet.'
+                  : 'Ocurrió un error inesperado.'}
               </p>
             </div>
             
-            {/* Primary action */}
-            <Button 
-              onClick={this.handleReload}
-              disabled={isRetrying}
-              className="w-full h-14 text-lg font-semibold rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]"
-              size="lg"
-            >
-              {isRetrying ? (
-                <>
-                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  Recargando...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-5 h-5 mr-2" />
-                  Reintentar
-                </>
-              )}
-            </Button>
+            {/* Actions */}
+            <div className="space-y-3">
+              {/* Primary: Try without reload first */}
+              <Button 
+                onClick={this.handleRetry}
+                disabled={isRetrying}
+                className="w-full h-14 text-lg font-semibold rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]"
+                size="lg"
+              >
+                <RefreshCw className={`w-5 h-5 mr-2 ${isRetrying ? 'animate-spin' : ''}`} />
+                Reintentar
+              </Button>
+              
+              {/* Secondary options */}
+              <div className="flex gap-3">
+                <Button 
+                  onClick={this.handleGoBack}
+                  variant="outline"
+                  className="flex-1 h-12 rounded-xl"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Volver
+                </Button>
+                <Button 
+                  onClick={this.handleReload}
+                  variant="outline"
+                  disabled={isRetrying}
+                  className="flex-1 h-12 rounded-xl"
+                >
+                  Recargar app
+                </Button>
+              </div>
+            </div>
             
             {/* Help text */}
             <div className="mt-6 pt-6 border-t border-border/50">
               <p className="text-xs text-center text-muted-foreground leading-relaxed">
-                {isChunkError ? (
-                  <>
-                    💡 <span className="font-medium">Consejo:</span> Si el problema persiste, cierra la app completamente y vuelve a abrirla.
-                  </>
-                ) : (
-                  <>
-                    Si el error continúa, intenta cerrar y abrir la aplicación.
-                  </>
-                )}
+                💡 Si el problema persiste, cierra la app y vuelve a abrirla.
               </p>
             </div>
           </div>

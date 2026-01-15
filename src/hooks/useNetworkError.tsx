@@ -167,8 +167,8 @@ const NetworkErrorContext = createContext<NetworkErrorContextValue | null>(null)
 
 export const NetworkErrorProvider = ({ children }: { children: ReactNode }) => {
   const networkError = useNetworkError({
-    autoDismissMs: 10000, // Auto-dismiss after 10s
-    maxRetries: 3,
+    autoDismissMs: 5000, // Auto-dismiss after 5s - less intrusive
+    maxRetries: 5, // More retries for flaky connections
   });
 
   return (
