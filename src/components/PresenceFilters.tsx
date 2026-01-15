@@ -157,7 +157,8 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
 
   const clearFilters = () => {
     triggerHaptic('medium');
-    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], ageRange: undefined, minCompatibility: undefined, hideVisited: false });
+    // Important: keep showAllProfiles explicitly set so we never fall back to "Activos ahora" due to undefined
+    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], showAllProfiles: true, ageRange: undefined, minCompatibility: undefined, hideVisited: false });
   };
 
   const handleMinCompatibilityChange = (value: number) => {
