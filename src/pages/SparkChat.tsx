@@ -10,6 +10,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useSparkChats, useChatMessages, useSendMessage, useExtinguishSpark, useMarkSparkRead, useDeleteMessage, useEditMessage, useOtherUserReadStatus } from "@/hooks/useSparks";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
 import { useChatImageUpload } from "@/hooks/useChatImageUpload";
+import { useChatImageLimit } from "@/hooks/useChatImageLimit";
 import { compressChatImage } from "@/utils/imageCompression";
 import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
@@ -27,6 +28,7 @@ import OfflineMessageIndicator from "@/components/OfflineMessageIndicator";
 import PendingMessage from "@/components/PendingMessage";
 import PremiumBadge from "@/components/PremiumBadge";
 import ImageCropModal from "@/components/ImageCropModal";
+import ChatImageLimitModal from "@/components/ChatImageLimitModal";
 import SharedAvatar from "@/components/SharedAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useChatInput } from "@/contexts/ChatInputContext";
@@ -78,6 +80,18 @@ const SparkChat = () => {
   // Image upload
   const { uploadImage, isUploading: isUploadingImage, uploadPhase, uploadProgress } = useChatImageUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Image limit per chat
+  const { 
+    imageCount, 
+    limit: imageLimit, 
+    remaining: imagesRemaining, 
+    canSendImage, 
+    isNearLimit: isNearImageLimit,
+    refetch: refetchImageCount,
+    tier: imageTier,
+  } = useChatImageLimit(chatId, profile?.id);
+  const [showImageLimitModal, setShowImageLimitModal] = useState(false);
   
   // Voice recording
   const { 
@@ -246,12 +260,14 @@ const SparkChat = () => {
     
     try {
       let finalContent = messageContent;
+      let wasImageSent = false;
       
       // If there's an image to upload
       if (selectedFile && user?.id) {
         const imageUrl = await uploadImage(selectedFile, user.id);
         if (imageUrl) {
           finalContent = imageUrl;
+          wasImageSent = true;
         } else {
           return; // Upload failed, don't send message
         }
@@ -267,6 +283,11 @@ const SparkChat = () => {
       setNewMessage("");
       setSelectedFile(null);
       setImagePreview(null);
+      
+      // Refetch image count after sending an image
+      if (wasImageSent) {
+        refetchImageCount();
+      }
     } catch (error: any) {
       // If send fails and it's a text message, queue it
       if (!selectedFile && messageContent) {
@@ -290,6 +311,17 @@ const SparkChat = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    // Check image limit before proceeding
+    if (!canSendImage) {
+      setShowImageLimitModal(true);
+      triggerHaptic('error');
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+    
     if (!file.type.startsWith("image/")) {
       toast.error("Solo se permiten imágenes");
       return;
@@ -299,6 +331,13 @@ const SparkChat = () => {
     if (file.size > maxSize) {
       toast.error("La imagen es demasiado grande (máx. 10MB)");
       return;
+    }
+    
+    // Show warning if near limit
+    if (isNearImageLimit) {
+      toast.info(`Te quedan ${imagesRemaining} fotos en esta conversación`, {
+        icon: "📸",
+      });
     }
     
     // Store file and open crop modal
@@ -311,7 +350,7 @@ const SparkChat = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  }, []);
+  }, [canSendImage, isNearImageLimit, imagesRemaining]);
 
   const handleCropComplete = useCallback(async (croppedBlob: Blob) => {
     // Clean up object URL
@@ -931,18 +970,41 @@ const SparkChat = () => {
         <div className="flex gap-3 items-center">
           {/* Image button - hide when recording */}
           {!isRecording && (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading || isCompressingPreview}
-              className="h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all duration-300 disabled:opacity-50"
-            >
-              {isUploadingImage || isCompressingPreview ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <ImagePlus className="w-5 h-5" />
-              )}
-            </button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!canSendImage) {
+                        setShowImageLimitModal(true);
+                        triggerHaptic('error');
+                      } else {
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                    disabled={isUploading || isCompressingPreview}
+                    className={`h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center transition-all duration-300 disabled:opacity-50 ${
+                      canSendImage 
+                        ? "text-muted-foreground hover:text-primary hover:border-primary/50" 
+                        : "text-destructive/60 hover:text-destructive"
+                    }`}
+                  >
+                    {isUploadingImage || isCompressingPreview ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <ImagePlus className="w-5 h-5" />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {canSendImage 
+                    ? `${imagesRemaining} fotos restantes`
+                    : "Límite de fotos alcanzado"
+                  }
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           {/* Voice record button */}
@@ -1095,6 +1157,15 @@ const SparkChat = () => {
         imageSrc={imageToCrop || ""}
         onCropComplete={handleCropComplete}
         aspectRatio={4 / 5}
+      />
+
+      {/* Image Limit Modal */}
+      <ChatImageLimitModal
+        isOpen={showImageLimitModal}
+        onClose={() => setShowImageLimitModal(false)}
+        currentCount={imageCount}
+        limit={imageLimit}
+        tier={imageTier}
       />
 
       {/* Footer */}
