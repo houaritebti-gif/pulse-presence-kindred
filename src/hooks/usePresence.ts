@@ -252,12 +252,12 @@ export const usePresenceList = (showAllProfiles: boolean = true) => {
 };
 
 export const useMyPresence = () => {
-  const { data: profile } = useProfile();
+  const { data: profile, isLoading: profileLoading } = useProfile();
 
   return useQuery({
     queryKey: ["my_presence", profile?.id],
     queryFn: async () => {
-      if (!profile) return null;
+      if (!profile?.id) return null;
 
       const { data, error } = await supabase
         .from("presence")
@@ -268,8 +268,11 @@ export const useMyPresence = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!profile?.id,
-    staleTime: 1000 * 60 * 3, // 3 minutes
+    enabled: !!profile?.id && !profileLoading,
+    staleTime: 1000 * 60 * 5, // 5 minutes - longer cache
+    gcTime: 1000 * 60 * 15, // 15 minutes in garbage collection
+    refetchOnMount: false, // Don't refetch on every mount
+    refetchOnWindowFocus: false, // We have realtime updates
     retry: (failureCount, error) => {
       if (!isRetryableError(error)) return false;
       return failureCount < MAX_RETRIES;
@@ -323,18 +326,27 @@ export const useSetPresence = () => {
   });
 };
 
-// Heartbeat to keep presence alive
+// Heartbeat to keep presence alive - uses stable references to avoid re-renders
 export const usePresenceHeartbeat = () => {
   const { mutate: setPresence } = useSetPresence();
   const { data: myPresence } = useMyPresence();
+  const presenceRef = useRef(myPresence);
+  
+  // Keep ref updated
+  useEffect(() => {
+    presenceRef.current = myPresence;
+  }, [myPresence]);
 
   useEffect(() => {
     if (!myPresence?.is_present) return;
 
     const interval = setInterval(() => {
-      setPresence({ isPresent: true, visibleToOthers: myPresence.visible_to_others });
+      const current = presenceRef.current;
+      if (current?.is_present) {
+        setPresence({ isPresent: true, visibleToOthers: current.visible_to_others ?? true });
+      }
     }, 30000); // Pulse every 30 seconds
 
     return () => clearInterval(interval);
-  }, [myPresence, setPresence]);
+  }, [myPresence?.is_present, setPresence]);
 };
