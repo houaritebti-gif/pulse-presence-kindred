@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, MoreVertical, Flag, Ban, Zap, MapPin, Sparkles } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import { cn } from "@/lib/utils";
 import VisitedIndicator from "@/components/VisitedIndicator";
 import { ALL_GENDERS } from "@/constants/profileOptions";
 import {
@@ -124,7 +125,8 @@ interface PresenceCardProps {
   hasVisibilityBoost?: boolean;
 }
 
-const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false, canSeeRealtimePresence = true, hasVisibilityBoost = false }: PresenceCardProps) => {
+
+const PresenceCardComponent = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false, canSeeRealtimePresence = true, hasVisibilityBoost = false }: PresenceCardProps) => {
   const navigate = useNavigate();
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
@@ -138,6 +140,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
   }, [presence.profile?.id]);
 
   const handleCardClick = () => {
+    triggerHaptic('light');
     navigate(`/user/${presence.profile?.id}`);
   };
 
@@ -155,12 +158,26 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
 
   const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
 
+  // Visual enhancements based on compatibility
+  const isHighCompat = compatibility >= 4;
+  const isPerfectCompat = compatibility >= 5;
+
   return (
     <>
       <div
-        className={`w-full bg-card rounded-2xl sm:rounded-3xl overflow-hidden text-left transition-all duration-300 ease-out hover:scale-[1.03] hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20 active:scale-[0.98] active:shadow-md animate-fade-up cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background border border-foreground/5 dark:border-transparent ${
-          isBoosted ? "ring-2 ring-primary/50 shadow-lg shadow-primary/20" : "shadow-md shadow-foreground/10 dark:shadow-foreground/5"
-        }`}
+        className={cn(
+          "group w-full bg-card rounded-2xl sm:rounded-3xl overflow-hidden text-left",
+          "transition-all duration-300 ease-out presence-card-lift",
+          "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          "border border-foreground/5 dark:border-transparent presence-enter",
+          // Enhanced visual treatment based on state
+          isBoosted && "ring-2 ring-primary/50 shadow-xl shadow-primary/25 presence-card-glow",
+          isPerfectCompat && !isBoosted && "ring-1 ring-primary/40 shadow-lg shadow-primary/20 presence-card-glow",
+          isHighCompat && !isPerfectCompat && !isBoosted && "ring-1 ring-primary/20 shadow-lg shadow-primary/10",
+          !isBoosted && !isHighCompat && !isPerfectCompat && "shadow-md shadow-foreground/10 dark:shadow-foreground/5",
+          // Hover enhancement
+          "hover:shadow-xl hover:shadow-primary/25 dark:hover:shadow-primary/15"
+        )}
         style={{ animationDelay: `${animationDelay}ms` }}
         onClick={handleCardClick}
         onKeyDown={(e) => {
@@ -303,8 +320,17 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
         <div className="p-3 sm:p-4 h-[140px] sm:h-[130px] flex flex-col">
           {/* Activity status - top */}
           <div className="flex items-center gap-1.5 mb-2">
-            <div className={`w-2 h-2 rounded-full ${activityStatus.color} ${activityStatus.isActive ? "animate-pulse shadow-sm shadow-green-500/50" : ""}`} />
-            <span className={`text-xs font-body ${activityStatus.isActive ? "text-green-600 dark:text-green-500 font-medium" : "text-foreground/70"}`}>
+            <div className={cn(
+              "w-2.5 h-2.5 rounded-full transition-all",
+              activityStatus.color,
+              activityStatus.isActive && "activity-pulse-active shadow-sm shadow-green-500/50"
+            )} />
+            <span className={cn(
+              "text-xs font-body transition-colors",
+              activityStatus.isActive 
+                ? "text-green-600 dark:text-green-500 font-semibold" 
+                : "text-foreground/60"
+            )}>
               {activityStatus.isActive ? "Activo ahora" : activityStatus.label}
             </span>
           </div>
@@ -334,7 +360,7 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
                     {presence.tribes.slice(0, 3).map(tribe => (
                       <span 
                         key={tribe}
-                        className="px-2 py-0.5 rounded-full bg-foreground/10 dark:bg-card-foreground/15 font-body text-xs text-foreground/80 dark:text-card-foreground font-medium"
+                        className="px-2 py-0.5 rounded-full bg-foreground/10 dark:bg-card-foreground/15 font-body text-xs text-foreground/80 dark:text-card-foreground font-medium tag-interactive"
                       >
                         {tribe}
                       </span>
@@ -343,14 +369,14 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
                     {presence.musicStyles.slice(0, 2).map(style => (
                       <span 
                         key={style}
-                        className="px-2 py-0.5 rounded-full bg-primary/15 dark:bg-primary/10 font-body text-xs text-primary dark:text-primary font-medium"
+                        className="px-2 py-0.5 rounded-full bg-primary/15 dark:bg-primary/10 font-body text-xs text-primary dark:text-primary font-medium tag-interactive"
                       >
                         {style}
                       </span>
                     ))}
                     {/* Show +N if more */}
                     {(presence.tribes.length + presence.musicStyles.length > 5) && (
-                      <span className="px-2 py-0.5 rounded-full bg-foreground/10 dark:bg-card-foreground/10 font-body text-xs text-foreground/70 dark:text-foreground/60 font-medium">
+                      <span className="px-2 py-0.5 rounded-full bg-foreground/8 dark:bg-card-foreground/10 font-body text-xs text-foreground/60 dark:text-foreground/50 font-medium">
                         +{presence.tribes.length + presence.musicStyles.length - 5}
                       </span>
                     )}
@@ -409,4 +435,6 @@ const PresenceCard = ({ presence, compatibility, compatibilityBreakdown, animati
   );
 };
 
+// Memoized export for performance
+const PresenceCard = memo(PresenceCardComponent);
 export default PresenceCard;
