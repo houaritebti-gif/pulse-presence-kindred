@@ -45,7 +45,7 @@ const Presence = () => {
     { tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], showAllProfiles: true, hideVisited: false }
   );
   
-  const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles || false);
+  const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles ?? true);
   const { data: myPresence, isLoading: myPresenceLoading } = useMyPresence();
   const setPresence = useSetPresence();
   const { newSparkCount, hasNewSparks, totalSparkCount, markAllAsSeen, newSparks } = useNewSparks();
