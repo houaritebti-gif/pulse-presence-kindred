@@ -711,6 +711,7 @@ const Presence = () => {
                 photosMap={photosMap}
                 getCompatibility={getCompatibility}
                 getCompatibilityBreakdown={getCompatibilityBreakdown}
+                showingCached={showingCached}
               />
               {/* Infinite scroll trigger */}
               <div ref={loadMoreRef} className="h-4" />
