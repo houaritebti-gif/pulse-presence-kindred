@@ -7,6 +7,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Sparkles, Loader2, Eye, EyeOff, Flame, Bell, Radio, Crown, Lock, CloudOff } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
 import { usePresenceWithOfflineCache } from "@/hooks/usePresenceCache";
+import { usePresenceCacheSync } from "@/hooks/usePresenceCacheSync";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useLocalStorage, STORAGE_KEYS } from "@/hooks/useLocalStorage";
@@ -53,6 +54,9 @@ const Presence = () => {
     presenceList || [],
     isLoading
   );
+  
+  // Enable background cache sync when on good connection
+  usePresenceCacheSync(true);
   
   // Use cached data when available, otherwise fall back to live data
   const effectivePresenceList = cachedPresenceList.length > 0 ? cachedPresenceList : (presenceList || []);
