@@ -1,5 +1,5 @@
 import { memo, useRef, useState, useCallback, useEffect, useMemo } from "react";
-import { Radio, RotateCcw, Crown, Info, RefreshCw, Bell, CloudOff } from "lucide-react";
+import { Radio, RotateCcw, Crown, Info, RefreshCw, Bell, CloudOff, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import SwipeTutorial from "./SwipeTutorial";
@@ -92,10 +92,24 @@ export const FullScreenPresenceList = memo(({
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [showRewindLimitModal, setShowRewindLimitModal] = useState(false);
   const [tutorialComplete, setTutorialComplete] = useState(false);
+  const [justRefreshed, setJustRefreshed] = useState(false);
+  const prevShowingCachedRef = useRef(showingCached);
   
   // Hay Vibra screen state
   const [showHayVibra, setShowHayVibra] = useState(false);
   const [matchData, setMatchData] = useState<MatchData | null>(null);
+
+  // Detect transition from cached to live data
+  useEffect(() => {
+    if (prevShowingCachedRef.current && !showingCached) {
+      // Just transitioned from cached to live data
+      setJustRefreshed(true);
+      triggerHaptic('light');
+      const timer = setTimeout(() => setJustRefreshed(false), 2000);
+      return () => clearTimeout(timer);
+    }
+    prevShowingCachedRef.current = showingCached;
+  }, [showingCached]);
 
   // Memoize separated profile lists to avoid recalculation on every render
   const { activeProfiles, inactiveProfiles } = useMemo(() => {
@@ -573,18 +587,45 @@ export const FullScreenPresenceList = memo(({
     >
 
       {/* Cached data indicator - subtle badge */}
-      {showingCached && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-center pb-2"
-        >
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/80 backdrop-blur-sm">
-            <CloudOff className="w-3 h-3 text-muted-foreground" />
-            <span className="text-xs font-medium text-muted-foreground">Datos guardados</span>
-          </div>
-        </motion.div>
-      )}
+      <AnimatePresence mode="wait">
+        {showingCached ? (
+          <motion.div 
+            key="cached"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10, transition: { duration: 0.2 } }}
+            className="flex items-center justify-center pb-2"
+          >
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/80 backdrop-blur-sm">
+              <CloudOff className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs font-medium text-muted-foreground">Datos guardados</span>
+            </div>
+          </motion.div>
+        ) : justRefreshed ? (
+          <motion.div 
+            key="refreshed"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.3 } }}
+            className="flex items-center justify-center pb-2"
+          >
+            <motion.div 
+              className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/20 backdrop-blur-sm"
+              animate={{ 
+                boxShadow: [
+                  "0 0 0 0 rgba(34, 197, 94, 0)",
+                  "0 0 12px 4px rgba(34, 197, 94, 0.3)",
+                  "0 0 0 0 rgba(34, 197, 94, 0)"
+                ]
+              }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+            >
+              <Wifi className="w-3 h-3 text-green-500" />
+              <span className="text-xs font-medium text-green-600 dark:text-green-400">Datos actualizados</span>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       {/* Active profiles section header */}
       {canSeeRealtimePresence && activeProfiles.length > 0 && (
