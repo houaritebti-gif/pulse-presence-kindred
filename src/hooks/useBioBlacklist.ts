@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -9,7 +9,7 @@ export interface BlacklistWord {
   created_by: string | null;
 }
 
-// Hook to fetch all blacklisted words
+// Hook to fetch all blacklisted words (ADMIN ONLY - will fail for non-admins)
 export const useBioBlacklist = () => {
   return useQuery({
     queryKey: ["bio-blacklist"],
@@ -19,18 +19,26 @@ export const useBioBlacklist = () => {
         .select("*")
         .order("word", { ascending: true });
 
-      if (error) throw error;
+      // Non-admins will get RLS error - return empty array
+      if (error) {
+        console.log("Bio blacklist access restricted to admins");
+        return [];
+      }
       return data as BlacklistWord[];
     },
   });
 };
 
-// Hook to check if text contains blacklisted words (client-side)
+// Hook to check if text contains blacklisted words
+// NOTE: This is now a NO-OP for non-admins. Server-side validation via 
+// validate_profile_bio trigger handles the actual enforcement.
 export const useCheckBlacklistedWords = () => {
   const { data: blacklist } = useBioBlacklist();
 
   const checkText = (text: string): string[] => {
-    if (!blacklist || !text) return [];
+    // Non-admins won't have access to blacklist, return empty
+    // Server-side trigger will catch violations on save
+    if (!blacklist || blacklist.length === 0 || !text) return [];
     
     const lowerText = text.toLowerCase();
     return blacklist
@@ -38,10 +46,10 @@ export const useCheckBlacklistedWords = () => {
       .map(item => item.word);
   };
 
-  return { checkText, blacklist };
+  return { checkText, blacklist: blacklist || [] };
 };
 
-// Hook to add a word to the blacklist
+// Hook to add a word to the blacklist (ADMIN ONLY)
 export const useAddBlacklistWord = () => {
   const queryClient = useQueryClient();
 
@@ -65,6 +73,9 @@ export const useAddBlacklistWord = () => {
         if (error.code === "23505") {
           throw new Error("Esta palabra ya está en la lista");
         }
+        if (error.code === "42501") {
+          throw new Error("Solo los administradores pueden añadir palabras");
+        }
         throw error;
       }
       return data;
@@ -79,7 +90,7 @@ export const useAddBlacklistWord = () => {
   });
 };
 
-// Hook to remove a word from the blacklist
+// Hook to remove a word from the blacklist (ADMIN ONLY)
 export const useRemoveBlacklistWord = () => {
   const queryClient = useQueryClient();
 
@@ -90,14 +101,19 @@ export const useRemoveBlacklistWord = () => {
         .delete()
         .eq("id", wordId);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === "42501") {
+          throw new Error("Solo los administradores pueden eliminar palabras");
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bio-blacklist"] });
       toast.success("Palabra eliminada de la blacklist");
     },
-    onError: () => {
-      toast.error("Error al eliminar la palabra");
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 };
