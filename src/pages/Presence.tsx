@@ -4,8 +4,9 @@ import { PresenceTopCards } from "@/components/PresenceTopCards";
 import { PresenceHeaderActions } from "@/components/PresenceHeaderActions";
 import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Sparkles, Loader2, Eye, EyeOff, Flame, Bell, Radio, Crown, Lock } from "lucide-react";
+import { Sparkles, Loader2, Eye, EyeOff, Flame, Bell, Radio, Crown, Lock, CloudOff } from "lucide-react";
 import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
+import { usePresenceWithOfflineCache } from "@/hooks/usePresenceCache";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useLocalStorage, STORAGE_KEYS } from "@/hooks/useLocalStorage";
@@ -46,6 +47,17 @@ const Presence = () => {
   );
   
   const { data: presenceList, isLoading, isError, refetch, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = usePresenceList(filters.showAllProfiles ?? true);
+  
+  // Use offline cache for instant profile display on slow connections
+  const { profiles: cachedPresenceList, showingCached, isLoadingCache } = usePresenceWithOfflineCache(
+    presenceList || [],
+    isLoading
+  );
+  
+  // Use cached data when available, otherwise fall back to live data
+  const effectivePresenceList = cachedPresenceList.length > 0 ? cachedPresenceList : (presenceList || []);
+  const effectiveLoading = isLoading && !showingCached && cachedPresenceList.length === 0;
+  
   const { data: myPresence, isLoading: myPresenceLoading } = useMyPresence();
   const setPresence = useSetPresence();
   const { newSparkCount, hasNewSparks, totalSparkCount, markAllAsSeen, newSparks } = useNewSparks();
@@ -193,13 +205,14 @@ const Presence = () => {
   };
 
   // Filter out own profile and blocked users from list
+  // Use effectivePresenceList which includes cached profiles
   const otherProfiles = useMemo(() => {
     const blockedSet = new Set(blockedIds || []);
-    return presenceList?.filter(p => 
+    return effectivePresenceList?.filter(p => 
       p.profile?.id !== profile?.id && 
       !blockedSet.has(p.profile?.id || "")
     ) || [];
-  }, [presenceList, profile?.id, blockedIds]);
+  }, [effectivePresenceList, profile?.id, blockedIds]);
 
   // Get unique cities from all profiles for filter
   const availableCities = useMemo(() => {
@@ -550,15 +563,21 @@ const Presence = () => {
           onRealtimeUpsell={handleRealtimeUpsell}
         />
 
-        {/* Presence indicator */}
+        {/* Presence indicator - show cached indicator when using cached data */}
         <div className="flex items-center justify-center gap-2 mb-10 animate-fade-up animate-delay-100">
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse-soft" />
+          <div className={`w-2 h-2 rounded-full ${showingCached ? 'bg-amber-500' : 'bg-primary'} animate-pulse-soft`} />
           <span className="font-body text-sm text-muted-foreground">
             {filteredProfiles.length} {filteredProfiles.length === 1 ? "persona" : "personas"}
             {filters.tribes.length > 0 || filters.musicStyles.length > 0 || filters.details.length > 0 || filters.lookingFor.length > 0
               ? " (filtrado)" 
               : " presentes"}
           </span>
+          {showingCached && (
+            <span className="flex items-center gap-1 font-body text-xs text-amber-500">
+              <CloudOff className="w-3 h-3" />
+              caché
+            </span>
+          )}
           {!myPresence?.visible_to_others && (
             <span className="font-body text-xs text-muted-foreground/60 ml-2">
               (tú invisible)
@@ -568,9 +587,9 @@ const Presence = () => {
 
         {/* Profile cards with auto-scroll ref */}
         <div ref={profileCardsRef}>
-          {isLoading ? (
+          {effectiveLoading ? (
             <FullScreenPresenceSkeleton showStackedCards />
-          ) : isError ? (
+          ) : isError && !showingCached ? (
             <div className="py-8">
               <NetworkErrorInline
                 message="No pudimos cargar la presencia"
