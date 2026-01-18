@@ -33,19 +33,30 @@ export interface PresenceWithProfile {
 }
 
 const PRESENCE_PAGE_SIZE = 20;
-const MAX_RETRIES = 5;
-const BASE_DELAY_MS = 1000;
-const MAX_DELAY_MS = 30000;
+const MAX_RETRIES = 6; // Increased for mobile resilience
+const BASE_DELAY_MS = 800; // Slightly faster initial retry
+const MAX_DELAY_MS = 20000; // Reduced max delay for better UX
 const REALTIME_DEBOUNCE_MS = 2000; // Debounce realtime updates to avoid excessive refetches
+const MOBILE_TIMEOUT_MS = 25000; // 25 second timeout for mobile connections
 
-// Calculate exponential backoff delay with jitter
+// Detect if we're likely on a mobile device
+const isMobileDevice = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+};
+
+// Calculate exponential backoff delay with jitter - faster on mobile
 const calculateBackoffDelay = (attempt: number): number => {
+  const isMobile = isMobileDevice();
+  const baseDelay = isMobile ? BASE_DELAY_MS * 0.75 : BASE_DELAY_MS;
+  const maxDelay = isMobile ? MAX_DELAY_MS * 0.6 : MAX_DELAY_MS;
+  
   const exponentialDelay = Math.min(
-    BASE_DELAY_MS * Math.pow(2, attempt),
-    MAX_DELAY_MS
+    baseDelay * Math.pow(2, attempt),
+    maxDelay
   );
-  // Add jitter (±25%)
-  const jitter = exponentialDelay * 0.25 * (Math.random() * 2 - 1);
+  // Add jitter (±20%)
+  const jitter = exponentialDelay * 0.2 * (Math.random() * 2 - 1);
   return Math.round(exponentialDelay + jitter);
 };
 
@@ -55,6 +66,10 @@ const isRetryableError = (error: unknown): boolean => {
   
   // Network errors
   if (error instanceof TypeError && error.message.includes('fetch')) return true;
+  if (error instanceof TypeError && error.message.includes('network')) return true;
+  
+  // AbortError from timeout
+  if (error instanceof DOMException && error.name === 'AbortError') return true;
   
   // Supabase/Postgres errors
   if (typeof error === 'object' && error !== null) {
@@ -66,6 +81,8 @@ const isRetryableError = (error: unknown): boolean => {
     // Timeout
     if (err.message?.toLowerCase().includes('timeout')) return true;
     if (err.message?.toLowerCase().includes('network')) return true;
+    if (err.message?.toLowerCase().includes('aborted')) return true;
+    if (err.message?.toLowerCase().includes('failed to fetch')) return true;
   }
   
   return false;

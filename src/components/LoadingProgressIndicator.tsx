@@ -56,20 +56,44 @@ export const LoadingProgressIndicator = memo(({
     return () => clearInterval(messageInterval);
   }, [isLoading, messages.length]);
 
-  // Simulate progress if not provided
+  // Simulate progress if not provided - improved for mobile
   useEffect(() => {
     if (!isLoading || progress !== undefined) return;
 
+    let elapsed = 0;
     const progressInterval = setInterval(() => {
+      elapsed += 500;
       setSimulatedProgress(prev => {
-        if (prev >= 90) return prev;
-        const increment = Math.random() * 15 + 5;
-        return Math.min(prev + increment, 90);
+        // Fast initial progress, then slow down
+        // This creates a more natural feeling on slow connections
+        if (prev < 30) {
+          return Math.min(prev + Math.random() * 12 + 8, 30);
+        } else if (prev < 60) {
+          return Math.min(prev + Math.random() * 8 + 4, 60);
+        } else if (prev < 85) {
+          return Math.min(prev + Math.random() * 5 + 2, 85);
+        } else if (prev < 95) {
+          // Very slow progress after 85% - waiting for actual data
+          return Math.min(prev + Math.random() * 2, 95);
+        }
+        return prev;
       });
-    }, 400);
+    }, 500);
 
     return () => clearInterval(progressInterval);
   }, [isLoading, progress]);
+
+  // Complete to 100% when loading finishes
+  useEffect(() => {
+    if (!isLoading && simulatedProgress > 0) {
+      setSimulatedProgress(100);
+      // Reset after animation completes
+      const resetTimer = setTimeout(() => {
+        setSimulatedProgress(0);
+      }, 500);
+      return () => clearTimeout(resetTimer);
+    }
+  }, [isLoading, simulatedProgress]);
 
   const displayProgress = progress ?? simulatedProgress;
   const CurrentIcon = icons[messageIndex % icons.length];

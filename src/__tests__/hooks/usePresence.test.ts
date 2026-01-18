@@ -56,7 +56,12 @@ vi.mock('@/hooks/useProfile', () => ({
 }));
 
 vi.mock('@/hooks/useOnlineStatus', () => ({
-  useOnlineStatus: () => ({ isOnline: true }),
+  useOnlineStatus: () => ({ 
+    isOnline: true, 
+    wasOffline: false, 
+    isVerifying: false,
+    verifyConnectivity: vi.fn().mockResolvedValue(true),
+  }),
 }));
 
 // Import after mocks
