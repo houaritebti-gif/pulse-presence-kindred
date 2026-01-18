@@ -1,50 +1,62 @@
-import { Skeleton } from "@/components/ui/skeleton";
-
-const PresenceCardSkeleton = ({ delay = 0 }: { delay?: number }) => (
-  <div 
-    className="bg-card rounded-3xl p-6 border border-border/50 animate-fade-in"
-    style={{ animationDelay: `${delay}ms` }}
-  >
-    {/* Header with avatar and name */}
-    <div className="flex items-start gap-4 mb-4">
-      <Skeleton className="w-16 h-16 rounded-full" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-5 w-32" />
-        <Skeleton className="h-4 w-24" />
-      </div>
-      <Skeleton className="h-6 w-16 rounded-full" />
-    </div>
-
-    {/* Photo carousel placeholder */}
-    <Skeleton className="w-full h-48 rounded-2xl mb-4" />
-
-    {/* Tribes/Music tags */}
-    <div className="flex flex-wrap gap-2 mb-4">
-      <Skeleton className="h-6 w-20 rounded-full" />
-      <Skeleton className="h-6 w-24 rounded-full" />
-      <Skeleton className="h-6 w-16 rounded-full" />
-    </div>
-
-    {/* Action buttons */}
-    <div className="flex gap-3">
-      <Skeleton className="h-10 flex-1 rounded-xl" />
-      <Skeleton className="h-10 w-10 rounded-xl" />
-    </div>
-  </div>
-);
+import { memo } from "react";
+import { motion } from "framer-motion";
+import { PresenceCardSkeleton } from "./PresenceCardSkeleton";
+import LoadingProgressIndicator from "./LoadingProgressIndicator";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface PresenceListSkeletonProps {
+  /** Number of skeleton cards to show */
   count?: number;
+  /** Whether to show progress indicator */
+  showProgress?: boolean;
+  /** Custom loading messages */
+  loadingMessages?: string[];
 }
 
-export const PresenceListSkeleton = ({ count = 3 }: PresenceListSkeletonProps) => {
+/**
+ * Skeleton list for presence loading state
+ * Shows multiple animated skeleton cards with staggered entrance and progress indicator
+ */
+export const PresenceListSkeleton = memo(({ 
+  count = 3,
+  showProgress = true,
+  loadingMessages
+}: PresenceListSkeletonProps) => {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
-    <div className="space-y-6">
-      {Array.from({ length: count }).map((_, index) => (
-        <PresenceCardSkeleton key={index} delay={index * 100} />
-      ))}
+    <div className="space-y-4">
+      {/* Progress indicator */}
+      {showProgress && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReducedMotion ? 0.1 : 0.3 }}
+          className="mb-4"
+        >
+          <LoadingProgressIndicator 
+            isLoading={true}
+            messages={loadingMessages}
+            size="sm"
+            showIcon={true}
+          />
+        </motion.div>
+      )}
+
+      {/* Skeleton cards with stagger animation */}
+      <div className="space-y-4">
+        {Array.from({ length: count }).map((_, index) => (
+          <PresenceCardSkeleton 
+            key={index} 
+            delay={index * 80}
+            showShimmer={index < 2} // Only shimmer first 2 for performance
+          />
+        ))}
+      </div>
     </div>
   );
-};
+});
+
+PresenceListSkeleton.displayName = "PresenceListSkeleton";
 
 export default PresenceListSkeleton;
