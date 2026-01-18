@@ -700,43 +700,74 @@ Sistema de puntos virtuales para recompensar actividad.
 
 ## Seguridad
 
-### RLS (Row Level Security)
+### Políticas de Seguridad (Actualizado Enero 2026)
+
+#### RLS (Row Level Security)
 
 Todas las tablas tienen políticas RLS activas que restringen:
 - Lectura de datos propios
-- Escritura solo en recursos propios
+- Escritura solo en recursos propios  
 - Acceso admin a recursos globales
+- **Visibilidad controlada por `can_view_profile()`**: Perfiles solo visibles tras interacción legítima (conexión mutua, spark chat activo, asistencia a quedada, o mensaje ghost recibido)
 
-### Secretos Internos
+#### Tablas con Acceso Restringido
 
-Sistema de rotación automática de secretos para comunicación entre triggers y edge functions.
+| Tabla | Política | Justificación |
+|-------|----------|---------------|
+| `bio_blacklist` | Solo admins (SELECT/INSERT/DELETE) | Oculta estrategia de moderación a bad actors |
+| `stripe_customer_data` | Solo service_role (`USING false`) | Datos de pago sensibles |
+| `user_subscriptions` | Solo SELECT para propietario, sin UPDATE | Evita elevación de tier no autorizada |
+| `internal_secrets_rotation` | Solo service_role | Secretos del sistema |
+| `push_rate_limits` | Solo service_role | Control de rate limiting |
+| `identity-selfies` (bucket) | Privado + RLS | Fotos de verificación sensibles |
+
+#### Secretos Internos y Rotación
+
+Sistema de rotación automática de secretos para comunicación segura entre triggers y edge functions:
 
 ```sql
 -- Rotación cada 90 días
 -- Grace period de 24 horas tras rotación
--- Log de todas las rotaciones
+-- Log de todas las rotaciones en secrets_rotation_log
+-- Triggers obtienen secreto dinámicamente (sin fallbacks hardcodeados)
 ```
+
+**Triggers actualizados (Enero 2026):**
+- `handle_new_connection_request`: Sin fallback hardcodeado
+- `handle_connection_accepted`: Sin fallback hardcodeado
+- `handle_premium_ghost_message`: Sin fallback hardcodeado
+- `handle_profile_visit_notification`: Sin fallback hardcodeado
+
+Los triggers ahora fallan gracefully si no hay secreto disponible (crean notificación in-app pero omiten push).
 
 ### Rate Limiting
 
-| Recurso | Límite |
-|---------|--------|
-| Push notifications | 30/min por usuario |
-| Ghost messages | 10/día para free |
-| API general | Límites de Supabase |
+| Recurso | Límite | Implementación |
+|---------|--------|----------------|
+| Push notifications | 30/min por usuario | `check_push_rate_limit()` |
+| Ghost messages | 10/día para free | Validación en edge function |
+| API general | Límites de Supabase | Configuración de proyecto |
 
 ### Validación de Contenido
 
-- Blacklist de palabras en bios
-- Verificación de identidad con IA
-- Moderación de reportes
+- **Blacklist de palabras en bios**: Validación server-side via trigger `validate_profile_bio`
+- **Verificación de identidad**: Comparación facial con IA (Lovable AI)
+- **Moderación de reportes**: Panel admin con estados pending/resolved/dismissed
 
 ### Protección de Datos Sensibles
 
-- `stripe_customer_data`: Solo accesible vía service_role
-- `user_subscriptions`: Sin updates directos
-- `push_subscriptions`: Solo propietario puede CRUD
-- Keys de push encriptadas en tránsito
+| Dato | Protección |
+|------|------------|
+| `stripe_customer_data` | Solo accesible vía service_role |
+| `user_subscriptions` | Sin updates directos (solo Stripe webhooks) |
+| `push_subscriptions` | Solo propietario puede CRUD + keys server-side |
+| `bio_blacklist` | Solo admins pueden leer/escribir |
+| Selfies de verificación | Bucket privado + purga automática |
+
+### Verificación de Contraseñas
+
+- **Client-side**: Hook `usePasswordBreachCheck` valida contra Have I Been Pwned API usando k-anonymity
+- **Server-side**: Supabase Auth maneja seguridad de passwords
 
 ---
 
