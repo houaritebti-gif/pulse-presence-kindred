@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock, Database, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Sun, Moon, Monitor, Sparkles, Type, LayoutGrid, Settings2, Volume2, Contrast, Hand, Bell, MessageCircle, Calendar, Ghost, UserPlus, Play, Flame, MousePointer2, X, Stars, Heart, VolumeX, Users, MapPin, Clock, Trash2, Database } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ReduceMotionHelpModal } from "@/components/ReduceMotionHelpModal";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { clearAllCachedProfiles, getCacheStats } from "@/utils/profileCacheDB";
+import PresenceCacheSettings from "@/components/PresenceCacheSettings";
 import { 
   isThemeSoundEnabled, 
   setThemeSoundEnabled, 
@@ -1101,7 +1102,10 @@ const AdvancedSettingsSection = () => {
             </button>
           </div>
 
-          {/* Clear Profile Cache */}
+          {/* Presence Cache Settings (with detailed stats) */}
+          <PresenceCacheSettings />
+
+          {/* Clear Profile Cache (visits/individual profiles) */}
           <ProfileCacheSettings />
 
           {/* Clear Celebration History */}

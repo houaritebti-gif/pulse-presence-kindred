@@ -29,6 +29,7 @@ import GlobalNetworkErrorToast from "@/components/GlobalNetworkErrorToast";
 
 // Lazy load heavy components
 const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
+const PresenceCacheWarning = lazy(() => import("@/components/PresenceCacheWarning"));
 
 // Exponential backoff retry function with jitter
 const exponentialBackoff = (attemptIndex: number): number => {
@@ -133,6 +134,7 @@ const App = () => {
                         <GlobalNetworkErrorToast />
                         <Suspense fallback={null}>
                           <AIChatBot />
+                          <PresenceCacheWarning />
                         </Suspense>
                         <CookieConsent />
                         <BottomNavigation />
