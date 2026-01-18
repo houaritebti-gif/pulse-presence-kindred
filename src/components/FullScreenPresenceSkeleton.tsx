@@ -1,19 +1,86 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { triggerHaptic } from "@/utils/haptics";
+import LoadingProgressIndicator from "./LoadingProgressIndicator";
 
 interface FullScreenPresenceSkeletonProps {
   /** Show stacked cards behind for visual depth */
   showStackedCards?: boolean;
+  /** Show progress indicator */
+  showProgress?: boolean;
+  /** Loading message override */
+  loadingMessage?: string;
 }
 
-const FullScreenPresenceSkeletonComponent = ({ showStackedCards = true }: FullScreenPresenceSkeletonProps) => {
+const loadingMessages = [
+  "Descubriendo perfiles...",
+  "Calculando compatibilidad...",
+  "Preparando tu feed...",
+  "¡Casi listo!"
+];
+
+const FullScreenPresenceSkeletonComponent = ({ 
+  showStackedCards = true,
+  showProgress = true,
+  loadingMessage
+}: FullScreenPresenceSkeletonProps) => {
   const prefersReducedMotion = useReducedMotion();
+  const [progress, setProgress] = useState(0);
+  const [loadingPhase, setLoadingPhase] = useState(0);
+
+  // Progressive loading simulation with haptic feedback
+  useEffect(() => {
+    const milestones = [25, 50, 75, 100];
+    let currentMilestone = 0;
+
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        const newProgress = Math.min(prev + Math.random() * 12 + 3, 95);
+        
+        // Haptic feedback at milestones
+        if (currentMilestone < milestones.length && 
+            newProgress >= milestones[currentMilestone]) {
+          triggerHaptic('light');
+          currentMilestone++;
+        }
+        
+        return newProgress;
+      });
+    }, 300);
+
+    const phaseInterval = setInterval(() => {
+      setLoadingPhase(prev => (prev + 1) % loadingMessages.length);
+    }, 2500);
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(phaseInterval);
+    };
+  }, []);
 
   return (
     <div className="relative w-full max-w-md mx-auto px-4">
+      {/* Progress indicator at top */}
+      {showProgress && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="mb-6"
+        >
+          <LoadingProgressIndicator 
+            isLoading={true}
+            progress={progress}
+            messages={loadingMessage ? [loadingMessage] : loadingMessages}
+            size="md"
+            showIcon={true}
+          />
+        </motion.div>
+      )}
+
       {/* Stacked cards behind for depth effect */}
       {showStackedCards && !prefersReducedMotion && (
         <>
@@ -22,16 +89,16 @@ const FullScreenPresenceSkeletonComponent = ({ showStackedCards = true }: FullSc
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 0.4, scale: 0.92 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="absolute inset-x-4 top-0 aspect-[3/4] max-h-[calc(100vh-180px)] min-h-[500px] rounded-3xl bg-gradient-to-br from-muted to-muted/50 -z-20"
-            style={{ transform: 'translateY(16px)' }}
+            className="absolute inset-x-4 top-0 aspect-[3/4] max-h-[calc(100vh-260px)] min-h-[450px] rounded-3xl bg-gradient-to-br from-muted to-muted/50 -z-20"
+            style={{ transform: 'translateY(16px)', marginTop: showProgress ? '100px' : '0' }}
           />
           {/* Second card (middle) */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 0.6, scale: 0.96 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="absolute inset-x-4 top-0 aspect-[3/4] max-h-[calc(100vh-180px)] min-h-[500px] rounded-3xl bg-gradient-to-br from-muted to-muted/70 -z-10"
-            style={{ transform: 'translateY(8px)' }}
+            className="absolute inset-x-4 top-0 aspect-[3/4] max-h-[calc(100vh-260px)] min-h-[450px] rounded-3xl bg-gradient-to-br from-muted to-muted/70 -z-10"
+            style={{ transform: 'translateY(8px)', marginTop: showProgress ? '100px' : '0' }}
           />
         </>
       )}
@@ -42,7 +109,7 @@ const FullScreenPresenceSkeletonComponent = ({ showStackedCards = true }: FullSc
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: prefersReducedMotion ? 0.1 : 0.4, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
-          "relative w-full aspect-[3/4] max-h-[calc(100vh-180px)] min-h-[500px] rounded-3xl overflow-hidden",
+          "relative w-full aspect-[3/4] max-h-[calc(100vh-260px)] min-h-[450px] rounded-3xl overflow-hidden",
           "shadow-2xl shadow-foreground/20 bg-gradient-to-br from-card to-muted/50",
           "border border-foreground/5"
         )}
@@ -50,18 +117,27 @@ const FullScreenPresenceSkeletonComponent = ({ showStackedCards = true }: FullSc
         {/* Premium shimmer background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
         
-        {/* Animated shimmer overlay */}
+        {/* Animated shimmer overlay - optimized for mobile */}
         {!prefersReducedMotion && (
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent"
             initial={{ x: "-100%" }}
             animate={{ x: "200%" }}
             transition={{ 
-              duration: 1.5, 
+              duration: 2, 
               repeat: Infinity, 
-              repeatDelay: 0.5,
+              repeatDelay: 0.8,
               ease: "easeInOut"
             }}
+          />
+        )}
+
+        {/* Pulsing glow effect */}
+        {!prefersReducedMotion && (
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent"
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           />
         )}
 
@@ -85,16 +161,27 @@ const FullScreenPresenceSkeletonComponent = ({ showStackedCards = true }: FullSc
           </motion.div>
         </div>
 
-        {/* Photo dots indicator (carousel) */}
+        {/* Photo dots indicator (carousel) - animated */}
         <motion.div 
           className="absolute top-16 left-1/2 -translate-x-1/2 flex gap-2 z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="w-2.5 h-2.5 rounded-full bg-white/60" />
-          <div className="w-2 h-2 rounded-full bg-white/30" />
-          <div className="w-2 h-2 rounded-full bg-white/30" />
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              className={cn(
+                "rounded-full",
+                i === 0 ? "w-2.5 h-2.5 bg-white/60" : "w-2 h-2 bg-white/30"
+              )}
+              animate={!prefersReducedMotion && i === 0 ? {
+                scale: [1, 1.2, 1],
+                opacity: [0.6, 0.9, 0.6]
+              } : {}}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+          ))}
         </motion.div>
 
         {/* Content overlay at bottom - gradient fade */}
@@ -102,70 +189,78 @@ const FullScreenPresenceSkeletonComponent = ({ showStackedCards = true }: FullSc
 
         {/* Profile info section */}
         <motion.div 
-          className="absolute bottom-0 left-0 right-0 p-6 space-y-4 z-10"
+          className="absolute bottom-0 left-0 right-0 p-5 space-y-3 z-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          {/* Activity status */}
+          {/* Activity status with pulse */}
           <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/40 animate-pulse" />
+            <motion.div 
+              className="w-2.5 h-2.5 rounded-full bg-green-400/60"
+              animate={!prefersReducedMotion ? { 
+                scale: [1, 1.3, 1],
+                opacity: [0.6, 1, 0.6]
+              } : {}}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
             <Skeleton className="h-4 w-24 bg-foreground/10" />
           </div>
 
           {/* Name and age */}
           <div className="flex items-center gap-3">
-            <Skeleton className="h-9 w-40 bg-foreground/15" />
-            <Skeleton className="h-6 w-14 rounded-full bg-foreground/10" />
+            <Skeleton className="h-8 w-36 bg-foreground/15" />
+            <Skeleton className="h-6 w-12 rounded-full bg-foreground/10" />
           </div>
 
           {/* Location */}
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 rounded-full bg-muted-foreground/30" />
-            <Skeleton className="h-4 w-28 bg-foreground/10" />
+            <Skeleton className="h-4 w-24 bg-foreground/10" />
           </div>
 
           {/* Vibe chip */}
-          <Skeleton className="h-8 w-36 rounded-full bg-primary/10" />
+          <Skeleton className="h-7 w-32 rounded-full bg-primary/10" />
 
           {/* Tribes/Music tags */}
           <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-7 w-20 rounded-full bg-foreground/10" />
-            <Skeleton className="h-7 w-24 rounded-full bg-primary/10" />
-            <Skeleton className="h-7 w-18 rounded-full bg-foreground/10" />
-            <Skeleton className="h-7 w-16 rounded-full bg-primary/10" />
-          </div>
-
-          {/* Looking for section */}
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-foreground/5">
-            <Skeleton className="h-6 w-28 rounded-full bg-foreground/8" />
-            <Skeleton className="h-6 w-22 rounded-full bg-foreground/8" />
+            <Skeleton className="h-6 w-18 rounded-full bg-foreground/10" />
+            <Skeleton className="h-6 w-22 rounded-full bg-primary/10" />
+            <Skeleton className="h-6 w-16 rounded-full bg-foreground/10" />
           </div>
         </motion.div>
 
-        {/* Swipe hint indicators (subtle) */}
+        {/* Swipe hint indicators (subtle, animated) */}
         <div className="absolute inset-0 pointer-events-none">
           {/* Left indicator */}
           <motion.div 
-            className="absolute left-6 top-1/2 -translate-y-1/2"
+            className="absolute left-4 top-1/2 -translate-y-1/2"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.2 }}
+            animate={{ opacity: 0.15 }}
             transition={{ delay: 0.5 }}
           >
-            <div className="w-14 h-14 rounded-full border-2 border-dashed border-foreground/20 flex items-center justify-center">
-              <div className="w-4 h-4 rounded-full bg-foreground/10" />
-            </div>
+            <motion.div 
+              className="w-12 h-12 rounded-full border-2 border-dashed border-foreground/20 flex items-center justify-center"
+              animate={!prefersReducedMotion ? { x: [-2, 2, -2] } : {}}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <div className="w-3 h-3 rounded-full bg-foreground/10" />
+            </motion.div>
           </motion.div>
           {/* Right indicator */}
           <motion.div 
-            className="absolute right-6 top-1/2 -translate-y-1/2"
+            className="absolute right-4 top-1/2 -translate-y-1/2"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.2 }}
+            animate={{ opacity: 0.15 }}
             transition={{ delay: 0.5 }}
           >
-            <div className="w-14 h-14 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center">
-              <div className="w-4 h-4 rounded-full bg-primary/20" />
-            </div>
+            <motion.div 
+              className="w-12 h-12 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center"
+              animate={!prefersReducedMotion ? { x: [2, -2, 2] } : {}}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <div className="w-3 h-3 rounded-full bg-primary/20" />
+            </motion.div>
           </motion.div>
         </div>
       </motion.div>
@@ -175,11 +270,16 @@ const FullScreenPresenceSkeletonComponent = ({ showStackedCards = true }: FullSc
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: prefersReducedMotion ? 0.1 : 0.3, delay: 0.25 }}
-        className="flex items-center justify-center gap-4 py-5 mt-4"
+        className="flex items-center justify-center gap-4 py-4 mt-3"
       >
-        <Skeleton className="w-14 h-14 rounded-full bg-foreground/10" />
-        <Skeleton className="w-18 h-18 rounded-full bg-primary/15 scale-110" />
-        <Skeleton className="w-14 h-14 rounded-full bg-foreground/10" />
+        <Skeleton className="w-12 h-12 rounded-full bg-foreground/10" />
+        <motion.div
+          animate={!prefersReducedMotion ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <Skeleton className="w-16 h-16 rounded-full bg-primary/15" />
+        </motion.div>
+        <Skeleton className="w-12 h-12 rounded-full bg-foreground/10" />
       </motion.div>
 
       {/* Counter skeleton */}
@@ -187,9 +287,9 @@ const FullScreenPresenceSkeletonComponent = ({ showStackedCards = true }: FullSc
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2, delay: 0.35 }}
-        className="flex justify-center mt-2"
+        className="flex justify-center mt-1"
       >
-        <Skeleton className="h-5 w-28 rounded-md bg-foreground/8" />
+        <Skeleton className="h-4 w-24 rounded-md bg-foreground/8" />
       </motion.div>
     </div>
   );
