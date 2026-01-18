@@ -310,3 +310,87 @@ export const usePresenceWithOfflineCache = (
     isLoadingCache,
   };
 };
+
+/**
+ * Get presence cache statistics
+ */
+export const getPresenceCacheStats = (): { 
+  memoryCount: number; 
+  memorySizeKB: number;
+} => {
+  let estimatedSize = 0;
+  memoryCache.forEach((value) => {
+    // Rough estimate: JSON stringify to get byte size
+    try {
+      estimatedSize += JSON.stringify(value).length * 2; // UTF-16
+    } catch {
+      estimatedSize += 1024; // Default 1KB per entry
+    }
+  });
+  
+  return {
+    memoryCount: memoryCache.size,
+    memorySizeKB: Math.round(estimatedSize / 1024),
+  };
+};
+
+/**
+ * Clear all presence cache (memory and IndexedDB)
+ */
+export const clearPresenceCache = async (): Promise<void> => {
+  // Clear memory cache
+  memoryCache.clear();
+  
+  // Clear IndexedDB presence data
+  try {
+    const { clearAllCachedProfiles } = await import("@/utils/profileCacheDB");
+    await clearAllCachedProfiles();
+  } catch (error) {
+    console.warn('[PresenceCache] Error clearing IndexedDB cache:', error);
+  }
+};
+
+// Storage key for cache warning dismissal
+const CACHE_WARNING_DISMISSED_KEY = "kiki_presence_cache_warning_dismissed";
+const CACHE_SIZE_THRESHOLD_MB = 5; // Show warning when cache exceeds 5MB
+
+/**
+ * Check if cache warning should be shown
+ */
+export const shouldShowCacheWarning = async (): Promise<boolean> => {
+  // Check if already dismissed today
+  const dismissed = localStorage.getItem(CACHE_WARNING_DISMISSED_KEY);
+  if (dismissed) {
+    const dismissedDate = new Date(dismissed);
+    const today = new Date();
+    if (
+      dismissedDate.getFullYear() === today.getFullYear() &&
+      dismissedDate.getMonth() === today.getMonth() &&
+      dismissedDate.getDate() === today.getDate()
+    ) {
+      return false; // Already dismissed today
+    }
+  }
+  
+  // Check cache size
+  try {
+    const { getCacheStats } = await import("@/utils/profileCacheDB");
+    const stats = await getCacheStats();
+    const memStats = getPresenceCacheStats();
+    
+    // Estimate total size (IndexedDB + memory)
+    const totalProfiles = stats.validCount + memStats.memoryCount;
+    const estimatedSizeKB = totalProfiles * 2; // ~2KB per profile average
+    
+    return estimatedSizeKB > CACHE_SIZE_THRESHOLD_MB * 1024;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Dismiss cache warning for today
+ */
+export const dismissCacheWarning = (): void => {
+  localStorage.setItem(CACHE_WARNING_DISMISSED_KEY, new Date().toISOString());
+};
