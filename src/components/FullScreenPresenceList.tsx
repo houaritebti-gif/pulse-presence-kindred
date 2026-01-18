@@ -1,5 +1,5 @@
 import { memo, useRef, useState, useCallback, useEffect, useMemo } from "react";
-import { Radio, RotateCcw, Crown, Info, RefreshCw, Bell } from "lucide-react";
+import { Radio, RotateCcw, Crown, Info, RefreshCw, Bell, CloudOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FullScreenPresenceCard from "./FullScreenPresenceCard";
 import SwipeTutorial from "./SwipeTutorial";
@@ -55,6 +55,7 @@ interface FullScreenPresenceListProps {
   photosMap: Record<string, { photo_url: string }[]> | undefined;
   getCompatibility: (presence: PresenceWithProfile) => number;
   getCompatibilityBreakdown: (presence: PresenceWithProfile) => CompatibilityBreakdown;
+  showingCached?: boolean;
 }
 
 const isProfileActive = (presence: PresenceWithProfile) => {
@@ -70,6 +71,7 @@ export const FullScreenPresenceList = memo(({
   photosMap,
   getCompatibility,
   getCompatibilityBreakdown,
+  showingCached = false,
 }: FullScreenPresenceListProps) => {
   const { data: activeBoostedData } = useActiveBoostedProfiles();
   const { canSeeRealtimePresence } = useSubscription();
@@ -569,6 +571,20 @@ export const FullScreenPresenceList = memo(({
       ref={containerRef}
       className="h-[calc(100vh-200px)] flex flex-col"
     >
+
+      {/* Cached data indicator - subtle badge */}
+      {showingCached && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-center pb-2"
+        >
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/80 backdrop-blur-sm">
+            <CloudOff className="w-3 h-3 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">Datos guardados</span>
+          </div>
+        </motion.div>
+      )}
 
       {/* Active profiles section header */}
       {canSeeRealtimePresence && activeProfiles.length > 0 && (

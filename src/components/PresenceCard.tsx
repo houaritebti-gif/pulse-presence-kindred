@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, MoreVertical, Flag, Ban, Zap, MapPin, Sparkles } from "lucide-react";
+import { Heart, MoreVertical, Flag, Ban, Zap, MapPin, Sparkles, CloudOff } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { cn } from "@/lib/utils";
 import VisitedIndicator from "@/components/VisitedIndicator";
@@ -123,10 +123,11 @@ interface PresenceCardProps {
   isBoosted?: boolean;
   canSeeRealtimePresence?: boolean;
   hasVisibilityBoost?: boolean;
+  isFromCache?: boolean;
 }
 
 
-const PresenceCardComponent = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false, canSeeRealtimePresence = true, hasVisibilityBoost = false }: PresenceCardProps) => {
+const PresenceCardComponent = ({ presence, compatibility, compatibilityBreakdown, animationDelay, photos = [], isBoosted = false, canSeeRealtimePresence = true, hasVisibilityBoost = false, isFromCache = false }: PresenceCardProps) => {
   const navigate = useNavigate();
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
@@ -270,6 +271,25 @@ const PresenceCardComponent = ({ presence, compatibility, compatibilityBreakdown
               </TooltipContent>
           </Tooltip>
           </TooltipProvider>
+
+          {/* Cached indicator - subtle, next to visited */}
+          {isFromCache && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={cn(
+                    "absolute bottom-2 sm:bottom-3 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-black/40 backdrop-blur-md",
+                    isVisited ? "right-16 sm:right-20" : "right-2 sm:right-3"
+                  )}>
+                    <CloudOff className="w-3 h-3 text-white/70" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  Mostrando datos guardados
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
 
           {/* Visited indicator - bottom right, subtle */}
           {isVisited && (
