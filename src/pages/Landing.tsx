@@ -9,9 +9,9 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden bg-kiki-pink">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden bg-[#F6B7CF]">
       {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-kiki-pink/50 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#F6B7CF]/50 pointer-events-none" />
       
       {/* Main content */}
       <motion.div 
@@ -107,7 +107,7 @@ const Landing = () => {
           >
             <span className="h-[1px] w-6 bg-kiki-black/20" />
             <p className="text-caption md:text-subtitle-sm text-kiki-black/60 font-medium italic">
-              aquí no hay match, hay <span className="text-[#EF4444] font-semibold not-italic">chispa</span>
+              aquí no hay match, hay <span className="text-[#E53935] font-semibold not-italic">chispa</span>
             </p>
             <motion.span
               animate={{ 
@@ -120,7 +120,7 @@ const Landing = () => {
                 ease: "easeInOut"
               }}
             >
-              <Sparkles className="w-4 h-4 text-[#EF4444]" />
+              <Sparkles className="w-4 h-4 text-[#E53935]" />
             </motion.span>
             <span className="h-[1px] w-6 bg-kiki-black/20" />
           </motion.div>
