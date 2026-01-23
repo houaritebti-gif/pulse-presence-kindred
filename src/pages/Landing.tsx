@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { KikiLogo } from "@/components/KikiLogo";
+import { Sparkles } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -66,9 +67,22 @@ const Landing = () => {
         >
           <Button
             onClick={() => navigate("/auth?mode=signup")}
-            className="w-full h-14 text-base font-semibold bg-kiki-black text-white hover:bg-kiki-black/90 rounded-xl shadow-lg shadow-kiki-black/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            className="group w-full h-14 text-base font-semibold bg-kiki-black text-white hover:bg-kiki-black/90 rounded-xl shadow-lg shadow-kiki-black/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
           >
-            ÚNETE AHORA
+            <span>ÚNETE AHORA</span>
+            <motion.span
+              animate={{ 
+                scale: [1, 1.2, 1],
+                rotate: [0, 10, -10, 0]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <Sparkles className="w-5 h-5" />
+            </motion.span>
           </Button>
           
           <motion.button
