@@ -61,33 +61,33 @@ const sizeConfig = {
   },
 };
 
-// Symmetric K shape - strokes meet at center point
+// Symmetric K shape - bold strokes meeting at center
 const KShape = ({ width, height, fill }: { width: number; height: number; fill: string }) => {
-  const stemWidth = width * 0.32;
-  const armThickness = height * 0.18;
+  const stemWidth = width * 0.38;
   const centerY = height / 2;
+  const armWidth = height * 0.28; // Thicker arms
   
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none">
       {/* Vertical stem */}
       <rect x="0" y="0" width={stemWidth} height={height} fill={fill} />
-      {/* Upper diagonal arm */}
+      {/* Upper diagonal arm - thick and prominent */}
       <polygon 
         points={`
-          ${stemWidth},${centerY - armThickness/2}
-          ${stemWidth},${centerY + armThickness/2}
-          ${width},${armThickness}
+          ${stemWidth * 0.7},${centerY}
+          ${stemWidth},${centerY - armWidth * 0.5}
           ${width},0
+          ${width},${armWidth}
         `}
         fill={fill}
       />
-      {/* Lower diagonal arm */}
+      {/* Lower diagonal arm - thick and prominent */}
       <polygon 
         points={`
-          ${stemWidth},${centerY - armThickness/2}
-          ${stemWidth},${centerY + armThickness/2}
+          ${stemWidth * 0.7},${centerY}
+          ${stemWidth},${centerY + armWidth * 0.5}
           ${width},${height}
-          ${width},${height - armThickness}
+          ${width},${height - armWidth}
         `}
         fill={fill}
       />
