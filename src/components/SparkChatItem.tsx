@@ -15,6 +15,7 @@ interface SparkChatItemProps {
       id?: string;
       name?: string | null;
       avatar_url?: string | null;
+      main_photo_url?: string | null;
       vibe?: string | null;
     } | null;
     last_message_at?: string | null;
@@ -44,7 +45,7 @@ const SparkChatItem = ({ chat, animationDelay = 0, animationStyle }: SparkChatIt
       <div className="relative">
         <SharedAvatar
           profileId={chat.other_profile?.id || chat.id}
-          avatarUrl={chat.other_profile?.avatar_url}
+          avatarUrl={chat.other_profile?.main_photo_url || chat.other_profile?.avatar_url}
           name={chat.other_profile?.name}
           size="lg"
           useLazyLoading
