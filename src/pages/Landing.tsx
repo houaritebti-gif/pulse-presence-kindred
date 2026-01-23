@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { KikiLogo } from "@/components/KikiLogo";
 import { Sparkles } from "lucide-react";
-import Footer from "@/components/Footer";
+import LandingFooter from "@/components/LandingFooter";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -207,15 +207,10 @@ const Landing = () => {
         </motion.div>
       </motion.div>
       
-      {/* Footer */}
-      <motion.div 
-        className="absolute bottom-0 left-0 right-0"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 1.2 }}
-      >
-        <Footer />
-      </motion.div>
+      {/* Footer minimalista */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <LandingFooter />
+      </div>
     </div>
   );
 };
