@@ -90,7 +90,7 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   return (
     <span 
       className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className} relative overflow-visible`}
-      style={{ fontFamily: 'Arial Black, Arial, sans-serif', textShadow }}
+      style={{ fontFamily: '"Avenir Black", "Avenir Heavy", Avenir, sans-serif', textShadow }}
     >
       {/* Shimmer overlay */}
       {showShimmer && (
