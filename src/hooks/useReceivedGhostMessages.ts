@@ -22,6 +22,7 @@ export interface ReceivedGhostMessage {
     vibe: string | null;
     avatar_url: string | null;
     city: string | null;
+    main_photo_url: string | null;
   };
   // Whether I've sent a ghost message back (means spark exists or will exist)
   hasSentBack: boolean;
@@ -61,6 +62,26 @@ export const useReceivedGhostMessages = () => {
 
       if (error) throw error;
 
+      // Get all unique sender profile IDs
+      const senderIds = [...new Set((messages || []).map(m => m.from_profile_id))];
+      
+      // Fetch first photo for each sender for visual consistency
+      const { data: senderPhotos } = await supabase
+        .from("profile_photos")
+        .select("profile_id, photo_url")
+        .in("profile_id", senderIds)
+        .order("display_order", { ascending: true });
+      
+      // Create a map of profile_id -> first photo URL
+      const photoMap = new Map<string, string>();
+      senderPhotos?.forEach(photo => {
+        if (!photoMap.has(photo.profile_id)) {
+          photoMap.set(photo.profile_id, photo.photo_url);
+        }
+      });
+
+      if (error) throw error;
+
       // Get messages I've sent to check for mutual interest
       const { data: sentMessages } = await supabase
         .from("ghost_messages")
@@ -74,18 +95,24 @@ export const useReceivedGhostMessages = () => {
       // Filter out messages from blocked users and sort by Super Spark and KIKI Now boost first
       const filteredMessages = (messages || [])
         .filter(msg => !blockedSet.has(msg.from_profile_id))
-        .map(msg => ({
-          id: msg.id,
-          content: msg.content,
-          created_at: msg.created_at || "",
-          read_at: msg.read_at,
-          is_premium_message: msg.is_premium_message || false,
-          is_second_chance: msg.is_second_chance || false,
-          is_super_spark: msg.is_super_spark || false,
-          from_profile: msg.from_profile as ReceivedGhostMessage["from_profile"],
-          hasSentBack: sentToIds.has(msg.from_profile_id),
-          hasKikiNowBoost: boostedIds.has(msg.from_profile_id),
-        })) as ReceivedGhostMessage[];
+        .map(msg => {
+          const fromProfile = msg.from_profile as { id: string; name: string | null; vibe: string | null; avatar_url: string | null; city: string | null };
+          return {
+            id: msg.id,
+            content: msg.content,
+            created_at: msg.created_at || "",
+            read_at: msg.read_at,
+            is_premium_message: msg.is_premium_message || false,
+            is_second_chance: msg.is_second_chance || false,
+            is_super_spark: msg.is_super_spark || false,
+            from_profile: {
+              ...fromProfile,
+              main_photo_url: photoMap.get(msg.from_profile_id) || null,
+            },
+            hasSentBack: sentToIds.has(msg.from_profile_id),
+            hasKikiNowBoost: boostedIds.has(msg.from_profile_id),
+          };
+        }) as ReceivedGhostMessage[];
 
       // Sort: Super Sparks first, then KIKI Now boosted, then by created_at descending
       return filteredMessages.sort((a, b) => {
