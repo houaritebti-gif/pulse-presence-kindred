@@ -9,6 +9,7 @@ import { PresenceWithProfile } from "@/hooks/usePresence";
 import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useProfile } from "@/hooks/useProfile";
+import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
@@ -76,6 +77,7 @@ export const FullScreenPresenceList = memo(({
   const { data: activeBoostedData } = useActiveBoostedProfiles();
   const { canSeeRealtimePresence } = useSubscription();
   const { data: myProfile } = useProfile();
+  const { data: myPhotos } = useProfilePhotos(myProfile?.id);
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
   const { earnEnergy, canDoAction } = useSparkEnergy();
@@ -819,7 +821,7 @@ export const FullScreenPresenceList = memo(({
             navigate(`/user/${matchData.theirProfileId}`);
           }
         }}
-        myPhoto={myProfile?.avatar_url || null}
+        myPhoto={myPhotos?.[0]?.photo_url || myProfile?.avatar_url || null}
         theirPhoto={matchData?.theirPhoto || null}
         theirName={matchData?.theirName || null}
         compatibility={matchData?.compatibility || 0}
