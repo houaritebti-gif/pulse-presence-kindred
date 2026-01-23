@@ -32,7 +32,7 @@ const STEPS = [
   { id: 10, title: "¿Qué buscas?", subtitle: "En KIKI" },
   { id: 11, title: "Sobre ti", subtitle: "Breve descripción (opcional)" },
   { id: 12, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
-  { id: 13, title: "Tu foto", subtitle: "Opcional pero recomendado" },
+  { id: 13, title: "Tu foto", subtitle: "Es obligatoria para continuar" },
 ];
 
 const Onboarding = () => {
@@ -277,7 +277,7 @@ const Onboarding = () => {
       case 10: return true; // Looking for is optional
       case 11: return true; // Bio is optional
       case 12: return true; // Details are optional
-      case 13: return true; // Photo is optional
+      case 13: return !!avatarUrl; // Photo is required
       default: return true;
     }
   };
@@ -1067,8 +1067,16 @@ const Onboarding = () => {
               className="text-center text-sm text-muted-foreground"
               variants={itemVariants}
             >
-              Toca para subir una foto
+              {avatarUrl ? "¡Perfecta! Puedes continuar" : "Toca para subir una foto"}
             </motion.p>
+            {!avatarUrl && (
+              <motion.p 
+                className="text-center text-xs text-primary/80 font-medium"
+                variants={itemVariants}
+              >
+                La foto es obligatoria para crear tu perfil
+              </motion.p>
+            )}
           </motion.div>
         );
 
@@ -1197,8 +1205,8 @@ const Onboarding = () => {
         )}
       </div>
 
-      {/* Skip option for optional steps (after required gender/preferences/interests) */}
-      {step >= 7 && step < STEPS.length && (
+      {/* Skip option for optional steps (after required gender/preferences/interests, but NOT photo step) */}
+      {step >= 7 && step < STEPS.length && step !== 13 && (
         <button
           onClick={handleNext}
           className="mt-4 text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
