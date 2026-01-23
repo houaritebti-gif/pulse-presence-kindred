@@ -19,8 +19,9 @@ const Landing = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        {/* Logo KIKI - Dramatic entrance animation */}
+        {/* Logo KIKI - Dramatic entrance animation with glow */}
         <motion.div 
+          className="relative"
           initial={{ opacity: 0, scale: 0.3, y: -50 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ 
@@ -31,7 +32,25 @@ const Landing = () => {
             damping: 12
           }}
         >
+          {/* Pulsing glow behind logo */}
+          <motion.div 
+            className="absolute inset-0 -inset-x-12 -inset-y-8 rounded-full blur-3xl pointer-events-none"
+            style={{ 
+              background: 'radial-gradient(circle, hsl(var(--primary) / 0.4) 0%, transparent 70%)'
+            }}
+            animate={{ 
+              opacity: [0.3, 0.6, 0.3],
+              scale: [0.9, 1.1, 0.9]
+            }}
+            transition={{ 
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          
           <motion.div
+            className="relative z-10"
             animate={{ 
               scale: [1, 1.02, 1],
             }}
