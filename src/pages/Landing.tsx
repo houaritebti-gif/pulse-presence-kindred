@@ -44,19 +44,22 @@ const Landing = () => {
           </motion.div>
         </motion.div>
         
-        {/* Tagline */}
+        {/* Tagline - Enhanced visual */}
         <motion.p 
-          className="text-subtitle md:text-subtitle-lg text-kiki-black/80 font-body"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          className="text-headline-sm md:text-headline text-kiki-black font-display tracking-tight"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
+          style={{ 
+            textShadow: '1px 1px 6px rgba(0, 0, 0, 0.08)'
+          }}
         >
-          Para gente diferente, y punto.
+          Para gente <span className="text-primary">diferente</span>, y punto.
         </motion.p>
         
         {/* CTA Buttons */}
         <motion.div 
-          className="flex flex-col items-center gap-4 pt-8 w-full max-w-xs"
+          className="flex flex-col items-center gap-5 pt-8 w-full max-w-xs"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
@@ -70,11 +73,14 @@ const Landing = () => {
           
           <motion.button
             onClick={() => navigate("/auth?mode=login")}
-            className="text-caption text-kiki-black/60 hover:text-kiki-black/90 font-medium transition-colors py-2"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            className="group flex items-center gap-2 text-subtitle-sm text-kiki-black/70 hover:text-kiki-black font-medium transition-all duration-300 py-2 px-4 rounded-full hover:bg-kiki-black/5"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
-            ¿Ya tienes cuenta? <span className="underline underline-offset-2">Inicia Sesión</span>
+            <span>¿Ya tienes cuenta?</span>
+            <span className="font-semibold underline underline-offset-4 decoration-2 decoration-primary/60 group-hover:decoration-primary transition-colors">
+              Inicia Sesión
+            </span>
           </motion.button>
         </motion.div>
       </motion.div>
