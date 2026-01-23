@@ -968,44 +968,7 @@ const SparkChat = () => {
         />
         
         <div className="flex gap-3 items-center">
-          {/* Image button - hide when recording */}
-          {!isRecording && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!canSendImage) {
-                        setShowImageLimitModal(true);
-                        triggerHaptic('error');
-                      } else {
-                        fileInputRef.current?.click();
-                      }
-                    }}
-                    disabled={isUploading || isCompressingPreview}
-                    className={`h-12 w-12 rounded-xl bg-card/50 border border-border/30 flex items-center justify-center transition-all duration-300 disabled:opacity-50 ${
-                      canSendImage 
-                        ? "text-muted-foreground hover:text-primary hover:border-primary/50" 
-                        : "text-destructive/60 hover:text-destructive"
-                    }`}
-                  >
-                    {isUploadingImage || isCompressingPreview ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <ImagePlus className="w-5 h-5" />
-                    )}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">
-                  {canSendImage 
-                    ? `${imagesRemaining} fotos restantes`
-                    : "Límite de fotos alcanzado"
-                  }
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+          {/* Image button removed - photos disabled in private chats for privacy */}
 
           {/* Voice record button */}
           <VoiceRecordButton

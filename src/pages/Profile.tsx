@@ -437,9 +437,9 @@ const Profile = () => {
       if (prev.includes(interest)) {
         return prev.filter(i => i !== interest);
       }
-      // Max 7 interests
-      if (prev.length >= 7) {
-        toast.error("Máximo 7 intereses");
+      // Max 10 interests
+      if (prev.length >= 10) {
+        toast.error("Máximo 10 intereses");
         return prev;
       }
       return [...prev, interest];

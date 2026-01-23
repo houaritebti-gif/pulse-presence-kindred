@@ -20,6 +20,7 @@ export interface SparkChat {
     name: string | null;
     avatar_url: string | null;
     vibe: string | null;
+    main_photo_url?: string | null; // First photo from gallery
   };
 }
 

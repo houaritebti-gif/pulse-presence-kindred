@@ -25,7 +25,7 @@ const STEPS = [
   { id: 3, title: "¿Cuándo naciste?", subtitle: "Solo mostraremos tu edad" },
   { id: 4, title: "¿Cómo te identificas?", subtitle: "Tu género" },
   { id: 5, title: "¿Con quién conectas?", subtitle: "Selección múltiple" },
-  { id: 6, title: "Tus intereses", subtitle: "Elige de 3 a 7" },
+  { id: 6, title: "Tus intereses", subtitle: "Elige de 3 a 10" },
   { id: 7, title: "Elige tu vibra", subtitle: "¿Cómo te sientes hoy?" },
   { id: 8, title: "Tus tribus", subtitle: "¿Con quién vibras?" },
   { id: 9, title: "Tu música", subtitle: "Hasta 5 estilos" },
@@ -255,8 +255,8 @@ const Onboarding = () => {
       if (prev.includes(interest)) {
         return prev.filter(i => i !== interest);
       }
-      if (prev.length >= 7) {
-        toast.error("Máximo 7 intereses");
+      if (prev.length >= 10) {
+        toast.error("Máximo 10 intereses");
         return prev;
       }
       return [...prev, interest];
@@ -270,7 +270,7 @@ const Onboarding = () => {
       case 3: return isValidAge; // Must be 18+
       case 4: return selectedGender !== null;
       case 5: return selectedGenderPreferences.length > 0;
-      case 6: return selectedInterests.length >= 3 && selectedInterests.length <= 7;
+      case 6: return selectedInterests.length >= 3 && selectedInterests.length <= 10;
       case 7: return selectedVibe !== null;
       case 8: return true; // Tribes are optional
       case 9: return true; // Music is optional
