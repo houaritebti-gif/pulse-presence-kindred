@@ -517,6 +517,12 @@ const Profile = () => {
   const handleContinue = async () => {
     if (!profile) return;
 
+    // Check mandatory photo
+    if (!photos || photos.length === 0) {
+      toast.error("Debes tener al menos una foto de perfil");
+      return;
+    }
+
     // Check minimum age (18 years)
     if (birthdate && !birthdate.includes("0000") && !birthdate.includes("00-00")) {
       const age = calculateAge(birthdate);
