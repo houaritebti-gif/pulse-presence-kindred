@@ -59,20 +59,20 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
       <div className="relative">
         {s.glow && (
           <motion.div 
-            className="absolute inset-0 bg-[#E53935]/40 blur-xl rounded-full scale-150"
+            className="absolute inset-0 bg-kiki-red-warm/40 blur-xl rounded-full scale-150"
             animate={animate ? { opacity: [0.4, 0.7, 0.4] } : undefined}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           />
         )}
         <Heart 
-          className={`relative ${s.heart} text-[#E53935] fill-[#E53935] drop-shadow-[0_0_15px_rgba(229,57,53,0.5)]`} 
+          className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm drop-shadow-[0_0_15px_hsl(var(--kiki-red-warm)/0.5)]`} 
         />
       </div>
     </motion.div>
   ) : (
     <span className={`absolute ${s.heartPos}`}>
       <Heart 
-        className={`${s.heart} text-[#E53935] fill-[#E53935] drop-shadow-[0_0_8px_rgba(229,57,53,0.4)] ${animate ? "animate-pulse-soft" : ""}`} 
+        className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm drop-shadow-[0_0_8px_hsl(var(--kiki-red-warm)/0.4)] ${animate ? "animate-pulse-soft" : ""}`} 
       />
     </span>
   );

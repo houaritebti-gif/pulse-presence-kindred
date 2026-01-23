@@ -75,7 +75,9 @@ export default {
         },
         kiki: {
           red: "hsl(var(--kiki-red))",
+          "red-warm": "hsl(var(--kiki-red-warm))",
           pink: "hsl(var(--kiki-pink))",
+          "pink-bubble": "hsl(var(--kiki-pink-bubble))",
           "pink-soft": "hsl(var(--kiki-pink-soft))",
           black: "hsl(var(--kiki-black))",
           white: "hsl(var(--kiki-white))",
