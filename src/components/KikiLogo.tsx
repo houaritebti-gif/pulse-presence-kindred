@@ -78,7 +78,7 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
     </span>
   );
   
-  const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
+  const textColorClass = variant === "dark" ? "text-black" : "text-foreground";
   
   return (
     <span 
