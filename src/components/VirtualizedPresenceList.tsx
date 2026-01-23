@@ -112,6 +112,7 @@ const Row = ({
           compatibility={getCompatibility(presence)}
           compatibilityBreakdown={getCompatibilityBreakdown(presence)}
           hasVisibilityBoost={presence.hasVisibilityBoost}
+          mainPhotoUrl={profileId ? photosMap?.[profileId]?.[0]?.photo_url : null}
         />
       )}
     </div>
@@ -269,6 +270,7 @@ export const VirtualizedPresenceList = memo(({
                         compatibility={getCompatibility(presence)}
                         compatibilityBreakdown={getCompatibilityBreakdown(presence)}
                         hasVisibilityBoost={presence.hasVisibilityBoost}
+                        mainPhotoUrl={profileId ? photosMap?.[profileId]?.[0]?.photo_url : null}
                       />
                     )}
                   </div>
@@ -350,6 +352,7 @@ export const VirtualizedPresenceList = memo(({
                     compatibility={getCompatibility(presence)}
                     compatibilityBreakdown={getCompatibilityBreakdown(presence)}
                     hasVisibilityBoost={presence.hasVisibilityBoost}
+                    mainPhotoUrl={profileId ? photosMap?.[profileId]?.[0]?.photo_url : null}
                   />
                 )}
               </div>

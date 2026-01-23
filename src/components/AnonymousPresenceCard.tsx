@@ -68,6 +68,7 @@ interface AnonymousPresenceCardProps {
   compatibility?: number;
   compatibilityBreakdown?: CompatibilityBreakdown;
   hasVisibilityBoost?: boolean;
+  mainPhotoUrl?: string | null;
 }
 
 // Helper to get gender label from value
@@ -123,7 +124,7 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealti
   }
 };
 
-const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, canSeeRealtimePresence = true, compatibility = 0, compatibilityBreakdown, hasVisibilityBoost = false }: AnonymousPresenceCardProps) => {
+const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, canSeeRealtimePresence = true, compatibility = 0, compatibilityBreakdown, hasVisibilityBoost = false, mainPhotoUrl }: AnonymousPresenceCardProps) => {
   const { data: myProfile } = useProfile();
   const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
@@ -273,10 +274,10 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           {/* Subtle overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent" />
           
-          {/* Profile avatar - clear, not blurred */}
+          {/* Profile avatar - clear, not blurred - prioritize gallery photo */}
           <div className="relative z-10">
             <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-background/50 shadow-lg">
-              <AvatarImage src={presence.profile?.avatar_url || undefined} />
+              <AvatarImage src={mainPhotoUrl || presence.profile?.avatar_url || undefined} />
               <AvatarFallback className="text-xl sm:text-2xl bg-secondary text-secondary-foreground">
                 ?
               </AvatarFallback>
