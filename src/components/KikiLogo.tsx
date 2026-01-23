@@ -84,11 +84,35 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
     ? "2px 2px 8px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)" 
     : "2px 2px 10px rgba(0, 0, 0, 0.25), 0 6px 20px rgba(0, 0, 0, 0.15)";
   
+  // Shimmer animation only for larger sizes when animate is true
+  const showShimmer = animate && (size === "hero" || size === "xl" || size === "lg");
+  
   return (
     <span 
-      className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className}`}
+      className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className} relative overflow-visible`}
       style={{ fontFamily: 'Arial Black, Arial, sans-serif', textShadow }}
     >
+      {/* Shimmer overlay */}
+      {showShimmer && (
+        <span 
+          className="absolute inset-0 overflow-hidden pointer-events-none"
+          style={{ 
+            maskImage: 'linear-gradient(to right, transparent, black, transparent)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black, transparent)'
+          }}
+        >
+          <span 
+            className="absolute inset-0 animate-shimmer"
+            style={{
+              background: variant === "dark"
+                ? 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)'
+                : 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)',
+              width: '200%',
+            }}
+          />
+        </span>
+      )}
+      
       <span className={s.text}>K</span>
       <span className={s.text}>I</span>
       <span className={s.text}>K</span>
