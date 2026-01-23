@@ -103,25 +103,65 @@ const Landing = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
-          <Button
-            onClick={() => navigate("/auth?mode=signup")}
-            className="group w-full h-14 text-base font-semibold bg-kiki-black text-white hover:bg-kiki-black/90 rounded-xl shadow-lg shadow-kiki-black/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
-          >
-            <span>ÚNETE AHORA</span>
-            <motion.span
-              animate={{ 
-                scale: [1, 1.2, 1],
-                rotate: [0, 10, -10, 0]
+          {/* Button with border shimmer effect */}
+          <div className="relative w-full group">
+            {/* Animated border glow */}
+            <motion.div 
+              className="absolute -inset-[2px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              style={{
+                background: 'linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)',
+                backgroundSize: '200% 100%'
               }}
-              transition={{ 
+              animate={{
+                backgroundPosition: ['200% 0', '-200% 0']
+              }}
+              transition={{
                 duration: 2,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "linear"
               }}
+            />
+            
+            {/* Shimmer sweep overlay */}
+            <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+              <motion.div 
+                className="absolute inset-0"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
+                  width: '50%'
+                }}
+                animate={{
+                  x: ['-100%', '300%']
+                }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  repeatDelay: 1
+                }}
+              />
+            </div>
+            
+            <Button
+              onClick={() => navigate("/auth?mode=signup")}
+              className="relative w-full h-14 text-base font-semibold bg-kiki-black text-white hover:bg-kiki-black/90 rounded-xl shadow-lg shadow-kiki-black/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
             >
-              <Sparkles className="w-5 h-5" />
-            </motion.span>
-          </Button>
+              <span>ÚNETE AHORA</span>
+              <motion.span
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 10, -10, 0]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                <Sparkles className="w-5 h-5" />
+              </motion.span>
+            </Button>
+          </div>
           
           <motion.button
             onClick={() => navigate("/auth?mode=login")}
