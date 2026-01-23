@@ -18,13 +18,30 @@ const Landing = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        {/* Logo KIKI */}
+        {/* Logo KIKI - Dramatic entrance animation */}
         <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 200 }}
+          initial={{ opacity: 0, scale: 0.3, y: -50 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ 
+            duration: 0.9, 
+            delay: 0.1,
+            type: "spring", 
+            stiffness: 120,
+            damping: 12
+          }}
         >
-          <KikiLogo size="hero" variant="dark" />
+          <motion.div
+            animate={{ 
+              scale: [1, 1.02, 1],
+            }}
+            transition={{ 
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <KikiLogo size="hero" variant="dark" />
+          </motion.div>
         </motion.div>
         
         {/* Tagline */}
