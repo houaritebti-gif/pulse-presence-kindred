@@ -8,110 +8,51 @@ interface KikiLogoProps {
   variant?: "default" | "dark"; // dark = black text for light backgrounds
 }
 
-const sizeConfig = {
+const sizeClasses = {
   sm: {
-    kWidth: 14,
-    kHeight: 18,
-    iWidth: 4,
-    iHeight: 18,
-    gap: 2,
+    text: "text-lg",
     heart: "w-2.5 h-2.5",
-    heartOffset: { top: -4, left: -2 },
+    heartPos: "-top-1 -left-1",
+    marginLeft: "-ml-0.5",
     glow: false,
   },
   md: {
-    kWidth: 20,
-    kHeight: 26,
-    iWidth: 6,
-    iHeight: 26,
-    gap: 3,
-    heart: "w-3.5 h-3.5",
-    heartOffset: { top: -6, left: -3 },
+    text: "text-xl sm:text-2xl",
+    heart: "w-3 h-3 sm:w-3.5 sm:h-3.5",
+    heartPos: "-top-1.5 -left-1.5 sm:-top-2 sm:-left-2",
+    marginLeft: "-ml-0.5",
     glow: false,
   },
   lg: {
-    kWidth: 28,
-    kHeight: 36,
-    iWidth: 8,
-    iHeight: 36,
-    gap: 4,
-    heart: "w-5 h-5",
-    heartOffset: { top: -8, left: -4 },
+    text: "text-2xl sm:text-3xl",
+    heart: "w-4 h-4 sm:w-5 sm:h-5",
+    heartPos: "-top-2 -left-2 sm:-top-2.5 sm:-left-2.5",
+    marginLeft: "-ml-1",
     glow: false,
   },
   xl: {
-    kWidth: 40,
-    kHeight: 52,
-    iWidth: 12,
-    iHeight: 52,
-    gap: 6,
-    heart: "w-6 h-6",
-    heartOffset: { top: -12, left: -5 },
+    text: "text-4xl sm:text-5xl",
+    heart: "w-5 h-5 sm:w-6 sm:h-6",
+    heartPos: "-top-3 -left-2.5 sm:-top-4 sm:-left-3",
+    marginLeft: "-ml-1",
     glow: true,
   },
   hero: {
-    kWidth: 56,
-    kHeight: 72,
-    iWidth: 16,
-    iHeight: 72,
-    gap: 8,
-    heart: "w-8 h-8",
-    heartOffset: { top: -16, left: -6 },
+    text: "text-6xl md:text-7xl lg:text-8xl",
+    heart: "w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10",
+    heartPos: "-top-4 md:-top-6 lg:-top-7 -left-3 md:-left-4 lg:-left-5",
+    marginLeft: "-ml-1 md:-ml-1.5",
     glow: true,
   },
 };
 
-// Symmetric K shape - bold strokes meeting at center
-const KShape = ({ width, height, fill }: { width: number; height: number; fill: string }) => {
-  const stemWidth = width * 0.38;
-  const centerY = height / 2;
-  const armWidth = height * 0.28; // Thicker arms
-  
-  return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none">
-      {/* Vertical stem */}
-      <rect x="0" y="0" width={stemWidth} height={height} fill={fill} />
-      {/* Upper diagonal arm - thick and prominent */}
-      <polygon 
-        points={`
-          ${stemWidth * 0.7},${centerY}
-          ${stemWidth},${centerY - armWidth * 0.5}
-          ${width},0
-          ${width},${armWidth}
-        `}
-        fill={fill}
-      />
-      {/* Lower diagonal arm - thick and prominent */}
-      <polygon 
-        points={`
-          ${stemWidth * 0.7},${centerY}
-          ${stemWidth},${centerY + armWidth * 0.5}
-          ${width},${height}
-          ${width},${height - armWidth}
-        `}
-        fill={fill}
-      />
-    </svg>
-  );
-};
-
-// Simple I shape
-const IShape = ({ width, height, fill }: { width: number; height: number; fill: string }) => (
-  <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} fill="none">
-    <rect x="0" y="0" width={width} height={height} fill={fill} />
-  </svg>
-);
-
 export const KikiLogo = ({ size = "md", animate = true, className = "", variant = "default" }: KikiLogoProps) => {
-  const s = sizeConfig[size];
-  const isHero = size === "hero" || size === "xl";
-  
-  const fillColor = variant === "dark" ? "hsl(var(--kiki-black))" : "currentColor";
+  const s = sizeClasses[size];
+  const isHero = size === "hero";
   
   const heartElement = isHero ? (
     <motion.div 
-      className="absolute"
-      style={{ top: s.heartOffset.top, left: s.heartOffset.left }}
+      className={`absolute ${s.heartPos}`}
       animate={animate ? { scale: [1, 1.15, 1] } : undefined}
       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
     >
@@ -129,36 +70,57 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
       </div>
     </motion.div>
   ) : (
-    <div 
-      className="absolute"
-      style={{ top: s.heartOffset.top, left: s.heartOffset.left }}
-    >
+    <span className={`absolute ${s.heartPos}`}>
       <Heart 
         className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm drop-shadow-[0_0_8px_hsl(var(--kiki-red-warm)/0.4)] ${animate ? "animate-pulse-soft" : ""}`} 
       />
-    </div>
+    </span>
   );
   
   const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
   
   // Subtle shadow for visual depth
-  const dropShadow = variant === "dark" 
-    ? "drop-shadow-[2px_2px_8px_rgba(0,0,0,0.12)]" 
-    : "drop-shadow-[2px_2px_10px_rgba(0,0,0,0.25)]";
+  const textShadow = variant === "dark" 
+    ? "2px 2px 8px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)" 
+    : "2px 2px 10px rgba(0, 0, 0, 0.25), 0 6px 20px rgba(0, 0, 0, 0.15)";
+  
+  // Shimmer animation only for larger sizes when animate is true
+  const showShimmer = animate && (size === "hero" || size === "xl" || size === "lg");
   
   return (
-    <div 
-      className={`inline-flex items-center ${textColorClass} ${dropShadow} ${className}`}
-      style={{ gap: s.gap }}
+    <span 
+      className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className} relative overflow-visible`}
+      style={{ fontFamily: 'Arial Black, Arial, sans-serif', textShadow }}
     >
-      <KShape width={s.kWidth} height={s.kHeight} fill={fillColor} />
-      <IShape width={s.iWidth} height={s.iHeight} fill={fillColor} />
-      <KShape width={s.kWidth} height={s.kHeight} fill={fillColor} />
-      <div className="relative">
+      {/* Shimmer overlay */}
+      {showShimmer && (
+        <span 
+          className="absolute inset-0 overflow-hidden pointer-events-none"
+          style={{ 
+            maskImage: 'linear-gradient(to right, transparent, black, transparent)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black, transparent)'
+          }}
+        >
+          <span 
+            className="absolute inset-0 animate-shimmer"
+            style={{
+              background: variant === "dark"
+                ? 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)'
+                : 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)',
+              width: '200%',
+            }}
+          />
+        </span>
+      )}
+      
+      <span className={s.text}>K</span>
+      <span className={s.text}>I</span>
+      <span className={s.text}>K</span>
+      <span className={`relative ${s.marginLeft}`}>
         {heartElement}
-        <IShape width={s.iWidth} height={s.iHeight} fill={fillColor} />
-      </div>
-    </div>
+        <span className={s.text}>I</span>
+      </span>
+    </span>
   );
 };
 
