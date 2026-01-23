@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star, CloudOff, Camera } from "lucide-react";
+import { useScreenshotProtection } from "@/hooks/useScreenshotProtection";
 import { KikiLogo } from "@/components/KikiLogo";
 import ErrorState from "@/components/ErrorState";
 import PublicProfileSkeleton from "@/components/PublicProfileSkeleton";
@@ -64,6 +65,9 @@ const PublicProfile = () => {
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
   const [bioExpanded, setBioExpanded] = useState(false);
+  
+  // Screenshot protection - prevent captures of profile pages
+  useScreenshotProtection(true);
   
   // Spark energy for profile exploration
   const { earnEnergy, canDoAction } = useSparkEnergy();
