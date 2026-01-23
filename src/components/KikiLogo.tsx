@@ -1,6 +1,5 @@
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
-import "@fontsource/poppins/900.css"; // Black weight for logo
 
 interface KikiLogoProps {
   size?: "sm" | "md" | "lg" | "xl" | "hero";
@@ -78,12 +77,12 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
     </span>
   );
   
-  const textColorClass = variant === "dark" ? "text-black" : "text-foreground";
+  const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
   
   return (
     <span 
-      className={`inline-flex items-baseline leading-none tracking-tighter font-black ${textColorClass} ${className}`}
-      style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 900 }}
+      className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className}`}
+      style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
     >
       <span className={s.text}>K</span>
       <span className={s.text}>I</span>
