@@ -79,10 +79,15 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   
   const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
   
+  // Subtle shadow for visual depth
+  const textShadow = variant === "dark" 
+    ? "2px 2px 8px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)" 
+    : "2px 2px 10px rgba(0, 0, 0, 0.25), 0 6px 20px rgba(0, 0, 0, 0.15)";
+  
   return (
     <span 
       className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className}`}
-      style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+      style={{ fontFamily: 'Arial Black, Arial, sans-serif', textShadow }}
     >
       <span className={s.text}>K</span>
       <span className={s.text}>I</span>
