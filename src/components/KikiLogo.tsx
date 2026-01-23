@@ -42,13 +42,13 @@ const sizeClasses = {
 
 // Custom K letter SVG - geometric style where diagonal arms meet at same point
 const KLetter = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 32" fill="currentColor" className={className}>
-    {/* Vertical bar */}
-    <rect x="0" y="0" width="6" height="32" />
-    {/* Upper diagonal arm */}
-    <polygon points="6,16 24,0 24,7 6,20" />
-    {/* Lower diagonal arm */}
-    <polygon points="6,16 24,32 24,25 6,12" />
+  <svg viewBox="0 0 28 32" fill="currentColor" className={className}>
+    {/* Vertical bar - thinner */}
+    <rect x="0" y="0" width="5" height="32" />
+    {/* Upper diagonal arm - thinner, sharper angle */}
+    <polygon points="5,16 28,0 28,5 5,18" />
+    {/* Lower diagonal arm - thinner, sharper angle */}
+    <polygon points="5,16 28,32 28,27 5,14" />
   </svg>
 );
 
