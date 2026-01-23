@@ -150,16 +150,19 @@ const Presence = () => {
 
   useRetrySuccessToast({ isError, isLoading, isFetching, data: presenceList });
 
-  // Get profile IDs of accepted connections (can see full profile)
+  // All profiles are now "connected" - everyone can see full profiles
+  // The old logic only showed profiles as connected if there was an accepted connection request
+  // Now we show all profiles with their full info to encourage discovery
   const connectedProfileIds = useMemo(() => {
     const connected = new Set<string>();
-    sentRequests?.forEach(req => {
-      if (req.status === "accepted") {
-        connected.add(req.to_profile_id);
+    // Add all visible profiles to the connected set
+    presenceList?.forEach(presence => {
+      if (presence.profile?.id) {
+        connected.add(presence.profile.id);
       }
     });
     return connected;
-  }, [sentRequests]);
+  }, [presenceList]);
 
   // My tribes, music, looking_for and interests for compatibility calculation
   const myTribeNames = useMemo(() => myTribes?.map(t => t.tribe) || [], [myTribes]);

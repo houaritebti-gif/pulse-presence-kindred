@@ -117,97 +117,153 @@ export const LOOKING_FOR_OPTIONS = [
   { value: "Lo que surja", emoji: "🌊" },
 ] as const;
 
-// Cultural interests - expanded to ~50 tags
-export const CULTURAL_INTERESTS = [
-  // Música y eventos
-  { value: "Conciertos en directo", emoji: "🎤" },
-  { value: "Cultura club", emoji: "🌃" },
-  { value: "Vinilos", emoji: "💿" },
-  { value: "Festivales", emoji: "🎪" },
-  { value: "DJ / producción musical", emoji: "🎛️" },
-  { value: "Karaoke", emoji: "🎙️" },
-  
-  // Arte y creatividad
-  { value: "Arte", emoji: "🎨" },
-  { value: "Fotografía", emoji: "📷" },
-  { value: "Diseño", emoji: "✏️" },
-  { value: "Arquitectura", emoji: "🏛️" },
-  { value: "Moda", emoji: "👗" },
-  { value: "Estética underground", emoji: "🖤" },
-  { value: "Tattoos", emoji: "🖋️" },
-  { value: "Graffiti / Street art", emoji: "🎭" },
-  { value: "DIY / crafts", emoji: "✂️" },
-  { value: "Cerámica", emoji: "🏺" },
-  
-  // Cine y series
-  { value: "Cine independiente", emoji: "🎬" },
-  { value: "Cine de terror y fantástico", emoji: "👻" },
-  { value: "Documentales", emoji: "🎞️" },
-  { value: "Series", emoji: "📺" },
-  { value: "Cine clásico", emoji: "🎥" },
-  
-  // Animación y cultura pop
-  { value: "Anime", emoji: "🎌" },
-  { value: "Manga", emoji: "📖" },
-  { value: "Videojuegos", emoji: "🎮" },
-  { value: "Cosplay", emoji: "🦸" },
-  { value: "K-pop / K-culture", emoji: "💜" },
-  
-  // Lectura y aprendizaje
-  { value: "Libros", emoji: "📚" },
-  { value: "Cómics / novela gráfica", emoji: "💬" },
-  { value: "Poesía", emoji: "🪶" },
-  { value: "Podcasts", emoji: "🎧" },
-  { value: "Historia", emoji: "🏛️" },
-  { value: "Filosofía", emoji: "💭" },
-  { value: "Idiomas", emoji: "🗣️" },
-  
-  // Social y vida nocturna
-  { value: "Salir de noche", emoji: "🌙" },
-  { value: "Bares con personalidad", emoji: "🍸" },
-  { value: "Cafés especiales", emoji: "☕" },
-  { value: "Brunch", emoji: "🥐" },
-  { value: "Vino / catas", emoji: "🍷" },
-  { value: "Cócteles", emoji: "🍹" },
-  { value: "Foodie / gastronomía", emoji: "🍴" },
-  { value: "Cocinar", emoji: "👨‍🍳" },
-  
-  // Viajes y experiencias
-  { value: "Viajes", emoji: "✈️" },
-  { value: "Vida urbana", emoji: "🏙️" },
-  { value: "Escapadas rurales", emoji: "🏕️" },
-  { value: "Roadtrips", emoji: "🚗" },
-  { value: "Mochilero", emoji: "🎒" },
-  
-  // Bienestar
-  { value: "Cuidado interior", emoji: "🧘" },
-  { value: "Yoga / meditación", emoji: "🪷" },
-  { value: "Astrología / tarot", emoji: "🔮" },
-  { value: "Plantas", emoji: "🌱" },
-  { value: "Mascotas", emoji: "🐾" },
-  
-  // Deporte y actividades
-  { value: "Deportes", emoji: "⚽" },
-  { value: "Gym / fitness", emoji: "💪" },
-  { value: "Correr", emoji: "🏃" },
-  { value: "Bicicleta", emoji: "🚴" },
-  { value: "Natación", emoji: "🏊" },
-  { value: "Senderismo", emoji: "🥾" },
-  { value: "Skate / roller", emoji: "🛹" },
-  { value: "Baile", emoji: "💃" },
-  
-  // Personalidad
-  { value: "Humor irónico", emoji: "😏" },
-  { value: "Memes", emoji: "🤣" },
-  { value: "Activismo", emoji: "✊" },
-  { value: "Sostenibilidad", emoji: "♻️" },
-  { value: "Tech / startups", emoji: "💻" },
-  { value: "Emprendimiento", emoji: "🚀" },
-  { value: "Inversiones / crypto", emoji: "📈" },
-  { value: "420 friendly", emoji: "🍃" },
-] as const;
+// Interest type definition
+export interface CulturalInterest {
+  value: string;
+  emoji: string;
+}
 
-export type CulturalInterestType = typeof CULTURAL_INTERESTS[number]["value"];
+export interface CulturalInterestCategory {
+  name: string;
+  emoji: string;
+  interests: CulturalInterest[];
+}
+
+// Cultural interests organized by categories
+export const CULTURAL_INTERESTS_CATEGORIES: CulturalInterestCategory[] = [
+  {
+    name: "Música y eventos",
+    emoji: "🎵",
+    interests: [
+      { value: "Conciertos en directo", emoji: "🎤" },
+      { value: "Cultura club", emoji: "🌃" },
+      { value: "Vinilos", emoji: "💿" },
+      { value: "Festivales", emoji: "🎪" },
+      { value: "DJ / producción musical", emoji: "🎛️" },
+      { value: "Karaoke", emoji: "🎙️" },
+    ],
+  },
+  {
+    name: "Arte y creatividad",
+    emoji: "🎨",
+    interests: [
+      { value: "Arte", emoji: "🎨" },
+      { value: "Fotografía", emoji: "📷" },
+      { value: "Diseño", emoji: "✏️" },
+      { value: "Arquitectura", emoji: "🏛️" },
+      { value: "Moda", emoji: "👗" },
+      { value: "Estética underground", emoji: "🖤" },
+      { value: "Tattoos", emoji: "🖋️" },
+      { value: "Graffiti / Street art", emoji: "🎭" },
+      { value: "DIY / crafts", emoji: "✂️" },
+      { value: "Cerámica", emoji: "🏺" },
+    ],
+  },
+  {
+    name: "Cine y series",
+    emoji: "🎬",
+    interests: [
+      { value: "Cine independiente", emoji: "🎬" },
+      { value: "Cine de terror y fantástico", emoji: "👻" },
+      { value: "Documentales", emoji: "🎞️" },
+      { value: "Series", emoji: "📺" },
+      { value: "Cine clásico", emoji: "🎥" },
+    ],
+  },
+  {
+    name: "Cultura pop y gaming",
+    emoji: "🎮",
+    interests: [
+      { value: "Anime", emoji: "🎌" },
+      { value: "Manga", emoji: "📖" },
+      { value: "Videojuegos", emoji: "🎮" },
+      { value: "Cosplay", emoji: "🦸" },
+      { value: "K-pop / K-culture", emoji: "💜" },
+    ],
+  },
+  {
+    name: "Lectura y aprendizaje",
+    emoji: "📚",
+    interests: [
+      { value: "Libros", emoji: "📚" },
+      { value: "Cómics / novela gráfica", emoji: "💬" },
+      { value: "Poesía", emoji: "🪶" },
+      { value: "Podcasts", emoji: "🎧" },
+      { value: "Historia", emoji: "🏛️" },
+      { value: "Filosofía", emoji: "💭" },
+      { value: "Idiomas", emoji: "🗣️" },
+    ],
+  },
+  {
+    name: "Social y gastronomía",
+    emoji: "🍸",
+    interests: [
+      { value: "Salir de noche", emoji: "🌙" },
+      { value: "Bares con personalidad", emoji: "🍸" },
+      { value: "Cafés especiales", emoji: "☕" },
+      { value: "Brunch", emoji: "🥐" },
+      { value: "Vino / catas", emoji: "🍷" },
+      { value: "Cócteles", emoji: "🍹" },
+      { value: "Foodie / gastronomía", emoji: "🍴" },
+      { value: "Cocinar", emoji: "👨‍🍳" },
+    ],
+  },
+  {
+    name: "Viajes y experiencias",
+    emoji: "✈️",
+    interests: [
+      { value: "Viajes", emoji: "✈️" },
+      { value: "Vida urbana", emoji: "🏙️" },
+      { value: "Escapadas rurales", emoji: "🏕️" },
+      { value: "Roadtrips", emoji: "🚗" },
+      { value: "Mochilero", emoji: "🎒" },
+    ],
+  },
+  {
+    name: "Bienestar",
+    emoji: "🧘",
+    interests: [
+      { value: "Cuidado interior", emoji: "🧘" },
+      { value: "Yoga / meditación", emoji: "🪷" },
+      { value: "Astrología / tarot", emoji: "🔮" },
+      { value: "Plantas", emoji: "🌱" },
+      { value: "Mascotas", emoji: "🐾" },
+    ],
+  },
+  {
+    name: "Deporte y actividades",
+    emoji: "⚽",
+    interests: [
+      { value: "Deportes", emoji: "⚽" },
+      { value: "Gym / fitness", emoji: "💪" },
+      { value: "Correr", emoji: "🏃" },
+      { value: "Bicicleta", emoji: "🚴" },
+      { value: "Natación", emoji: "🏊" },
+      { value: "Senderismo", emoji: "🥾" },
+      { value: "Skate / roller", emoji: "🛹" },
+      { value: "Baile", emoji: "💃" },
+    ],
+  },
+  {
+    name: "Personalidad",
+    emoji: "✨",
+    interests: [
+      { value: "Humor irónico", emoji: "😏" },
+      { value: "Memes", emoji: "🤣" },
+      { value: "Activismo", emoji: "✊" },
+      { value: "Sostenibilidad", emoji: "♻️" },
+      { value: "Tech / startups", emoji: "💻" },
+      { value: "Emprendimiento", emoji: "🚀" },
+      { value: "Inversiones / crypto", emoji: "📈" },
+      { value: "420 friendly", emoji: "🍃" },
+    ],
+  },
+];
+
+// Flatten all interests for backward compatibility
+export const CULTURAL_INTERESTS: CulturalInterest[] = CULTURAL_INTERESTS_CATEGORIES.flatMap(cat => cat.interests);
+
+export type CulturalInterestType = string;
 
 export type MusicStyleType = typeof ALL_MUSIC_STYLES[number];
 export type VibeType = typeof VIBES[number]["value"];

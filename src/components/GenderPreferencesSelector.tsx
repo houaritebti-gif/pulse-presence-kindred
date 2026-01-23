@@ -16,18 +16,37 @@ interface GenderPreferencesSelectorProps {
   className?: string;
 }
 
+// Special value for "all" option - we'll handle this separately
+const ALL_GENDERS_VALUE = "all" as const;
+
 // Simplified options for "who I want to meet"
-const PREFERENCE_OPTIONS: { value: GenderType; label: string; emoji: string }[] = [
+const PREFERENCE_OPTIONS: { value: GenderType | typeof ALL_GENDERS_VALUE; label: string; emoji: string }[] = [
   { value: "woman", label: "Mujeres", emoji: "👩" },
   { value: "man", label: "Hombres", emoji: "👨" },
   { value: "non_binary", label: "No binarios", emoji: "🌟" },
+  { value: ALL_GENDERS_VALUE, label: "Todos", emoji: "🌈" },
 ];
 
 export const GenderPreferencesSelector = ({ values, onChange, className }: GenderPreferencesSelectorProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const toggleValue = (genderValue: GenderType) => {
+  const toggleValue = (genderValue: GenderType | typeof ALL_GENDERS_VALUE) => {
+    // Handle "all" option - select all main genders
+    if (genderValue === ALL_GENDERS_VALUE) {
+      const mainGenders: GenderType[] = ["woman", "man", "non_binary"];
+      const hasAllMain = mainGenders.every(g => values.includes(g));
+      if (hasAllMain) {
+        // Deselect all main genders
+        onChange(values.filter(v => !mainGenders.includes(v)));
+      } else {
+        // Select all main genders
+        const newValues = [...new Set([...values, ...mainGenders])];
+        onChange(newValues);
+      }
+      return;
+    }
+    
     if (values.includes(genderValue)) {
       onChange(values.filter(v => v !== genderValue));
     } else {
@@ -36,6 +55,10 @@ export const GenderPreferencesSelector = ({ values, onChange, className }: Gende
   };
 
   const otherSelected = values.filter(v => !PREFERENCE_OPTIONS.some(p => p.value === v));
+  
+  // Check if all main genders are selected
+  const mainGenders: GenderType[] = ["woman", "man", "non_binary"];
+  const hasAllMainSelected = mainGenders.every(g => values.includes(g));
   
   const filteredAll = ALL_GENDERS.filter(g => 
     g.label.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -52,30 +75,37 @@ export const GenderPreferencesSelector = ({ values, onChange, className }: Gende
       </div>
       
       {/* Main options as styled toggle buttons */}
-      <div className="grid grid-cols-3 gap-3">
-        {PREFERENCE_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => toggleValue(option.value)}
-            className={cn(
-              "relative py-4 px-3 rounded-2xl font-body text-sm font-semibold transition-all duration-300",
-              "border-2 shadow-sm",
-              "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-              values.includes(option.value)
-                ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/25 scale-[1.02]"
-                : "bg-card text-card-foreground border-border hover:border-primary/50 hover:bg-primary/5 hover:shadow-md dark:border-border/60"
-            )}
-          >
-            {values.includes(option.value) && (
-              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                <Check className="w-3 h-3" />
-              </div>
-            )}
-            <span className="text-lg mb-1 block">{option.emoji}</span>
-            {option.label}
-          </button>
-        ))}
+      <div className="grid grid-cols-2 gap-3">
+        {PREFERENCE_OPTIONS.map((option) => {
+          // For "all" option, check if all main genders are selected
+          const isSelected = option.value === ALL_GENDERS_VALUE 
+            ? hasAllMainSelected 
+            : values.includes(option.value);
+          
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => toggleValue(option.value)}
+              className={cn(
+                "relative py-4 px-3 rounded-2xl font-body text-sm font-semibold transition-all duration-300",
+                "border-2 shadow-sm",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                isSelected
+                  ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/25 scale-[1.02]"
+                  : "bg-card text-card-foreground border-border hover:border-primary/50 hover:bg-primary/5 hover:shadow-md dark:border-border/60"
+              )}
+            >
+              {isSelected && (
+                <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                  <Check className="w-3 h-3" />
+                </div>
+              )}
+              <span className="text-lg mb-1 block">{option.emoji}</span>
+              {option.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Dropdown for other options */}
