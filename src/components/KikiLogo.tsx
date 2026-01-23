@@ -1,3 +1,4 @@
+import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface KikiLogoProps {
@@ -9,89 +10,49 @@ interface KikiLogoProps {
 
 const sizeClasses = {
   sm: {
-    height: "h-5",
-    heartSize: 10,
-    heartOffset: { x: -2, y: -4 },
+    text: "text-lg",
+    heart: "w-2.5 h-2.5",
+    heartPos: "-top-1 -left-1",
+    marginLeft: "-ml-0.5",
     glow: false,
   },
   md: {
-    height: "h-6 sm:h-7",
-    heartSize: 12,
-    heartOffset: { x: -2, y: -5 },
+    text: "text-xl sm:text-2xl",
+    heart: "w-3 h-3 sm:w-3.5 sm:h-3.5",
+    heartPos: "-top-1.5 -left-1.5 sm:-top-2 sm:-left-2",
+    marginLeft: "-ml-0.5",
     glow: false,
   },
   lg: {
-    height: "h-8 sm:h-10",
-    heartSize: 16,
-    heartOffset: { x: -3, y: -6 },
+    text: "text-2xl sm:text-3xl",
+    heart: "w-4 h-4 sm:w-5 sm:h-5",
+    heartPos: "-top-2 -left-2 sm:-top-2.5 sm:-left-2.5",
+    marginLeft: "-ml-1",
     glow: false,
   },
   xl: {
-    height: "h-12 sm:h-14",
-    heartSize: 20,
-    heartOffset: { x: -4, y: -8 },
+    text: "text-4xl sm:text-5xl",
+    heart: "w-5 h-5 sm:w-6 sm:h-6",
+    heartPos: "-top-3 -left-2.5 sm:-top-4 sm:-left-3",
+    marginLeft: "-ml-1",
     glow: true,
   },
   hero: {
-    height: "h-16 md:h-20 lg:h-24",
-    heartSize: 28,
-    heartOffset: { x: -5, y: -10 },
+    text: "text-6xl md:text-7xl lg:text-8xl",
+    heart: "w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10",
+    heartPos: "-top-4 md:-top-6 lg:-top-7 -left-3 md:-left-4 lg:-left-5",
+    marginLeft: "-ml-1 md:-ml-1.5",
     glow: true,
   },
 };
 
-// Custom K letter SVG - geometric style where diagonal arms meet at same point
-const KLetter = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 28 32" fill="currentColor" className={className}>
-    {/* Vertical bar - thinner */}
-    <rect x="0" y="0" width="5" height="32" />
-    {/* Upper diagonal arm - thinner, sharper angle */}
-    <polygon points="5,16 28,0 28,5 5,18" />
-    {/* Lower diagonal arm - thinner, sharper angle */}
-    <polygon points="5,16 28,32 28,27 5,14" />
-  </svg>
-);
-
-// I letter SVG
-const ILetter = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 8 32" fill="currentColor" className={className}>
-    <rect x="1" y="0" width="6" height="32" />
-  </svg>
-);
-
-// Heart SVG
-const HeartIcon = ({ className, size }: { className?: string; size: number }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    fill="currentColor" 
-    className={className}
-    style={{ width: size, height: size }}
-  >
-    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-  </svg>
-);
-
 export const KikiLogo = ({ size = "md", animate = true, className = "", variant = "default" }: KikiLogoProps) => {
   const s = sizeClasses[size];
-  const isHero = size === "hero" || size === "xl";
+  const isHero = size === "hero";
   
-  const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
-  
-  // Subtle shadow for visual depth
-  const filterStyle = variant === "dark" 
-    ? "drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.12))" 
-    : "drop-shadow(2px 2px 10px rgba(0, 0, 0, 0.25))";
-  
-  // Shimmer animation only for larger sizes when animate is true
-  const showShimmer = animate && (size === "hero" || size === "xl" || size === "lg");
-
   const heartElement = isHero ? (
     <motion.div 
-      className="absolute"
-      style={{ 
-        right: s.heartOffset.x, 
-        top: s.heartOffset.y 
-      }}
+      className={`absolute ${s.heartPos}`}
       animate={animate ? { scale: [1, 1.15, 1] } : undefined}
       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
     >
@@ -103,36 +64,38 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           />
         )}
-        <HeartIcon 
-          size={s.heartSize}
-          className="relative text-kiki-red-warm drop-shadow-[0_0_15px_hsl(var(--kiki-red-warm)/0.5)]" 
+        <Heart 
+          className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm drop-shadow-[0_0_15px_hsl(var(--kiki-red-warm)/0.5)]`} 
         />
       </div>
     </motion.div>
   ) : (
-    <div 
-      className="absolute"
-      style={{ 
-        right: s.heartOffset.x, 
-        top: s.heartOffset.y 
-      }}
-    >
-      <HeartIcon 
-        size={s.heartSize}
-        className={`text-kiki-red-warm drop-shadow-[0_0_8px_hsl(var(--kiki-red-warm)/0.4)] ${animate ? "animate-pulse-soft" : ""}`} 
+    <span className={`absolute ${s.heartPos}`}>
+      <Heart 
+        className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm drop-shadow-[0_0_8px_hsl(var(--kiki-red-warm)/0.4)] ${animate ? "animate-pulse-soft" : ""}`} 
       />
-    </div>
+    </span>
   );
+  
+  const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
+  
+  // Subtle shadow for visual depth
+  const textShadow = variant === "dark" 
+    ? "2px 2px 8px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)" 
+    : "2px 2px 10px rgba(0, 0, 0, 0.25), 0 6px 20px rgba(0, 0, 0, 0.15)";
+  
+  // Shimmer animation only for larger sizes when animate is true
+  const showShimmer = animate && (size === "hero" || size === "xl" || size === "lg");
   
   return (
     <span 
-      className={`inline-flex items-center ${s.height} ${textColorClass} ${className} relative`}
-      style={{ filter: filterStyle }}
+      className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className} relative overflow-visible`}
+      style={{ fontFamily: 'Arial Black, Arial, sans-serif', textShadow }}
     >
       {/* Shimmer overlay */}
       {showShimmer && (
         <span 
-          className="absolute inset-0 overflow-hidden pointer-events-none z-10"
+          className="absolute inset-0 overflow-hidden pointer-events-none"
           style={{ 
             maskImage: 'linear-gradient(to right, transparent, black, transparent)',
             WebkitMaskImage: 'linear-gradient(to right, transparent, black, transparent)'
@@ -150,16 +113,12 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
         </span>
       )}
       
-      {/* K */}
-      <KLetter className="h-full w-auto" />
-      {/* I */}
-      <ILetter className="h-full w-auto -ml-[2px]" />
-      {/* K */}
-      <KLetter className="h-full w-auto -ml-[2px]" />
-      {/* I with heart */}
-      <span className="relative h-full">
-        <ILetter className="h-full w-auto -ml-[2px]" />
+      <span className={s.text}>K</span>
+      <span className={s.text}>I</span>
+      <span className={s.text}>K</span>
+      <span className={`relative ${s.marginLeft}`}>
         {heartElement}
+        <span className={s.text}>I</span>
       </span>
     </span>
   );
