@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
 import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star, Flame } from "lucide-react";
+import { useScreenshotProtection } from "@/hooks/useScreenshotProtection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useReducedMotion, getExitAnimationConfig } from "@/hooks/useReducedMotion";
 import { motion, useMotionValue, useTransform, PanInfo, AnimatePresence } from "framer-motion";
@@ -164,6 +165,9 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const prefersReducedMotion = useReducedMotion();
+  
+  // Screenshot protection - prevent captures of profiles
+  useScreenshotProtection(true);
   
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
