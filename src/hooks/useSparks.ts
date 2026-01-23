@@ -76,6 +76,24 @@ export const useSparkChats = () => {
 
       if (error) throw error;
 
+      // Fetch main photos for all profiles involved
+      const allProfileIds = (data || []).flatMap(chat => [chat.profile_a_id, chat.profile_b_id]);
+      const uniqueProfileIds = [...new Set(allProfileIds)].filter(id => id !== profile.id);
+      
+      const { data: photosData } = await supabase
+        .from("profile_photos")
+        .select("profile_id, photo_url, display_order")
+        .in("profile_id", uniqueProfileIds)
+        .order("display_order", { ascending: true });
+
+      // Map to get first photo per profile
+      const mainPhotoMap = new Map<string, string>();
+      (photosData || []).forEach(photo => {
+        if (!mainPhotoMap.has(photo.profile_id)) {
+          mainPhotoMap.set(photo.profile_id, photo.photo_url);
+        }
+      });
+
       // Get chat IDs for fetching message counts
       const chatIds = (data || [])
         .filter(chat => {
@@ -134,9 +152,14 @@ export const useSparkChats = () => {
         .map(chat => {
           const isA = chat.profile_a_id === profile.id;
           const lastMsg = lastMessages.get(chat.id);
+          const otherProfile = isA ? chat.profile_b : chat.profile_a;
+          const mainPhotoUrl = otherProfile?.id ? mainPhotoMap.get(otherProfile.id) : null;
           return {
             ...chat,
-            other_profile: isA ? chat.profile_b : chat.profile_a,
+            other_profile: otherProfile ? {
+              ...otherProfile,
+              main_photo_url: mainPhotoUrl || null,
+            } : undefined,
             unread_count: unreadCounts.get(chat.id) || 0,
             last_message_at: lastMsg?.created_at || chat.created_at,
             last_message_content: lastMsg?.content,

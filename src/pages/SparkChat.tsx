@@ -562,7 +562,7 @@ const SparkChat = () => {
           <div className="relative">
             <SharedAvatar
               profileId={chat.other_profile?.id || chatId || ""}
-              avatarUrl={chat.other_profile?.avatar_url}
+              avatarUrl={chat.other_profile?.main_photo_url || chat.other_profile?.avatar_url}
               name={chat.other_profile?.name}
               size="md"
               ringClassName="ring-2 ring-primary/30 ring-offset-2 ring-offset-background"
