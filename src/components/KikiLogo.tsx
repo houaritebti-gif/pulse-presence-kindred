@@ -5,6 +5,7 @@ interface KikiLogoProps {
   size?: "sm" | "md" | "lg" | "xl" | "hero";
   animate?: boolean;
   className?: string;
+  variant?: "default" | "dark"; // dark = black text for light backgrounds
 }
 
 const sizeClasses = {
@@ -45,7 +46,7 @@ const sizeClasses = {
   },
 };
 
-export const KikiLogo = ({ size = "md", animate = true, className = "" }: KikiLogoProps) => {
+export const KikiLogo = ({ size = "md", animate = true, className = "", variant = "default" }: KikiLogoProps) => {
   const s = sizeClasses[size];
   const isHero = size === "hero";
   
@@ -76,9 +77,11 @@ export const KikiLogo = ({ size = "md", animate = true, className = "" }: KikiLo
     </span>
   );
   
+  const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
+  
   return (
     <span 
-      className={`inline-flex items-baseline leading-none tracking-tight font-bold text-foreground ${className}`}
+      className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className}`}
       style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
     >
       <span className={s.text}>K</span>

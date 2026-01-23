@@ -17,6 +17,28 @@ export default {
         display: ['Arial Black', 'Arial', 'sans-serif'],
         body: ['Arial', 'sans-serif'],
       },
+      fontSize: {
+        // Labels y micro-text
+        'xs-tight': ['0.6875rem', { lineHeight: '1rem', letterSpacing: '0.02em' }], // 11px
+        'label': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em' }], // 12px
+        'caption': ['0.8125rem', { lineHeight: '1.25rem' }], // 13px
+        // Subtitles
+        'subtitle-sm': ['0.9375rem', { lineHeight: '1.375rem' }], // 15px
+        'subtitle': ['1.0625rem', { lineHeight: '1.5rem' }], // 17px
+        'subtitle-lg': ['1.1875rem', { lineHeight: '1.625rem' }], // 19px
+        // Headlines
+        'headline-sm': ['1.375rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em' }], // 22px
+        'headline': ['1.625rem', { lineHeight: '2rem', letterSpacing: '-0.015em' }], // 26px
+        'headline-lg': ['2rem', { lineHeight: '2.375rem', letterSpacing: '-0.02em' }], // 32px
+        // Display
+        'display-sm': ['2.5rem', { lineHeight: '2.75rem', letterSpacing: '-0.025em' }], // 40px
+        'display': ['3rem', { lineHeight: '3.25rem', letterSpacing: '-0.03em' }], // 48px
+        'display-lg': ['3.75rem', { lineHeight: '4rem', letterSpacing: '-0.03em' }], // 60px
+      },
+      fontWeight: {
+        'medium': '500',
+        'semibold': '600',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
