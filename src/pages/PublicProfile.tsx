@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star, CloudOff } from "lucide-react";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star, CloudOff, Camera } from "lucide-react";
 import { KikiLogo } from "@/components/KikiLogo";
 import ErrorState from "@/components/ErrorState";
 import PublicProfileSkeleton from "@/components/PublicProfileSkeleton";
@@ -149,6 +149,29 @@ const PublicProfile = () => {
   }
 
   const profile = publicProfile.profile;
+  
+  // Check if profile has mandatory photo
+  const hasPhoto = (profilePhotos && profilePhotos.length > 0) || profile.avatar_url;
+  
+  if (!hasPhoto) {
+    return (
+      <main className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+        <div className="w-16 h-16 rounded-full bg-card/50 flex items-center justify-center mx-auto mb-4">
+          <Camera className="w-6 h-6 text-muted-foreground/30" />
+        </div>
+        <h2 className="font-display text-xl font-semibold text-foreground mb-2">
+          Perfil incompleto
+        </h2>
+        <p className="font-body text-muted-foreground text-center mb-6 max-w-[240px]">
+          Esta persona aún no ha subido fotos. Los perfiles sin foto no pueden visualizarse.
+        </p>
+        <Button variant="kiki-soft" onClick={() => navigate(-1)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver
+        </Button>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background flex flex-col pb-24 relative overflow-hidden">

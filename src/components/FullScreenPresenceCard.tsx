@@ -447,12 +447,21 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
       setShowProfileConfirmModal(true);
     }
   };
-
   const confirmViewProfile = () => {
-    if (presence.profile?.id) {
+    if (!presence.profile?.id) return;
+    
+    // Check if profile has a photo - mandatory requirement
+    const hasPhoto = photos.length > 0 || presence.profile?.avatar_url;
+    if (!hasPhoto) {
+      toast.error("Perfil incompleto", {
+        description: "Este perfil no tiene foto y no puede abrirse.",
+      });
       setShowProfileConfirmModal(false);
-      navigate(`/user/${presence.profile.id}`);
+      return;
     }
+    
+    setShowProfileConfirmModal(false);
+    navigate(`/user/${presence.profile.id}`);
   };
 
   // Desktop drag enhancement - show drag hint on hover
