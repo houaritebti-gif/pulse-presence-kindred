@@ -83,18 +83,47 @@ const Landing = () => {
           </motion.div>
         </motion.div>
         
-        {/* Tagline - Enhanced visual */}
-        <motion.p 
-          className="text-headline-sm md:text-headline text-kiki-black font-display tracking-tight"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          style={{ 
-            textShadow: '1px 1px 6px rgba(0, 0, 0, 0.08)'
-          }}
-        >
-          Para gente <span className="text-primary">diferente</span>, y punto.
-        </motion.p>
+        {/* Taglines - Enhanced visual */}
+        <div className="flex flex-col items-center gap-3">
+          <motion.p 
+            className="text-headline-sm md:text-headline text-kiki-black font-display tracking-tight"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            style={{ 
+              textShadow: '1px 1px 6px rgba(0, 0, 0, 0.08)'
+            }}
+          >
+            Para gente <span className="text-primary">diferente</span>, y punto.
+          </motion.p>
+          
+          {/* Secondary tagline */}
+          <motion.div
+            className="flex items-center gap-2"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.7 }}
+          >
+            <span className="h-[1px] w-6 bg-kiki-black/20" />
+            <p className="text-caption md:text-subtitle-sm text-kiki-black/60 font-medium italic">
+              aquí no hay match, hay <span className="text-primary font-semibold not-italic">chispa</span>
+            </p>
+            <motion.span
+              animate={{ 
+                scale: [1, 1.3, 1],
+                rotate: [0, 15, -15, 0]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              <Sparkles className="w-4 h-4 text-primary" />
+            </motion.span>
+            <span className="h-[1px] w-6 bg-kiki-black/20" />
+          </motion.div>
+        </div>
         
         {/* CTA Buttons */}
         <motion.div 
