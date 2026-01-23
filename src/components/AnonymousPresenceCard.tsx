@@ -282,6 +282,14 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                 ?
               </AvatarFallback>
             </Avatar>
+            {/* Debug indicator: Gallery photo vs Legacy avatar */}
+            {import.meta.env.DEV && (
+              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background flex items-center justify-center text-[8px] font-bold ${
+                mainPhotoUrl ? "bg-green-500 text-white" : presence.profile?.avatar_url ? "bg-amber-500 text-white" : "bg-muted text-muted-foreground"
+              }`} title={mainPhotoUrl ? "Gallery photo" : presence.profile?.avatar_url ? "Legacy avatar" : "No photo"}>
+                {mainPhotoUrl ? "G" : presence.profile?.avatar_url ? "A" : "?"}
+              </div>
+            )}
           </div>
 
           {/* KIKI Now boost badge */}
