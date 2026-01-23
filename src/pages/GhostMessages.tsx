@@ -100,9 +100,9 @@ const GhostMessageCard = ({
         {/* Avatar - blurred if not revealed */}
         <div className="relative flex-shrink-0">
           <div className={`w-14 h-14 rounded-full overflow-hidden ${!isRevealed ? "blur-md" : ""}`}>
-            {message.from_profile?.avatar_url ? (
+            {(message.from_profile?.main_photo_url || message.from_profile?.avatar_url) ? (
               <LazyImage 
-                src={message.from_profile.avatar_url} 
+                src={message.from_profile.main_photo_url || message.from_profile.avatar_url!} 
                 alt="Avatar"
                 className="w-full h-full object-cover"
                 placeholderClassName="w-full h-full"
