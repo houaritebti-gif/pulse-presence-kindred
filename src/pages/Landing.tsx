@@ -107,7 +107,7 @@ const Landing = () => {
           >
             <span className="h-[1px] w-6 bg-kiki-black/20" />
             <p className="text-caption md:text-subtitle-sm text-kiki-black/60 font-medium italic">
-              aquí no hay match, hay <span className="text-[#DC2626] font-semibold not-italic">chispa</span>
+              aquí no hay match, hay <span className="text-[#EF4444] font-semibold not-italic">chispa</span>
             </p>
             <motion.span
               animate={{ 
@@ -120,7 +120,7 @@ const Landing = () => {
                 ease: "easeInOut"
               }}
             >
-              <Sparkles className="w-4 h-4 text-[#DC2626]" />
+              <Sparkles className="w-4 h-4 text-[#EF4444]" />
             </motion.span>
             <span className="h-[1px] w-6 bg-kiki-black/20" />
           </motion.div>
