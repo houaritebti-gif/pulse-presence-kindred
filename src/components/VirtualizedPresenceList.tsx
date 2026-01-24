@@ -120,6 +120,7 @@ const Row = ({
 };
 
 const ITEM_HEIGHT = 340; // Fixed card height + gap for consistent spacing (compact mobile)
+const VIRTUALIZATION_THRESHOLD = 20; // Enable virtualization above this count
 
 export const VirtualizedPresenceList = memo(({
   profiles,
@@ -196,7 +197,7 @@ export const VirtualizedPresenceList = memo(({
   });
 
   // For small lists or when showing separator, don't virtualize
-  if (profiles.length <= 5 || canSeeRealtimePresence) {
+  if (profiles.length <= VIRTUALIZATION_THRESHOLD || canSeeRealtimePresence) {
     return (
       <div 
         {...getContainerProps()}
