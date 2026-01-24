@@ -212,11 +212,17 @@ export const useAchievementChecker = () => {
     if (!profile?.id || isUnlocked('first_presence')) return;
 
     const checkFirstPresence = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('presence')
-        .select('is_present')
+        .select('id, is_present, profile_id')
         .eq('profile_id', profile.id)
-        .single();
+        .maybeSingle();
+
+      // Ignore 406 errors from RLS or missing data
+      if (error && error.code !== 'PGRST116') {
+        console.warn('[AchievementChecker] Error checking presence:', error.message);
+        return;
+      }
 
       if (data?.is_present) {
         checkAndUnlock('first_presence');
