@@ -36,9 +36,16 @@ const Landing = lazyWithRetry(() => import("@/pages/Landing"));
 const Achievements = lazyWithRetry(() => import("@/pages/Achievements"));
 const Leaderboard = lazyWithRetry(() => import("@/pages/Leaderboard"));
 
+// Enhanced loading fallback with branded spinner
 const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-pulse w-8 h-8 rounded-full bg-primary/20" />
+  <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
+    {/* Branded pulsing circle */}
+    <div className="relative">
+      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 animate-pulse" />
+      <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+    </div>
+    {/* Loading text */}
+    <p className="text-sm text-muted-foreground animate-pulse">Cargando...</p>
   </div>
 );
 

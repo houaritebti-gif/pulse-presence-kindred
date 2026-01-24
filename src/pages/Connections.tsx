@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +34,29 @@ import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { triggerHaptic } from "@/utils/haptics";
 import { motion } from "framer-motion";
+
+// Skeleton for connection cards
+const ConnectionCardSkeleton = ({ delay = 0 }: { delay?: number }) => (
+  <div 
+    className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border/30 opacity-0 animate-fade-up"
+    style={{ animationDelay: `${delay}ms` }}
+  >
+    <Skeleton className="w-14 h-14 rounded-full flex-shrink-0" />
+    <div className="flex-1 min-w-0 space-y-2">
+      <Skeleton className="h-5 w-28" />
+      <Skeleton className="h-3.5 w-24" />
+    </div>
+    <Skeleton className="h-9 w-20 rounded-lg flex-shrink-0" />
+  </div>
+);
+
+const ConnectionsListSkeleton = ({ count = 3 }: { count?: number }) => (
+  <div className="space-y-3">
+    {Array.from({ length: count }).map((_, i) => (
+      <ConnectionCardSkeleton key={i} delay={i * 80} />
+    ))}
+  </div>
+);
 
 const Connections = () => {
   const navigate = useNavigate();
@@ -333,9 +357,7 @@ const Connections = () => {
 
           <TabsContent value="active" className="space-y-4">
             {loadingActive ? (
-              <div className="flex justify-center py-12">
-                <div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
-              </div>
+              <ConnectionsListSkeleton count={3} />
             ) : !activeConnections?.length ? (
               <EmptyState
                 icon={Heart}
@@ -353,9 +375,7 @@ const Connections = () => {
 
           <TabsContent value="received" className="space-y-4">
             {loadingReceived ? (
-              <div className="flex justify-center py-12">
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              </div>
+              <ConnectionsListSkeleton count={2} />
             ) : !receivedRequests?.length ? (
               <EmptyState
                 icon={Users}
@@ -371,9 +391,7 @@ const Connections = () => {
 
           <TabsContent value="sent" className="space-y-4">
             {loadingSent ? (
-              <div className="flex justify-center py-12">
-                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              </div>
+              <ConnectionsListSkeleton count={2} />
             ) : !sentRequests?.length ? (
               <EmptyState
                 icon={Clock}

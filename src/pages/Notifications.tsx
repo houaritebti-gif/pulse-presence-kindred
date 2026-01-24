@@ -20,6 +20,7 @@ import EmptyState from "@/components/EmptyState";
 import { SwipeableNotification } from "@/components/SwipeableNotification";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import NotificationsListSkeleton from "@/components/NotificationsListSkeleton";
 
 type FilterType = "all" | "spark" | "message" | "quedada";
 
@@ -177,9 +178,7 @@ const Notifications = () => {
 
           {/* List */}
           {isLoading ? (
-            <div className="flex justify-center py-12">
-              <Bell className="w-10 h-10 text-primary animate-pulse-soft" />
-            </div>
+            <NotificationsListSkeleton count={5} />
           ) : isError ? (
             <ErrorState
               icon={Bell}
