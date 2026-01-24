@@ -1,6 +1,77 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { DataLoadingProgress } from "./DataLoadingProgress";
+import { User, Images, Users, Music, Shield } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
 
 const ProfileSkeleton = () => {
+  const [loadingStates, setLoadingStates] = useState({
+    basic: false,
+    photos: false,
+    tribes: false,
+    music: false,
+    achievements: false
+  });
+
+  // Simulate loading progression
+  useEffect(() => {
+    const timers: NodeJS.Timeout[] = [];
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, basic: true }));
+    }, 400));
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, photos: true }));
+    }, 800));
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, tribes: true }));
+    }, 1100));
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, music: true }));
+    }, 1400));
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, achievements: true }));
+    }, 1700));
+
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const steps = useMemo(() => [
+    { 
+      id: "basic", 
+      label: "Datos básicos", 
+      icon: User, 
+      status: loadingStates.basic ? "complete" as const : "loading" as const 
+    },
+    { 
+      id: "photos", 
+      label: "Fotos", 
+      icon: Images, 
+      status: loadingStates.photos ? "complete" as const : loadingStates.basic ? "loading" as const : "pending" as const 
+    },
+    { 
+      id: "tribes", 
+      label: "Tribus", 
+      icon: Users, 
+      status: loadingStates.tribes ? "complete" as const : loadingStates.photos ? "loading" as const : "pending" as const 
+    },
+    { 
+      id: "music", 
+      label: "Estilos musicales", 
+      icon: Music, 
+      status: loadingStates.music ? "complete" as const : loadingStates.tribes ? "loading" as const : "pending" as const 
+    },
+    { 
+      id: "achievements", 
+      label: "Logros", 
+      icon: Shield, 
+      status: loadingStates.achievements ? "complete" as const : loadingStates.music ? "loading" as const : "pending" as const 
+    },
+  ], [loadingStates]);
+
   return (
     <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-24 relative overflow-hidden animate-fade-in">
       {/* Ambient glow */}
@@ -8,13 +79,22 @@ const ProfileSkeleton = () => {
       <div className="absolute bottom-40 right-0 w-[300px] h-[300px] bg-accent/5 blur-[100px] rounded-full pointer-events-none" />
       
       {/* Header skeleton */}
-      <div className="relative z-10 flex items-center justify-between mb-8">
+      <div className="relative z-10 flex items-center justify-between mb-4">
         <Skeleton className="h-5 w-20" />
         <Skeleton className="h-6 w-12" />
         <div className="flex items-center gap-2">
           <Skeleton className="h-8 w-8 rounded-full" />
           <Skeleton className="h-4 w-4" />
         </div>
+      </div>
+
+      {/* Multi-step progress indicator */}
+      <div className="relative z-10 mb-6">
+        <DataLoadingProgress 
+          steps={steps}
+          variant="compact"
+          showPercentage={true}
+        />
       </div>
 
       <div className="flex-1 max-w-lg mx-auto w-full">
