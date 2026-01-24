@@ -59,8 +59,8 @@
     --radius: 1rem;
 
     /* Custom KIKI tokens */
-    --kiki-red: 355 85% 42%; /* Rojo KIKI intenso */
-    --kiki-red-warm: 0 90% 38%; /* Rojo corazón profundo */
+    --kiki-red: 355 82% 45%; /* Rojo KIKI oscuro */
+    --kiki-red-warm: 1 77% 42%; /* Rojo cálido oscuro */
     --kiki-pink: 346 73% 83%;
     --kiki-pink-bubble: 337 77% 84%; /* #F6B7CF - Rosa chicle suave */
     --kiki-pink-soft: 17 100% 97%;
