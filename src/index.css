@@ -60,7 +60,7 @@
 
     /* Custom KIKI tokens */
     --kiki-red: 355 82% 45%; /* Rojo KIKI oscuro */
-    --kiki-red-warm: 1 77% 42%; /* Rojo cálido oscuro */
+    --kiki-red-warm: 2 74% 47%; /* #d12720 - Rojo corazón */
     --kiki-pink: 346 73% 83%;
     --kiki-pink-bubble: 337 77% 84%; /* #F6B7CF - Rosa chicle suave */
     --kiki-pink-soft: 17 100% 97%;
@@ -113,7 +113,7 @@
 
     /* Dark mode specific tokens */
     --kiki-red: 355 82% 56%;
-    --kiki-red-warm: 1 77% 55%; /* #E53935 - Rojo cálido coral */
+    --kiki-red-warm: 2 74% 50%; /* #d12720 dark variant */
     --kiki-pink: 346 60% 70%;
     --kiki-pink-bubble: 337 70% 75%; /* Versión dark del rosa chicle */
     --kiki-pink-soft: 346 30% 20%;
