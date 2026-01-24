@@ -65,14 +65,64 @@
         }
       }
     </script>
-    <meta property="og:title" content="KIKI - Conecta personas con la misma Vibra en tu ciudad">
+<meta property="og:title" content="KIKI - Conecta personas con la misma Vibra en tu ciudad">
   <meta name="twitter:title" content="KIKI - Conecta personas con la misma Vibra en tu ciudad">
   <meta property="og:description" content="KIKI es la app para conocer gente con tus mismos gustos. Presencia en tiempo real, chispas mutuas y quedadas grupales. Únete a la comunidad alternativa.">
   <meta name="twitter:description" content="KIKI es la app para conocer gente con tus mismos gustos. Presencia en tiempo real, chispas mutuas y quedadas grupales. Únete a la comunidad alternativa.">
+  
+  <!-- Preload critical resources -->
+  <link rel="preconnect" href="https://kcmchxcbtkevvxpwatec.supabase.co" crossorigin>
+  <link rel="dns-prefetch" href="https://kcmchxcbtkevvxpwatec.supabase.co">
+  
+  <!-- Inline critical CSS for faster FCP -->
+  <style>
+    /* Critical path CSS - initial loading state */
+    #root { min-height: 100vh; }
+    .initial-loader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+    }
+    .initial-loader-spinner {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d12720 0%, #F6B7CF 100%);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.95); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .initial-loader-spinner { animation: none; opacity: 0.6; }
+    }
+  </style>
 </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Initial loader shown while JS loads -->
+      <div class="initial-loader" id="initial-loader">
+        <div class="initial-loader-spinner"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Remove initial loader once React hydrates
+      window.addEventListener('DOMContentLoaded', function() {
+        var loader = document.getElementById('initial-loader');
+        if (loader) {
+          setTimeout(function() {
+            loader.style.transition = 'opacity 0.2s';
+            loader.style.opacity = '0';
+            setTimeout(function() { loader.remove(); }, 200);
+          }, 100);
+        }
+      });
+    </script>
   </body>
 </html>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { preloadCriticalRoutes } from "@/utils/lazyWithRetry";
 
 interface AuthContextType {
   user: User | null;
@@ -23,6 +24,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Preload critical routes after successful login
+        if (event === 'SIGNED_IN' && session) {
+          preloadCriticalRoutes();
+        }
       }
     );
 
@@ -31,6 +37,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Also preload if already logged in
+      if (session) {
+        preloadCriticalRoutes();
+      }
     });
 
     return () => subscription.unsubscribe();

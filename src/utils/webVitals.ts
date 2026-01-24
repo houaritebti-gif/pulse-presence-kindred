@@ -11,7 +11,7 @@ type VitalsMetric = {
 // Store metrics in memory for debugging
 const metricsStore: VitalsMetric[] = [];
 
-// Threshold definitions for ratings
+// Threshold definitions for ratings (Core Web Vitals standards)
 const THRESHOLDS = {
   CLS: { good: 0.1, poor: 0.25 },
   FCP: { good: 1800, poor: 3000 },
@@ -47,6 +47,29 @@ const getRatingEmoji = (rating: string): string => {
   }
 };
 
+// Debounce localStorage writes for better performance
+let pendingMetrics: Array<VitalsMetric & { timestamp: string; url: string }> = [];
+let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const debouncedSave = () => {
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    if (pendingMetrics.length === 0) return;
+    
+    try {
+      const storedMetrics = JSON.parse(localStorage.getItem('web-vitals') || '[]');
+      const combined = [...storedMetrics, ...pendingMetrics];
+      
+      // Keep only last 50 metrics
+      const trimmed = combined.slice(-50);
+      localStorage.setItem('web-vitals', JSON.stringify(trimmed));
+      pendingMetrics = [];
+    } catch (e) {
+      // Ignore storage errors
+    }
+  }, 1000); // Batch writes every second
+};
+
 const handleMetric = (metric: Metric): void => {
   const vitalsMetric: VitalsMetric = {
     name: metric.name,
@@ -58,50 +81,32 @@ const handleMetric = (metric: Metric): void => {
 
   metricsStore.push(vitalsMetric);
 
-  // Log in development
+  // Log in development with color coding
   if (import.meta.env.DEV) {
     const emoji = getRatingEmoji(metric.rating);
     const formattedValue = formatMetricValue(metric.name, metric.value);
+    const color = metric.rating === 'good' ? '#22c55e' : metric.rating === 'needs-improvement' ? '#eab308' : '#ef4444';
+    
     console.log(
       `%c${emoji} Web Vital: ${metric.name} = ${formattedValue} (${metric.rating})`,
-      `color: ${metric.rating === 'good' ? '#22c55e' : metric.rating === 'needs-improvement' ? '#eab308' : '#ef4444'}`
+      `color: ${color}; font-weight: 500;`
     );
   }
 
-  // In production, you could send to analytics
+  // In production, batch and store metrics
   if (import.meta.env.PROD) {
-    // Example: Send to analytics endpoint
-    sendToAnalytics(vitalsMetric);
+    pendingMetrics.push({
+      ...vitalsMetric,
+      timestamp: new Date().toISOString(),
+      url: window.location.pathname,
+    });
+    debouncedSave();
   }
-};
-
-const sendToAnalytics = (metric: VitalsMetric): void => {
-  // Store in localStorage for debugging in production
-  const storedMetrics = JSON.parse(localStorage.getItem('web-vitals') || '[]');
-  storedMetrics.push({
-    ...metric,
-    timestamp: new Date().toISOString(),
-    url: window.location.pathname,
-  });
-  
-  // Keep only last 50 metrics
-  if (storedMetrics.length > 50) {
-    storedMetrics.splice(0, storedMetrics.length - 50);
-  }
-  
-  localStorage.setItem('web-vitals', JSON.stringify(storedMetrics));
-
-  // You can integrate with external services here:
-  // - Google Analytics 4
-  // - Vercel Analytics
-  // - Custom backend endpoint
-  
-  // Example for sending to a custom endpoint:
-  // navigator.sendBeacon('/api/vitals', JSON.stringify(metric));
 };
 
 export const initWebVitals = (): void => {
   try {
+    // Use reportAllChanges: false for final values only (more accurate)
     onCLS(handleMetric);
     onFCP(handleMetric);
     onINP(handleMetric);
@@ -130,14 +135,15 @@ export const getLocalStorageMetrics = (): Array<VitalsMetric & { timestamp: stri
 
 export const clearStoredMetrics = (): void => {
   localStorage.removeItem('web-vitals');
+  pendingMetrics = [];
 };
 
 // Performance summary helper
-export const getPerformanceSummary = (): Record<string, { latest: VitalsMetric | null; average: number; count: number }> => {
+export const getPerformanceSummary = (): Record<string, { latest: VitalsMetric | null; average: number; count: number; threshold: { good: number; poor: number } }> => {
   const metrics = getLocalStorageMetrics();
-  const summary: Record<string, { latest: VitalsMetric | null; average: number; count: number }> = {};
+  const summary: Record<string, { latest: VitalsMetric | null; average: number; count: number; threshold: { good: number; poor: number } }> = {};
 
-  ['CLS', 'FCP', 'INP', 'LCP', 'TTFB'].forEach((name) => {
+  (['CLS', 'FCP', 'INP', 'LCP', 'TTFB'] as const).forEach((name) => {
     const filtered = metrics.filter((m) => m.name === name);
     const average = filtered.length > 0
       ? filtered.reduce((sum, m) => sum + m.value, 0) / filtered.length
@@ -147,8 +153,22 @@ export const getPerformanceSummary = (): Record<string, { latest: VitalsMetric |
       latest: filtered[filtered.length - 1] || null,
       average,
       count: filtered.length,
+      threshold: THRESHOLDS[name],
     };
   });
 
   return summary;
+};
+
+// Quick health check - returns true if all metrics are good or needs-improvement
+export const isPerformanceHealthy = (): boolean => {
+  const summary = getPerformanceSummary();
+  
+  for (const [name, data] of Object.entries(summary)) {
+    if (data.latest && data.latest.rating === 'poor') {
+      return false;
+    }
+  }
+  
+  return true;
 };
