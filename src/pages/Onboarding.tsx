@@ -679,7 +679,7 @@ const Onboarding = () => {
             >
               <Star className="w-4 h-4" />
               <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
-                Selecciona entre 3 y 7 intereses
+                Selecciona entre 3 y 10 intereses
               </span>
             </motion.div>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -712,7 +712,7 @@ const Onboarding = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                 >
-                  {selectedInterests.length}/7 intereses
+                  {selectedInterests.length}/10 intereses
                   {selectedInterests.length < 3 && " (mínimo 3)"}
                 </motion.p>
               )}

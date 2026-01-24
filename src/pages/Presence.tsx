@@ -291,6 +291,12 @@ const Presence = () => {
     const boostedIds = activeBoostedData?.boostedIds || new Set<string>();
     
     const filtered = otherProfiles.filter(presence => {
+      // MANDATORY: Filter out profiles without photos
+      const profileId = presence.profile?.id;
+      const hasGalleryPhotos = profileId && photosMap?.[profileId]?.length > 0;
+      const hasAvatar = !!presence.profile?.avatar_url;
+      if (!hasGalleryPhotos && !hasAvatar) return false;
+
       // Tribe filter - must have at least one matching tribe
       if (filters.tribes.length > 0) {
         const hasMatchingTribe = presence.tribes.some(t => filters.tribes.includes(t));
@@ -393,7 +399,7 @@ const Presence = () => {
     });
     
     return filtered;
-  }, [otherProfiles, filters, myTribeNames, myStyleNames, activeBoostedData?.boostedIds, visitedMap]);
+  }, [otherProfiles, filters, myTribeNames, myStyleNames, activeBoostedData?.boostedIds, visitedMap, photosMap]);
 
   // Auto-scroll to center profile cards when loaded
   useEffect(() => {
