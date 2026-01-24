@@ -57,23 +57,34 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
     >
       <div className="relative">
-        {s.glow && (
-          <motion.div 
-            className="absolute inset-0 bg-kiki-red-warm/40 blur-xl rounded-full scale-150"
-            animate={animate ? { opacity: [0.4, 0.7, 0.4] } : undefined}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          />
-        )}
+        {/* Glow layer - always visible for hero/xl */}
+        <motion.div 
+          className="absolute inset-0 bg-kiki-red-warm/50 blur-xl rounded-full scale-[2]"
+          animate={animate ? { opacity: [0.5, 0.8, 0.5] } : undefined}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Secondary subtle glow */}
+        <motion.div 
+          className="absolute inset-0 bg-kiki-red-warm/30 blur-2xl rounded-full scale-[2.5]"
+          animate={animate ? { opacity: [0.3, 0.5, 0.3] } : undefined}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+        />
         <Heart 
-          className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm drop-shadow-[0_0_15px_hsl(var(--kiki-red-warm)/0.5)]`} 
+          className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
+          style={{ filter: 'drop-shadow(0 0 12px hsl(var(--kiki-red-warm) / 0.7)) drop-shadow(0 0 20px hsl(var(--kiki-red-warm) / 0.4))' }}
         />
       </div>
     </motion.div>
   ) : (
     <span className={`absolute ${s.heartPos}`}>
-      <Heart 
-        className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm drop-shadow-[0_0_8px_hsl(var(--kiki-red-warm)/0.4)] ${animate ? "animate-pulse-soft" : ""}`} 
-      />
+      <div className="relative">
+        {/* Subtle glow for smaller sizes */}
+        <div className="absolute inset-0 bg-kiki-red-warm/40 blur-lg rounded-full scale-150" />
+        <Heart 
+          className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm ${animate ? "animate-pulse-soft" : ""}`}
+          style={{ filter: 'drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.6)) drop-shadow(0 0 16px hsl(var(--kiki-red-warm) / 0.3))' }}
+        />
+      </div>
     </span>
   );
   
