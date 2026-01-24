@@ -255,7 +255,7 @@ export const useAchievements = () => {
                 .from('profile_spark_energy')
                 .select('current_energy, total_earned')
                 .eq('profile_id', profile.id)
-                .single();
+                .maybeSingle();
               
               if (current) {
                 // Update energy

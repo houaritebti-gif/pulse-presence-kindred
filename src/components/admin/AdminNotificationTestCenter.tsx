@@ -418,7 +418,7 @@ const AdminNotificationTestCenter = () => {
         .from('profiles')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (!profile) {
         throw new Error('No se encontró el perfil');
@@ -463,7 +463,7 @@ const AdminNotificationTestCenter = () => {
         .from('profiles')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (!profile) {
         throw new Error('No se encontró el perfil');
@@ -771,7 +771,7 @@ const AdminNotificationTestCenter = () => {
         .from('profiles')
         .select('id')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (!profile) {
         throw new Error('No se encontró el perfil');

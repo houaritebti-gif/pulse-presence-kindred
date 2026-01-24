@@ -52,7 +52,7 @@ serve(async (req) => {
       .from('profiles')
       .select('id')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
     
     if (profileError || !profile) {
       logStep("Profile not found, returning free tier");
@@ -138,7 +138,7 @@ serve(async (req) => {
         .from('user_subscriptions')
         .select('tier, expires_at, trial_started_at')
         .eq('profile_id', profile.id)
-        .single();
+        .maybeSingle();
       
       if (localSub && localSub.trial_started_at && localSub.expires_at) {
         const isExpired = new Date(localSub.expires_at) < new Date();

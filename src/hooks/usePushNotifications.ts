@@ -46,13 +46,13 @@ export function usePushNotifications() {
       const subscription = await registration.pushManager.getSubscription();
       
       if (subscription) {
-        // Verify it exists in database
+        // Verify it exists in database - use maybeSingle to avoid 406 errors
         const { data } = await supabase
           .from('push_subscriptions')
           .select('id')
           .eq('profile_id', profile.id)
           .eq('endpoint', subscription.endpoint)
-          .single();
+          .maybeSingle();
         
         setIsSubscribed(!!data);
       } else {
