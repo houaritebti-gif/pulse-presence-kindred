@@ -60,7 +60,7 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
         {/* Outer orange glow - fire effect */}
         <motion.div 
           className="absolute inset-0 blur-3xl rounded-full scale-[3]"
-          style={{ backgroundColor: 'hsl(25, 100%, 50%, 0.25)' }}
+          style={{ backgroundColor: 'hsl(25 100% 50% / 0.25)' }}
           animate={animate ? { opacity: [0.2, 0.4, 0.2], scale: [2.8, 3.2, 2.8] } : undefined}
           transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
         />
@@ -88,7 +88,7 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
         {/* Outer orange glow for smaller sizes */}
         <div 
           className="absolute inset-0 blur-xl rounded-full scale-[2]"
-          style={{ backgroundColor: 'hsl(25, 100%, 50%, 0.2)' }}
+          style={{ backgroundColor: 'hsl(25 100% 50% / 0.2)' }}
         />
         {/* Red glow */}
         <div className="absolute inset-0 bg-kiki-red-warm/40 blur-lg rounded-full scale-150" />
