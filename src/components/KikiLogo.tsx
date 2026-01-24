@@ -57,44 +57,44 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
     >
       <div className="relative">
-        {/* Outer orange glow - fire effect */}
+        {/* Outer orange glow - subtle fire effect */}
         <motion.div 
-          className="absolute inset-0 blur-3xl rounded-full scale-[3]"
-          style={{ backgroundColor: 'hsl(25 100% 50% / 0.25)' }}
-          animate={animate ? { opacity: [0.2, 0.4, 0.2], scale: [2.8, 3.2, 2.8] } : undefined}
+          className="absolute inset-0 blur-3xl rounded-full scale-[2.5]"
+          style={{ backgroundColor: 'hsl(25 100% 50% / 0.12)' }}
+          animate={animate ? { opacity: [0.1, 0.2, 0.1], scale: [2.3, 2.7, 2.3] } : undefined}
           transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
         />
-        {/* Middle red glow */}
+        {/* Middle red glow - reduced */}
         <motion.div 
-          className="absolute inset-0 bg-kiki-red-warm/50 blur-xl rounded-full scale-[2]"
-          animate={animate ? { opacity: [0.5, 0.8, 0.5] } : undefined}
+          className="absolute inset-0 bg-kiki-red-warm/30 blur-xl rounded-full scale-[1.8]"
+          animate={animate ? { opacity: [0.25, 0.45, 0.25] } : undefined}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
-        {/* Inner intense red glow */}
+        {/* Inner subtle red glow */}
         <motion.div 
-          className="absolute inset-0 bg-kiki-red-warm/40 blur-2xl rounded-full scale-[2.5]"
-          animate={animate ? { opacity: [0.3, 0.5, 0.3] } : undefined}
+          className="absolute inset-0 bg-kiki-red-warm/20 blur-lg rounded-full scale-[1.5]"
+          animate={animate ? { opacity: [0.15, 0.3, 0.15] } : undefined}
           transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
         />
         <Heart 
           className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
-          style={{ filter: 'drop-shadow(0 0 12px hsl(var(--kiki-red-warm) / 0.7)) drop-shadow(0 0 20px hsl(var(--kiki-red-warm) / 0.4))' }}
+          style={{ filter: 'drop-shadow(0 0 6px hsl(var(--kiki-red-warm) / 0.4)) drop-shadow(0 0 12px hsl(var(--kiki-red-warm) / 0.2))' }}
         />
       </div>
     </motion.div>
   ) : (
     <span className={`absolute ${s.heartPos}`}>
       <div className="relative">
-        {/* Outer orange glow for smaller sizes */}
+        {/* Outer orange glow for smaller sizes - subtle */}
         <div 
-          className="absolute inset-0 blur-xl rounded-full scale-[2]"
-          style={{ backgroundColor: 'hsl(25 100% 50% / 0.2)' }}
+          className="absolute inset-0 blur-lg rounded-full scale-[1.6]"
+          style={{ backgroundColor: 'hsl(25 100% 50% / 0.1)' }}
         />
-        {/* Red glow */}
-        <div className="absolute inset-0 bg-kiki-red-warm/40 blur-lg rounded-full scale-150" />
+        {/* Red glow - reduced */}
+        <div className="absolute inset-0 bg-kiki-red-warm/25 blur-md rounded-full scale-125" />
         <Heart 
           className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm ${animate ? "animate-pulse-soft" : ""}`}
-          style={{ filter: 'drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.6)) drop-shadow(0 0 16px hsl(var(--kiki-red-warm) / 0.3))' }}
+          style={{ filter: 'drop-shadow(0 0 4px hsl(var(--kiki-red-warm) / 0.35)) drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.15))' }}
         />
       </div>
     </span>
