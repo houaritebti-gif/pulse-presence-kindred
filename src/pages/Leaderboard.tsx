@@ -114,6 +114,7 @@ function LeaderboardCard({ entry, rank, isCurrentUser }: { entry: LeaderboardEnt
         avatarUrl={entry.avatarUrl}
         name={entry.name}
         size="md"
+        useLazyLoading
       />
 
       {/* Info */}

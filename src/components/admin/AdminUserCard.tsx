@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { MoreVertical, UserPlus, History, RefreshCw, ShieldCheck, Mail, MapPin } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LazyAvatar from "@/components/LazyAvatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -43,12 +43,12 @@ const AdminUserCard = ({
       className="flex items-center gap-4 p-4 bg-card rounded-xl border-2 border-border hover:border-primary/40 hover:shadow-md transition-all duration-200 group"
     >
       <div className="relative flex-shrink-0">
-        <Avatar className="w-14 h-14 ring-2 ring-background shadow-md">
-          <AvatarImage src={profile.avatar_url || undefined} />
-          <AvatarFallback className="bg-primary/15 text-primary font-bold text-lg">
-            {(profile.name?.[0] || "?").toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <LazyAvatar
+          src={profile.avatar_url}
+          fallback={profile.name}
+          className="w-14 h-14 ring-2 ring-background shadow-md"
+          fallbackClassName="bg-primary/15 text-primary font-bold text-lg"
+        />
         {profile.identity_verified && (
           <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[hsl(160,60%,45%)] dark:bg-[hsl(160,70%,50%)] rounded-full flex items-center justify-center ring-2 ring-background">
             <ShieldCheck className="w-3.5 h-3.5 text-white" />

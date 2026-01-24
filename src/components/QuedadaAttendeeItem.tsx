@@ -1,4 +1,4 @@
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import LazyAvatar from "@/components/LazyAvatar";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 
@@ -21,12 +21,12 @@ const QuedadaAttendeeItem = ({ profile, onNavigate, expelButton }: QuedadaAttend
         onClick={onNavigate}
         className="flex items-center gap-3 flex-1 min-w-0 text-left"
       >
-        <Avatar className="w-10 h-10">
-          <AvatarImage src={profile?.avatar_url || undefined} />
-          <AvatarFallback className="bg-card text-card-foreground font-display">
-            {(profile?.name?.[0] || "?").toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <LazyAvatar
+          src={profile?.avatar_url}
+          fallback={profile?.name}
+          className="w-10 h-10"
+          fallbackClassName="bg-card text-card-foreground"
+        />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <p className="font-body text-sm text-card-foreground truncate">

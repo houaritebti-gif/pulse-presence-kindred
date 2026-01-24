@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, X, UserCheck, Clock, Users, Sparkles, Link2, MessageCircle, Heart, Unlink } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import LazyAvatar from "@/components/LazyAvatar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,13 +97,13 @@ const Connections = () => {
   const ReceivedRequestCard = ({ request }: { request: ConnectionRequestWithProfile }) => (
     <div className="bg-card rounded-xl p-4 animate-fade-up border border-foreground/5 dark:border-transparent shadow-md shadow-foreground/10 dark:shadow-foreground/5">
       <div className="flex items-start gap-3">
-        <Avatar className="w-14 h-14 border-2 border-primary/20">
-          <AvatarImage 
-            src={request.from_profile?.avatar_url || undefined}
-            style={{ filter: "blur(4px)" }}
-          />
-          <AvatarFallback className="text-lg bg-secondary">?</AvatarFallback>
-        </Avatar>
+        <LazyAvatar
+          src={request.from_profile?.avatar_url}
+          fallback="?"
+          className="w-14 h-14 border-2 border-primary/20"
+          fallbackClassName="text-lg bg-secondary"
+          blur
+        />
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
@@ -171,13 +172,13 @@ const Connections = () => {
   const SentRequestCard = ({ request }: { request: ConnectionRequestWithProfile }) => (
     <div className="bg-card rounded-xl p-4 animate-fade-up border border-foreground/5 dark:border-transparent shadow-md shadow-foreground/10 dark:shadow-foreground/5">
       <div className="flex items-center gap-3">
-        <Avatar className="w-12 h-12 border-2 border-muted">
-          <AvatarImage 
-            src={request.to_profile?.avatar_url || undefined}
-            style={{ filter: "blur(4px)" }}
-          />
-          <AvatarFallback className="bg-secondary">?</AvatarFallback>
-        </Avatar>
+        <LazyAvatar
+          src={request.to_profile?.avatar_url}
+          fallback="?"
+          className="w-12 h-12 border-2 border-muted"
+          fallbackClassName="bg-secondary"
+          blur
+        />
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -227,15 +228,13 @@ const Connections = () => {
     >
       <div className="flex items-center gap-3">
         <div className="relative">
-          <Avatar 
+          <LazyAvatar
+            src={connection.connected_profile?.avatar_url}
+            fallback={connection.connected_profile?.name}
             className="w-14 h-14 border-2 border-green-500/30 cursor-pointer transition-transform hover:scale-105"
+            fallbackClassName="bg-gradient-to-br from-primary/20 to-accent/20 text-lg"
             onClick={() => navigate(`/user/${connection.connected_profile?.id}`)}
-          >
-            <AvatarImage src={connection.connected_profile?.avatar_url || undefined} />
-            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-lg">
-              {connection.connected_profile?.name?.[0]?.toUpperCase() || "?"}
-            </AvatarFallback>
-          </Avatar>
+          />
           <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-500 border-2 border-background flex items-center justify-center">
             <Heart className="w-2 h-2 text-white fill-white" />
           </div>
