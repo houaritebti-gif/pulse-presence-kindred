@@ -907,26 +907,24 @@ export const AIChatBot = () => {
                 >
                   <MessageCircle className={isMobile ? "h-5 w-5" : "h-6 w-6"} />
                 </motion.div>
-                {/* Enhanced Unread badge */}
-                <AnimatePresence mode="wait">
-                  {unreadCount > 0 && (
-                    <MotionSpan
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      className={cn(
-                        "absolute flex items-center justify-center rounded-full",
-                        "bg-destructive text-destructive-foreground font-bold",
-                        "ring-2 ring-background",
-                        isMobile 
-                          ? "-top-1 -right-1 h-4 w-4 text-[9px]" 
-                          : "-top-1.5 -right-1.5 h-5 w-5 text-[10px]"
-                      )}
-                    >
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </MotionSpan>
-                  )}
-                </AnimatePresence>
+                {/* Enhanced Unread badge - using motion without AnimatePresence to avoid nested ref issues */}
+                {unreadCount > 0 && (
+                  <motion.span
+                    key="unread-badge"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className={cn(
+                      "absolute flex items-center justify-center rounded-full",
+                      "bg-destructive text-destructive-foreground font-bold",
+                      "ring-2 ring-background",
+                      isMobile 
+                        ? "-top-1 -right-1 h-4 w-4 text-[9px]" 
+                        : "-top-1.5 -right-1.5 h-5 w-5 text-[10px]"
+                    )}
+                  >
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </motion.span>
+                )}
               </div>
             ) : (
               <div className="relative z-10">
