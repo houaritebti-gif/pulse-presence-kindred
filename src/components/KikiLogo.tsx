@@ -57,15 +57,22 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
     >
       <div className="relative">
-        {/* Glow layer - always visible for hero/xl */}
+        {/* Outer orange glow - fire effect */}
+        <motion.div 
+          className="absolute inset-0 blur-3xl rounded-full scale-[3]"
+          style={{ backgroundColor: 'hsl(25, 100%, 50%, 0.25)' }}
+          animate={animate ? { opacity: [0.2, 0.4, 0.2], scale: [2.8, 3.2, 2.8] } : undefined}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        />
+        {/* Middle red glow */}
         <motion.div 
           className="absolute inset-0 bg-kiki-red-warm/50 blur-xl rounded-full scale-[2]"
           animate={animate ? { opacity: [0.5, 0.8, 0.5] } : undefined}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
-        {/* Secondary subtle glow */}
+        {/* Inner intense red glow */}
         <motion.div 
-          className="absolute inset-0 bg-kiki-red-warm/30 blur-2xl rounded-full scale-[2.5]"
+          className="absolute inset-0 bg-kiki-red-warm/40 blur-2xl rounded-full scale-[2.5]"
           animate={animate ? { opacity: [0.3, 0.5, 0.3] } : undefined}
           transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
         />
@@ -78,7 +85,12 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   ) : (
     <span className={`absolute ${s.heartPos}`}>
       <div className="relative">
-        {/* Subtle glow for smaller sizes */}
+        {/* Outer orange glow for smaller sizes */}
+        <div 
+          className="absolute inset-0 blur-xl rounded-full scale-[2]"
+          style={{ backgroundColor: 'hsl(25, 100%, 50%, 0.2)' }}
+        />
+        {/* Red glow */}
         <div className="absolute inset-0 bg-kiki-red-warm/40 blur-lg rounded-full scale-150" />
         <Heart 
           className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm ${animate ? "animate-pulse-soft" : ""}`}
