@@ -66,7 +66,7 @@ serve(async (req) => {
       .from("profiles")
       .select("id, city, looking_for")
       .eq("id", profile_id)
-      .single();
+      .maybeSingle();
 
     if (profileError || !connectingProfile) {
       console.error("Error fetching connecting profile:", profileError);

@@ -54,7 +54,7 @@ serve(async (req) => {
       .from("profiles")
       .select("id")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError || !profile) throw new Error("Profile not found");
     logStep("Profile found", { profileId: profile.id });

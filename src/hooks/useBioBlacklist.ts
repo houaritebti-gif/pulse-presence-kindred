@@ -58,7 +58,7 @@ export const useAddBlacklistWord = () => {
       const { data: profile } = await supabase
         .from("profiles")
         .select("id")
-        .single();
+        .maybeSingle();
 
       const { data, error } = await supabase
         .from("bio_blacklist")
