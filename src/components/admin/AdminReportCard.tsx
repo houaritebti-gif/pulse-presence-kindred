@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Clock, Check, X, AlertTriangle } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LazyAvatar from "@/components/LazyAvatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
@@ -72,12 +72,12 @@ const AdminReportCard = ({ report, onUpdateStatus, isUpdating }: AdminReportCard
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-center gap-4">
           <div className="relative flex-shrink-0">
-            <Avatar className="w-12 h-12 ring-2 ring-destructive/30">
-              <AvatarImage src={report.reported?.avatar_url || undefined} />
-              <AvatarFallback className="bg-destructive/15 text-destructive font-bold">
-                {(report.reported?.name?.[0] || "?").toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <LazyAvatar
+              src={report.reported?.avatar_url}
+              fallback={report.reported?.name}
+              className="w-12 h-12 ring-2 ring-destructive/30"
+              fallbackClassName="bg-destructive/15 text-destructive font-bold"
+            />
             <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-destructive/20 rounded-full flex items-center justify-center">
               <AlertTriangle className="w-3 h-3 text-destructive" />
             </div>
