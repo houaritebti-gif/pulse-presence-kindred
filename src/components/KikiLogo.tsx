@@ -53,51 +53,88 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   const heartElement = isHero ? (
     <motion.div 
       className={`absolute ${s.heartPos}`}
-      animate={animate ? { scale: [1, 1.15, 1] } : undefined}
-      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+      animate={animate ? { 
+        scale: [1, 1.12, 1.05, 1.15, 1],
+        rotate: [0, -2, 2, -1, 0],
+      } : undefined}
+      transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
     >
       <div className="relative">
-        {/* Outer orange glow - subtle fire effect */}
+        {/* Outer orange glow - flame flicker */}
         <motion.div 
-          className="absolute inset-0 blur-3xl rounded-full scale-[2.5]"
-          style={{ backgroundColor: 'hsl(25 100% 50% / 0.12)' }}
-          animate={animate ? { opacity: [0.1, 0.2, 0.1], scale: [2.3, 2.7, 2.3] } : undefined}
-          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          className="absolute inset-0 blur-3xl rounded-full"
+          style={{ backgroundColor: 'hsl(25 100% 50% / 0.15)' }}
+          animate={animate ? { 
+            opacity: [0.1, 0.25, 0.12, 0.22, 0.1], 
+            scale: [2.2, 2.8, 2.4, 2.7, 2.2] 
+          } : undefined}
+          transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }}
         />
-        {/* Middle red glow - reduced */}
+        {/* Middle red glow - flicker */}
         <motion.div 
-          className="absolute inset-0 bg-kiki-red-warm/30 blur-xl rounded-full scale-[1.8]"
-          animate={animate ? { opacity: [0.25, 0.45, 0.25] } : undefined}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 bg-kiki-red-warm/35 blur-xl rounded-full"
+          animate={animate ? { 
+            opacity: [0.3, 0.5, 0.35, 0.55, 0.3], 
+            scale: [1.6, 2, 1.7, 1.9, 1.6] 
+          } : undefined}
+          transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut", delay: 0.1 }}
         />
-        {/* Inner subtle red glow */}
+        {/* Inner intense glow */}
         <motion.div 
-          className="absolute inset-0 bg-kiki-red-warm/20 blur-lg rounded-full scale-[1.5]"
-          animate={animate ? { opacity: [0.15, 0.3, 0.15] } : undefined}
-          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+          className="absolute inset-0 bg-kiki-red-warm/25 blur-lg rounded-full"
+          animate={animate ? { 
+            opacity: [0.2, 0.4, 0.25, 0.38, 0.2], 
+            scale: [1.3, 1.6, 1.4, 1.55, 1.3] 
+          } : undefined}
+          transition={{ duration: 0.45, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
         />
-        <Heart 
-          className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
-          style={{ filter: 'drop-shadow(0 0 6px hsl(var(--kiki-red-warm) / 0.4)) drop-shadow(0 0 12px hsl(var(--kiki-red-warm) / 0.2))' }}
-        />
+        <motion.div
+          animate={animate ? {
+            filter: [
+              'drop-shadow(0 0 6px hsl(var(--kiki-red-warm) / 0.5)) drop-shadow(0 0 12px hsl(var(--kiki-red-warm) / 0.3))',
+              'drop-shadow(0 0 10px hsl(var(--kiki-red-warm) / 0.7)) drop-shadow(0 0 18px hsl(var(--kiki-red-warm) / 0.4))',
+              'drop-shadow(0 0 7px hsl(var(--kiki-red-warm) / 0.55)) drop-shadow(0 0 14px hsl(var(--kiki-red-warm) / 0.32))',
+              'drop-shadow(0 0 9px hsl(var(--kiki-red-warm) / 0.65)) drop-shadow(0 0 16px hsl(var(--kiki-red-warm) / 0.38))',
+              'drop-shadow(0 0 6px hsl(var(--kiki-red-warm) / 0.5)) drop-shadow(0 0 12px hsl(var(--kiki-red-warm) / 0.3))',
+            ]
+          } : undefined}
+          transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Heart 
+            className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
+          />
+        </motion.div>
       </div>
     </motion.div>
   ) : (
-    <span className={`absolute ${s.heartPos}`}>
+    <motion.span 
+      className={`absolute ${s.heartPos}`}
+      animate={animate ? { 
+        scale: [1, 1.08, 1.03, 1.1, 1],
+        rotate: [0, -1.5, 1.5, -0.5, 0],
+      } : undefined}
+      transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut" }}
+    >
       <div className="relative">
-        {/* Outer orange glow for smaller sizes - subtle */}
-        <div 
-          className="absolute inset-0 blur-lg rounded-full scale-[1.6]"
-          style={{ backgroundColor: 'hsl(25 100% 50% / 0.1)' }}
+        {/* Outer orange glow for smaller sizes */}
+        <motion.div 
+          className="absolute inset-0 blur-lg rounded-full"
+          style={{ backgroundColor: 'hsl(25 100% 50% / 0.12)' }}
+          animate={animate ? { opacity: [0.08, 0.18, 0.1, 0.16, 0.08], scale: [1.4, 1.8, 1.5, 1.7, 1.4] } : undefined}
+          transition={{ duration: 0.55, repeat: Infinity, ease: "easeInOut" }}
         />
-        {/* Red glow - reduced */}
-        <div className="absolute inset-0 bg-kiki-red-warm/25 blur-md rounded-full scale-125" />
+        {/* Red glow */}
+        <motion.div 
+          className="absolute inset-0 bg-kiki-red-warm/30 blur-md rounded-full"
+          animate={animate ? { opacity: [0.25, 0.45, 0.3, 0.4, 0.25], scale: [1.1, 1.4, 1.2, 1.35, 1.1] } : undefined}
+          transition={{ duration: 0.5, repeat: Infinity, ease: "easeInOut", delay: 0.08 }}
+        />
         <Heart 
-          className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm ${animate ? "animate-pulse-soft" : ""}`}
-          style={{ filter: 'drop-shadow(0 0 4px hsl(var(--kiki-red-warm) / 0.35)) drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.15))' }}
+          className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
+          style={{ filter: 'drop-shadow(0 0 5px hsl(var(--kiki-red-warm) / 0.45)) drop-shadow(0 0 10px hsl(var(--kiki-red-warm) / 0.2))' }}
         />
       </div>
-    </span>
+    </motion.span>
   );
   
   const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
