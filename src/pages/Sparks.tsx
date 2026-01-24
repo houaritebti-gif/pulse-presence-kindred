@@ -6,17 +6,14 @@ import { useSparkChats, useExtinguishSpark, useSparkChatsRealtime } from "@/hook
 import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { useListKeyboardNavigation } from "@/hooks/useListKeyboardNavigation";
-import { useStaggerAnimation } from "@/hooks/useStaggerAnimation";
 import { useUndoableAction } from "@/hooks/useUndoableAction";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import NetworkErrorInline from "@/components/NetworkErrorInline";
 import EmptyState from "@/components/EmptyState";
-import SparkChatItem from "@/components/SparkChatItem";
 import SparksListSkeleton from "@/components/SparksListSkeleton";
 import StateTransition from "@/components/StateTransition";
 import ParallaxBackground from "@/components/ParallaxBackground";
-import SwipeableListItem from "@/components/SwipeableListItem";
+import VirtualizedSparksList from "@/components/VirtualizedSparksList";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 
@@ -56,22 +53,6 @@ const Sparks = () => {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-  });
-
-  const { getContainerProps, getItemProps } = useListKeyboardNavigation({
-    itemCount: chats?.length || 0,
-    onSelect: (index) => {
-      if (chats?.[index]) {
-        navigate(`/spark/${chats[index].id}`);
-      }
-    },
-  });
-
-  const { getAnimationStyle } = useStaggerAnimation({
-    itemCount: chats?.length || 0,
-    baseDelay: 50,
-    staggerDelay: 60,
-    duration: 400,
   });
 
   const handleRefresh = useCallback(async () => {
@@ -187,40 +168,12 @@ const Sparks = () => {
             />
           }
         >
-          <div 
-            {...getContainerProps()}
-            aria-label="Lista de chispas"
-            className="space-y-5 sm:space-y-6 pb-6"
-          >
-            {chats?.map((chat, index) => {
-              const isExiting = exitingSparks.has(chat.id);
-              return (
-                <SwipeableListItem
-                  key={chat.id}
-                  itemKey={chat.id}
-                  leftAction={{ 
-                    type: "delete",
-                    icon: <X className="w-5 h-5" />,
-                    color: "hsl(var(--destructive))",
-                  }}
-                  onLeftAction={() => handleExtinguishSwipe(chat.id, chat.other_profile?.name)}
-                  disabled={isExiting || pendingIds.has(chat.id)}
-                  className={`transition-all duration-400 ${
-                    isExiting 
-                      ? 'opacity-0 scale-95 translate-x-8 pointer-events-none' 
-                      : ''
-                  }`}
-                >
-                  <div {...getItemProps(index)}>
-                    <SparkChatItem 
-                      chat={chat} 
-                      animationStyle={isExiting ? undefined : getAnimationStyle(index)}
-                    />
-                  </div>
-                </SwipeableListItem>
-              );
-            })}
-          </div>
+          <VirtualizedSparksList
+            chats={chats || []}
+            exitingSparks={exitingSparks}
+            pendingIds={pendingIds}
+            onExtinguish={handleExtinguishSwipe}
+          />
           {/* Infinite scroll trigger */}
           <div ref={loadMoreRef} className="h-4" />
           {isFetchingNextPage && (
