@@ -167,3 +167,23 @@ export function preloadRoute(factory: ComponentFactory<unknown>): void {
     // Silently ignore preload failures
   });
 }
+
+/**
+ * Preload critical routes after authentication
+ * Call this after user logs in to pre-fetch likely next pages
+ */
+export function preloadCriticalRoutes(): void {
+  // Use requestIdleCallback for non-blocking preload
+  const preload = () => {
+    // Most likely routes after login
+    import('@/pages/Presence').catch(() => {});
+    import('@/pages/Profile').catch(() => {});
+    import('@/pages/Sparks').catch(() => {});
+  };
+
+  if ('requestIdleCallback' in window) {
+    (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(preload);
+  } else {
+    setTimeout(preload, 200);
+  }
+}

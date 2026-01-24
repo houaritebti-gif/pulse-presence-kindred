@@ -10,6 +10,28 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    // Optimize chunk splitting
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks for better caching
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-tooltip'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+        },
+      },
+    },
+    // Enable source maps for production debugging
+    sourcemap: mode === 'development',
+    // Increase chunk size warning limit (components are intentionally larger for fewer requests)
+    chunkSizeWarningLimit: 600,
+    // Minification settings
+    minify: 'esbuild',
+    target: 'es2020',
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
@@ -47,6 +69,9 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Skip waiting and claim clients immediately for faster updates
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             // Cache images from Supabase storage (avatars, profile-photos, chat-images)
@@ -120,5 +145,15 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  // Optimize dependencies pre-bundling
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'framer-motion',
+      '@tanstack/react-query',
+    ],
   },
 }));
