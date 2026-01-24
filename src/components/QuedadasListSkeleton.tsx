@@ -1,4 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { DataLoadingProgress } from "./DataLoadingProgress";
+import { Calendar, Users, MessageCircle } from "lucide-react";
+import { useMemo, useState, useEffect, memo } from "react";
 
 const QuedadaCardSkeleton = ({ delay = 0 }: { delay?: number }) => (
   <div 
@@ -38,16 +41,74 @@ const QuedadaCardSkeleton = ({ delay = 0 }: { delay?: number }) => (
 
 interface QuedadasListSkeletonProps {
   count?: number;
+  showProgress?: boolean;
 }
 
-export const QuedadasListSkeleton = ({ count = 3 }: QuedadasListSkeletonProps) => {
+export const QuedadasListSkeleton = memo(({ count = 3, showProgress = true }: QuedadasListSkeletonProps) => {
+  const [loadingStates, setLoadingStates] = useState({
+    events: false,
+    attendees: false,
+    messages: false
+  });
+
+  // Simulate loading progression
+  useEffect(() => {
+    if (!showProgress) return;
+    
+    const timers: NodeJS.Timeout[] = [];
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, events: true }));
+    }, 600));
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, attendees: true }));
+    }, 1100));
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, messages: true }));
+    }, 1500));
+
+    return () => timers.forEach(clearTimeout);
+  }, [showProgress]);
+
+  const steps = useMemo(() => [
+    { 
+      id: "events", 
+      label: "Quedadas", 
+      icon: Calendar, 
+      status: loadingStates.events ? "complete" as const : "loading" as const 
+    },
+    { 
+      id: "attendees", 
+      label: "Asistentes", 
+      icon: Users, 
+      status: loadingStates.attendees ? "complete" as const : loadingStates.events ? "loading" as const : "pending" as const 
+    },
+    { 
+      id: "messages", 
+      label: "Mensajes", 
+      icon: MessageCircle, 
+      status: loadingStates.messages ? "complete" as const : loadingStates.attendees ? "loading" as const : "pending" as const 
+    },
+  ], [loadingStates]);
+
   return (
     <div className="space-y-5 sm:space-y-6">
+      {showProgress && (
+        <DataLoadingProgress 
+          steps={steps}
+          variant="compact"
+          showPercentage={true}
+        />
+      )}
       {Array.from({ length: count }).map((_, index) => (
         <QuedadaCardSkeleton key={index} delay={index * 120} />
       ))}
     </div>
   );
-};
+});
+
+QuedadasListSkeleton.displayName = "QuedadasListSkeleton";
 
 export default QuedadasListSkeleton;

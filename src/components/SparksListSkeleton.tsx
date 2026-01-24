@@ -1,4 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { DataLoadingProgress } from "./DataLoadingProgress";
+import { MessageCircle, Heart, Bell } from "lucide-react";
+import { useMemo, useState, useEffect, memo } from "react";
 
 const SparkChatItemSkeleton = ({ delay = 0 }: { delay?: number }) => (
   <div 
@@ -27,16 +30,74 @@ const SparkChatItemSkeleton = ({ delay = 0 }: { delay?: number }) => (
 
 interface SparksListSkeletonProps {
   count?: number;
+  showProgress?: boolean;
 }
 
-export const SparksListSkeleton = ({ count = 4 }: SparksListSkeletonProps) => {
+export const SparksListSkeleton = memo(({ count = 4, showProgress = true }: SparksListSkeletonProps) => {
+  const [loadingStates, setLoadingStates] = useState({
+    chats: false,
+    messages: false,
+    unread: false
+  });
+
+  // Simulate loading progression
+  useEffect(() => {
+    if (!showProgress) return;
+    
+    const timers: NodeJS.Timeout[] = [];
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, chats: true }));
+    }, 500));
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, messages: true }));
+    }, 1000));
+    
+    timers.push(setTimeout(() => {
+      setLoadingStates(prev => ({ ...prev, unread: true }));
+    }, 1400));
+
+    return () => timers.forEach(clearTimeout);
+  }, [showProgress]);
+
+  const steps = useMemo(() => [
+    { 
+      id: "chats", 
+      label: "Conversaciones", 
+      icon: MessageCircle, 
+      status: loadingStates.chats ? "complete" as const : "loading" as const 
+    },
+    { 
+      id: "messages", 
+      label: "Mensajes recientes", 
+      icon: Heart, 
+      status: loadingStates.messages ? "complete" as const : loadingStates.chats ? "loading" as const : "pending" as const 
+    },
+    { 
+      id: "unread", 
+      label: "Sin leer", 
+      icon: Bell, 
+      status: loadingStates.unread ? "complete" as const : loadingStates.messages ? "loading" as const : "pending" as const 
+    },
+  ], [loadingStates]);
+
   return (
     <div className="space-y-5 sm:space-y-6">
+      {showProgress && (
+        <DataLoadingProgress 
+          steps={steps}
+          variant="compact"
+          showPercentage={true}
+        />
+      )}
       {Array.from({ length: count }).map((_, index) => (
         <SparkChatItemSkeleton key={index} delay={index * 100} />
       ))}
     </div>
   );
-};
+});
+
+SparksListSkeleton.displayName = "SparksListSkeleton";
 
 export default SparksListSkeleton;

@@ -1,10 +1,11 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, useMemo } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { triggerHaptic } from "@/utils/haptics";
-import LoadingProgressIndicator from "./LoadingProgressIndicator";
+import { DataLoadingProgress } from "./DataLoadingProgress";
+import { User, Users, Heart, Bell } from "lucide-react";
 
 interface FullScreenPresenceSkeletonProps {
   /** Show stacked cards behind for visual depth */
@@ -13,57 +14,95 @@ interface FullScreenPresenceSkeletonProps {
   showProgress?: boolean;
   /** Loading message override */
   loadingMessage?: string;
+  /** Loading states for multi-step progress */
+  loadingStates?: {
+    profile?: boolean;
+    presence?: boolean;
+    sparks?: boolean;
+    notifications?: boolean;
+  };
 }
-
-const loadingMessages = [
-  "Descubriendo perfiles...",
-  "Calculando compatibilidad...",
-  "Preparando tu feed...",
-  "¡Casi listo!"
-];
 
 const FullScreenPresenceSkeletonComponent = ({ 
   showStackedCards = true,
   showProgress = true,
-  loadingMessage
+  loadingMessage,
+  loadingStates
 }: FullScreenPresenceSkeletonProps) => {
   const prefersReducedMotion = useReducedMotion();
-  const [progress, setProgress] = useState(0);
-  const [loadingPhase, setLoadingPhase] = useState(0);
+  const [simulatedStates, setSimulatedStates] = useState({
+    profile: false,
+    presence: false,
+    sparks: false,
+    notifications: false
+  });
 
-  // Progressive loading simulation with haptic feedback
+  // Simulate loading progression if no explicit states provided
   useEffect(() => {
-    const milestones = [25, 50, 75, 100];
-    let currentMilestone = 0;
+    if (loadingStates) return;
+    
+    const timers: NodeJS.Timeout[] = [];
+    
+    timers.push(setTimeout(() => {
+      setSimulatedStates(prev => ({ ...prev, profile: true }));
+      triggerHaptic('light');
+    }, 600));
+    
+    timers.push(setTimeout(() => {
+      setSimulatedStates(prev => ({ ...prev, presence: true }));
+      triggerHaptic('light');
+    }, 1400));
+    
+    timers.push(setTimeout(() => {
+      setSimulatedStates(prev => ({ ...prev, sparks: true }));
+      triggerHaptic('light');
+    }, 2000));
+    
+    timers.push(setTimeout(() => {
+      setSimulatedStates(prev => ({ ...prev, notifications: true }));
+      triggerHaptic('medium');
+    }, 2500));
 
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        const newProgress = Math.min(prev + Math.random() * 12 + 3, 95);
-        
-        // Haptic feedback at milestones
-        if (currentMilestone < milestones.length && 
-            newProgress >= milestones[currentMilestone]) {
-          triggerHaptic('light');
-          currentMilestone++;
-        }
-        
-        return newProgress;
-      });
-    }, 300);
+    return () => timers.forEach(clearTimeout);
+  }, [loadingStates]);
 
-    const phaseInterval = setInterval(() => {
-      setLoadingPhase(prev => (prev + 1) % loadingMessages.length);
-    }, 2500);
+  const states = loadingStates || simulatedStates;
 
-    return () => {
-      clearInterval(progressInterval);
-      clearInterval(phaseInterval);
-    };
-  }, []);
+  // Generate steps based on states
+  const steps = useMemo(() => {
+    const allComplete = states.profile && states.presence && states.sparks && states.notifications;
+    
+    return [
+      { 
+        id: "profile", 
+        label: "Tu perfil", 
+        icon: User, 
+        status: states.profile ? "complete" as const : "loading" as const 
+      },
+      { 
+        id: "presence", 
+        label: "Perfiles activos", 
+        icon: Users, 
+        status: states.presence ? "complete" as const : states.profile ? "loading" as const : "pending" as const 
+      },
+      { 
+        id: "sparks", 
+        label: "Tus sparks", 
+        icon: Heart, 
+        status: states.sparks ? "complete" as const : states.presence ? "loading" as const : "pending" as const 
+      },
+      { 
+        id: "notifications", 
+        label: "Notificaciones", 
+        icon: Bell, 
+        status: states.notifications ? "complete" as const : states.sparks ? "loading" as const : "pending" as const 
+      },
+    ];
+  }, [states]);
 
   return (
     <div className="relative w-full max-w-md mx-auto px-4">
-      {/* Progress indicator at top */}
+      {/* Multi-step progress indicator at top */}
       {showProgress && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -71,12 +110,11 @@ const FullScreenPresenceSkeletonComponent = ({
           transition={{ duration: 0.3, delay: 0.1 }}
           className="mb-6"
         >
-          <LoadingProgressIndicator 
-            isLoading={true}
-            progress={progress}
-            messages={loadingMessage ? [loadingMessage] : loadingMessages}
-            size="md"
-            showIcon={true}
+          <DataLoadingProgress 
+            steps={steps}
+            variant="default"
+            showPercentage={true}
+            completionMessage="¡Listo para explorar!"
           />
         </motion.div>
       )}
