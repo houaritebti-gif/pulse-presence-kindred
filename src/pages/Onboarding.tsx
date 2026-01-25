@@ -1051,7 +1051,7 @@ const Onboarding = () => {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-[env(safe-area-inset-bottom,24px)] overflow-hidden relative">
+    <main className="min-h-[100dvh] max-h-[100dvh] bg-background flex flex-col px-4 sm:px-6 pt-4 sm:pt-6 overflow-hidden relative">
       {/* Ambient glow */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
       {/* Progress bar */}
@@ -1122,14 +1122,14 @@ const Onboarding = () => {
       </div>
 
       {/* Step content */}
-      <div className="flex-1 max-w-md mx-auto w-full">
+      <div className="flex-1 max-w-md mx-auto w-full overflow-y-auto min-h-0">
         <AnimatePresence mode="wait" custom={direction}>
           {renderStepContent()}
         </AnimatePresence>
       </div>
 
-      {/* Navigation */}
-      <div className="flex gap-4 mt-8 max-w-md mx-auto w-full">
+      {/* Navigation - sticky at bottom */}
+      <div className="flex gap-4 pt-4 pb-[max(env(safe-area-inset-bottom),16px)] max-w-md mx-auto w-full flex-shrink-0 bg-background">
         {step > 1 && (
           <Button
             variant="outline"

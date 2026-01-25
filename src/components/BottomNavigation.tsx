@@ -171,8 +171,8 @@ export const BottomNavigation = () => {
     },
   ];
 
-  // Don't show on auth, landing, or chat pages
-  const hiddenPaths = ["/", "/auth", "/chat", "/spark", "/quedada"];
+  // Don't show on auth, landing, chat, or onboarding pages
+  const hiddenPaths = ["/", "/auth", "/chat", "/spark", "/quedada", "/onboarding"];
   const shouldHide = hiddenPaths.some(p => 
     location.pathname === p || 
     (p !== "/" && location.pathname.startsWith(p + "/"))
