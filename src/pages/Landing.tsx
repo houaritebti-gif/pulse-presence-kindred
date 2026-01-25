@@ -100,29 +100,14 @@ const Landing = () => {
           
           {/* Secondary tagline */}
           <motion.div
-            className="flex items-center gap-2"
+            className="flex items-center"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.7 }}
           >
-            <span className="h-[1px] w-6 bg-kiki-black/20" />
-            <p className="text-caption md:text-subtitle-sm text-kiki-black/60 font-medium italic">
-              aquí no hay match, hay <span className="text-kiki-red-warm font-semibold not-italic">chispa</span>
+            <p className="text-caption md:text-subtitle-sm text-kiki-black/60 font-medium">
+              aquí no hay match, hay <span className="text-kiki-red-warm font-semibold">chispa</span>
             </p>
-            <motion.span
-              animate={{ 
-                scale: [1, 1.3, 1],
-                rotate: [0, 15, -15, 0]
-              }}
-              transition={{ 
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              <Sparkles className="w-4 h-4 text-kiki-red-warm" />
-            </motion.span>
-            <span className="h-[1px] w-6 bg-kiki-black/20" />
           </motion.div>
         </div>
         
