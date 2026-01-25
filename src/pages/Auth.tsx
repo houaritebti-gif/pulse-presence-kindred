@@ -194,7 +194,7 @@ const Auth = () => {
   }
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 relative overflow-hidden">
+    <main className="min-h-[100dvh] bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-[max(env(safe-area-inset-bottom),24px)] relative overflow-x-hidden overflow-y-auto">
       {/* Animated ambient glow - enhanced */}
       <motion.div 
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-primary/20 blur-[180px] rounded-full pointer-events-none"

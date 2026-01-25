@@ -20,7 +20,8 @@ import { sendPushNotification } from "@/utils/pushNotifications";
 import { isVibrationEnabled, setVibrationEnabled, isDndEnabled, setDndEnabled, getDndHours, setDndHours } from "@/utils/notificationSound";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GenderType, CULTURAL_INTERESTS } from "@/constants/profileOptions";
+import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GenderType } from "@/constants/profileOptions";
+import InterestsSelector from "@/components/InterestsSelector";
 import { Textarea } from "@/components/ui/textarea";
 import { useBlockedUsersList, useUnblockUser, useMyReportHistory, REPORT_REASONS, REPORT_STATUS_LABELS } from "@/hooks/useUserModeration";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -930,53 +931,17 @@ const Profile = () => {
 
         {/* Interests */}
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '387ms', animationFillMode: 'forwards' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-              Tus intereses
-            </h2>
-            <span className={`text-xs ${selectedInterests.length < 3 ? "text-destructive font-medium" : "text-muted-foreground"}`}>
-              ({selectedInterests.length}/7)
-            </span>
-          </div>
-          
-          {/* Progress indicator */}
-          {selectedInterests.length < 3 && (
-            <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary transition-all duration-300 ease-out"
-                    style={{ width: `${(selectedInterests.length / 3) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs text-destructive font-medium whitespace-nowrap">
-                  Faltan {3 - selectedInterests.length}
-                </span>
-              </div>
-            </div>
-          )}
-          
-          {selectedInterests.length >= 3 && (
-            <p className="text-xs text-primary mb-4 font-medium">
-              ✓ Mínimo alcanzado
-            </p>
-          )}
-          
-          <div className="flex flex-wrap gap-2">
-            {CULTURAL_INTERESTS.map(interest => (
-              <button
-                key={interest.value}
-                onClick={() => { triggerHaptic('selection'); toggleInterest(interest.value); }}
-                className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
-                  selectedInterests.includes(interest.value)
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
-                }`}
-              >
-                {interest.emoji} {interest.value}
-              </button>
-            ))}
-          </div>
+          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+            Tus intereses
+          </h2>
+          <InterestsSelector
+            selectedInterests={selectedInterests}
+            onToggleInterest={toggleInterest}
+            maxInterests={10}
+            minInterests={3}
+            showCounter={true}
+            variant="profile"
+          />
         </div>
 
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>
