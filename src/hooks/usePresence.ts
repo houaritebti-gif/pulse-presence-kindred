@@ -5,6 +5,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "./useProfile";
 import { useOnlineStatus } from "./useOnlineStatus";
 
+export interface ProfilePromptData {
+  id: string;
+  prompt_key: string;
+  answer: string;
+  display_order: number;
+}
+
 export interface PresenceWithProfile {
   id: string;
   profile_id: string;
@@ -29,6 +36,7 @@ export interface PresenceWithProfile {
   tribes: string[];
   musicStyles: string[];
   interests: string[];
+  prompts: ProfilePromptData[];
   hasVisibilityBoost?: boolean;
 }
 
@@ -145,10 +153,11 @@ export const usePresenceList = (showAllProfiles: boolean = true) => {
       let tribesMap: Record<string, string[]> = {};
       let musicMap: Record<string, string[]> = {};
       let interestsMap: Record<string, string[]> = {};
+      let promptsMap: Record<string, ProfilePromptData[]> = {};
       let visibilityBoostMap: Record<string, boolean> = {};
       
       if (profileIds.length > 0) {
-        const [tribesResult, musicResult, interestsResult, visibilityBoostResult] = await Promise.all([
+        const [tribesResult, musicResult, interestsResult, promptsResult, visibilityBoostResult] = await Promise.all([
           supabase
             .from("profile_tribes")
             .select("profile_id, tribe")
@@ -161,6 +170,11 @@ export const usePresenceList = (showAllProfiles: boolean = true) => {
             .from("profile_interests")
             .select("profile_id, interest")
             .in("profile_id", profileIds),
+          supabase
+            .from("profile_prompts")
+            .select("id, profile_id, prompt_key, answer, display_order")
+            .in("profile_id", profileIds)
+            .order("display_order", { ascending: true }),
           // Check for active visibility boosts from spark shop
           supabase
             .from("spark_purchased_items")
@@ -188,6 +202,17 @@ export const usePresenceList = (showAllProfiles: boolean = true) => {
           return acc;
         }, {} as Record<string, string[]>);
 
+        promptsMap = (promptsResult.data || []).reduce((acc, p) => {
+          if (!acc[p.profile_id]) acc[p.profile_id] = [];
+          acc[p.profile_id].push({
+            id: p.id,
+            prompt_key: p.prompt_key,
+            answer: p.answer,
+            display_order: p.display_order
+          });
+          return acc;
+        }, {} as Record<string, ProfilePromptData[]>);
+
         // Map visibility boost
         (visibilityBoostResult.data || []).forEach(v => {
           visibilityBoostMap[v.profile_id] = true;
@@ -202,6 +227,7 @@ export const usePresenceList = (showAllProfiles: boolean = true) => {
         tribes: tribesMap[p.profile?.id] || [],
         musicStyles: musicMap[p.profile?.id] || [],
         interests: interestsMap[p.profile?.id] || [],
+        prompts: promptsMap[p.profile?.id] || [],
         hasVisibilityBoost: visibilityBoostMap[p.profile?.id] || false,
       })) as PresenceWithProfile[];
 

@@ -16,6 +16,7 @@ export interface CachedProfile {
   tribes: string[];
   musicStyles: string[];
   interests: string[];
+  prompts?: { id: string; prompt_key: string; answer: string; display_order: number }[];
   cachedAt: number;
   expiresAt: number;
 }

@@ -53,6 +53,7 @@ import ProfileStatsCard from "@/components/ProfileStatsCard";
 import { QuickTipsCard } from "@/components/QuickTipsCard";
 import { DailyChallengesCard } from "@/components/DailyChallengesCard";
 import { ChallengeStreakCalendar } from "@/components/ChallengeStreakCalendar";
+import { ProfilePromptsEditor } from "@/components/ProfilePromptsEditor";
 // Spark Energy Card Component for Profile with ripple effect
 const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
   const { sparkEnergy, currentLevel, progressToNext, isLoading } = useSparkEnergy();
@@ -841,6 +842,11 @@ const Profile = () => {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Profile Prompts */}
+        <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '310ms', animationFillMode: 'forwards' }}>
+          <ProfilePromptsEditor />
         </div>
 
         {/* Looking for */}

@@ -186,6 +186,7 @@ const fetchFreshProfiles = async (profileIds: string[]): Promise<PresenceWithPro
       tribes: tribesMap.get(item.profile_id) || [],
       musicStyles: stylesMap.get(item.profile_id) || [],
       interests: interestsMap.get(item.profile_id) || [],
+      prompts: [],
       hasVisibilityBoost: false,
     }));
   } catch (error) {
