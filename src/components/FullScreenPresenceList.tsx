@@ -786,7 +786,7 @@ export const FullScreenPresenceList = memo(({
             isRewindUnlimited={isRewindUnlimited}
             availableSuperChispas={getAvailableQuantity("super_spark")}
             disabled={allProfiles.length === 0}
-            showKeyboardHints={!isMobile}
+            showKeyboardHints={false}
           />
         </div>
       )}
