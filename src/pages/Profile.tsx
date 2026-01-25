@@ -27,6 +27,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import AdvancedSettingsSection from "@/components/AdvancedSettingsSection";
 import OfflineQueueManager from "@/components/OfflineQueueManager";
 import ProfileVisibilitySection from "@/components/ProfileVisibilitySection";
+import { LocationSettingsSection } from "@/components/LocationSettingsSection";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfilePhotoManager from "@/components/ProfilePhotoManager";
 import UploadProgress from "@/components/UploadProgress";
@@ -1108,6 +1109,9 @@ const Profile = () => {
 
         {/* Profile Visibility Settings */}
         <ProfileVisibilitySection />
+
+        {/* Location Settings */}
+        <LocationSettingsSection />
 
         {/* Privacy Settings */}
         <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '560ms', animationFillMode: 'forwards' }}>
