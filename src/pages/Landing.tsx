@@ -98,17 +98,50 @@ const Landing = () => {
             Para gente <span className="text-kiki-black font-bold">diferente</span>, y punto.
           </motion.p>
           
-          {/* Secondary tagline */}
-          <motion.div
-            className="flex items-center"
+          {/* Secondary tagline - refined visual */}
+          <motion.p
+            className="text-subtitle-sm md:text-subtitle text-kiki-black/70 tracking-wide"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.7 }}
+            style={{ 
+              letterSpacing: '0.02em'
+            }}
           >
-            <p className="text-caption md:text-subtitle-sm text-kiki-black/60 font-medium">
-              aquí no hay match, hay <span className="text-kiki-red-warm font-semibold">chispa</span>
-            </p>
-          </motion.div>
+            aquí no hay match, hay{' '}
+            <motion.span 
+              className="text-kiki-red-warm font-bold relative inline-block"
+              animate={{ 
+                textShadow: [
+                  '0 0 0px hsl(var(--kiki-red-warm) / 0)',
+                  '0 0 8px hsl(var(--kiki-red-warm) / 0.4)',
+                  '0 0 0px hsl(var(--kiki-red-warm) / 0)'
+                ]
+              }}
+              transition={{ 
+                duration: 2.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            >
+              chispa
+              <motion.span
+                className="absolute -right-4 -top-1"
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.7, 1, 0.7],
+                  rotate: [0, 10, 0]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                ✨
+              </motion.span>
+            </motion.span>
+          </motion.p>
         </div>
         
         {/* CTA Buttons */}
