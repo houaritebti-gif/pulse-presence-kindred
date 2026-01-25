@@ -32,12 +32,16 @@ export interface PresenceWithProfile {
     identity_verified: boolean | null;
     gender: string | null;
     birthdate: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    share_location: boolean | null;
   };
   tribes: string[];
   musicStyles: string[];
   interests: string[];
   prompts: ProfilePromptData[];
   hasVisibilityBoost?: boolean;
+  distanceKm?: number | null;
 }
 
 const PRESENCE_PAGE_SIZE = 20;
@@ -130,7 +134,7 @@ export const usePresenceList = (showAllProfiles: boolean = true) => {
         .from("presence")
         .select(`
           *,
-          profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic, looking_for, email_verified, identity_verified, gender, birthdate)
+          profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic, looking_for, email_verified, identity_verified, gender, birthdate, latitude, longitude, share_location)
         `)
         .eq("visible_to_others", true)
         .order("last_pulse", { ascending: false })
