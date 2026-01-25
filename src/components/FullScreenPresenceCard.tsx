@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, forwardRef } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star, Flame } from "lucide-react";
+import { useState, useEffect, useRef, forwardRef, useMemo } from "react";
+import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star, Flame, Navigation } from "lucide-react";
 import { ProfilePromptsDisplay } from "@/components/ProfilePromptsDisplay";
 import { useScreenshotProtection } from "@/hooks/useScreenshotProtection";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -32,6 +32,8 @@ import BlurPlaceholderImage from "@/components/BlurPlaceholderImage";
 import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import SparkleTrail from "@/components/SparkleTrail";
 import VisitedIndicator from "@/components/VisitedIndicator";
+import { DistanceBadge } from "@/components/DistanceBadge";
+import { calculateDistanceKm } from "@/hooks/useGeolocation";
 import { getSparkleTrailEnabled } from "@/hooks/useAdvancedSettings";
 import { useProfile } from "@/hooks/useProfile";
 import { useGhostMessageLimit } from "@/hooks/useSparks";
@@ -73,6 +75,9 @@ interface FullScreenPresenceCardProps {
       looking_for?: string[] | null;
       gender?: string | null;
       birthdate?: string | null;
+      latitude?: number | null;
+      longitude?: number | null;
+      share_location?: boolean | null;
     } | null;
     tribes: string[];
     musicStyles: string[];
@@ -201,6 +206,21 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
 
   // Check available Super Spark items
   const availableSuperSparks = getAvailableQuantity("super_spark");
+
+  // Calculate distance between users if both share location
+  const distanceKm = useMemo(() => {
+    const myLat = (myProfile as any)?.latitude;
+    const myLng = (myProfile as any)?.longitude;
+    const myShareLocation = (myProfile as any)?.share_location;
+    const theirLat = presence.profile?.latitude;
+    const theirLng = presence.profile?.longitude;
+    const theirShareLocation = presence.profile?.share_location;
+
+    if (myShareLocation && theirShareLocation && myLat && myLng && theirLat && theirLng) {
+      return calculateDistanceKm(myLat, myLng, theirLat, theirLng);
+    }
+    return null;
+  }, [myProfile, presence.profile]);
 
   // Trigger confetti for perfect compatibility (5/5)
   useEffect(() => {
@@ -931,6 +951,13 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                   <MapPin className="w-3.5 h-3.5" />
                   {presence.profile.city}
                 </span>
+              )}
+              {distanceKm !== null && (
+                <DistanceBadge 
+                  distanceKm={distanceKm} 
+                  variant="fullscreen" 
+                  showTooltip={true}
+                />
               )}
               {presence.profile?.vibe && (
                 <span className="flex items-center gap-1">
