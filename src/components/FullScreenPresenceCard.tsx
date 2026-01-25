@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, forwardRef } from "react";
 import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User, MapPin, ChevronDown, Music, Star, Flame } from "lucide-react";
+import { ProfilePromptsDisplay } from "@/components/ProfilePromptsDisplay";
 import { useScreenshotProtection } from "@/hooks/useScreenshotProtection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useReducedMotion, getExitAnimationConfig } from "@/hooks/useReducedMotion";
@@ -76,6 +77,12 @@ interface FullScreenPresenceCardProps {
     tribes: string[];
     musicStyles: string[];
     interests: string[];
+    prompts?: {
+      id: string;
+      prompt_key: string;
+      answer: string;
+      display_order: number;
+    }[];
     last_pulse?: string;
     is_present?: boolean;
   };
@@ -948,6 +955,17 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                     +{presence.tribes.length - 3}
                   </span>
                 )}
+              </div>
+            )}
+
+            {/* Profile prompts */}
+            {presence.prompts && presence.prompts.length > 0 && (
+              <div className="mt-3">
+                <ProfilePromptsDisplay 
+                  prompts={presence.prompts} 
+                  variant="compact" 
+                  className="bg-white/10 backdrop-blur-sm border-white/20 text-white [&_.text-muted-foreground]:text-white/70"
+                />
               </div>
             )}
 
