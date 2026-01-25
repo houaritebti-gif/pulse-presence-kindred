@@ -1,10 +1,17 @@
 import { motion } from 'framer-motion';
 import { getPromptByKey } from '@/constants/profilePrompts';
-import { ProfilePromptData } from '@/hooks/useProfilePrompts';
 import { cn } from '@/lib/utils';
 
+// Minimal prompt data needed for display
+interface PromptDisplayData {
+  id: string;
+  prompt_key: string;
+  answer: string;
+  display_order?: number;
+}
+
 interface ProfilePromptsDisplayProps {
-  prompts: ProfilePromptData[];
+  prompts: PromptDisplayData[];
   variant?: 'card' | 'full' | 'compact';
   className?: string;
 }
