@@ -91,12 +91,12 @@ const BirthdateSelector = ({ value, onChange }: BirthdateSelectorProps) => {
   return (
     <div className="space-y-3">
       <Label>Fecha de nacimiento</Label>
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <Select value={selectedDay} onValueChange={(v) => handleChange("day", v)}>
-          <SelectTrigger className="w-[80px]">
+          <SelectTrigger className="w-[80px] h-12">
             <SelectValue placeholder="Día" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper" side="bottom" align="start">
             {days.map((day) => (
               <SelectItem key={day} value={day}>{day}</SelectItem>
             ))}
@@ -104,10 +104,10 @@ const BirthdateSelector = ({ value, onChange }: BirthdateSelectorProps) => {
         </Select>
 
         <Select value={selectedMonth} onValueChange={(v) => handleChange("month", v)}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-[130px] h-12">
             <SelectValue placeholder="Mes" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper" side="bottom" align="center">
             {months.map((month) => (
               <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
             ))}
@@ -115,10 +115,10 @@ const BirthdateSelector = ({ value, onChange }: BirthdateSelectorProps) => {
         </Select>
 
         <Select value={selectedYear} onValueChange={(v) => handleChange("year", v)}>
-          <SelectTrigger className="w-[100px]">
+          <SelectTrigger className="w-[100px] h-12">
             <SelectValue placeholder="Año" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper" side="bottom" align="end">
             {years.map((year) => (
               <SelectItem key={year} value={String(year)}>{year}</SelectItem>
             ))}

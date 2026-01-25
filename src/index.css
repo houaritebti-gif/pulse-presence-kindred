@@ -264,6 +264,13 @@
   html {
     scroll-behavior: smooth;
     transition: background-color 0.3s ease, color 0.3s ease;
+    /* iOS safe area support */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  
+  /* iOS safe areas for full-height elements */
+  body {
+    min-height: 100dvh;
   }
 
   /* Smooth scroll for all scrollable containers */
@@ -1059,4 +1066,23 @@
 
 .swipe-overlay-right {
   background: linear-gradient(to left, hsl(355 82% 56% / 0.2), transparent);
+}
+
+/* Hide scrollbar for horizontal scroll containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area utilities */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
 }

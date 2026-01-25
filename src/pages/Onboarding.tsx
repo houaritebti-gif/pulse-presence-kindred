@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users, Star } from "lucide-react";
+import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users } from "lucide-react";
+import InterestsSelector from "@/components/InterestsSelector";
 import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
@@ -667,56 +668,20 @@ const Onboarding = () => {
         return (
           <motion.div 
             key="step-6-interests" 
-            className="space-y-4 max-h-[55vh] overflow-y-auto"
+            className="space-y-2"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
-            <motion.div 
-              className="flex items-center gap-2 text-muted-foreground mb-2"
-              variants={itemVariants}
-            >
-              <Star className="w-4 h-4" />
-              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
-                Selecciona entre 3 y 10 intereses
-              </span>
-            </motion.div>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {CULTURAL_INTERESTS.map((interest) => (
-                <motion.button
-                  key={interest.value}
-                  onClick={() => { triggerHaptic('selection'); toggleInterest(interest.value); }}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`px-3 py-2 rounded-full text-sm transition-colors flex items-center gap-1.5 ${
-                    selectedInterests.includes(interest.value)
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card text-card-foreground hover:bg-card/80"
-                  }`}
-                  style={{ fontFamily: 'Arial, sans-serif' }}
-                >
-                  <span>{interest.emoji}</span>
-                  <span>{interest.value}</span>
-                </motion.button>
-              ))}
-            </div>
-            <AnimatePresence>
-              {selectedInterests.length > 0 && (
-                <motion.p 
-                  className={`text-center text-sm sticky bottom-0 bg-background py-2 ${
-                    selectedInterests.length >= 3 ? "text-primary" : "text-muted-foreground"
-                  }`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  {selectedInterests.length}/10 intereses
-                  {selectedInterests.length < 3 && " (mínimo 3)"}
-                </motion.p>
-              )}
-            </AnimatePresence>
+            <InterestsSelector
+              selectedInterests={selectedInterests}
+              onToggleInterest={toggleInterest}
+              maxInterests={10}
+              minInterests={3}
+              showCounter={true}
+              variant="onboarding"
+            />
           </motion.div>
         );
 
@@ -1086,7 +1051,7 @@ const Onboarding = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 overflow-hidden relative">
+    <main className="min-h-[100dvh] bg-background flex flex-col px-4 sm:px-6 py-6 sm:py-8 pb-[env(safe-area-inset-bottom,24px)] overflow-hidden relative">
       {/* Ambient glow */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
       {/* Progress bar */}
