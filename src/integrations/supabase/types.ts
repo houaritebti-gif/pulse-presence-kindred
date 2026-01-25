@@ -914,6 +914,9 @@ export type Database = {
           has_tattoos: boolean | null
           id: string
           identity_verified: boolean | null
+          latitude: number | null
+          location_updated_at: string | null
+          longitude: number | null
           looking_for: string[] | null
           name: string | null
           notify_max_age: number | null
@@ -922,6 +925,7 @@ export type Database = {
           notify_profile_visits: boolean
           notify_same_city_only: boolean
           notify_summary_hour: number
+          share_location: boolean | null
           share_typing_status: boolean | null
           shaved_head: boolean | null
           show_achievements: boolean
@@ -955,6 +959,9 @@ export type Database = {
           has_tattoos?: boolean | null
           id?: string
           identity_verified?: boolean | null
+          latitude?: number | null
+          location_updated_at?: string | null
+          longitude?: number | null
           looking_for?: string[] | null
           name?: string | null
           notify_max_age?: number | null
@@ -963,6 +970,7 @@ export type Database = {
           notify_profile_visits?: boolean
           notify_same_city_only?: boolean
           notify_summary_hour?: number
+          share_location?: boolean | null
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
           show_achievements?: boolean
@@ -996,6 +1004,9 @@ export type Database = {
           has_tattoos?: boolean | null
           id?: string
           identity_verified?: boolean | null
+          latitude?: number | null
+          location_updated_at?: string | null
+          longitude?: number | null
           looking_for?: string[] | null
           name?: string | null
           notify_max_age?: number | null
@@ -1004,6 +1015,7 @@ export type Database = {
           notify_profile_visits?: boolean
           notify_same_city_only?: boolean
           notify_summary_hour?: number
+          share_location?: boolean | null
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
           show_achievements?: boolean
@@ -1701,6 +1713,10 @@ export type Database = {
     }
     Functions: {
       calculate_age: { Args: { birthdate: string }; Returns: number }
+      calculate_distance_km: {
+        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
+        Returns: number
+      }
       can_view_profile: {
         Args: { target_profile_id: string; viewer_user_id: string }
         Returns: boolean
@@ -1730,6 +1746,10 @@ export type Database = {
       get_connection_status: {
         Args: { target_profile_id: string; viewer_user_id: string }
         Returns: string
+      }
+      get_distance_to_profile: {
+        Args: { target_profile_id: string; viewer_user_id: string }
+        Returns: number
       }
       get_spark_level: { Args: { p_total_earned: number }; Returns: number }
       get_today_earned_energy: {

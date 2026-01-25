@@ -5,7 +5,7 @@ import { PresenceHeaderActions } from "@/components/PresenceHeaderActions";
 import { PageHeader } from "@/components/PageHeader";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Sparkles, Loader2, Eye, EyeOff, Flame, Bell, Radio, Crown, Lock, CloudOff } from "lucide-react";
-import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat } from "@/hooks/usePresence";
+import { usePresenceList, useMyPresence, useSetPresence, usePresenceHeartbeat, PresenceWithProfile } from "@/hooks/usePresence";
 import { usePresenceWithOfflineCache } from "@/hooks/usePresenceCache";
 import { usePresenceCacheSync } from "@/hooks/usePresenceCacheSync";
 import { useRetrySuccessToast } from "@/hooks/useRetrySuccessToast";
@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { InteractiveTutorial } from "@/components/InteractiveTutorial";
 import { useTutorial } from "@/hooks/useTutorial";
+import { useGeolocation, calculateDistanceKm } from "@/hooks/useGeolocation";
 
 const Presence = () => {
   const navigate = useNavigate();
@@ -82,6 +83,15 @@ const Presence = () => {
   // Tutorial hook
   const { isOpen: isTutorialOpen, openTutorial, closeTutorial, completeTutorial, checkAndOpenForNewUser } = useTutorial();
   
+  // Geolocation hook for nearby filter
+  const { 
+    latitude: myLatitude, 
+    longitude: myLongitude, 
+    hasLocation, 
+    updateLocation,
+    loading: locationLoading 
+  } = useGeolocation();
+  
   // Auto-open tutorial for new users
   useEffect(() => {
     // Small delay to let the page load first
@@ -90,6 +100,17 @@ const Presence = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [checkAndOpenForNewUser]);
+
+  // Handle request location for nearby filter
+  const handleRequestLocation = useCallback(async () => {
+    try {
+      await updateLocation(true);
+      setFilters(prev => ({ ...prev, nearbyOnly: true }));
+      toast.success("Ubicación activada. Ahora puedes filtrar por cercanía.");
+    } catch (error) {
+      // Error already shown in toast by useGeolocation
+    }
+  }, [updateLocation, setFilters]);
 
   // Callback for realtime upsell toast (only for free users)
   const handleRealtimeUpsell = useCallback(() => {
@@ -365,6 +386,19 @@ const Presence = () => {
         if (profileId && visitedMap[profileId]) return false;
       }
 
+      // Nearby filter - only show profiles within reasonable distance
+      if (filters.nearbyOnly && myLatitude && myLongitude) {
+        const theirLat = presence.profile?.latitude;
+        const theirLng = presence.profile?.longitude;
+        const sharesLocation = presence.profile?.share_location;
+        
+        if (!theirLat || !theirLng || !sharesLocation) return false;
+        
+        const distance = calculateDistanceKm(myLatitude, myLongitude, theirLat, theirLng);
+        const maxDistance = filters.maxDistanceKm || 50; // Default 50km
+        if (distance > maxDistance) return false;
+      }
+
       return true;
     });
 
@@ -574,6 +608,8 @@ const Presence = () => {
           onChange={setFilters} 
           availableCities={availableCities}
           onRealtimeUpsell={handleRealtimeUpsell}
+          hasLocation={hasLocation}
+          onRequestLocation={handleRequestLocation}
         />
 
         {/* Presence indicator - show cached indicator when using cached data */}

@@ -23,6 +23,8 @@ export interface PresenceFilters {
   ageRange?: [number, number];
   minCompatibility?: number;
   hideVisited?: boolean;
+  nearbyOnly?: boolean;
+  maxDistanceKm?: number;
 }
 
 interface PresenceFiltersProps {
@@ -30,9 +32,11 @@ interface PresenceFiltersProps {
   onChange: (filters: PresenceFilters) => void;
   availableCities?: string[];
   onRealtimeUpsell?: () => void;
+  hasLocation?: boolean;
+  onRequestLocation?: () => void;
 }
 
-const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onRealtimeUpsell }: PresenceFiltersProps) => {
+const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onRealtimeUpsell, hasLocation = false, onRequestLocation }: PresenceFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [interestSearch, setInterestSearch] = useState("");
@@ -47,8 +51,9 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
   const hasCompatibilityFilter = filters.minCompatibility && filters.minCompatibility > 0;
   const hasInterestsFilter = (filters.interests?.length ?? 0) > 0;
   const hasHideVisitedFilter = filters.hideVisited === true;
-  const hasActiveFilters = (filters.tribes?.length ?? 0) > 0 || (filters.musicStyles?.length ?? 0) > 0 || (filters.details?.length ?? 0) > 0 || (filters.lookingFor?.length ?? 0) > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter || hasCompatibilityFilter || hasInterestsFilter || hasHideVisitedFilter;
-  const activeCount = (filters.tribes?.length ?? 0) + (filters.musicStyles?.length ?? 0) + (filters.details?.length ?? 0) + (filters.lookingFor?.length ?? 0) + (filters.genders?.length ?? 0) + (filters.cities?.length ?? 0) + (filters.interests?.length ?? 0) + (hasAgeFilter ? 1 : 0) + (hasCompatibilityFilter ? 1 : 0) + (hasHideVisitedFilter ? 1 : 0);
+  const hasNearbyFilter = filters.nearbyOnly === true;
+  const hasActiveFilters = (filters.tribes?.length ?? 0) > 0 || (filters.musicStyles?.length ?? 0) > 0 || (filters.details?.length ?? 0) > 0 || (filters.lookingFor?.length ?? 0) > 0 || hasGenderFilter || hasCityFilter || hasAgeFilter || hasCompatibilityFilter || hasInterestsFilter || hasHideVisitedFilter || hasNearbyFilter;
+  const activeCount = (filters.tribes?.length ?? 0) + (filters.musicStyles?.length ?? 0) + (filters.details?.length ?? 0) + (filters.lookingFor?.length ?? 0) + (filters.genders?.length ?? 0) + (filters.cities?.length ?? 0) + (filters.interests?.length ?? 0) + (hasAgeFilter ? 1 : 0) + (hasCompatibilityFilter ? 1 : 0) + (hasHideVisitedFilter ? 1 : 0) + (hasNearbyFilter ? 1 : 0);
 
   // Sort cities alphabetically
   const sortedCities = useMemo(() => 
@@ -158,7 +163,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
   const clearFilters = () => {
     triggerHaptic('medium');
     // Important: keep showAllProfiles explicitly set so we never fall back to "Activos ahora" due to undefined
-    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], showAllProfiles: true, ageRange: undefined, minCompatibility: undefined, hideVisited: false });
+    onChange({ tribes: [], musicStyles: [], details: [], lookingFor: [], genders: [], cities: [], interests: [], showAllProfiles: true, ageRange: undefined, minCompatibility: undefined, hideVisited: false, nearbyOnly: false, maxDistanceKm: undefined });
   };
 
   const handleMinCompatibilityChange = (value: number) => {
@@ -358,6 +363,18 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
               </button>
             );
           })}
+          {hasNearbyFilter && (
+            <button
+              onClick={() => {
+                triggerHaptic('light');
+                onChange({ ...filters, nearbyOnly: false });
+              }}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[11px] font-medium hover:bg-primary/30 transition-all active:scale-95"
+            >
+              📍 Cerca de mí
+              <X className="w-3 h-3" />
+            </button>
+          )}
           <button
             onClick={() => {
               triggerHaptic('medium');
@@ -398,6 +415,27 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  {/* Nearby filter - only show if location is available or can be requested */}
+                  <button
+                    onClick={() => {
+                      triggerHaptic('light');
+                      if (!hasLocation && onRequestLocation) {
+                        onRequestLocation();
+                      } else {
+                        onChange({ ...filters, nearbyOnly: !filters.nearbyOnly });
+                      }
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
+                      filters.nearbyOnly
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                    }`}
+                  >
+                    <MapPin className={`w-3.5 h-3.5 ${!hasLocation ? "opacity-60" : ""}`} />
+                    Cerca de mí
+                    {!hasLocation && <span className="text-[10px] opacity-70">📍</span>}
+                  </button>
+
                   {/* Hide visited toggle */}
                   <button
                     onClick={() => {
