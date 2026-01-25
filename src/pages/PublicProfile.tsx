@@ -14,6 +14,7 @@ import { useProfilePhotos } from "@/hooks/useProfilePhotos";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import { useSparkChatWith } from "@/hooks/useSparks";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
+import { useProfilePrompts } from "@/hooks/useProfilePrompts";
 import { Button } from "@/components/ui/button";
 import PremiumBadge from "@/components/PremiumBadge";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -32,6 +33,7 @@ import {
 import UserModerationModal from "@/components/UserModerationModal";
 import ProfilePhotoGallery from "@/components/ProfilePhotoGallery";
 import PublicAchievementsBadges from "@/components/PublicAchievementsBadges";
+import { ProfilePromptsDisplay } from "@/components/ProfilePromptsDisplay";
 import { triggerHaptic } from "@/utils/haptics";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import { getZodiacSign, getBirthYear } from "@/utils/zodiacUtils";
@@ -62,6 +64,7 @@ const PublicProfile = () => {
   const { data: profilePhotos } = useProfilePhotos(profileId);
   const { data: subscriptionTier } = useUserSubscription(profileId);
   const sparkChatId = useSparkChatWith(profileId);
+  const { prompts: profilePrompts } = useProfilePrompts(profileId);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
   const [bioExpanded, setBioExpanded] = useState(false);
@@ -540,6 +543,11 @@ const PublicProfile = () => {
                 )}
               </div>
             </div>
+          )}
+          
+          {/* Profile Prompts */}
+          {profilePrompts && profilePrompts.length > 0 && (
+            <ProfilePromptsDisplay prompts={profilePrompts} variant="full" />
           )}
           
           {/* Public Achievements Badges */}
