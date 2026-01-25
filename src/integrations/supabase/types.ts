@@ -1713,6 +1713,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_visible_presence: { Args: { p_profile_id: string }; Returns: boolean }
       rotate_internal_secret: {
         Args: { p_secret_name: string }
         Returns: string
