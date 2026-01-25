@@ -69,6 +69,7 @@ const cachedToPresence = (cached: CachedProfile): PresenceWithProfile => ({
   tribes: cached.tribes,
   musicStyles: cached.musicStyles,
   interests: cached.interests,
+  prompts: cached.prompts || [],
   hasVisibilityBoost: false,
 });
 
