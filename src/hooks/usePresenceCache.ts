@@ -141,20 +141,34 @@ export const usePresenceCache = (profileIds: string[]) => {
   const [cachedProfiles, setCachedProfiles] = useState<PresenceWithProfile[]>([]);
   const [isLoadingCache, setIsLoadingCache] = useState(true);
   const loadedIdsRef = useRef<Set<string>>(new Set());
+  const lastIdsRef = useRef<string>("");
+  const loadingRef = useRef(false);
 
   useEffect(() => {
+    // Stable dependency check to avoid unnecessary effect runs
+    const idsKey = profileIds.sort().join(',');
+    if (idsKey === lastIdsRef.current) {
+      return;
+    }
+    lastIdsRef.current = idsKey;
+
     if (profileIds.length === 0) {
       setCachedProfiles([]);
       setIsLoadingCache(false);
       return;
     }
 
+    // Prevent concurrent loading
+    if (loadingRef.current) return;
+
     const loadFromCache = async () => {
+      loadingRef.current = true;
       const cached: PresenceWithProfile[] = [];
       const idsToLoad = profileIds.filter(id => !loadedIdsRef.current.has(id));
       
       if (idsToLoad.length === 0) {
         setIsLoadingCache(false);
+        loadingRef.current = false;
         return;
       }
 
@@ -191,10 +205,11 @@ export const usePresenceCache = (profileIds: string[]) => {
       }
 
       setIsLoadingCache(false);
+      loadingRef.current = false;
     };
 
     loadFromCache();
-  }, [profileIds.join(',')]);
+  }, [profileIds]);
 
   return { cachedProfiles, isLoadingCache };
 };
