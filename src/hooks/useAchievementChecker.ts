@@ -21,6 +21,7 @@ export const useAchievementChecker = () => {
     checkSparksSentAchievements,
     checkSuperSparkAchievements,
     checkChallengeStreakAchievements,
+    isLoading: achievementsLoading,
   } = useAchievements();
   const { sparkEnergy } = useSparkEnergy();
   const { data: photos } = useProfilePhotos(profile?.id);
@@ -32,9 +33,13 @@ export const useAchievementChecker = () => {
   const lastCheckedSuperSparks = useRef<number>(0);
   const lastCheckedChallengeStreak = useRef<number>(0);
 
+  // CRITICAL: Don't run any checks until achievements are loaded
+  // This prevents duplicate inserts when isUnlocked returns false for unloaded data
+  const isReady = !achievementsLoading && !!profile?.id;
+
   // Check streak and energy achievements when sparkEnergy changes
   useEffect(() => {
-    if (!sparkEnergy || !profile?.id) return;
+    if (!sparkEnergy || !isReady) return;
 
     // Only check if values actually changed
     if (sparkEnergy.total_earned !== lastCheckedEnergy.current) {
@@ -46,17 +51,17 @@ export const useAchievementChecker = () => {
       lastCheckedStreak.current = sparkEnergy.current_streak;
       checkStreakAchievements(sparkEnergy.current_streak);
     }
-  }, [sparkEnergy?.total_earned, sparkEnergy?.current_streak, profile?.id]);
+  }, [sparkEnergy?.total_earned, sparkEnergy?.current_streak, isReady]);
 
   // Check first match achievement
   useEffect(() => {
-    if (!profile?.id || isUnlocked('first_match')) return;
+    if (!isReady || isUnlocked('first_match')) return;
 
     const checkFirstMatch = async () => {
       const { count } = await supabase
         .from('spark_chats')
         .select('*', { count: 'exact', head: true })
-        .or(`profile_a_id.eq.${profile.id},profile_b_id.eq.${profile.id}`);
+        .or(`profile_a_id.eq.${profile!.id},profile_b_id.eq.${profile!.id}`);
 
       if (count && count > 0) {
         checkAndUnlock('first_match');
@@ -64,17 +69,17 @@ export const useAchievementChecker = () => {
     };
 
     checkFirstMatch();
-  }, [profile?.id, isUnlocked]);
+  }, [isReady, isUnlocked]);
 
   // Check first ghost message achievement
   useEffect(() => {
-    if (!profile?.id || isUnlocked('first_ghost_message')) return;
+    if (!isReady || isUnlocked('first_ghost_message')) return;
 
     const checkFirstGhost = async () => {
       const { count } = await supabase
         .from('ghost_messages')
         .select('*', { count: 'exact', head: true })
-        .eq('from_profile_id', profile.id);
+        .eq('from_profile_id', profile!.id);
 
       if (count && count > 0) {
         checkAndUnlock('first_ghost_message');
@@ -82,17 +87,17 @@ export const useAchievementChecker = () => {
     };
 
     checkFirstGhost();
-  }, [profile?.id, isUnlocked]);
+  }, [isReady, isUnlocked]);
 
   // Check first quedada joined achievement
   useEffect(() => {
-    if (!profile?.id || isUnlocked('first_quedada_joined')) return;
+    if (!isReady || isUnlocked('first_quedada_joined')) return;
 
     const checkFirstQuedada = async () => {
       const { count } = await supabase
         .from('quedada_attendees')
         .select('*', { count: 'exact', head: true })
-        .eq('profile_id', profile.id);
+        .eq('profile_id', profile!.id);
 
       if (count && count > 0) {
         checkAndUnlock('first_quedada_joined');
@@ -100,17 +105,17 @@ export const useAchievementChecker = () => {
     };
 
     checkFirstQuedada();
-  }, [profile?.id, isUnlocked]);
+  }, [isReady, isUnlocked]);
 
   // Check sparks sent achievements
   useEffect(() => {
-    if (!profile?.id) return;
+    if (!isReady) return;
 
     const checkSparksSent = async () => {
       const { count } = await supabase
         .from('sparks')
         .select('*', { count: 'exact', head: true })
-        .eq('from_profile_id', profile.id);
+        .eq('from_profile_id', profile!.id);
 
       if (count && count > 0) {
         checkSparksSentAchievements(count);
@@ -118,17 +123,17 @@ export const useAchievementChecker = () => {
     };
 
     checkSparksSent();
-  }, [profile?.id]);
+  }, [isReady]);
 
   // Check super sparks sent achievements
   useEffect(() => {
-    if (!profile?.id) return;
+    if (!isReady) return;
 
     const checkSuperSparksSent = async () => {
       const { count } = await supabase
         .from('ghost_messages')
         .select('*', { count: 'exact', head: true })
-        .eq('from_profile_id', profile.id)
+        .eq('from_profile_id', profile!.id)
         .eq('is_super_spark', true);
 
       if (count && count > 0 && count !== lastCheckedSuperSparks.current) {
@@ -138,84 +143,84 @@ export const useAchievementChecker = () => {
     };
 
     checkSuperSparksSent();
-  }, [profile?.id]);
+  }, [isReady]);
 
   // Check identity verified achievement
   useEffect(() => {
-    if (!profile?.id || isUnlocked('identity_verified')) return;
+    if (!isReady || isUnlocked('identity_verified')) return;
 
-    if (profile.identity_verified) {
+    if (profile!.identity_verified) {
       checkAndUnlock('identity_verified');
     }
-  }, [profile?.id, profile?.identity_verified, isUnlocked]);
+  }, [isReady, profile?.identity_verified, isUnlocked]);
 
   // Check profile complete achievement
   useEffect(() => {
-    if (!profile?.id || isUnlocked('profile_complete')) return;
+    if (!isReady || isUnlocked('profile_complete')) return;
 
     const isComplete = 
-      profile.name && 
-      profile.avatar_url && 
-      profile.bio && 
-      profile.city && 
-      profile.birthdate &&
-      profile.gender;
+      profile!.name && 
+      profile!.avatar_url && 
+      profile!.bio && 
+      profile!.city && 
+      profile!.birthdate &&
+      profile!.gender;
 
     if (isComplete) {
       checkAndUnlock('profile_complete');
     }
-  }, [profile, isUnlocked]);
+  }, [profile, isReady, isUnlocked]);
 
   // ========== ONBOARDING ACHIEVEMENTS ==========
 
   // Check tutorial completed achievement (from localStorage)
   useEffect(() => {
-    if (!profile?.id || isUnlocked('tutorial_completed')) return;
+    if (!isReady || isUnlocked('tutorial_completed')) return;
 
     const tutorialCompleted = localStorage.getItem('kiki-tutorial-completed');
     if (tutorialCompleted === 'true') {
       checkAndUnlock('tutorial_completed');
     }
-  }, [profile?.id, isUnlocked]);
+  }, [isReady, isUnlocked]);
 
   // Check first photo uploaded achievement
   useEffect(() => {
-    if (!profile?.id || isUnlocked('first_photo_uploaded')) return;
+    if (!isReady || isUnlocked('first_photo_uploaded')) return;
 
     // Check both avatar and gallery photos
-    const hasPhoto = profile.avatar_url || (photos && photos.length > 0);
+    const hasPhoto = profile!.avatar_url || (photos && photos.length > 0);
     if (hasPhoto) {
       checkAndUnlock('first_photo_uploaded');
     }
-  }, [profile?.id, profile?.avatar_url, photos, isUnlocked]);
+  }, [isReady, profile?.avatar_url, photos, isUnlocked]);
 
   // Check bio written achievement
   useEffect(() => {
-    if (!profile?.id || isUnlocked('bio_written')) return;
+    if (!isReady || isUnlocked('bio_written')) return;
 
-    if (profile.bio && profile.bio.trim().length >= 10) {
+    if (profile!.bio && profile!.bio.trim().length >= 10) {
       checkAndUnlock('bio_written');
     }
-  }, [profile?.id, profile?.bio, isUnlocked]);
+  }, [isReady, profile?.bio, isUnlocked]);
 
   // Check interests selected achievement
   useEffect(() => {
-    if (!profile?.id || isUnlocked('interests_selected')) return;
+    if (!isReady || isUnlocked('interests_selected')) return;
 
     if (interests && interests.length >= 3) {
       checkAndUnlock('interests_selected');
     }
-  }, [profile?.id, interests, isUnlocked]);
+  }, [isReady, interests, isUnlocked]);
 
   // Check first presence achievement
   useEffect(() => {
-    if (!profile?.id || isUnlocked('first_presence')) return;
+    if (!isReady || isUnlocked('first_presence')) return;
 
     const checkFirstPresence = async () => {
       const { data, error } = await supabase
         .from('presence')
         .select('id, is_present, profile_id')
-        .eq('profile_id', profile.id)
+        .eq('profile_id', profile!.id)
         .maybeSingle();
 
       // Ignore 406 errors from RLS or missing data
@@ -230,11 +235,11 @@ export const useAchievementChecker = () => {
     };
 
     checkFirstPresence();
-  }, [profile?.id, isUnlocked]);
+  }, [isReady, isUnlocked]);
 
   // Check daily challenge streak achievements
   useEffect(() => {
-    if (!profile?.id || !challengeStreakData) return;
+    if (!isReady || !challengeStreakData) return;
 
     const { currentStreak } = challengeStreakData;
     
@@ -242,5 +247,5 @@ export const useAchievementChecker = () => {
       lastCheckedChallengeStreak.current = currentStreak;
       checkChallengeStreakAchievements(currentStreak);
     }
-  }, [profile?.id, challengeStreakData?.currentStreak, checkChallengeStreakAchievements]);
+  }, [isReady, challengeStreakData?.currentStreak, checkChallengeStreakAchievements]);
 };
