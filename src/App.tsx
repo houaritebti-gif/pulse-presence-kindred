@@ -10,6 +10,7 @@ import NotificationProvider from "@/components/NotificationProvider";
 import { initializeAdvancedSettings } from "@/hooks/useAdvancedSettings";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
+import { useAppLifecycle } from "@/hooks/useAppLifecycle";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { SkipLink } from "@/components/SkipLink";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -17,15 +18,11 @@ import OfflineIndicator from "@/components/OfflineIndicator";
 import { CookieConsent } from "@/components/CookieConsent";
 import { ScreenReaderAnnouncerProvider } from "@/components/ScreenReaderAnnouncer";
 import { AnimatedRoutes } from "@/components/AnimatedRoutes";
-import { useDailyLoginReward } from "@/hooks/useDailyLoginReward";
 import { EnergyGainProvider } from "@/components/EnergyGainAnimation";
-import { useAchievementChecker } from "@/hooks/useAchievementChecker";
-import { useSuperSparkWelcome } from "@/hooks/useSuperSparkWelcome";
-import { useDailyChallengeTracker } from "@/hooks/useDailyChallengeTracker";
-import { useDailyChallengeExpiry } from "@/hooks/useDailyChallengeExpiry";
 import { NetworkErrorProvider } from "@/hooks/useNetworkError";
 import GlobalNetworkErrorToast from "@/components/GlobalNetworkErrorToast";
-import { deferWork, markInteractive } from "@/utils/performanceOptimizations";
+import { deferWork } from "@/utils/deferredExecution";
+import { markInteractive } from "@/utils/performanceMetrics";
 
 // Lazy load heavy components that aren't needed immediately
 const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
@@ -92,13 +89,13 @@ const queryClient = new QueryClient({
 
 // Keyboard navigation wrapper component - memoized
 const KeyboardNavigationWrapper = memo(({ children }: { children: React.ReactNode }) => {
+  // Navigation and input hooks
   useKeyboardShortcuts();
   useScrollToTop();
-  useDailyLoginReward(); // Award energy on daily login
-  useAchievementChecker(); // Check and unlock achievements
-  useSuperSparkWelcome(); // Show confetti for new Super Chispas
-  useDailyChallengeTracker(); // Track daily challenge progress
-  useDailyChallengeExpiry(); // Notify when challenges are about to expire
+  
+  // App lifecycle (gamification, rewards, tracking)
+  useAppLifecycle();
+  
   const location = useLocation();
   
   // Show shortcuts help only on main pages (not landing/auth)

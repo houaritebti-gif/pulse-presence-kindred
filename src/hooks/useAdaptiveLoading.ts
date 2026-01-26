@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   getConnectionSpeed, 
-  isSlowConnection, 
-  prefersReducedData,
-  getAdaptiveLoadingConfig 
-} from '@/utils/performanceOptimizations';
+  isSlowConnection as checkSlowConnection, 
+  prefersReducedData as checkReducedData,
+  getNavigatorConnection
+} from '@/utils/connectionUtils';
+import { getAdaptiveLoadingConfig } from '@/utils/adaptiveConfig';
 
 interface AdaptiveLoadingState {
   /** Current connection speed */
@@ -32,43 +33,42 @@ interface AdaptiveLoadingState {
  * Updates automatically when connection changes.
  */
 export function useAdaptiveLoading(): AdaptiveLoadingState {
-  const [connectionSpeed, setConnectionSpeed] = useState(getConnectionSpeed);
+  const [connectionSpeed, setConnectionSpeed] = useState(() => getConnectionSpeed());
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Memoized checker functions that use current connectionSpeed
+  const slow = useMemo(() => checkSlowConnection(), [connectionSpeed]);
+  const reducedData = useMemo(() => checkReducedData(), []);
+
+  // Force recalculation of config when connectionSpeed changes
+  const config = useMemo(() => getAdaptiveLoadingConfig(), [connectionSpeed]);
 
   useEffect(() => {
     const updateConnection = () => {
-      setConnectionSpeed(getConnectionSpeed());
+      const newSpeed = getConnectionSpeed();
+      setConnectionSpeed(newSpeed);
     };
 
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
     // Listen for connection changes
-    const nav = navigator as Navigator & { connection?: { addEventListener?: (type: string, handler: () => void) => void } };
-    if (nav.connection?.addEventListener) {
-      nav.connection.addEventListener('change', updateConnection);
+    const connection = getNavigatorConnection();
+    if (connection?.addEventListener) {
+      connection.addEventListener('change', updateConnection);
     }
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
     return () => {
-      if (nav.connection?.addEventListener) {
-        // Note: removeEventListener might not exist on all implementations
-        try {
-          (nav.connection as EventTarget).removeEventListener?.('change', updateConnection);
-        } catch {
-          // Ignore
-        }
+      if (connection?.removeEventListener) {
+        connection.removeEventListener('change', updateConnection);
       }
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
-
-  const config = useMemo(() => getAdaptiveLoadingConfig(), [connectionSpeed]);
-  const slow = useMemo(() => isSlowConnection(), [connectionSpeed]);
-  const reducedData = useMemo(() => prefersReducedData(), []);
 
   return useMemo(() => ({
     connectionSpeed,
