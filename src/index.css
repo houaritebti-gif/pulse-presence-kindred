@@ -37,7 +37,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 7%;
 
-    --primary: 355 82% 56%;
+    --primary: 355 82% 42%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 346 73% 90%;
@@ -46,40 +46,40 @@
     --muted: 346 40% 94%;
     --muted-foreground: 0 0% 30%; /* WCAG AA: 30% provides 7:1 contrast on white */
 
-    --accent: 355 82% 56%;
+    --accent: 355 82% 42%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84% 50%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 346 30% 80%;
     --input: 346 40% 93%;
-    --ring: 355 82% 56%;
+    --ring: 355 82% 42%;
 
     --radius: 1rem;
 
     /* Custom KIKI tokens */
-    --kiki-red: 355 82% 45%; /* Rojo KIKI oscuro */
-    --kiki-red-warm: 2 74% 47%; /* #d12720 exacto */
+    --kiki-red: 355 82% 38%; /* Rojo KIKI oscuro */
+    --kiki-red-warm: 2 74% 38%; /* Rojo cálido oscuro */
     --kiki-pink: 346 73% 83%;
     --kiki-pink-bubble: 337 77% 84%; /* #F6B7CF - Rosa chicle suave */
     --kiki-pink-soft: 17 100% 97%;
     --kiki-black: 0 0% 7%;
     --kiki-white: 0 0% 98%;
     --kiki-grey: 0 0% 45%;
-    --kiki-glow: 355 82% 65%;
+    --kiki-glow: 355 82% 50%;
 
     --font-display: 'Arial Black', 'Arial', sans-serif;
     --font-body: 'Arial', sans-serif;
 
     --sidebar-background: 17 100% 97%;
     --sidebar-foreground: 0 0% 7%;
-    --sidebar-primary: 355 82% 56%;
+    --sidebar-primary: 355 82% 42%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 346 73% 83%;
     --sidebar-accent-foreground: 0 0% 7%;
     --sidebar-border: 346 40% 85%;
-    --sidebar-ring: 355 82% 56%;
+    --sidebar-ring: 355 82% 42%;
   }
 
   .dark {
@@ -92,7 +92,7 @@
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 355 82% 56%;
+    --primary: 355 82% 45%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 18%;
@@ -101,35 +101,35 @@
     --muted: 0 0% 22%;
     --muted-foreground: 0 0% 70%;
 
-    --accent: 355 82% 60%;
+    --accent: 355 82% 48%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 70% 45%;
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 0 0% 25%;
     --input: 0 0% 20%;
-    --ring: 355 82% 56%;
+    --ring: 355 82% 45%;
 
     /* Dark mode specific tokens */
-    --kiki-red: 355 82% 56%;
-    --kiki-red-warm: 2 74% 47%; /* #d12720 exacto (dark también) */
+    --kiki-red: 355 82% 45%;
+    --kiki-red-warm: 2 74% 38%; /* Rojo cálido oscuro (dark también) */
     --kiki-pink: 346 60% 70%;
     --kiki-pink-bubble: 337 70% 75%; /* Versión dark del rosa chicle */
     --kiki-pink-soft: 346 30% 20%;
     --kiki-black: 0 0% 8%;
     --kiki-white: 0 0% 98%;
     --kiki-grey: 0 0% 60%;
-    --kiki-glow: 355 82% 65%;
+    --kiki-glow: 355 82% 52%;
 
     --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 355 82% 56%;
+    --sidebar-primary: 355 82% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 18%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 355 82% 56%;
+    --sidebar-ring: 355 82% 45%;
   }
 
   /* Admin Panel Dark Mode - Softer colors for reduced eye strain */
