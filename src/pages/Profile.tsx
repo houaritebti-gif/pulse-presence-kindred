@@ -649,13 +649,30 @@ const Profile = () => {
       setSaveState("error");
       triggerHaptic('error');
       
-      // Check if error is from bio blacklist trigger
-      if (error.message?.includes("prohibited words")) {
-        setSaveError("Tu bio contiene palabras no permitidas");
-      } else if (error.message?.includes("network") || error.message?.includes("fetch")) {
+      // Extract error message from various possible sources
+      const errorMsg = error?.message || error?.error?.message || error?.details || String(error);
+      const errorCode = error?.code || error?.error?.code || '';
+      
+      // Check if error is from bio blacklist trigger (database level)
+      if (errorMsg.includes("prohibited words") || 
+          errorMsg.includes("Bio contains") || 
+          errorMsg.includes("palabras no permitidas") ||
+          errorMsg.toLowerCase().includes("blacklist")) {
+        setSaveError("Tu bio contiene palabras no permitidas. Revisa el texto e inténtalo de nuevo.");
+      } else if (errorCode === '23505' || errorMsg.includes("duplicate")) {
+        setSaveError("Error de datos duplicados. Inténtalo de nuevo.");
+      } else if (errorMsg.includes("network") || 
+                 errorMsg.includes("fetch") || 
+                 errorMsg.includes("NetworkError") ||
+                 errorMsg.includes("Failed to fetch") ||
+                 errorCode === 'NETWORK_ERROR') {
         setSaveError("Error de conexión. Revisa tu internet y vuelve a intentarlo.");
+      } else if (errorMsg.includes("timeout") || errorCode === 'TIMEOUT') {
+        setSaveError("La conexión tardó demasiado. Inténtalo de nuevo.");
       } else {
-        setSaveError(error.message || "Error al guardar. Inténtalo de nuevo.");
+        // Log for debugging but show user-friendly message
+        console.error("Profile save error:", { error, errorMsg, errorCode });
+        setSaveError("Error al guardar el perfil. Inténtalo de nuevo.");
       }
     }
   };
