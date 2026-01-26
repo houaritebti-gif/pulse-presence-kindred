@@ -38,6 +38,13 @@ const LandingFooter = () => {
           >
             Cookies
           </Link>
+          <span className="text-kiki-black/30">·</span>
+          <Link 
+            to="/codigo-kiki" 
+            className="hover:text-kiki-black/80 transition-colors"
+          >
+            Código KIKI
+          </Link>
           <button
             onClick={() => setIsVisible(false)}
             className="ml-2 p-1 rounded-full hover:bg-kiki-black/10 transition-colors"

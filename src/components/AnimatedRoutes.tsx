@@ -37,6 +37,7 @@ const Subscription = lazyWithRetry(() => import("@/pages/Subscription"));
 const Privacy = lazyWithRetry(() => import("@/pages/Privacy"));
 const Terms = lazyWithRetry(() => import("@/pages/Terms"));
 const Cookies = lazyWithRetry(() => import("@/pages/Cookies"));
+const CodigoKiki = lazyWithRetry(() => import("@/pages/CodigoKiki"));
 const Admin = lazyWithRetry(() => import("@/pages/Admin"));
 const NotFound = lazyWithRetry(() => import("@/pages/NotFound"));
 const Landing = lazyWithRetry(() => import("@/pages/Landing"));
@@ -297,6 +298,14 @@ export const AnimatedRoutes = () => {
                 element={
                   <PageTransition>
                     <Cookies />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/codigo-kiki"
+                element={
+                  <PageTransition>
+                    <CodigoKiki />
                   </PageTransition>
                 }
               />
