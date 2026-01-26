@@ -50,47 +50,24 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   const s = sizeClasses[size];
   const isHero = size === "hero";
   
-  // Heart element - only glows animate, NOT scale (prevents capture distortion)
+  // Heart element with heartbeat pump animation
   const heartElement = isHero ? (
     <div className={`absolute ${s.heartPos}`}>
       <div className="relative">
-        {/* Outer orange glow - subtle flame */}
-        <motion.div 
-          className="absolute inset-0 blur-3xl rounded-full"
-          style={{ backgroundColor: 'hsl(25 100% 50% / 0.12)' }}
-          animate={animate ? { 
-            opacity: [0.08, 0.15, 0.1, 0.14, 0.08]
-          } : undefined}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-        />
-        {/* Middle red glow - gentle pulse */}
-        <motion.div 
-          className="absolute inset-0 bg-kiki-red-warm/30 blur-xl rounded-full"
-          animate={animate ? { 
-            opacity: [0.25, 0.38, 0.28, 0.35, 0.25]
-          } : undefined}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
-        />
-        {/* Inner glow */}
-        <motion.div 
-          className="absolute inset-0 bg-kiki-red-warm/20 blur-lg rounded-full"
-          animate={animate ? { 
-            opacity: [0.15, 0.28, 0.18, 0.25, 0.15]
-          } : undefined}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-        />
         <motion.div
           animate={animate ? {
-            filter: [
-              'drop-shadow(0 0 5px hsl(var(--kiki-red-warm) / 0.4)) drop-shadow(0 0 10px hsl(var(--kiki-red-warm) / 0.25))',
-              'drop-shadow(0 0 7px hsl(var(--kiki-red-warm) / 0.55)) drop-shadow(0 0 14px hsl(var(--kiki-red-warm) / 0.3))',
-              'drop-shadow(0 0 5px hsl(var(--kiki-red-warm) / 0.4)) drop-shadow(0 0 10px hsl(var(--kiki-red-warm) / 0.25))',
-            ]
+            scale: [1, 1.18, 1.05, 1.14, 1],
           } : undefined}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ 
+            duration: 0.9, 
+            repeat: Infinity, 
+            ease: "easeInOut",
+            repeatDelay: 0.3
+          }}
         >
           <Heart 
             className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
+            style={{ filter: 'drop-shadow(0 0 6px hsl(var(--kiki-red-warm) / 0.5))' }}
           />
         </motion.div>
       </div>
@@ -98,23 +75,22 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   ) : (
     <span className={`absolute ${s.heartPos}`}>
       <div className="relative">
-        {/* Outer orange glow for smaller sizes */}
-        <motion.div 
-          className="absolute inset-0 blur-lg rounded-full"
-          style={{ backgroundColor: 'hsl(25 100% 50% / 0.1)' }}
-          animate={animate ? { opacity: [0.06, 0.12, 0.08, 0.11, 0.06] } : undefined}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        {/* Red glow */}
-        <motion.div 
-          className="absolute inset-0 bg-kiki-red-warm/25 blur-md rounded-full"
-          animate={animate ? { opacity: [0.2, 0.32, 0.24, 0.3, 0.2] } : undefined}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
-        />
-        <Heart 
-          className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
-          style={{ filter: 'drop-shadow(0 0 4px hsl(var(--kiki-red-warm) / 0.35)) drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.18))' }}
-        />
+        <motion.div
+          animate={animate ? {
+            scale: [1, 1.15, 1.03, 1.12, 1],
+          } : undefined}
+          transition={{ 
+            duration: 0.85, 
+            repeat: Infinity, 
+            ease: "easeInOut",
+            repeatDelay: 0.4
+          }}
+        >
+          <Heart 
+            className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
+            style={{ filter: 'drop-shadow(0 0 4px hsl(var(--kiki-red-warm) / 0.4))' }}
+          />
+        </motion.div>
       </div>
     </span>
   );
@@ -126,35 +102,11 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
     ? "2px 2px 8px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)" 
     : "2px 2px 10px rgba(0, 0, 0, 0.25), 0 6px 20px rgba(0, 0, 0, 0.15)";
   
-  // Shimmer animation only for larger sizes when animate is true
-  const showShimmer = animate && (size === "hero" || size === "xl" || size === "lg");
-  
   return (
     <span 
       className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className} relative overflow-visible`}
       style={{ fontFamily: '"Avenir Next Heavy", "Avenir Black", "Avenir Heavy", Avenir, system-ui, sans-serif', fontWeight: 900, textShadow }}
     >
-      {/* Shimmer overlay */}
-      {showShimmer && (
-        <span 
-          className="absolute inset-0 overflow-hidden pointer-events-none"
-          style={{ 
-            maskImage: 'linear-gradient(to right, transparent, black, transparent)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent, black, transparent)'
-          }}
-        >
-          <span 
-            className="absolute inset-0 animate-shimmer"
-            style={{
-              background: variant === "dark"
-                ? 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)'
-                : 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)',
-              width: '200%',
-            }}
-          />
-        </span>
-      )}
-      
       <span className={s.text}>K</span>
       <span className={s.text}>I</span>
       <span className={s.text}>K</span>
