@@ -41,6 +41,7 @@ import BirthdateSelector from "@/components/BirthdateSelector";
 import { useProfileGenderPreferences, useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
 import { useProfileInterests, useUpdateInterests } from "@/hooks/useInterests";
 import { useCheckBlacklistedWords } from "@/hooks/useBioBlacklist";
+import { useBioValidation } from "@/hooks/useBioValidation";
 import { triggerHaptic } from "@/utils/haptics";
 import { sanitizeDisplayName, validateDisplayName } from "@/utils/inputSanitization";
 import { SparkFlame } from "@/components/SparkFlame";
@@ -501,22 +502,33 @@ const Profile = () => {
     }
   };
 
-  // Bio blacklist validation
+  // Bio blacklist validation - real-time via secure endpoint
   const { checkText: checkBlacklistedWords } = useCheckBlacklistedWords();
+  const { 
+    validateBioDebounced, 
+    isValidating: isBioValidating, 
+    isValid: isBioValid, 
+    errorMessage: bioValidationError 
+  } = useBioValidation();
   const [bioError, setBioError] = useState<string | null>(null);
 
   const handleBioChange = (newBio: string) => {
     setBio(newBio);
     setHasChanges(true);
+    setBioError(null);
     
-    // Check for blacklisted words
-    const blockedWords = checkBlacklistedWords(newBio);
-    if (blockedWords.length > 0) {
-      setBioError(`Palabras no permitidas: ${blockedWords.join(", ")}`);
-    } else {
+    // Trigger real-time validation via secure endpoint
+    validateBioDebounced(newBio);
+  };
+
+  // Update bioError when validation result changes
+  useEffect(() => {
+    if (bioValidationError) {
+      setBioError(bioValidationError);
+    } else if (isBioValid) {
       setBioError(null);
     }
-  };
+  }, [bioValidationError, isBioValid]);
 
   const calculateAge = (birthdateStr: string): number => {
     const today = new Date();
@@ -581,10 +593,9 @@ const Profile = () => {
       setName(sanitizedName);
     }
 
-    // Check blacklist before saving
-    const blockedWords = checkBlacklistedWords(bio);
-    if (blockedWords.length > 0) {
-      setSaveError(`Tu bio contiene palabras no permitidas: ${blockedWords.join(", ")}`);
+    // Check bio validation from real-time check or validate now
+    if (!isBioValid || bioError) {
+      setSaveError("Tu bio contiene palabras no permitidas. Revisa el texto e inténtalo de nuevo.");
       setSaveState("error");
       triggerHaptic('error');
       return;
@@ -986,6 +997,16 @@ const Profile = () => {
               }`}
               maxLength={300}
             />
+            {/* Validation indicator */}
+            {bio.length >= 3 && (
+              <div className="absolute top-2 right-2">
+                {isBioValidating ? (
+                  <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                ) : isBioValid && !bioError ? (
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                ) : null}
+              </div>
+            )}
             {bioError && (
               <p className="text-xs text-destructive mt-1 font-body">{bioError}</p>
             )}
