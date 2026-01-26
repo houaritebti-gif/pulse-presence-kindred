@@ -1,12 +1,12 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { Suspense, useEffect, memo } from "react";
+import { Suspense, useEffect, memo, useCallback } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
 import { PageTransition } from "@/components/PageTransition";
 import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
 import { lazyWithRetry } from "@/utils/lazyWithRetry";
-import { deferWork } from "@/utils/performanceOptimizations";
+import { deferWork, isSlowConnection } from "@/utils/performanceOptimizations";
 
 // Eager load only the landing/auth - critical for first paint
 import Index from "@/pages/Index";
@@ -50,33 +50,51 @@ const LoadingFallback = memo(() => (
     role="status"
     aria-label="Cargando página"
   >
-    {/* Branded pulsing circle - using CSS from index.html */}
+    {/* Simple pulsing indicator - minimal CSS, no external deps */}
     <div className="relative">
-      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 animate-pulse" />
-      <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+      <div 
+        className="w-10 h-10 rounded-full"
+        style={{
+          background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)',
+          animation: 'pulse 1.2s ease-in-out infinite'
+        }}
+      />
     </div>
-    {/* Loading text */}
-    <p className="text-sm text-muted-foreground animate-pulse">Cargando...</p>
+    <span className="text-sm text-muted-foreground">Cargando...</span>
   </div>
 ));
 LoadingFallback.displayName = "LoadingFallback";
 
-// Preload priority routes after initial render
+/**
+ * Preload priority routes based on connection speed
+ * Uses requestIdleCallback on fast connections, setTimeout on slow
+ */
 function usePriorityPreload() {
-  useEffect(() => {
-    // Defer preloading to not block initial render
-    deferWork(() => {
-      // Priority 1 routes - preload immediately after defer
-      import("@/pages/Presence").catch(() => {});
-      import("@/pages/Profile").catch(() => {});
-    }, 1000);
-    
-    deferWork(() => {
-      // Priority 2 routes - preload after priority 1
-      import("@/pages/Sparks").catch(() => {});
-      import("@/pages/Notifications").catch(() => {});
-    }, 3000);
+  const preloadChunk = useCallback((importFn: () => Promise<unknown>) => {
+    importFn().catch(() => {
+      // Silent fail - chunk will load on demand
+    });
   }, []);
+
+  useEffect(() => {
+    const slow = isSlowConnection();
+    
+    // Priority 1 routes - preload after initial render settles
+    const priority1Delay = slow ? 2000 : 800;
+    deferWork(() => {
+      preloadChunk(() => import("@/pages/Presence"));
+      preloadChunk(() => import("@/pages/Profile"));
+    }, priority1Delay);
+    
+    // Priority 2 routes - preload after priority 1
+    // Skip on slow connections to save bandwidth
+    if (!slow) {
+      deferWork(() => {
+        preloadChunk(() => import("@/pages/Sparks"));
+        preloadChunk(() => import("@/pages/Notifications"));
+      }, 3000);
+    }
+  }, [preloadChunk]);
 }
 
 
