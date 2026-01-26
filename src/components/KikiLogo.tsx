@@ -40,7 +40,7 @@ const sizeClasses = {
   hero: {
     text: "text-6xl md:text-7xl lg:text-8xl",
     heart: "w-5 h-5 md:w-7 md:h-7 lg:w-9 lg:h-9",
-    heartPos: "-top-1 md:-top-2 lg:-top-3 -left-1 md:-left-1.5 lg:-left-2",
+    heartPos: "-top-2.5 md:-top-2 lg:-top-3 -left-1 md:-left-1.5 lg:-left-2",
     marginLeft: "",
     glow: true,
   },
