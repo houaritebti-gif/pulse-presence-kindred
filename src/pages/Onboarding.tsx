@@ -667,20 +667,31 @@ const Onboarding = () => {
         return (
           <motion.div 
             key="step-6-interests" 
-            className="space-y-2"
+            className="space-y-2 h-full flex flex-col"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
-            <InterestsSelector
-              selectedInterests={selectedInterests}
-              onToggleInterest={toggleInterest}
-              maxInterests={10}
-              minInterests={3}
-              showCounter={true}
-              variant="onboarding"
-            />
+            <motion.div 
+              className="flex items-center gap-2 text-muted-foreground mb-2"
+              variants={itemVariants}
+            >
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
+                Elige entre 3 y 10 intereses
+              </span>
+            </motion.div>
+            <motion.div variants={itemVariants} className="flex-1 min-h-0">
+              <InterestsSelector
+                selectedInterests={selectedInterests}
+                onToggleInterest={toggleInterest}
+                maxInterests={10}
+                minInterests={3}
+                showCounter={true}
+                variant="onboarding"
+              />
+            </motion.div>
           </motion.div>
         );
 
@@ -1056,9 +1067,10 @@ const Onboarding = () => {
 
   return (
     <main 
-      className="min-h-[100dvh] max-h-[100dvh] bg-background flex flex-col px-4 sm:px-6 pt-4 sm:pt-6 overflow-hidden relative"
+      className="min-h-[100dvh] max-h-[100dvh] bg-background flex flex-col px-4 sm:px-6 pt-safe sm:pt-6 overflow-hidden relative"
       style={{ 
         // Ensure safe area padding on iOS devices
+        paddingTop: 'max(env(safe-area-inset-top, 16px), 16px)',
         paddingBottom: 'env(safe-area-inset-bottom, 16px)',
       }}
     >
@@ -1135,8 +1147,8 @@ const Onboarding = () => {
         </div>
       </div>
 
-      {/* Step content */}
-      <div className="flex-1 max-w-md mx-auto w-full overflow-y-auto min-h-0">
+      {/* Step content - improved scrolling for mobile */}
+      <div className="flex-1 max-w-md mx-auto w-full overflow-y-auto min-h-0 scrollbar-hide overscroll-contain">
         <AnimatePresence mode="wait" custom={direction}>
           {renderStepContent()}
         </AnimatePresence>

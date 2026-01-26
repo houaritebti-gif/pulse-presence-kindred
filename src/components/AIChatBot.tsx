@@ -854,7 +854,7 @@ export const AIChatBot = () => {
   return (
     <>
       {/* Floating Draggable Button */}
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="wait">
         {position && !shouldHideButton && (
           <MotionButton
             key="ai-chatbot-button"
