@@ -271,5 +271,34 @@ self.addEventListener('install', (event) => {
 // Activate event
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activated');
-  event.waitUntil(self.clients.claim());
+  event.waitUntil((async () => {
+    // If a previous SW (e.g. Workbox/PWA) left stale caches behind, wipe them.
+    // This prevents “old UI” desync on mobile where the app shell gets stuck.
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    } catch (e) {
+      // Ignore
+    }
+
+    await self.clients.claim();
+
+    // Force open clients to reload under the new SW.
+    try {
+      const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      await Promise.all(
+        clientList
+          .filter((c) => 'navigate' in c)
+          .map((c) => {
+            try {
+              return c.navigate(c.url);
+            } catch {
+              return undefined;
+            }
+          })
+      );
+    } catch {
+      // Ignore
+    }
+  })());
 });
