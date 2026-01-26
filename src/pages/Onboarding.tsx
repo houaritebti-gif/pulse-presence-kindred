@@ -111,54 +111,53 @@ const Onboarding = () => {
 
   const isValidAge = userAge !== null && userAge >= 18;
 
-  // Animation variants for framer-motion
+  // Animation variants for framer-motion - optimized for mobile performance
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.1,
+        staggerChildren: 0.05, // Faster stagger for mobile
+        delayChildren: 0.05,
       },
     },
     exit: { 
       opacity: 0,
-      transition: { duration: 0.15 }
+      transition: { duration: 0.1 }
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    hidden: { opacity: 0, y: 12 }, // Reduced motion distance
     visible: { 
       opacity: 1, 
       y: 0, 
-      scale: 1,
       transition: { 
-        type: "spring" as const,
-        stiffness: 300,
-        damping: 24,
+        type: "tween" as const,
+        duration: 0.2,
+        ease: [0.25, 0.1, 0.25, 1] as const, // CSS ease-out as cubic bezier
       }
     },
   };
 
   const slideVariants = {
     enter: (dir: "forward" | "back") => ({
-      x: dir === "forward" ? 100 : -100,
+      x: dir === "forward" ? 50 : -50, // Reduced slide distance for faster feel
       opacity: 0,
     }),
     center: {
       x: 0,
       opacity: 1,
       transition: {
-        type: "spring" as const,
-        stiffness: 300,
-        damping: 30,
+        type: "tween" as const,
+        duration: 0.2,
+        ease: [0.25, 0.1, 0.25, 1] as const,
       },
     },
     exit: (dir: "forward" | "back") => ({
-      x: dir === "forward" ? -100 : 100,
+      x: dir === "forward" ? -50 : 50,
       opacity: 0,
-      transition: { duration: 0.2 },
+      transition: { duration: 0.15 },
     }),
   };
 
@@ -1056,23 +1055,33 @@ const Onboarding = () => {
   };
 
   return (
-    <main className="min-h-[100dvh] max-h-[100dvh] bg-background flex flex-col px-4 sm:px-6 pt-4 sm:pt-6 overflow-hidden relative">
-      {/* Ambient glow */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-      {/* Progress bar */}
-      <motion.div 
-        className="w-full h-1 bg-card rounded-full mb-8 overflow-hidden"
-        initial={{ opacity: 0, scaleX: 0 }}
-        animate={{ opacity: 1, scaleX: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+    <main 
+      className="min-h-[100dvh] max-h-[100dvh] bg-background flex flex-col px-4 sm:px-6 pt-4 sm:pt-6 overflow-hidden relative"
+      style={{ 
+        // Ensure safe area padding on iOS devices
+        paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+      }}
+    >
+      {/* Ambient glow - reduced for performance */}
+      <div 
+        className="absolute top-20 left-1/2 -translate-x-1/2 w-[400px] h-[250px] bg-primary/3 blur-[100px] rounded-full pointer-events-none" 
+        aria-hidden="true"
+      />
+      
+      {/* Progress bar - simplified animation for mobile performance */}
+      <div 
+        className="w-full h-1.5 bg-muted/50 rounded-full mb-6 overflow-hidden"
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`Paso ${step} de ${STEPS.length}`}
       >
-        <motion.div 
-          className="h-full bg-primary"
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+        <div 
+          className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-300 ease-out"
+          style={{ width: `${progress}%` }}
         />
-      </motion.div>
+      </div>
 
       {/* Enhanced progress indicator */}
       <OnboardingProgressIndicator
@@ -1133,16 +1142,21 @@ const Onboarding = () => {
         </AnimatePresence>
       </div>
 
-      {/* Navigation - sticky at bottom */}
-      <div className="flex gap-4 pt-4 pb-[max(env(safe-area-inset-bottom),16px)] max-w-md mx-auto w-full flex-shrink-0 bg-background">
+      {/* Navigation - sticky at bottom with better mobile UX */}
+      <div 
+        className="flex gap-3 pt-4 pb-4 max-w-md mx-auto w-full flex-shrink-0 bg-background/95 backdrop-blur-sm"
+        style={{ 
+          paddingBottom: 'max(env(safe-area-inset-bottom, 16px), 16px)',
+        }}
+      >
         {step > 1 && (
           <Button
             variant="outline"
             onClick={handleBack}
-            className="flex-1 h-14 rounded-2xl"
-            style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+            className="flex-1 h-14 rounded-2xl text-base font-bold active:scale-[0.98] transition-transform touch-manipulation"
+            aria-label="Volver al paso anterior"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-5 h-5 mr-2" />
             Atrás
           </Button>
         )}
@@ -1150,37 +1164,37 @@ const Onboarding = () => {
           <Button
             onClick={handleNext}
             disabled={!canProceed()}
-            className="flex-1 h-14 rounded-2xl"
-            style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+            className="flex-1 h-14 rounded-2xl text-base font-bold active:scale-[0.98] transition-transform touch-manipulation disabled:opacity-50"
+            aria-label={canProceed() ? "Continuar al siguiente paso" : "Completa este paso para continuar"}
           >
             Siguiente
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
         ) : (
           <Button
             onClick={handleComplete}
-            disabled={updateProfile.isPending}
-            className="flex-1 h-14 rounded-2xl"
-            style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+            disabled={updateProfile.isPending || !canProceed()}
+            className="flex-1 h-14 rounded-2xl text-base font-bold active:scale-[0.98] transition-transform touch-manipulation disabled:opacity-50"
+            aria-label="Completar perfil y empezar"
           >
             {updateProfile.isPending ? (
-              <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" aria-label="Guardando..." />
             ) : (
               <>
                 Empezar
-                <Check className="w-4 h-4 ml-2" />
+                <Check className="w-5 h-5 ml-2" />
               </>
             )}
           </Button>
         )}
       </div>
 
-      {/* Skip option for optional steps (after required gender/preferences/interests, but NOT photo step) */}
+      {/* Skip option for optional steps - improved mobile UX */}
       {step >= 7 && step < STEPS.length && step !== 13 && (
         <button
           onClick={handleNext}
-          className="mt-4 text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-          style={{ fontFamily: 'Arial, sans-serif' }}
+          className="mt-2 mb-4 text-center text-sm text-muted-foreground hover:text-foreground active:text-foreground transition-colors py-2 px-4 touch-manipulation"
+          aria-label="Saltar este paso opcional"
         >
           Saltar este paso
         </button>
