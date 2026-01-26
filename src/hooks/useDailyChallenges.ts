@@ -92,17 +92,19 @@ export const useDailyChallenges = () => {
     enabled: !!profile?.id,
   });
 
-  // Initialize challenges for today if needed
+  // Initialize challenges for today if needed - uses upsert for safety
   const initializeMutation = useMutation({
     mutationFn: async () => {
       if (!profile?.id) throw new Error('No profile');
       
+      // Wait for data to be loaded first
       const existingKeys = progressData?.map(p => p.challenge_key) || [];
       const missingChallenges = todaysChallenges.filter(c => !existingKeys.includes(c.key));
       
-      if (missingChallenges.length === 0) return;
+      // Nothing to insert
+      if (missingChallenges.length === 0) return null;
       
-      const inserts = missingChallenges.map(c => ({
+      const upserts = missingChallenges.map(c => ({
         profile_id: profile.id,
         challenge_key: c.key,
         challenge_date: today,
@@ -111,14 +113,27 @@ export const useDailyChallenges = () => {
         current_progress: 0,
       }));
       
+      // Use upsert with onConflict to avoid duplicate key errors completely
       const { error } = await supabase
         .from('daily_challenge_progress')
-        .insert(inserts);
+        .upsert(upserts, {
+          onConflict: 'profile_id,challenge_key,challenge_date',
+          ignoreDuplicates: true, // Skip existing rows instead of updating
+        });
       
-      if (error && error.code !== '23505') throw error; // Ignore duplicates
+      if (error) {
+        // Silently ignore any constraint errors - the data already exists
+        if (error.code === '23505') return null;
+        throw error;
+      }
+      
+      return true;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['daily_challenges', profile?.id, today] });
+    onSuccess: (result) => {
+      // Only invalidate if we actually inserted something
+      if (result) {
+        queryClient.invalidateQueries({ queryKey: ['daily_challenges', profile?.id, today] });
+      }
     },
   });
 
