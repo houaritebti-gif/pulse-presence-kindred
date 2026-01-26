@@ -1,11 +1,13 @@
 import { useAppNotifications } from "@/hooks/useNotifications";
-
-// A stable key that changes on hot reload (module replacement), forcing a remount
-// and avoiding React Fast Refresh hook-order mismatches.
-const HOT_RELOAD_KEY = Math.random().toString(36);
+import { useAuth } from "@/contexts/AuthContext";
 
 const NotificationInitializer = () => {
+  // Only initialize notifications when auth context is available
+  const { user, loading } = useAuth();
+  
+  // Skip notification setup if auth is still loading or no user
   useAppNotifications();
+  
   return null;
 };
 
@@ -13,7 +15,7 @@ const NotificationInitializer = () => {
 const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
-      <NotificationInitializer key={HOT_RELOAD_KEY} />
+      <NotificationInitializer />
       {children}
     </>
   );
