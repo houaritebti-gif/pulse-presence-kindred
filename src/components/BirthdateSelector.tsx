@@ -89,53 +89,104 @@ const BirthdateSelector = ({ value, onChange }: BirthdateSelectorProps) => {
   };
 
   return (
-    <div className="space-y-3">
-      <Label>Fecha de nacimiento</Label>
-      <div className="flex gap-2 flex-wrap">
+    <div className="space-y-4">
+      <Label className="text-base font-medium">Fecha de nacimiento</Label>
+      <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+        {/* Day selector - larger touch target */}
         <Select value={selectedDay} onValueChange={(v) => handleChange("day", v)}>
-          <SelectTrigger className="w-[80px] h-12">
+          <SelectTrigger 
+            className="flex-1 min-w-[75px] h-14 text-base touch-manipulation"
+            aria-label="Seleccionar día"
+          >
             <SelectValue placeholder="Día" />
           </SelectTrigger>
-          <SelectContent position="popper" side="bottom" align="start">
+          <SelectContent 
+            position="popper" 
+            side="bottom" 
+            align="start"
+            className="max-h-[50vh]"
+            sideOffset={8}
+          >
             {days.map((day) => (
-              <SelectItem key={day} value={day}>{day}</SelectItem>
+              <SelectItem 
+                key={day} 
+                value={day}
+                className="h-12 text-base"
+              >
+                {day}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
+        {/* Month selector */}
         <Select value={selectedMonth} onValueChange={(v) => handleChange("month", v)}>
-          <SelectTrigger className="w-[130px] h-12">
+          <SelectTrigger 
+            className="flex-[2] min-w-[120px] h-14 text-base touch-manipulation"
+            aria-label="Seleccionar mes"
+          >
             <SelectValue placeholder="Mes" />
           </SelectTrigger>
-          <SelectContent position="popper" side="bottom" align="center">
+          <SelectContent 
+            position="popper" 
+            side="bottom" 
+            align="center"
+            className="max-h-[50vh]"
+            sideOffset={8}
+          >
             {months.map((month) => (
-              <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
+              <SelectItem 
+                key={month.value} 
+                value={month.value}
+                className="h-12 text-base"
+              >
+                {month.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
+        {/* Year selector */}
         <Select value={selectedYear} onValueChange={(v) => handleChange("year", v)}>
-          <SelectTrigger className="w-[100px] h-12">
+          <SelectTrigger 
+            className="flex-1 min-w-[90px] h-14 text-base touch-manipulation"
+            aria-label="Seleccionar año"
+          >
             <SelectValue placeholder="Año" />
           </SelectTrigger>
-          <SelectContent position="popper" side="bottom" align="end">
+          <SelectContent 
+            position="popper" 
+            side="bottom" 
+            align="end"
+            className="max-h-[50vh]"
+            sideOffset={8}
+          >
             {years.map((year) => (
-              <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+              <SelectItem 
+                key={year} 
+                value={String(year)}
+                className="h-12 text-base"
+              >
+                {year}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
       {showAgeError && (
-        <div className="flex items-center gap-2 text-destructive text-sm">
-          <AlertCircle className="h-4 w-4" />
+        <div 
+          className="flex items-center gap-2 text-destructive text-sm p-3 rounded-xl bg-destructive/10"
+          role="alert"
+        >
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
           <span>Debes tener al menos 18 años para usar esta aplicación</span>
         </div>
       )}
 
       {age !== null && age >= minAge && (
         <p className="text-sm text-muted-foreground">
-          Edad: {age} años
+          Edad: <span className="font-medium text-foreground">{age} años</span>
         </p>
       )}
     </div>
