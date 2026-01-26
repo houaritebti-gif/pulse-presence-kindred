@@ -1,4 +1,4 @@
-import { useEffect, Suspense, lazy } from "react";
+import { useEffect, Suspense, lazy, memo } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,7 +12,6 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { SkipLink } from "@/components/SkipLink";
-import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import { CookieConsent } from "@/components/CookieConsent";
@@ -26,10 +25,13 @@ import { useDailyChallengeTracker } from "@/hooks/useDailyChallengeTracker";
 import { useDailyChallengeExpiry } from "@/hooks/useDailyChallengeExpiry";
 import { NetworkErrorProvider } from "@/hooks/useNetworkError";
 import GlobalNetworkErrorToast from "@/components/GlobalNetworkErrorToast";
+import { deferWork, markInteractive } from "@/utils/performanceOptimizations";
 
-// Lazy load heavy components
+// Lazy load heavy components that aren't needed immediately
 const AIChatBot = lazy(() => import("@/components/AIChatBot").then(m => ({ default: m.AIChatBot })));
 const PresenceCacheWarning = lazy(() => import("@/components/PresenceCacheWarning"));
+const KeyboardShortcutsHelp = lazy(() => import("@/components/KeyboardShortcutsHelp").then(m => ({ default: m.KeyboardShortcutsHelp })));
+
 
 // Exponential backoff retry function with jitter
 const exponentialBackoff = (attemptIndex: number): number => {
@@ -88,8 +90,8 @@ const queryClient = new QueryClient({
   },
 });
 
-// Keyboard navigation wrapper component
-const KeyboardNavigationWrapper = ({ children }: { children: React.ReactNode }) => {
+// Keyboard navigation wrapper component - memoized
+const KeyboardNavigationWrapper = memo(({ children }: { children: React.ReactNode }) => {
   useKeyboardShortcuts();
   useScrollToTop();
   useDailyLoginReward(); // Award energy on daily login
@@ -105,14 +107,25 @@ const KeyboardNavigationWrapper = ({ children }: { children: React.ReactNode }) 
   return (
     <>
       {children}
-      {showShortcutsHelp && <KeyboardShortcutsHelp />}
+      {showShortcutsHelp && (
+        <Suspense fallback={null}>
+          <KeyboardShortcutsHelp />
+        </Suspense>
+      )}
     </>
   );
-};
+});
+KeyboardNavigationWrapper.displayName = "KeyboardNavigationWrapper";
 
 const App = () => {
   useEffect(() => {
+    // Critical initialization - run immediately
     initializeAdvancedSettings();
+    
+    // Mark app as interactive after initial render
+    deferWork(() => {
+      markInteractive();
+    }, 100);
   }, []);
 
   return (
