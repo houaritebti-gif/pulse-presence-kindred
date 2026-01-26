@@ -40,7 +40,7 @@ const sizeClasses = {
   hero: {
     text: "text-6xl md:text-7xl lg:text-8xl",
     heart: "w-5 h-5 md:w-7 md:h-7 lg:w-9 lg:h-9",
-    heartPos: "-top-2.5 md:-top-2 lg:-top-3 -left-1 md:-left-1.5 lg:-left-2",
+    heartPos: "-top-3.5 md:-top-3 lg:-top-4 -left-1 md:-left-1.5 lg:-left-2",
     marginLeft: "",
     glow: true,
   },
@@ -54,10 +54,14 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
     <motion.div 
       className={`absolute ${s.heartPos}`}
       animate={animate ? { 
-        scale: [1, 1.06, 1.02, 1.05, 1],
-        rotate: [0, -0.8, 0.8, -0.4, 0],
+        scale: [1, 1.18, 1.05, 1.14, 1],
       } : undefined}
-      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+      transition={{ 
+        duration: 0.9, 
+        repeat: Infinity, 
+        ease: [0.4, 0, 0.2, 1],
+        times: [0, 0.15, 0.3, 0.45, 1]
+      }}
     >
       <div className="relative">
         {/* Outer orange glow - subtle flame */}
