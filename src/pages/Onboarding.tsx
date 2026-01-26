@@ -44,7 +44,7 @@ const Onboarding = () => {
   const updateMusicStyles = useUpdateMusicStyles();
   const updateGenderPreferences = useUpdateGenderPreferences();
   const updateInterests = useUpdateInterests();
-  const { uploadAvatar, isUploading, uploadPhase, uploadProgress } = useAvatarUpload();
+  const { uploadAvatar, isUploading, uploadPhase, uploadProgress, errorMessage, resetState } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState(1);
@@ -1015,12 +1015,17 @@ const Onboarding = () => {
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : isUploading ? (
+              ) : isUploading || uploadPhase === "error" ? (
                 <div className="absolute inset-0 bg-background/90 flex items-center justify-center rounded-full">
                   <UploadProgress 
                     isVisible={true}
                     phase={uploadPhase}
                     progress={uploadProgress}
+                    errorMessage={errorMessage}
+                    onRetry={() => {
+                      resetState();
+                      fileInputRef.current?.click();
+                    }}
                     className="scale-75"
                   />
                 </div>

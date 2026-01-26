@@ -142,7 +142,7 @@ const Profile = () => {
   const updateMusicStyles = useUpdateMusicStyles();
   const updateGenderPreferences = useUpdateGenderPreferences();
   const updateInterests = useUpdateInterests();
-  const { uploadAvatar, isUploading, uploadPhase, uploadProgress } = useAvatarUpload();
+  const { uploadAvatar, isUploading, uploadPhase, uploadProgress, errorMessage, resetState } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
@@ -692,12 +692,17 @@ const Profile = () => {
             ) : (
               <Camera className="w-6 h-6 text-card-foreground/70 group-hover:text-card-foreground transition-colors" />
             )}
-            {isUploading && (
+            {(isUploading || uploadPhase === "error") && (
               <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
                 <UploadProgress 
                   isVisible={true}
                   phase={uploadPhase}
                   progress={uploadProgress}
+                  errorMessage={errorMessage}
+                  onRetry={() => {
+                    resetState();
+                    fileInputRef.current?.click();
+                  }}
                   className="scale-50"
                 />
               </div>
