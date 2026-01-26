@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag, Flame, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { Camera, LogOut, Loader2, Volume2, VolumeX, Bell, BellOff, Smartphone, Send, Vibrate, Moon, Music, Sparkles, ChevronDown, ChevronUp, Ban, X, MessageCircle, Calendar, User, Crown, Flag, Flame, ChevronRight, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import NetworkErrorInline from "@/components/NetworkErrorInline";
 import ProfileSkeleton from "@/components/ProfileSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,6 +56,11 @@ import { QuickTipsCard } from "@/components/QuickTipsCard";
 import { DailyChallengesCard } from "@/components/DailyChallengesCard";
 import { ChallengeStreakCalendar } from "@/components/ChallengeStreakCalendar";
 import { ProfilePromptsEditor } from "@/components/ProfilePromptsEditor";
+import SaveProfileButton from "@/components/SaveProfileButton";
+import { ValidatedInputWrapper } from "@/components/ProfileFieldFeedback";
+import { motion, AnimatePresence } from "framer-motion";
+
+type SaveState = "idle" | "saving" | "success" | "error";
 // Spark Energy Card Component for Profile with ripple effect
 const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => {
   const { sparkEnergy, currentLevel, progressToNext, isLoading } = useSparkEnergy();
@@ -152,6 +157,12 @@ const Profile = () => {
   const [selectedMusicStyles, setSelectedMusicStyles] = useState<string[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  
+  // Field validation states
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [cityError, setCityError] = useState<string | null>(null);
   
   // Optional details / aesthetic options
   const [hasTattoos, setHasTattoos] = useState<boolean | null>(null);
@@ -520,9 +531,19 @@ const Profile = () => {
   const handleContinue = async () => {
     if (!profile) return;
 
+    // Reset error state
+    setSaveError(null);
+    setNameError(null);
+    setCityError(null);
+
+    // Validation with visual feedback
+    let hasValidationError = false;
+
     // Check mandatory photo
     if (!photos || photos.length === 0) {
-      toast.error("Debes tener al menos una foto de perfil");
+      setSaveError("Debes tener al menos una foto de perfil");
+      setSaveState("error");
+      triggerHaptic('error');
       return;
     }
 
@@ -530,23 +551,33 @@ const Profile = () => {
     if (birthdate && !birthdate.includes("0000") && !birthdate.includes("00-00")) {
       const age = calculateAge(birthdate);
       if (age < 18) {
-        toast.error("Debes tener al menos 18 años para usar esta aplicación");
+        setSaveError("Debes tener al menos 18 años para usar esta aplicación");
+        setSaveState("error");
+        triggerHaptic('error');
         return;
       }
     }
 
     // Check minimum 3 interests
     if (selectedInterests.length < 3) {
-      toast.error("Selecciona al menos 3 intereses culturales");
+      setSaveError("Selecciona al menos 3 intereses culturales");
+      setSaveState("error");
+      triggerHaptic('error');
       return;
     }
 
     // Check blacklist before saving
     const blockedWords = checkBlacklistedWords(bio);
     if (blockedWords.length > 0) {
-      toast.error(`Tu bio contiene palabras no permitidas: ${blockedWords.join(", ")}`);
+      setSaveError(`Tu bio contiene palabras no permitidas: ${blockedWords.join(", ")}`);
+      setSaveState("error");
+      triggerHaptic('error');
       return;
     }
+
+    // Start saving
+    setSaveState("saving");
+    triggerHaptic('light');
 
     try {
       await updateProfile.mutateAsync({
@@ -588,14 +619,28 @@ const Profile = () => {
         interests: selectedInterests,
       });
 
-      toast.success("Perfil guardado");
-      navigate("/presence");
+      // Success state
+      setSaveState("success");
+      setHasChanges(false);
+      triggerHaptic('success');
+      toast.success("Perfil guardado correctamente");
+
+      // Reset to idle after showing success
+      setTimeout(() => {
+        setSaveState("idle");
+      }, 2000);
+
     } catch (error: any) {
+      setSaveState("error");
+      triggerHaptic('error');
+      
       // Check if error is from bio blacklist trigger
       if (error.message?.includes("prohibited words")) {
-        toast.error("Tu bio contiene palabras no permitidas");
+        setSaveError("Tu bio contiene palabras no permitidas");
+      } else if (error.message?.includes("network") || error.message?.includes("fetch")) {
+        setSaveError("Error de conexión. Revisa tu internet y vuelve a intentarlo.");
       } else {
-        toast.error("Error al guardar: " + error.message);
+        setSaveError(error.message || "Error al guardar. Inténtalo de nuevo.");
       }
     }
   };
@@ -775,23 +820,95 @@ const Profile = () => {
           <ProfileStatsCard />
         </div>
 
-        {/* Name & City */}
+        {/* Name & City with validation feedback */}
         <div className="space-y-4 mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
-          <Input
-            type="text"
-            placeholder="Tu nombre (o como quieras que te llamen)"
-            value={name}
-            onChange={(e) => { setName(e.target.value); setHasChanges(true); }}
-            className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
-          />
-          <Input
-            type="text"
-            placeholder="Ciudad"
-            value={city}
-            onChange={(e) => { setCity(e.target.value); setHasChanges(true); }}
-            className="h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary"
-          />
+          <ValidatedInputWrapper
+            error={nameError || undefined}
+            success={name.length >= 2 ? "¡Perfecto!" : undefined}
+            showSuccess={name.length >= 2 && hasChanges}
+          >
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Tu nombre (o como quieras que te llamen)"
+                value={name}
+                onChange={(e) => { 
+                  setName(e.target.value); 
+                  setHasChanges(true);
+                  setNameError(null);
+                }}
+                className={`h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary transition-all duration-200 pr-10 ${
+                  name.length >= 2 && hasChanges ? "border-primary/50" : ""
+                }`}
+              />
+              <AnimatePresence>
+                {name.length >= 2 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0 }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    <CheckCircle2 className="w-5 h-5 text-primary" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </ValidatedInputWrapper>
+          
+          <ValidatedInputWrapper
+            error={cityError || undefined}
+            success={city.length >= 2 ? "¡Genial!" : undefined}
+            showSuccess={city.length >= 2 && hasChanges}
+          >
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Ciudad"
+                value={city}
+                onChange={(e) => { 
+                  setCity(e.target.value); 
+                  setHasChanges(true);
+                  setCityError(null);
+                }}
+                className={`h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary transition-all duration-200 pr-10 ${
+                  city.length >= 2 && hasChanges ? "border-primary/50" : ""
+                }`}
+              />
+              <AnimatePresence>
+                {city.length >= 2 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0 }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    <CheckCircle2 className="w-5 h-5 text-primary" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </ValidatedInputWrapper>
         </div>
+
+        {/* Floating Save Button when changes exist */}
+        <AnimatePresence>
+          {hasChanges && (
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-20 left-4 right-4 z-40 max-w-lg mx-auto"
+            >
+              <SaveProfileButton
+                onClick={handleContinue}
+                hasChanges={hasChanges}
+                saveState={saveState}
+                errorMessage={saveError || undefined}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Gender Selection */}
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '225ms', animationFillMode: 'forwards' }}>
@@ -1043,7 +1160,7 @@ const Profile = () => {
           </h2>
           <button
             onClick={() => navigate("/subscription")}
-            className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-amber-500/10 rounded-xl border border-primary/20 hover:border-primary/40 transition-colors"
+            className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl border border-primary/20 hover:border-primary/40 transition-colors"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
@@ -1517,7 +1634,7 @@ const MyReportsHistorySection = () => {
         className="w-full flex items-center justify-between mb-4"
       >
         <div className="flex items-center gap-2">
-          <Flag className="w-5 h-5 text-amber-500" />
+          <Flag className="w-5 h-5 text-accent" />
           <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Mis reportes
           </h2>
