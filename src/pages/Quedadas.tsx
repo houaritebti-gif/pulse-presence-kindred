@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import confetti from "canvas-confetti";
+import { triggerHaptic } from "@/utils/haptics";
 import { playCelebrationSound } from "@/utils/notificationSound";
 import QuedadaCreatorHeader from "@/components/QuedadaCreatorHeader";
 import ParallaxBackground from "@/components/ParallaxBackground";
@@ -330,12 +331,12 @@ const Quedadas = () => {
         backTo="/presence" 
         rightContent={
           <button
-            onClick={() => setShowCreate(true)}
-            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground hover:scale-110 transition-transform shadow-lg shadow-primary/30"
+            onClick={() => { triggerHaptic('medium'); setShowCreate(true); }}
+            className="w-11 h-11 rounded-full bg-primary flex items-center justify-center text-primary-foreground hover:scale-110 active:scale-95 transition-transform shadow-lg shadow-primary/30"
             aria-label="Crear nueva quedada"
             title="Crear nueva quedada"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-5 h-5" />
           </button>
         }
       />

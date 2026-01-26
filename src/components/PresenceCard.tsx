@@ -317,7 +317,8 @@ const PresenceCardComponent = ({ presence, compatibility, compatibilityBreakdown
               <DropdownMenuTrigger asChild>
                 <button 
                   onClick={(e) => { e.stopPropagation(); triggerHaptic('light'); }}
-                  className="group w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background hover:shadow-lg active:scale-90 transition-all duration-200"
+                  aria-label="Opciones del perfil"
+                  className="group w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-background hover:shadow-lg active:scale-90 transition-all duration-200"
                 >
                   <MoreVertical className="w-5 h-5 sm:w-4 sm:h-4 text-foreground group-hover:rotate-90 transition-transform duration-300" />
                 </button>
