@@ -50,27 +50,16 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   const s = sizeClasses[size];
   const isHero = size === "hero";
   
+  // Heart element - only glows animate, NOT scale (prevents capture distortion)
   const heartElement = isHero ? (
-    <motion.div 
-      className={`absolute ${s.heartPos}`}
-      animate={animate ? { 
-        scale: [1, 1.18, 1.05, 1.14, 1],
-      } : undefined}
-      transition={{ 
-        duration: 0.9, 
-        repeat: Infinity, 
-        ease: [0.4, 0, 0.2, 1],
-        times: [0, 0.15, 0.3, 0.45, 1]
-      }}
-    >
+    <div className={`absolute ${s.heartPos}`}>
       <div className="relative">
         {/* Outer orange glow - subtle flame */}
         <motion.div 
           className="absolute inset-0 blur-3xl rounded-full"
           style={{ backgroundColor: 'hsl(25 100% 50% / 0.12)' }}
           animate={animate ? { 
-            opacity: [0.08, 0.15, 0.1, 0.14, 0.08], 
-            scale: [2.2, 2.5, 2.3, 2.45, 2.2] 
+            opacity: [0.08, 0.15, 0.1, 0.14, 0.08]
           } : undefined}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -78,8 +67,7 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
         <motion.div 
           className="absolute inset-0 bg-kiki-red-warm/30 blur-xl rounded-full"
           animate={animate ? { 
-            opacity: [0.25, 0.38, 0.28, 0.35, 0.25], 
-            scale: [1.6, 1.8, 1.65, 1.75, 1.6] 
+            opacity: [0.25, 0.38, 0.28, 0.35, 0.25]
           } : undefined}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: 0.2 }}
         />
@@ -87,8 +75,7 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
         <motion.div 
           className="absolute inset-0 bg-kiki-red-warm/20 blur-lg rounded-full"
           animate={animate ? { 
-            opacity: [0.15, 0.28, 0.18, 0.25, 0.15], 
-            scale: [1.3, 1.45, 1.35, 1.42, 1.3] 
+            opacity: [0.15, 0.28, 0.18, 0.25, 0.15]
           } : undefined}
           transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
         />
@@ -107,28 +94,21 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
           />
         </motion.div>
       </div>
-    </motion.div>
+    </div>
   ) : (
-    <motion.span 
-      className={`absolute ${s.heartPos}`}
-      animate={animate ? { 
-        scale: [1, 1.05, 1.02, 1.04, 1],
-        rotate: [0, -0.6, 0.6, -0.3, 0],
-      } : undefined}
-      transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-    >
+    <span className={`absolute ${s.heartPos}`}>
       <div className="relative">
         {/* Outer orange glow for smaller sizes */}
         <motion.div 
           className="absolute inset-0 blur-lg rounded-full"
           style={{ backgroundColor: 'hsl(25 100% 50% / 0.1)' }}
-          animate={animate ? { opacity: [0.06, 0.12, 0.08, 0.11, 0.06], scale: [1.4, 1.6, 1.45, 1.55, 1.4] } : undefined}
+          animate={animate ? { opacity: [0.06, 0.12, 0.08, 0.11, 0.06] } : undefined}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
         />
         {/* Red glow */}
         <motion.div 
           className="absolute inset-0 bg-kiki-red-warm/25 blur-md rounded-full"
-          animate={animate ? { opacity: [0.2, 0.32, 0.24, 0.3, 0.2], scale: [1.1, 1.25, 1.15, 1.22, 1.1] } : undefined}
+          animate={animate ? { opacity: [0.2, 0.32, 0.24, 0.3, 0.2] } : undefined}
           transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
         />
         <Heart 
@@ -136,7 +116,7 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
           style={{ filter: 'drop-shadow(0 0 4px hsl(var(--kiki-red-warm) / 0.35)) drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.18))' }}
         />
       </div>
-    </motion.span>
+    </span>
   );
   
   const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
