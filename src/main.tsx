@@ -4,28 +4,43 @@ import App from "./App.tsx";
 import "./index.css";
 import { initWebVitals } from "./utils/webVitals";
 
-// Initialize Web Vitals monitoring
+// Initialize Web Vitals monitoring early
 initWebVitals();
 
 /**
- * Remove the initial HTML loader once React takes over
+ * Remove the initial HTML loader with smooth transition
  */
 const removeInitialLoader = () => {
   const loader = document.getElementById('initial-loader');
-  if (loader) {
-    // Use RAF for smooth removal
-    requestAnimationFrame(() => {
-      loader.style.transition = 'opacity 0.15s ease-out';
-      loader.style.opacity = '0';
-      setTimeout(() => loader.remove(), 150);
-    });
-  }
+  if (!loader) return;
+  
+  // Mark app as ready for CSS transition
+  document.documentElement.classList.add('app-ready');
+  document.documentElement.classList.remove('app-loading');
+  
+  // Use RAF for buttery smooth removal
+  requestAnimationFrame(() => {
+    loader.style.cssText = 'opacity:0;transition:opacity 0.12s ease-out;pointer-events:none';
+    
+    // Remove from DOM after transition
+    setTimeout(() => {
+      loader.remove();
+      
+      // Log performance in dev mode
+      if (import.meta.env.DEV) {
+        const perfStart = (window as { __PERF_START__?: number }).__PERF_START__;
+        if (perfStart && 'performance' in window) {
+          const loadTime = Math.round(performance.now() - perfStart);
+          console.log(`[Performance] React hydrated in ${loadTime}ms`);
+        }
+      }
+    }, 120);
+  });
 };
 
 /**
- * In Lovable preview environments, mobile browsers can get stuck on a stale Service Worker/app-shell.
- * We aggressively self-heal by unregistering SW + clearing CacheStorage once per session.
- * This does NOT run on the published site.
+ * In Lovable preview environments, mobile browsers can get stuck on a stale Service Worker.
+ * We self-heal by unregistering SW + clearing CacheStorage once per session.
  */
 const shouldResetPreviewCaches = () => {
   const host = window.location.hostname;
@@ -35,7 +50,7 @@ const shouldResetPreviewCaches = () => {
 const resetPreviewCachesOnce = async () => {
   if (!shouldResetPreviewCaches()) return;
 
-  const markerKey = "__kiki_preview_cache_reset_v1";
+  const markerKey = "__kiki_preview_cache_reset_v2";
   if (sessionStorage.getItem(markerKey) === "1") return;
   sessionStorage.setItem(markerKey, "1");
 
@@ -45,7 +60,7 @@ const resetPreviewCachesOnce = async () => {
       await Promise.all(regs.map((r) => r.unregister()));
     }
   } catch {
-    // Ignore
+    // Silent fail
   }
 
   try {
@@ -54,35 +69,35 @@ const resetPreviewCachesOnce = async () => {
       await Promise.all(keys.map((k) => caches.delete(k)));
     }
   } catch {
-    // Ignore
+    // Silent fail
   }
 
-  // Reload once to ensure fresh bundles are fetched
+  // Reload once to ensure fresh bundles
   window.location.reload();
 };
 
-const renderApp = () => {
-  // Remove the HTML loader before mounting React
+/**
+ * Mount the React application
+ */
+const mountApp = () => {
+  const container = document.getElementById("root")!;
+  
+  // Remove loader before mounting to prevent flash
   removeInitialLoader();
   
-  const root = createRoot(document.getElementById("root")!);
+  const root = createRoot(container);
   root.render(
     <React.StrictMode>
       <App />
     </React.StrictMode>
   );
-  
-  // Log performance metrics in development
-  if (import.meta.env.DEV && 'performance' in window) {
-    const timing = performance.timing;
-    if (timing.loadEventEnd > 0) {
-      console.log('[Performance] Page load:', timing.loadEventEnd - timing.navigationStart, 'ms');
-    }
-  }
 };
 
+// Bootstrap the application
 (async () => {
-  // If this triggers a reload, renderApp won't matter.
+  // Reset caches in preview environments (may trigger reload)
   await resetPreviewCachesOnce();
-  renderApp();
+  
+  // Mount React app
+  mountApp();
 })();
