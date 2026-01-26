@@ -69,19 +69,9 @@ const Landing = () => {
             }}
           />
           
-          <motion.div
-            className="relative z-10"
-            animate={{ 
-              scale: [1, 1.02, 1],
-            }}
-            transition={{ 
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
+          <div className="relative z-10">
             <KikiLogo size="hero" variant="dark" />
-          </motion.div>
+          </div>
         </motion.div>
         
         {/* Taglines - Enhanced visual */}
