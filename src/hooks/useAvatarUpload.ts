@@ -1,12 +1,24 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUpdateProfile } from "./useProfile";
 import { compressAvatar, CompressionProgressCallback } from "@/utils/imageCompression";
 import { validateImageQuality } from "@/utils/imageBlurDetection";
 
-export type AvatarUploadPhase = "compressing" | "uploading" | "complete";
+export type AvatarUploadPhase = "compressing" | "uploading" | "complete" | "error";
 export type AvatarProgressCallback = (phase: AvatarUploadPhase, progress: number) => void;
+
+// Timeout for upload operations (30 seconds)
+const UPLOAD_TIMEOUT_MS = 30000;
+
+// Helper to create a timeout promise
+const createTimeout = (ms: number, operation: string): Promise<never> => {
+  return new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`${operation} tardó demasiado. Por favor, intenta de nuevo.`));
+    }, ms);
+  });
+};
 
 export const useAvatarUpload = () => {
   const { user } = useAuth();
@@ -14,13 +26,33 @@ export const useAvatarUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadPhase, setUploadPhase] = useState<AvatarUploadPhase>("compressing");
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const resetState = useCallback(() => {
+    setIsUploading(false);
+    setUploadPhase("compressing");
+    setUploadProgress(0);
+    setErrorMessage(null);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  }, []);
 
   const uploadAvatar = async (file: File, onProgress?: AvatarProgressCallback) => {
     if (!user) throw new Error("Not authenticated");
 
+    // Reset any previous state
+    resetState();
+    
     setIsUploading(true);
     setUploadPhase("compressing");
     setUploadProgress(0);
+    setErrorMessage(null);
+
+    // Create new abort controller for this upload
+    abortControllerRef.current = new AbortController();
 
     const updateProgress = (phase: AvatarUploadPhase, progress: number) => {
       setUploadPhase(phase);
@@ -39,16 +71,31 @@ export const useAvatarUpload = () => {
         throw new Error("La imagen no puede superar 10MB");
       }
 
-      // Validate image quality (blur detection)
-      const qualityError = await validateImageQuality(file);
-      if (qualityError) {
-        throw new Error(qualityError);
+      // Validate image quality (blur detection) - with timeout
+      try {
+        const qualityError = await Promise.race([
+          validateImageQuality(file),
+          createTimeout(10000, "La validación de imagen")
+        ]);
+        if (qualityError) {
+          throw new Error(qualityError);
+        }
+      } catch (qualityErr: any) {
+        // Only throw if it's a blur error, not a timeout
+        if (qualityErr.message.includes("borrosa")) {
+          throw qualityErr;
+        }
+        // Continue anyway if validation times out
+        console.warn("Image quality validation timed out, continuing...");
       }
 
-      // Compress image before upload
-      const compressedFile = await compressAvatar(file, (compressionProgress) => {
-        updateProgress("compressing", compressionProgress);
-      });
+      // Compress image before upload - with timeout
+      const compressedFile = await Promise.race([
+        compressAvatar(file, (compressionProgress) => {
+          updateProgress("compressing", compressionProgress);
+        }),
+        createTimeout(15000, "La compresión de imagen")
+      ]);
 
       // Start upload phase
       updateProgress("uploading", 0);
@@ -56,13 +103,18 @@ export const useAvatarUpload = () => {
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/avatar.jpg`;
 
-      // Upload compressed image to storage
-      const { error: uploadError } = await supabase.storage
+      // Upload compressed image to storage - with timeout
+      const uploadPromise = supabase.storage
         .from("avatars")
         .upload(fileName, compressedFile, { 
           upsert: true,
           contentType: "image/jpeg",
         });
+
+      const { error: uploadError } = await Promise.race([
+        uploadPromise,
+        createTimeout(UPLOAD_TIMEOUT_MS, "La subida de imagen")
+      ]);
 
       if (uploadError) throw uploadError;
 
@@ -76,8 +128,11 @@ export const useAvatarUpload = () => {
       // Add cache buster to force refresh
       const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
 
-      // Update profile with new avatar URL
-      await updateProfile.mutateAsync({ avatar_url: urlWithCacheBuster });
+      // Update profile with new avatar URL - with timeout
+      await Promise.race([
+        updateProfile.mutateAsync({ avatar_url: urlWithCacheBuster }),
+        createTimeout(15000, "La actualización del perfil")
+      ]);
 
       updateProgress("uploading", 100);
       
@@ -86,10 +141,31 @@ export const useAvatarUpload = () => {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       return urlWithCacheBuster;
+    } catch (error: any) {
+      // Set error phase for UI feedback
+      setUploadPhase("error");
+      setErrorMessage(error.message || "Error al subir la foto");
+      throw error;
     } finally {
       setIsUploading(false);
+      abortControllerRef.current = null;
     }
   };
 
-  return { uploadAvatar, isUploading, uploadPhase, uploadProgress };
+  const cancelUpload = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    resetState();
+  }, [resetState]);
+
+  return { 
+    uploadAvatar, 
+    isUploading, 
+    uploadPhase, 
+    uploadProgress, 
+    errorMessage,
+    cancelUpload,
+    resetState 
+  };
 };

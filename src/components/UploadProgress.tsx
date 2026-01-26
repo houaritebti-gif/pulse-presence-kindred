@@ -1,17 +1,26 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ImageIcon, Upload, CheckCircle } from "lucide-react";
+import { ImageIcon, Upload, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type UploadPhase = "idle" | "compressing" | "uploading" | "complete";
+export type UploadPhase = "idle" | "compressing" | "uploading" | "complete" | "error";
 
 interface UploadProgressProps {
   isVisible: boolean;
   phase: UploadPhase;
   progress: number; // 0-100
   className?: string;
+  errorMessage?: string | null;
+  onRetry?: () => void;
 }
 
-const UploadProgress = ({ isVisible, phase, progress, className }: UploadProgressProps) => {
+const UploadProgress = ({ 
+  isVisible, 
+  phase, 
+  progress, 
+  className,
+  errorMessage,
+  onRetry 
+}: UploadProgressProps) => {
   const getPhaseLabel = () => {
     switch (phase) {
       case "compressing":
@@ -20,6 +29,10 @@ const UploadProgress = ({ isVisible, phase, progress, className }: UploadProgres
         return "Subiendo...";
       case "complete":
         return "¡Completado!";
+      case "error":
+        return errorMessage || "Error al subir";
+      default:
+        return "";
     }
   };
 
@@ -31,8 +44,14 @@ const UploadProgress = ({ isVisible, phase, progress, className }: UploadProgres
         return <Upload className="w-4 h-4" />;
       case "complete":
         return <CheckCircle className="w-4 h-4" />;
+      case "error":
+        return <XCircle className="w-4 h-4 text-destructive" />;
+      default:
+        return null;
     }
   };
+
+  const isError = phase === "error";
 
   return (
     <AnimatePresence>
@@ -68,11 +87,14 @@ const UploadProgress = ({ isVisible, phase, progress, className }: UploadProgres
                 strokeWidth="2"
                 strokeLinecap="round"
                 className={cn(
-                  phase === "complete" ? "text-green-500" : "text-primary"
+                  phase === "complete" ? "text-green-500" : 
+                  isError ? "text-destructive" : "text-primary"
                 )}
                 strokeDasharray={97.39} // 2 * PI * 15.5
                 initial={{ strokeDashoffset: 97.39 }}
-                animate={{ strokeDashoffset: 97.39 - (progress / 100) * 97.39 }}
+                animate={{ 
+                  strokeDashoffset: isError ? 0 : 97.39 - (progress / 100) * 97.39 
+                }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
               />
             </svg>
@@ -87,6 +109,14 @@ const UploadProgress = ({ isVisible, phase, progress, className }: UploadProgres
                 >
                   <CheckCircle className="w-6 h-6 text-green-500" />
                 </motion.div>
+              ) : isError ? (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <XCircle className="w-6 h-6 text-destructive" />
+                </motion.div>
               ) : (
                 <span className="text-sm font-bold text-foreground">
                   {Math.round(progress)}%
@@ -96,10 +126,26 @@ const UploadProgress = ({ isVisible, phase, progress, className }: UploadProgres
           </div>
 
           {/* Phase label */}
-          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <div className={cn(
+            "flex items-center gap-1.5 text-xs font-medium",
+            isError ? "text-destructive" : "text-muted-foreground"
+          )}>
             {getPhaseIcon()}
-            <span>{getPhaseLabel()}</span>
+            <span className="max-w-[150px] truncate">{getPhaseLabel()}</span>
           </div>
+
+          {/* Retry button for errors */}
+          {isError && onRetry && (
+            <motion.button
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              onClick={onRetry}
+              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium mt-1"
+            >
+              <RefreshCw className="w-3 h-3" />
+              Reintentar
+            </motion.button>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
