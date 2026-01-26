@@ -8,6 +8,21 @@ import { initWebVitals } from "./utils/webVitals";
 initWebVitals();
 
 /**
+ * Remove the initial HTML loader once React takes over
+ */
+const removeInitialLoader = () => {
+  const loader = document.getElementById('initial-loader');
+  if (loader) {
+    // Use RAF for smooth removal
+    requestAnimationFrame(() => {
+      loader.style.transition = 'opacity 0.15s ease-out';
+      loader.style.opacity = '0';
+      setTimeout(() => loader.remove(), 150);
+    });
+  }
+};
+
+/**
  * In Lovable preview environments, mobile browsers can get stuck on a stale Service Worker/app-shell.
  * We aggressively self-heal by unregistering SW + clearing CacheStorage once per session.
  * This does NOT run on the published site.
@@ -47,11 +62,23 @@ const resetPreviewCachesOnce = async () => {
 };
 
 const renderApp = () => {
-  createRoot(document.getElementById("root")!).render(
+  // Remove the HTML loader before mounting React
+  removeInitialLoader();
+  
+  const root = createRoot(document.getElementById("root")!);
+  root.render(
     <React.StrictMode>
       <App />
     </React.StrictMode>
   );
+  
+  // Log performance metrics in development
+  if (import.meta.env.DEV && 'performance' in window) {
+    const timing = performance.timing;
+    if (timing.loadEventEnd > 0) {
+      console.log('[Performance] Page load:', timing.loadEventEnd - timing.navigationStart, 'ms');
+    }
+  }
 };
 
 (async () => {

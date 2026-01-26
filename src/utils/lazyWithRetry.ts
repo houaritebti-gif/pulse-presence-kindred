@@ -171,19 +171,62 @@ export function preloadRoute(factory: ComponentFactory<unknown>): void {
 /**
  * Preload critical routes after authentication
  * Call this after user logs in to pre-fetch likely next pages
+ * Uses priority-based loading: critical routes first, then secondary
  */
 export function preloadCriticalRoutes(): void {
   // Use requestIdleCallback for non-blocking preload
-  const preload = () => {
-    // Most likely routes after login
+  const preloadPriority1 = () => {
+    // Most critical routes after login - Presence is the main landing page
     import('@/pages/Presence').catch(() => {});
     import('@/pages/Profile').catch(() => {});
+  };
+  
+  const preloadPriority2 = () => {
+    // Secondary important routes
     import('@/pages/Sparks').catch(() => {});
+    import('@/pages/Notifications').catch(() => {});
+  };
+  
+  const preloadPriority3 = () => {
+    // Tertiary routes
+    import('@/pages/Quedadas').catch(() => {});
+    import('@/pages/GhostMessages').catch(() => {});
   };
 
   if ('requestIdleCallback' in window) {
-    (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(preload);
+    const ric = (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => void }).requestIdleCallback;
+    // Priority 1: Load immediately when idle
+    ric(preloadPriority1, { timeout: 1000 });
+    // Priority 2: Load after 500ms
+    setTimeout(() => ric(preloadPriority2, { timeout: 2000 }), 500);
+    // Priority 3: Load after 1.5s
+    setTimeout(() => ric(preloadPriority3, { timeout: 3000 }), 1500);
   } else {
-    setTimeout(preload, 200);
+    // Fallback for browsers without requestIdleCallback
+    setTimeout(preloadPriority1, 100);
+    setTimeout(preloadPriority2, 600);
+    setTimeout(preloadPriority3, 1600);
+  }
+}
+
+/**
+ * Preload a specific route before navigation
+ * Use this for link hover or other predictive loading
+ */
+export function preloadRouteOnDemand(routePath: string): void {
+  const routeMap: Record<string, () => Promise<unknown>> = {
+    '/presence': () => import('@/pages/Presence'),
+    '/profile': () => import('@/pages/Profile'),
+    '/sparks': () => import('@/pages/Sparks'),
+    '/notifications': () => import('@/pages/Notifications'),
+    '/quedadas': () => import('@/pages/Quedadas'),
+    '/ghost-messages': () => import('@/pages/GhostMessages'),
+    '/connections': () => import('@/pages/Connections'),
+    '/spark-energy': () => import('@/pages/Spark'),
+  };
+  
+  const loader = routeMap[routePath];
+  if (loader) {
+    loader().catch(() => {});
   }
 }

@@ -11,16 +11,29 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   build: {
-    // Optimize chunk splitting
+    // Optimize chunk splitting for better caching and parallel loading
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks for better caching
+          // Core vendor chunks - loaded first
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-tooltip'],
+          // UI components - can be cached separately
+          'vendor-ui': [
+            '@radix-ui/react-dialog', 
+            '@radix-ui/react-dropdown-menu', 
+            '@radix-ui/react-popover', 
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-tabs',
+          ],
+          // Animation library - only needed for animated pages
           'vendor-motion': ['framer-motion'],
+          // Data layer - critical for authenticated pages
           'vendor-query': ['@tanstack/react-query'],
+          // Backend SDK - only after auth
           'vendor-supabase': ['@supabase/supabase-js'],
+          // Date utilities - used across many pages
+          'vendor-date': ['date-fns'],
         },
       },
     },
@@ -28,9 +41,13 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === 'development',
     // Increase chunk size warning limit (components are intentionally larger for fewer requests)
     chunkSizeWarningLimit: 600,
-    // Minification settings
+    // Minification settings for smaller bundles
     minify: 'esbuild',
     target: 'es2020',
+    // CSS code splitting for faster initial paint
+    cssCodeSplit: true,
+    // Report compressed sizes
+    reportCompressedSize: true,
   },
   plugins: [
     react(),
