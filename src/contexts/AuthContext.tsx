@@ -10,7 +10,23 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+/**
+ * Fail-safe default context.
+ *
+ * Why: In dev/HMR or during certain initialization races, some modules can render
+ * briefly without the provider, which previously caused a hard crash and blank screen.
+ * With a safe default, the app stays up and simply behaves as unauthenticated.
+ */
+const DEFAULT_AUTH_CONTEXT: AuthContextType = {
+  user: null,
+  session: null,
+  loading: true,
+  signOut: async () => {
+    // no-op when AuthProvider is not mounted
+  },
+};
+
+const AuthContext = createContext<AuthContextType>(DEFAULT_AUTH_CONTEXT);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -59,9 +75,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  return useContext(AuthContext);
 };
