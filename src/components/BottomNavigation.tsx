@@ -47,16 +47,21 @@ const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineB
     prevBadgeRef.current = badge;
   }, [badge]);
 
+  // Generate accessible label with badge count
+  const accessibleLabel = badge !== undefined && badge > 0
+    ? `${label}, ${badge} ${badge === 1 ? 'notificación nueva' : 'notificaciones nuevas'}`
+    : label;
+
   return (
     <button
       onClick={onClick}
       onMouseEnter={onPrefetch}
       onTouchStart={onPrefetch}
       onFocus={onPrefetch}
-      aria-label={label}
+      aria-label={accessibleLabel}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "flex flex-col items-center gap-1 px-4 py-2 relative transition-all rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "flex flex-col items-center gap-1 px-4 py-2 relative transition-all rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background min-h-[44px] min-w-[44px]",
         isActive 
           ? "text-primary" 
           : "text-muted-foreground hover:text-foreground"
@@ -69,6 +74,7 @@ const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineB
         {icon}
         {badge !== undefined && badge > 0 && (
           <span 
+            aria-hidden="true"
             className={cn(
               "absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center",
               isOfflineBadge 
@@ -84,9 +90,9 @@ const NavItem = ({ icon, label, badge, isActive, onClick, onPrefetch, isOfflineB
           </span>
         )}
       </div>
-      <span className="text-[10px] font-body">{label}</span>
+      <span className="text-[10px] font-body" aria-hidden="true">{label}</span>
       {isActive && (
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" aria-hidden="true" />
       )}
     </button>
   );

@@ -34,6 +34,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useChatInput } from "@/contexts/ChatInputContext";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
 import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
+import { useChatRateLimit } from "@/hooks/useClientRateLimit";
 
 const SparkChat = () => {
   const navigate = useNavigate();
@@ -76,6 +77,9 @@ const SparkChat = () => {
   // Muted chats
   const { isChatMuted, toggleMute } = useMutedSparkChats();
   const isMuted = chatId ? isChatMuted(chatId) : false;
+  
+  // Client-side rate limiting to prevent message spam
+  const { checkRateLimit } = useChatRateLimit();
   
   // Image upload
   const { uploadImage, isUploading: isUploadingImage, uploadPhase, uploadProgress } = useChatImageUpload();
@@ -236,6 +240,12 @@ const SparkChat = () => {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!newMessage.trim() && !selectedFile) || !chatId || !chat) return;
+    
+    // Client-side rate limiting check
+    if (!checkRateLimit()) {
+      triggerHaptic('warning');
+      return;
+    }
 
     triggerHaptic('light');
     stopTyping(); // Stop typing indicator on send

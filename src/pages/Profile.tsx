@@ -42,6 +42,7 @@ import { useProfileGenderPreferences, useUpdateGenderPreferences } from "@/hooks
 import { useProfileInterests, useUpdateInterests } from "@/hooks/useInterests";
 import { useCheckBlacklistedWords } from "@/hooks/useBioBlacklist";
 import { triggerHaptic } from "@/utils/haptics";
+import { sanitizeDisplayName, validateDisplayName } from "@/utils/inputSanitization";
 import { SparkFlame } from "@/components/SparkFlame";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { AchievementsDisplay } from "@/components/AchievementsDisplay";
@@ -564,6 +565,20 @@ const Profile = () => {
       setSaveState("error");
       triggerHaptic('error');
       return;
+    }
+
+    // Validate and sanitize name
+    if (name) {
+      const sanitizedName = sanitizeDisplayName(name);
+      const nameValidationError = validateDisplayName(sanitizedName);
+      if (nameValidationError) {
+        setNameError(nameValidationError);
+        setSaveState("error");
+        triggerHaptic('error');
+        return;
+      }
+      // Use sanitized name for saving
+      setName(sanitizedName);
     }
 
     // Check blacklist before saving

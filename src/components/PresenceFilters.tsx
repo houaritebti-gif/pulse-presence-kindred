@@ -864,18 +864,20 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
                 >
                   {/* Search input */}
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
                     <input
                       type="text"
                       placeholder="Buscar intereses..."
+                      aria-label="Buscar intereses para filtrar"
                       value={interestSearch}
                       onChange={(e) => setInterestSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 rounded-xl bg-muted/50 border border-border text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                      className="w-full pl-9 pr-10 py-3 rounded-xl bg-muted/50 border border-border text-sm text-card-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                     />
                     {interestSearch && (
                       <button
                         onClick={() => setInterestSearch("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        aria-label="Limpiar búsqueda"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted/50"
                       >
                         <X className="w-4 h-4" />
                       </button>
