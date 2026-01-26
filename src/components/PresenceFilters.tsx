@@ -468,6 +468,21 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
                     </button>
                   ))}
                   
+                  {/* All locations toggle */}
+                  <button
+                    onClick={() => {
+                      triggerHaptic('light');
+                      onChange({ ...filters, cities: [] });
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-body text-xs font-medium transition-all active:scale-95 ${
+                      (filters.cities ?? []).length === 0
+                        ? "bg-accent text-accent-foreground shadow-sm"
+                        : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                    }`}
+                  >
+                    🌍 Todos
+                  </button>
+                  
                   {/* Quick city filter - show top 3 cities */}
                   {sortedCities.slice(0, 3).map((city) => (
                     <button
