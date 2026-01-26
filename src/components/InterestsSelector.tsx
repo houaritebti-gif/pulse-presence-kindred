@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, X, Star } from "lucide-react";
+import { Search, X, Star, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CULTURAL_INTERESTS_CATEGORIES, CULTURAL_INTERESTS } from "@/constants/profileOptions";
@@ -67,23 +67,27 @@ export const InterestsSelector = ({
   const isOnboarding = variant === "onboarding";
 
   return (
-    <div className={cn("space-y-4", isOnboarding && "max-h-[55vh] overflow-hidden flex flex-col")}>
+    <div className={cn(
+      "space-y-4", 
+      isOnboarding && "max-h-[50vh] overflow-hidden flex flex-col"
+    )}>
       {/* Search input - sticky at top */}
       <div className="relative flex-shrink-0">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
         <Input
           type="text"
           placeholder="Buscar intereses..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 pr-9 h-11 rounded-xl bg-card border-border/50"
+          className="pl-9 pr-9 h-12 rounded-xl bg-card border-border/50 text-base touch-manipulation"
+          enterKeyHint="search"
         />
         {searchQuery && (
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 touch-manipulation"
             onClick={clearSearch}
           >
             <X className="w-4 h-4" />
@@ -125,10 +129,10 @@ export const InterestsSelector = ({
         ))}
       </div>
 
-      {/* Interests grid - scrollable */}
+      {/* Interests grid - scrollable with improved touch handling */}
       <div className={cn(
         "flex flex-wrap gap-2",
-        isOnboarding ? "overflow-y-auto flex-1 pb-12" : ""
+        isOnboarding ? "overflow-y-auto flex-1 pb-16 overscroll-contain" : ""
       )}>
         <AnimatePresence mode="popLayout">
           {filteredInterests.map((interest) => (
@@ -145,7 +149,7 @@ export const InterestsSelector = ({
                 selectedInterests.length >= maxInterests
               }
               className={cn(
-                "px-3 py-2 rounded-full text-sm transition-colors flex items-center gap-1.5",
+                "px-4 py-2.5 rounded-full text-sm transition-colors flex items-center gap-1.5 touch-manipulation active:scale-95",
                 selectedInterests.includes(interest.value)
                   ? "bg-primary text-primary-foreground"
                   : "bg-card text-card-foreground hover:bg-card/80 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -173,11 +177,11 @@ export const InterestsSelector = ({
         )}
       </div>
 
-      {/* Counter - sticky at bottom */}
+      {/* Counter - sticky at bottom with improved visibility */}
       {showCounter && (
         <div className={cn(
-          "pt-2 bg-background border-t border-border/50 flex-shrink-0",
-          isOnboarding && "sticky bottom-0"
+          "pt-3 bg-background/95 backdrop-blur-sm border-t border-border/50 flex-shrink-0",
+          isOnboarding && "sticky bottom-0 -mx-1 px-1"
         )}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -194,12 +198,15 @@ export const InterestsSelector = ({
               </span>
             </div>
             {selectedInterests.length < minInterests && (
-              <span className="text-xs text-destructive">
+              <span className="text-xs text-destructive font-medium px-2 py-1 rounded-full bg-destructive/10">
                 Mínimo {minInterests}
               </span>
             )}
             {selectedInterests.length >= minInterests && (
-              <span className="text-xs text-primary">✓ Mínimo alcanzado</span>
+              <span className="text-xs text-primary font-medium flex items-center gap-1">
+                <Check className="w-3 h-3" />
+                Mínimo alcanzado
+              </span>
             )}
           </div>
         </div>
