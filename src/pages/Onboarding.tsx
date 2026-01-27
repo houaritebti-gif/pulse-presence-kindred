@@ -1,26 +1,32 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Camera, ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users, Camera } from "lucide-react";
 import InterestsSelector from "@/components/InterestsSelector";
 import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
 import { useUpdateInterests } from "@/hooks/useInterests";
 import { toast } from "sonner";
-import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GENDERS_MAIN, GENDERS_EXTENDED, GenderType, CULTURAL_INTERESTS } from "@/constants/profileOptions";
+import { GenderType } from "@/constants/profileOptions";
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { playCelebrationSound } from "@/utils/notificationSound";
-import UploadProgress from "@/components/UploadProgress";
 import ImageCropModal from "@/components/ImageCropModal";
-import { triggerHaptic } from "@/utils/haptics";
 import BirthdateSelector from "@/components/BirthdateSelector";
 import OnboardingProgressIndicator from "@/components/OnboardingProgressIndicator";
 import OnboardingGenderSelector from "@/components/OnboardingGenderSelector";
 import OnboardingCitySelector from "@/components/OnboardingCitySelector";
+import OnboardingNameInput from "@/components/OnboardingNameInput";
+import OnboardingVibeSelector from "@/components/OnboardingVibeSelector";
+import OnboardingTribesSelector from "@/components/OnboardingTribesSelector";
+import OnboardingMusicSelector from "@/components/OnboardingMusicSelector";
+import OnboardingLookingForSelector from "@/components/OnboardingLookingForSelector";
+import OnboardingDetailsSelector from "@/components/OnboardingDetailsSelector";
+import OnboardingBioInput from "@/components/OnboardingBioInput";
+import OnboardingGenderPreferencesSelector from "@/components/OnboardingGenderPreferencesSelector";
+import OnboardingPhotoUpload from "@/components/OnboardingPhotoUpload";
+import OnboardingStepHeader from "@/components/OnboardingStepHeader";
 import { useOnboardingPersistence } from "@/hooks/useOnboardingPersistence";
 
 const STEPS = [
@@ -484,49 +490,44 @@ const Onboarding = () => {
     }
   };
 
+  // Step icon map
+  const getStepIcon = () => {
+    switch (step) {
+      case 1: return <User className="w-6 h-6" />;
+      case 2: return <MapPin className="w-6 h-6" />;
+      case 3: return <Calendar className="w-6 h-6" />;
+      case 4: return <User className="w-6 h-6" />;
+      case 5: return <Heart className="w-6 h-6" />;
+      case 6: return <Sparkles className="w-6 h-6" />;
+      case 7: return <Sparkles className="w-6 h-6" />;
+      case 8: return <Users className="w-6 h-6" />;
+      case 9: return <Music className="w-6 h-6" />;
+      case 10: return <Target className="w-6 h-6" />;
+      case 11: return <FileText className="w-6 h-6" />;
+      case 12: return <Sparkles className="w-6 h-6" />;
+      case 13: return <Camera className="w-6 h-6" />;
+      default: return <Sparkles className="w-6 h-6" />;
+    }
+  };
+
   const renderStepContent = () => {
     switch (step) {
       case 1:
         return (
-          <motion.div 
-            key="step-1" 
-            className="space-y-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <motion.div className="relative" variants={itemVariants}>
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-card-foreground/60 pointer-events-none transition-all duration-200 peer-focus:text-primary peer-focus:scale-110" />
-              <Input
-                type="text"
-                placeholder="Tu nombre o alias"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="peer h-14 text-lg pl-12 text-center rounded-2xl bg-card border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/60"
-                autoFocus
-              />
-            </motion.div>
-          </motion.div>
+          <OnboardingNameInput
+            name={name}
+            onNameChange={setName}
+          />
         );
 
       case 2:
         return (
-          <motion.div 
-            key="step-2" 
-            className="space-y-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <OnboardingCitySelector
-              city={city}
-              zone={zone}
-              onCityChange={setCity}
-              onZoneChange={setZone}
-            />
-          </motion.div>
+          <OnboardingCitySelector
+            city={city}
+            zone={zone}
+            onCityChange={setCity}
+            onZoneChange={setZone}
+          />
         );
 
       case 3:
@@ -534,24 +535,22 @@ const Onboarding = () => {
           <motion.div 
             key="step-3" 
             className="space-y-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
             <motion.div 
               className="flex items-center gap-2 text-muted-foreground mb-2"
-              variants={itemVariants}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
             >
               <Calendar className="w-4 h-4" />
-              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Solo mostraremos tu edad, no la fecha</span>
+              <span className="text-sm">Solo mostraremos tu edad, no la fecha</span>
             </motion.div>
-            <motion.div variants={itemVariants}>
-              <BirthdateSelector
-                value={birthdate}
-                onChange={setBirthdate}
-              />
-            </motion.div>
+            <BirthdateSelector
+              value={birthdate}
+              onChange={setBirthdate}
+            />
             <AnimatePresence>
               {userAge !== null && userAge >= 18 && (
                 <motion.div 
@@ -572,92 +571,18 @@ const Onboarding = () => {
 
       case 4:
         return (
-          <motion.div 
-            key="step-4-gender" 
-            className="space-y-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <motion.div 
-              className="flex items-center gap-2 text-muted-foreground mb-2"
-              variants={itemVariants}
-            >
-              <User className="w-4 h-4" />
-              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Elige cómo te identificas</span>
-            </motion.div>
-            
-            <OnboardingGenderSelector
-              value={selectedGender}
-              onChange={setSelectedGender}
-            />
-          </motion.div>
+          <OnboardingGenderSelector
+            value={selectedGender}
+            onChange={setSelectedGender}
+          />
         );
 
       case 5:
         return (
-          <motion.div 
-            key="step-5-preferences" 
-            className="space-y-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <motion.div 
-              className="flex items-center gap-2 text-muted-foreground mb-2"
-              variants={itemVariants}
-            >
-              <Heart className="w-4 h-4" />
-              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Puedes elegir varias opciones</span>
-            </motion.div>
-            
-            {/* Main preferences */}
-            <div className="space-y-2">
-              {[
-                { value: "woman" as GenderType, label: "Mujeres", emoji: "👩" },
-                { value: "man" as GenderType, label: "Hombres", emoji: "👨" },
-                { value: "non_binary" as GenderType, label: "Personas no binarias", emoji: "🌈" },
-              ].map((option) => (
-                <motion.button
-                  key={option.value}
-                  onClick={() => { 
-                    triggerHaptic('selection'); 
-                    toggleGenderPreference(option.value);
-                  }}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`w-full p-4 rounded-2xl text-base transition-colors flex items-center justify-between ${
-                    selectedGenderPreferences.includes(option.value)
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card text-card-foreground hover:bg-card/80"
-                  }`}
-                  style={{ fontFamily: 'Arial, sans-serif' }}
-                >
-                  <span className="flex items-center gap-3">
-                    <span className="text-xl">{option.emoji}</span>
-                    <span>{option.label}</span>
-                  </span>
-                  {selectedGenderPreferences.includes(option.value) && <Check className="w-5 h-5" />}
-                </motion.button>
-              ))}
-            </div>
-
-            <AnimatePresence>
-              {selectedGenderPreferences.length > 0 && (
-                <motion.p 
-                  className="text-center text-sm text-muted-foreground pt-2"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  {selectedGenderPreferences.length} seleccionada{selectedGenderPreferences.length > 1 ? "s" : ""}
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          <OnboardingGenderPreferencesSelector
+            selectedPreferences={selectedGenderPreferences}
+            onTogglePreference={toggleGenderPreference}
+          />
         );
 
       case 6:
@@ -665,21 +590,19 @@ const Onboarding = () => {
           <motion.div 
             key="step-6-interests" 
             className="space-y-2 h-full flex flex-col"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
           >
             <motion.div 
               className="flex items-center gap-2 text-muted-foreground mb-2"
-              variants={itemVariants}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
             >
               <Sparkles className="w-4 h-4" />
-              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>
-                Elige entre 3 y 10 intereses
-              </span>
+              <span className="text-sm">Elige entre 3 y 10 intereses</span>
             </motion.div>
-            <motion.div variants={itemVariants} className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0">
               <InterestsSelector
                 selectedInterests={selectedInterests}
                 onToggleInterest={toggleInterest}
@@ -688,406 +611,101 @@ const Onboarding = () => {
                 showCounter={true}
                 variant="onboarding"
               />
-            </motion.div>
+            </div>
           </motion.div>
         );
 
       case 7:
         return (
-          <motion.div 
-            key="step-7-vibe" 
-            className="space-y-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <div className="grid grid-cols-2 gap-3">
-              {VIBES.map((vibe) => (
-                <motion.button
-                  key={vibe.value}
-                  onClick={() => { triggerHaptic('selection'); setSelectedVibe(vibe.value); }}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`p-4 rounded-2xl text-base transition-colors flex items-center justify-center gap-2 ${
-                    selectedVibe === vibe.value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card text-card-foreground hover:bg-card/80"
-                  }`}
-                  style={{ fontFamily: 'Arial, sans-serif' }}
-                >
-                  <span className="text-xl">{vibe.emoji}</span>
-                  <span>{vibe.value}</span>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
+          <OnboardingVibeSelector
+            selectedVibe={selectedVibe}
+            onVibeChange={setSelectedVibe}
+          />
         );
 
       case 8:
         return (
-          <motion.div 
-            key="step-8-tribes" 
-            className="space-y-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <div className="flex flex-wrap gap-2 justify-center">
-              {TRIBES.map((tribe) => (
-                <motion.button
-                  key={tribe.value}
-                  onClick={() => { triggerHaptic('selection'); toggleTribe(tribe.value); }}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`px-4 py-2 rounded-full text-sm transition-colors ${
-                    selectedTribes.includes(tribe.value)
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card text-card-foreground hover:bg-card/80"
-                  }`}
-                  style={{ fontFamily: 'Arial, sans-serif' }}
-                >
-                  {tribe.emoji} {tribe.value}
-                </motion.button>
-              ))}
-            </div>
-            <AnimatePresence>
-              {selectedTribes.length > 0 && (
-                <motion.p 
-                  className="text-center text-sm text-muted-foreground"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  {selectedTribes.length} seleccionadas
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          <OnboardingTribesSelector
+            selectedTribes={selectedTribes}
+            onToggleTribe={toggleTribe}
+          />
         );
 
       case 9:
         return (
-          <motion.div 
-            key="step-9-music" 
-            className="space-y-6 max-h-[50vh] overflow-y-auto"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            {MUSIC_CATEGORIES.map((category) => (
-              <motion.div 
-                key={category.name}
-                variants={itemVariants}
-              >
-                <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-                  <Music className="w-3 h-3" />
-                  {category.name}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {category.styles.map((style) => (
-                    <motion.button
-                      key={style}
-                      onClick={() => { triggerHaptic('selection'); toggleMusicStyle(style); }}
-                      whileHover={{ scale: 1.08 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`px-3 py-1.5 rounded-full text-xs transition-colors ${
-                        selectedMusicStyles.includes(style)
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-card text-card-foreground hover:bg-card/80"
-                      }`}
-                      style={{ fontFamily: 'Arial, sans-serif' }}
-                    >
-                      {style}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-            <AnimatePresence>
-              {selectedMusicStyles.length > 0 && (
-                <motion.p 
-                  className="text-center text-sm text-primary sticky bottom-0 bg-background py-2"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  {selectedMusicStyles.length}/5 estilos
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          <OnboardingMusicSelector
+            selectedStyles={selectedMusicStyles}
+            onToggleStyle={toggleMusicStyle}
+            maxStyles={5}
+          />
         );
 
       case 10:
         return (
-          <motion.div 
-            key="step-10-looking" 
-            className="space-y-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <motion.div 
-              className="flex items-center gap-2 text-muted-foreground mb-4"
-              variants={itemVariants}
-            >
-              <Target className="w-4 h-4" />
-              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Selecciona todas las que apliquen</span>
-            </motion.div>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {LOOKING_FOR_OPTIONS.map((option) => (
-                <motion.button
-                  key={option.value}
-                  onClick={() => {
-                    setSelectedLookingFor(prev => 
-                      prev.includes(option.value)
-                        ? prev.filter(v => v !== option.value)
-                        : [...prev, option.value]
-                    );
-                  }}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`px-4 py-3 rounded-2xl text-sm transition-colors flex items-center gap-2 ${
-                    selectedLookingFor.includes(option.value)
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card text-card-foreground hover:bg-card/80"
-                  }`}
-                  style={{ fontFamily: 'Arial, sans-serif' }}
-                >
-                  <span className="text-lg">{option.emoji}</span>
-                  <span>{option.value}</span>
-                </motion.button>
-              ))}
-            </div>
-            <AnimatePresence>
-              {selectedLookingFor.length > 0 && (
-                <motion.p 
-                  className="text-center text-sm text-muted-foreground"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  {selectedLookingFor.length} seleccionadas
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          <OnboardingLookingForSelector
+            selectedOptions={selectedLookingFor}
+            onToggleOption={(option) => {
+              setSelectedLookingFor(prev => 
+                prev.includes(option)
+                  ? prev.filter(v => v !== option)
+                  : [...prev, option]
+              );
+            }}
+          />
         );
 
       case 11:
         return (
-          <motion.div 
-            key="step-11-bio" 
-            className="space-y-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <motion.div 
-              className="flex items-center gap-2 text-muted-foreground mb-2"
-              variants={itemVariants}
-            >
-              <FileText className="w-4 h-4" />
-              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Máximo 300 caracteres</span>
-            </motion.div>
-            <motion.div variants={itemVariants}>
-              <Textarea
-                placeholder="Cuéntanos algo sobre ti..."
-                value={bio}
-                onChange={(e) => setBio(e.target.value.slice(0, 300))}
-                className="min-h-[120px] resize-none text-base bg-card border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/60 rounded-2xl"
-                style={{ fontFamily: 'Arial, sans-serif' }}
-                maxLength={300}
-              />
-              <div className="flex justify-end mt-2">
-                <span className={`text-xs ${bio.length >= 280 ? "text-destructive" : "text-muted-foreground"}`} style={{ fontFamily: 'Arial, sans-serif' }}>
-                  {bio.length}/300
-                </span>
-              </div>
-            </motion.div>
-          </motion.div>
+          <OnboardingBioInput
+            bio={bio}
+            onBioChange={setBio}
+            maxLength={300}
+          />
         );
 
       case 12:
         return (
-          <motion.div 
-            key="step-12-details" 
-            className="space-y-4"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <motion.div 
-              className="flex items-center gap-2 text-muted-foreground mb-4"
-              variants={itemVariants}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Comparte lo que quieras</span>
-            </motion.div>
-            {OPTIONAL_DETAILS.map((detail) => {
-              const getIsSelected = () => {
-                switch (detail.key) {
-                  case "has_tattoos": return hasTattoos;
-                  case "has_piercings": return hasPiercings;
-                  case "alternative_aesthetic": return alternativeAesthetic;
-                  case "colored_hair": return coloredHair;
-                  case "shaved_head": return shavedHead;
-                  case "vintage_style": return vintageStyle;
-                  case "gothic_style": return gothicStyle;
-                  default: return false;
-                }
-              };
-              
-              const toggle = () => {
-                triggerHaptic('selection');
-                switch (detail.key) {
-                  case "has_tattoos": setHasTattoos(!hasTattoos); break;
-                  case "has_piercings": setHasPiercings(!hasPiercings); break;
-                  case "alternative_aesthetic": setAlternativeAesthetic(!alternativeAesthetic); break;
-                  case "colored_hair": setColoredHair(!coloredHair); break;
-                  case "shaved_head": setShavedHead(!shavedHead); break;
-                  case "vintage_style": setVintageStyle(!vintageStyle); break;
-                  case "gothic_style": setGothicStyle(!gothicStyle); break;
-                }
-              };
-
-              const isSelected = getIsSelected();
-
-              return (
-                <motion.button
-                  key={detail.key}
-                  onClick={toggle}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`w-full p-4 rounded-2xl text-base transition-colors flex items-center justify-between ${
-                    isSelected
-                      ? "bg-accent text-accent-foreground"
-                      : "bg-card text-card-foreground hover:bg-card/80"
-                  }`}
-                  style={{ fontFamily: 'Arial, sans-serif' }}
-                >
-                  <span>{detail.emoji} {detail.label}</span>
-                  <AnimatePresence>
-                    {isSelected && (
-                      <motion.div
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        exit={{ scale: 0, rotate: 180 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                      >
-                        <Check className="w-5 h-5" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
-              );
-            })}
-          </motion.div>
+          <OnboardingDetailsSelector
+            details={{
+              has_tattoos: hasTattoos,
+              has_piercings: hasPiercings,
+              alternative_aesthetic: alternativeAesthetic,
+              colored_hair: coloredHair,
+              shaved_head: shavedHead,
+              vintage_style: vintageStyle,
+              gothic_style: gothicStyle,
+            }}
+            onToggleDetail={(key) => {
+              switch (key) {
+                case "has_tattoos": setHasTattoos(!hasTattoos); break;
+                case "has_piercings": setHasPiercings(!hasPiercings); break;
+                case "alternative_aesthetic": setAlternativeAesthetic(!alternativeAesthetic); break;
+                case "colored_hair": setColoredHair(!coloredHair); break;
+                case "shaved_head": setShavedHead(!shavedHead); break;
+                case "vintage_style": setVintageStyle(!vintageStyle); break;
+                case "gothic_style": setGothicStyle(!gothicStyle); break;
+              }
+            }}
+          />
         );
 
       case 13:
         return (
-          <motion.div 
-            key="step-13-photo" 
-            className="space-y-6 flex flex-col items-center"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept="image/*"
-              capture="user"
-              onChange={handleAvatarChange}
-            />
-            
-            {/* Show progress overlay when uploading */}
-            {(isUploading || uploadPhase === "error") && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative"
-              >
-                <UploadProgress 
-                  isVisible={true}
-                  phase={uploadPhase}
-                  progress={uploadProgress}
-                  errorMessage={errorMessage}
-                  onRetry={() => {
-                    resetState();
-                    fileInputRef.current?.click();
-                  }}
-                  onCancel={() => {
-                    resetState();
-                  }}
-                  showCancel={isUploading}
-                />
-              </motion.div>
-            )}
-
-            {/* Photo button - hide when uploading */}
-            {!isUploading && uploadPhase !== "error" && (
-              <motion.button
-                onClick={() => fileInputRef.current?.click()}
-                variants={itemVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-36 h-36 rounded-full bg-card flex items-center justify-center overflow-hidden ring-4 ring-primary/20 hover:ring-primary/40 transition-all shadow-lg"
-              >
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <Camera className="w-10 h-10 text-primary" />
-                    <span className="text-xs text-muted-foreground font-medium">Subir foto</span>
-                  </div>
-                )}
-              </motion.button>
-            )}
-
-            {/* Status messages */}
-            {!isUploading && uploadPhase !== "error" && (
-              <>
-                <motion.p 
-                  className="text-center text-sm text-muted-foreground"
-                  variants={itemVariants}
-                >
-                  {avatarUrl ? "¡Perfecta! Puedes continuar" : "Toca para subir una foto"}
-                </motion.p>
-                {!avatarUrl && (
-                  <motion.p 
-                    className="text-center text-xs text-primary/80 font-medium"
-                    variants={itemVariants}
-                  >
-                    La foto es obligatoria para crear tu perfil
-                  </motion.p>
-                )}
-              </>
-            )}
-
-            {/* Safari/iOS hint */}
-            {!avatarUrl && !isUploading && (
-              <motion.p 
-                className="text-center text-[10px] text-muted-foreground/60 max-w-[200px]"
-                variants={itemVariants}
-              >
-                En iPhone, usa fotos de tu galería para mejor velocidad
-              </motion.p>
-            )}
-          </motion.div>
+          <OnboardingPhotoUpload
+            avatarUrl={avatarUrl}
+            isUploading={isUploading}
+            uploadPhase={uploadPhase}
+            uploadProgress={uploadProgress}
+            errorMessage={errorMessage}
+            onFileSelect={handleAvatarChange}
+            onRetry={() => {
+              resetState();
+              fileInputRef.current?.click();
+            }}
+            onCancel={() => {
+              resetState();
+            }}
+          />
         );
 
       default:
@@ -1133,49 +751,15 @@ const Onboarding = () => {
         currentStepName={currentStep.title}
       />
 
-      {/* Header with step indicator */}
-      <div className="text-center mb-10">
-        <motion.span 
-          className="text-xl font-bold text-primary mb-4 block"
-          style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          KIKI
-        </motion.span>
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div 
-            key={`header-${step}`}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-          >
-            <h1 className="text-2xl font-bold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-              {currentStep.title}
-            </h1>
-            <p className="text-muted-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>
-              {currentStep.subtitle}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-        <div className="flex justify-center gap-1.5 mt-6">
-          {STEPS.map((s) => (
-            <motion.div 
-              key={s.id}
-              className="h-1.5 rounded-full bg-card"
-              animate={{
-                width: s.id === step ? 24 : 6,
-                backgroundColor: s.id <= step ? "hsl(var(--primary))" : "hsl(var(--card))",
-                opacity: s.id < step ? 0.5 : 1,
-              }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            />
-          ))}
-        </div>
-      </div>
+      {/* Header with step indicator - using new component */}
+      <OnboardingStepHeader
+        icon={getStepIcon()}
+        title={currentStep.title}
+        subtitle={currentStep.subtitle}
+        step={step}
+        totalSteps={STEPS.length}
+        direction={direction}
+      />
 
       {/* Step content - improved scrolling for mobile */}
       <div className="flex-1 max-w-md mx-auto w-full overflow-y-auto min-h-0 scrollbar-hide overscroll-contain">
