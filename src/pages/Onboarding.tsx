@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,9 @@ import ImageCropModal from "@/components/ImageCropModal";
 import { triggerHaptic } from "@/utils/haptics";
 import BirthdateSelector from "@/components/BirthdateSelector";
 import OnboardingProgressIndicator from "@/components/OnboardingProgressIndicator";
+import OnboardingGenderSelector from "@/components/OnboardingGenderSelector";
+import OnboardingCitySelector from "@/components/OnboardingCitySelector";
+import { useOnboardingPersistence } from "@/hooks/useOnboardingPersistence";
 
 const STEPS = [
   { id: 1, title: "¿Cómo te llamas?", subtitle: "Tu nombre o alias" },
@@ -46,12 +49,18 @@ const Onboarding = () => {
   const updateInterests = useUpdateInterests();
   const { uploadAvatar, isUploading, uploadPhase, uploadProgress, errorMessage, resetState } = useAvatarUpload();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Persistence hook
+  const { saveState, clearState, getInitialState } = useOnboardingPersistence();
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // Initialize state from localStorage
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [isAnimating, setIsAnimating] = useState(false);
   const [name, setName] = useState("");
   const [city, setCity] = useState("Madrid");
+  const [zone, setZone] = useState("");
   const [birthdate, setBirthdate] = useState<string | null>(null);
   const [selectedGender, setSelectedGender] = useState<GenderType | null>(null);
   const [showExtendedGenders, setShowExtendedGenders] = useState(false);
@@ -70,6 +79,73 @@ const Onboarding = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [bio, setBio] = useState("");
   const [selectedLookingFor, setSelectedLookingFor] = useState<string[]>([]);
+
+  // Load saved state on mount
+  useEffect(() => {
+    const saved = getInitialState();
+    if (saved.step > 1 || saved.name || saved.avatarUrl) {
+      setStep(saved.step);
+      setName(saved.name);
+      setCity(saved.city);
+      setZone(saved.zone || "");
+      setBirthdate(saved.birthdate);
+      setSelectedGender(saved.selectedGender);
+      setSelectedGenderPreferences(saved.selectedGenderPreferences);
+      setSelectedInterests(saved.selectedInterests);
+      setSelectedVibe(saved.selectedVibe);
+      setSelectedTribes(saved.selectedTribes);
+      setSelectedMusicStyles(saved.selectedMusicStyles);
+      setHasTattoos(saved.hasTattoos);
+      setHasPiercings(saved.hasPiercings);
+      setAlternativeAesthetic(saved.alternativeAesthetic);
+      setColoredHair(saved.coloredHair);
+      setShavedHead(saved.shavedHead);
+      setVintageStyle(saved.vintageStyle);
+      setGothicStyle(saved.gothicStyle);
+      setAvatarUrl(saved.avatarUrl);
+      setBio(saved.bio);
+      setSelectedLookingFor(saved.selectedLookingFor);
+      
+      if (saved.step > 1) {
+        toast.success("Progreso restaurado", { duration: 2000 });
+      }
+    }
+    setIsInitialized(true);
+  }, [getInitialState]);
+
+  // Save state whenever it changes
+  useEffect(() => {
+    if (!isInitialized) return;
+    
+    saveState({
+      step,
+      name,
+      city,
+      zone,
+      birthdate,
+      selectedGender,
+      selectedGenderPreferences,
+      selectedInterests,
+      selectedVibe,
+      selectedTribes,
+      selectedMusicStyles,
+      hasTattoos,
+      hasPiercings,
+      alternativeAesthetic,
+      coloredHair,
+      shavedHead,
+      vintageStyle,
+      gothicStyle,
+      avatarUrl,
+      bio,
+      selectedLookingFor,
+    });
+  }, [
+    isInitialized, step, name, city, zone, birthdate, selectedGender, selectedGenderPreferences,
+    selectedInterests, selectedVibe, selectedTribes, selectedMusicStyles,
+    hasTattoos, hasPiercings, alternativeAesthetic, coloredHair, shavedHead,
+    vintageStyle, gothicStyle, avatarUrl, bio, selectedLookingFor, saveState
+  ]);
 
   const currentStep = STEPS.find(s => s.id === step)!;
   const progress = (step / STEPS.length) * 100;
@@ -336,10 +412,13 @@ const Onboarding = () => {
     if (!profile?.id) return;
 
     try {
+      // Combine city and zone for display
+      const fullCity = zone ? `${city} - ${zone}` : city;
+      
       // Update profile with gender
       await updateProfile.mutateAsync({
         name,
-        city,
+        city: fullCity,
         vibe: selectedVibe,
         avatar_url: avatarUrl,
         has_tattoos: hasTattoos,
@@ -386,6 +465,9 @@ const Onboarding = () => {
           interests: selectedInterests,
         });
       }
+
+      // Clear saved onboarding state on successful completion
+      clearState();
 
       // Fire confetti and sound celebration!
       fireConfetti();
@@ -438,17 +520,12 @@ const Onboarding = () => {
             animate="visible"
             exit="exit"
           >
-            <motion.div className="relative" variants={itemVariants}>
-              <Input
-                type="text"
-                placeholder="Tu ciudad"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="peer h-14 text-lg pl-12 text-center rounded-2xl bg-card border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/60"
-                autoFocus
-              />
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-card-foreground/60 pointer-events-none transition-all duration-200 peer-focus:text-primary peer-focus:scale-110" />
-            </motion.div>
+            <OnboardingCitySelector
+              city={city}
+              zone={zone}
+              onCityChange={setCity}
+              onZoneChange={setZone}
+            />
           </motion.div>
         );
 
@@ -511,90 +588,10 @@ const Onboarding = () => {
               <span className="text-sm" style={{ fontFamily: 'Arial, sans-serif' }}>Elige cómo te identificas</span>
             </motion.div>
             
-            {/* Main genders */}
-            <div className="space-y-2">
-              {GENDERS_MAIN.map((gender) => (
-                <motion.button
-                  key={gender.value}
-                  onClick={() => { 
-                    triggerHaptic('selection'); 
-                    setSelectedGender(gender.value);
-                    setShowExtendedGenders(false);
-                  }}
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`w-full p-4 rounded-2xl text-base transition-colors flex items-center justify-between ${
-                    selectedGender === gender.value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-card text-card-foreground hover:bg-card/80"
-                  }`}
-                  style={{ fontFamily: 'Arial, sans-serif' }}
-                >
-                  <span>{gender.label}</span>
-                  {selectedGender === gender.value && <Check className="w-5 h-5" />}
-                </motion.button>
-              ))}
-              
-              {/* "Otra identidad" button */}
-              <motion.button
-                onClick={() => { 
-                  triggerHaptic('selection'); 
-                  setShowExtendedGenders(!showExtendedGenders);
-                }}
-                variants={itemVariants}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`w-full p-4 rounded-2xl text-base transition-colors flex items-center justify-between ${
-                  showExtendedGenders || GENDERS_EXTENDED.some(g => g.value === selectedGender)
-                    ? "bg-accent text-accent-foreground"
-                    : "bg-card text-card-foreground hover:bg-card/80"
-                }`}
-                style={{ fontFamily: 'Arial, sans-serif' }}
-              >
-                <span>Otra identidad...</span>
-                <motion.span
-                  animate={{ rotate: showExtendedGenders ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  ▼
-                </motion.span>
-              </motion.button>
-            </div>
-
-            {/* Extended genders (collapsible) */}
-            <AnimatePresence>
-              {showExtendedGenders && (
-                <motion.div 
-                  className="space-y-2 pl-4 border-l-2 border-primary/30"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  {GENDERS_EXTENDED.map((gender) => (
-                    <motion.button
-                      key={gender.value}
-                      onClick={() => { 
-                        triggerHaptic('selection'); 
-                        setSelectedGender(gender.value);
-                      }}
-                      variants={itemVariants}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`w-full p-3 rounded-xl text-sm transition-colors flex items-center justify-between ${
-                        selectedGender === gender.value
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-card/50 text-card-foreground hover:bg-card/80"
-                      }`}
-                      style={{ fontFamily: 'Arial, sans-serif' }}
-                    >
-                      <span>{gender.label}</span>
-                      {selectedGender === gender.value && <Check className="w-4 h-4" />}
-                    </motion.button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <OnboardingGenderSelector
+              value={selectedGender}
+              onChange={setSelectedGender}
+            />
           </motion.div>
         );
 

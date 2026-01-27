@@ -8,8 +8,14 @@ import { validateImageQuality } from "@/utils/imageBlurDetection";
 export type AvatarUploadPhase = "compressing" | "uploading" | "complete" | "error";
 export type AvatarProgressCallback = (phase: AvatarUploadPhase, progress: number) => void;
 
-// Timeout for upload operations (30 seconds)
-const UPLOAD_TIMEOUT_MS = 30000;
+// Detect Safari for extended timeouts
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+// Extended timeouts for Safari (known to be slower with file operations)
+const UPLOAD_TIMEOUT_MS = isSafari ? 60000 : 30000;
+const COMPRESSION_TIMEOUT_MS = isSafari ? 30000 : 15000;
+const VALIDATION_TIMEOUT_MS = isSafari ? 15000 : 10000;
+const PROFILE_UPDATE_TIMEOUT_MS = isSafari ? 30000 : 15000;
 
 // Helper to create a timeout promise
 const createTimeout = (ms: number, operation: string): Promise<never> => {
@@ -72,30 +78,46 @@ export const useAvatarUpload = () => {
       }
 
       // Validate image quality (blur detection) - with timeout
-      try {
-        const qualityError = await Promise.race([
-          validateImageQuality(file),
-          createTimeout(10000, "La validación de imagen")
-        ]);
-        if (qualityError) {
-          throw new Error(qualityError);
+      // Skip validation on Safari to avoid blocking issues
+      if (!isSafari) {
+        try {
+          const qualityError = await Promise.race([
+            validateImageQuality(file),
+            createTimeout(VALIDATION_TIMEOUT_MS, "La validación de imagen")
+          ]);
+          if (qualityError) {
+            throw new Error(qualityError);
+          }
+        } catch (qualityErr: any) {
+          // Only throw if it's a blur error, not a timeout
+          if (qualityErr.message.includes("borrosa")) {
+            throw qualityErr;
+          }
+          // Continue anyway if validation times out
+          console.warn("Image quality validation timed out, continuing...");
         }
-      } catch (qualityErr: any) {
-        // Only throw if it's a blur error, not a timeout
-        if (qualityErr.message.includes("borrosa")) {
-          throw qualityErr;
-        }
-        // Continue anyway if validation times out
-        console.warn("Image quality validation timed out, continuing...");
       }
 
-      // Compress image before upload - with timeout
-      const compressedFile = await Promise.race([
-        compressAvatar(file, (compressionProgress) => {
-          updateProgress("compressing", compressionProgress);
-        }),
-        createTimeout(15000, "La compresión de imagen")
-      ]);
+      updateProgress("compressing", 10);
+
+      // Compress image before upload - with extended timeout for Safari
+      let compressedFile: File;
+      try {
+        compressedFile = await Promise.race([
+          compressAvatar(file, (compressionProgress) => {
+            updateProgress("compressing", compressionProgress);
+          }),
+          createTimeout(COMPRESSION_TIMEOUT_MS, "La compresión de imagen")
+        ]);
+      } catch (compressionErr: any) {
+        // If compression fails/times out on Safari, try using original file if small enough
+        if (isSafari && file.size < 2 * 1024 * 1024) {
+          console.warn("Compression failed on Safari, using original file");
+          compressedFile = file;
+        } else {
+          throw compressionErr;
+        }
+      }
 
       // Start upload phase
       updateProgress("uploading", 0);
@@ -128,10 +150,10 @@ export const useAvatarUpload = () => {
       // Add cache buster to force refresh
       const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
 
-      // Update profile with new avatar URL - with timeout
+      // Update profile with new avatar URL - with extended timeout for Safari
       await Promise.race([
         updateProfile.mutateAsync({ avatar_url: urlWithCacheBuster }),
-        createTimeout(15000, "La actualización del perfil")
+        createTimeout(PROFILE_UPDATE_TIMEOUT_MS, "La actualización del perfil")
       ]);
 
       updateProgress("uploading", 100);
