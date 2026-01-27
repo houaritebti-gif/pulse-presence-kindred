@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { ImageIcon, Upload, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { ImageIcon, Upload, CheckCircle, XCircle, RefreshCw, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type UploadPhase = "idle" | "compressing" | "uploading" | "complete" | "error";
 
@@ -11,6 +12,8 @@ interface UploadProgressProps {
   className?: string;
   errorMessage?: string | null;
   onRetry?: () => void;
+  onCancel?: () => void;
+  showCancel?: boolean;
 }
 
 const UploadProgress = ({ 
@@ -19,18 +22,31 @@ const UploadProgress = ({
   progress, 
   className,
   errorMessage,
-  onRetry 
+  onRetry,
+  onCancel,
+  showCancel = true 
 }: UploadProgressProps) => {
   const getPhaseLabel = () => {
     switch (phase) {
       case "compressing":
-        return "Comprimiendo...";
+        return "Optimizando imagen...";
       case "uploading":
-        return "Subiendo...";
+        return progress < 50 ? "Subiendo..." : "Guardando...";
       case "complete":
-        return "¡Completado!";
+        return "¡Foto lista!";
       case "error":
         return errorMessage || "Error al subir";
+      default:
+        return "";
+    }
+  };
+
+  const getPhaseHint = () => {
+    switch (phase) {
+      case "compressing":
+        return "Reduciendo tamaño";
+      case "uploading":
+        return "Esto puede tardar en conexiones lentas";
       default:
         return "";
     }
@@ -39,7 +55,7 @@ const UploadProgress = ({
   const getPhaseIcon = () => {
     switch (phase) {
       case "compressing":
-        return <ImageIcon className="w-4 h-4" />;
+        return <Loader2 className="w-4 h-4 animate-spin" />;
       case "uploading":
         return <Upload className="w-4 h-4" />;
       case "complete":
@@ -52,6 +68,7 @@ const UploadProgress = ({
   };
 
   const isError = phase === "error";
+  const isProcessing = phase === "compressing" || phase === "uploading";
 
   return (
     <AnimatePresence>
@@ -61,12 +78,25 @@ const UploadProgress = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           className={cn(
-            "flex flex-col items-center justify-center gap-2 p-3",
+            "flex flex-col items-center justify-center gap-3 p-4 bg-card/95 backdrop-blur-sm rounded-2xl shadow-lg border border-border/50",
             className
           )}
         >
+          {/* Cancel button */}
+          {showCancel && isProcessing && onCancel && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              onClick={onCancel}
+              className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-muted/50 transition-colors"
+              aria-label="Cancelar"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </motion.button>
+          )}
+
           {/* Circular progress */}
-          <div className="relative w-16 h-16">
+          <div className="relative w-20 h-20">
             {/* Background circle */}
             <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
               <circle
@@ -75,8 +105,8 @@ const UploadProgress = ({
                 r="15.5"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
-                className="text-muted/30"
+                strokeWidth="2.5"
+                className="text-muted/20"
               />
               <motion.circle
                 cx="18"
@@ -84,7 +114,7 @@ const UploadProgress = ({
                 r="15.5"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 className={cn(
                   phase === "complete" ? "text-green-500" : 
@@ -107,7 +137,7 @@ const UploadProgress = ({
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
-                  <CheckCircle className="w-6 h-6 text-green-500" />
+                  <CheckCircle className="w-8 h-8 text-green-500" />
                 </motion.div>
               ) : isError ? (
                 <motion.div
@@ -115,36 +145,59 @@ const UploadProgress = ({
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 >
-                  <XCircle className="w-6 h-6 text-destructive" />
+                  <XCircle className="w-8 h-8 text-destructive" />
                 </motion.div>
               ) : (
-                <span className="text-sm font-bold text-foreground">
-                  {Math.round(progress)}%
-                </span>
+                <div className="flex flex-col items-center">
+                  <span className="text-lg font-bold text-foreground">
+                    {Math.round(progress)}%
+                  </span>
+                </div>
               )}
             </div>
           </div>
 
           {/* Phase label */}
-          <div className={cn(
-            "flex items-center gap-1.5 text-xs font-medium",
-            isError ? "text-destructive" : "text-muted-foreground"
-          )}>
-            {getPhaseIcon()}
-            <span className="max-w-[150px] truncate">{getPhaseLabel()}</span>
+          <div className="flex flex-col items-center gap-0.5">
+            <div className={cn(
+              "flex items-center gap-1.5 text-sm font-medium",
+              isError ? "text-destructive" : phase === "complete" ? "text-green-600" : "text-foreground"
+            )}>
+              {getPhaseIcon()}
+              <span>{getPhaseLabel()}</span>
+            </div>
+            {isProcessing && (
+              <span className="text-xs text-muted-foreground">
+                {getPhaseHint()}
+              </span>
+            )}
           </div>
 
-          {/* Retry button for errors */}
-          {isError && onRetry && (
-            <motion.button
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              onClick={onRetry}
-              className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium mt-1"
-            >
-              <RefreshCw className="w-3 h-3" />
-              Reintentar
-            </motion.button>
+          {/* Action buttons */}
+          {isError && (
+            <div className="flex gap-2 mt-1">
+              {onRetry && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRetry}
+                  className="h-8 text-xs"
+                >
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                  Reintentar
+                </Button>
+              )}
+              {onCancel && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onCancel}
+                  className="h-8 text-xs"
+                >
+                  Cancelar
+                </Button>
+              )}
+            </div>
           )}
         </motion.div>
       )}

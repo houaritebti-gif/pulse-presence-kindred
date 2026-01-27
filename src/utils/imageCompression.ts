@@ -1,7 +1,16 @@
 // Image compression utility
 // Compresses images before upload to optimize storage and load times
+// Optimized for Safari/iOS with fallbacks and reduced quality settings
 
 export type CompressionProgressCallback = (progress: number) => void;
+
+// Detect Safari/iOS for special handling
+const isSafariOrIOS = (): boolean => {
+  const ua = navigator.userAgent;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return isSafari || isIOS;
+};
 
 interface CompressionOptions {
   maxWidth?: number;
@@ -11,12 +20,15 @@ interface CompressionOptions {
   onProgress?: CompressionProgressCallback;
 }
 
-const defaultOptions: CompressionOptions = {
+// Lower quality for Safari/iOS to speed up compression
+const getDefaultOptions = (): CompressionOptions => ({
   maxWidth: 1200,
   maxHeight: 1600,
-  quality: 0.85,
+  quality: isSafariOrIOS() ? 0.7 : 0.85, // Lower quality for Safari
   mimeType: "image/jpeg",
-};
+});
+
+const defaultOptions: CompressionOptions = getDefaultOptions();
 
 /**
  * Compresses an image file using Canvas API
@@ -137,15 +149,33 @@ export const compressImage = async (
 
 /**
  * Compresses image for avatar (smaller, square-optimized)
+ * Uses lower quality on Safari/iOS for faster processing
  */
 export const compressAvatar = (
   file: File,
   onProgress?: CompressionProgressCallback
 ): Promise<File> => {
+  const safari = isSafariOrIOS();
   return compressImage(file, {
-    maxWidth: 500,
-    maxHeight: 500,
-    quality: 0.85,
+    maxWidth: safari ? 400 : 500, // Smaller on Safari for speed
+    maxHeight: safari ? 400 : 500,
+    quality: safari ? 0.65 : 0.85, // Much lower quality for Safari speed
+    mimeType: "image/jpeg",
+    onProgress,
+  });
+};
+
+/**
+ * Fast compression for Safari - minimal processing
+ */
+export const compressAvatarFast = (
+  file: File,
+  onProgress?: CompressionProgressCallback
+): Promise<File> => {
+  return compressImage(file, {
+    maxWidth: 300,
+    maxHeight: 300,
+    quality: 0.5,
     mimeType: "image/jpeg",
     onProgress,
   });
