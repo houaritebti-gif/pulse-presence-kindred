@@ -1,0 +1,13 @@
+-- Add new gender values to the gender_type enum
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'androgynous';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'bigender';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'demigender';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'demiboy';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'demigirl';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'pangender';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'neutrois';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'xenogender';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'muxe';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'hijra';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'fa_afafine';
+ALTER TYPE public.gender_type ADD VALUE IF NOT EXISTS 'questioning';

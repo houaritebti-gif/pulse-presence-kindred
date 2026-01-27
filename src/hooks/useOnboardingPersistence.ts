@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { GenderType } from "@/constants/profileOptions";
 
 const STORAGE_KEY = "kiki_onboarding_progress";
@@ -15,16 +15,11 @@ export interface OnboardingState {
   selectedVibe: string | null;
   selectedTribes: string[];
   selectedMusicStyles: string[];
-  hasTattoos: boolean;
-  hasPiercings: boolean;
-  alternativeAesthetic: boolean;
-  coloredHair: boolean;
-  shavedHead: boolean;
-  vintageStyle: boolean;
-  gothicStyle: boolean;
   avatarUrl: string | null;
   bio: string;
   selectedLookingFor: string[];
+  // Dynamic optional details as object
+  optionalDetails: Record<string, boolean>;
 }
 
 const defaultState: OnboardingState = {
@@ -39,16 +34,38 @@ const defaultState: OnboardingState = {
   selectedVibe: null,
   selectedTribes: [],
   selectedMusicStyles: [],
-  hasTattoos: false,
-  hasPiercings: false,
-  alternativeAesthetic: false,
-  coloredHair: false,
-  shavedHead: false,
-  vintageStyle: false,
-  gothicStyle: false,
   avatarUrl: null,
   bio: "",
   selectedLookingFor: [],
+  optionalDetails: {},
+};
+
+// Migration function to convert old format to new format
+const migrateOldState = (parsed: any): OnboardingState => {
+  // If already has optionalDetails, use it
+  if (parsed.optionalDetails) {
+    return { ...defaultState, ...parsed };
+  }
+  
+  // Migrate from old individual fields to new optionalDetails object
+  const optionalDetails: Record<string, boolean> = {};
+  
+  if (parsed.hasTattoos) optionalDetails.has_tattoos = true;
+  if (parsed.hasPiercings) optionalDetails.has_piercings = true;
+  if (parsed.alternativeAesthetic) optionalDetails.alternative_aesthetic = true;
+  if (parsed.coloredHair) optionalDetails.colored_hair = true;
+  if (parsed.shavedHead) optionalDetails.shaved_head = true;
+  if (parsed.vintageStyle) optionalDetails.vintage_style = true;
+  if (parsed.gothicStyle) optionalDetails.gothic_style = true;
+  
+  // Remove old fields and add new optionalDetails
+  const { 
+    hasTattoos, hasPiercings, alternativeAesthetic, 
+    coloredHair, shavedHead, vintageStyle, gothicStyle,
+    ...rest 
+  } = parsed;
+  
+  return { ...defaultState, ...rest, optionalDetails };
 };
 
 export const useOnboardingPersistence = () => {
@@ -60,8 +77,8 @@ export const useOnboardingPersistence = () => {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Merge with defaults in case new fields were added
-        return { ...defaultState, ...parsed };
+        // Migrate and merge with defaults in case new fields were added
+        return migrateOldState(parsed);
       }
     } catch (e) {
       console.warn("Failed to load onboarding state:", e);

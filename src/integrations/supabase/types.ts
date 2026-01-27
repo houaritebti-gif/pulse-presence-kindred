@@ -1799,6 +1799,18 @@ export type Database = {
         | "two_spirit"
         | "other"
         | "prefer_not_to_say"
+        | "androgynous"
+        | "bigender"
+        | "demigender"
+        | "demiboy"
+        | "demigirl"
+        | "pangender"
+        | "neutrois"
+        | "xenogender"
+        | "muxe"
+        | "hijra"
+        | "fa_afafine"
+        | "questioning"
       subscription_tier: "free" | "plus" | "premium"
     }
     CompositeTypes: {
@@ -1940,6 +1952,18 @@ export const Constants = {
         "two_spirit",
         "other",
         "prefer_not_to_say",
+        "androgynous",
+        "bigender",
+        "demigender",
+        "demiboy",
+        "demigirl",
+        "pangender",
+        "neutrois",
+        "xenogender",
+        "muxe",
+        "hijra",
+        "fa_afafine",
+        "questioning",
       ],
       subscription_tier: ["free", "plus", "premium"],
     },
