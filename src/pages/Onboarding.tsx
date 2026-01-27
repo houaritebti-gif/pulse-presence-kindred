@@ -2,7 +2,6 @@ import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ArrowLeft, Check, Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users, Camera } from "lucide-react";
-import InterestsSelector from "@/components/InterestsSelector";
 import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
@@ -13,7 +12,6 @@ import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { playCelebrationSound } from "@/utils/notificationSound";
 import ImageCropModal from "@/components/ImageCropModal";
-import BirthdateSelector from "@/components/BirthdateSelector";
 import OnboardingProgressIndicator from "@/components/OnboardingProgressIndicator";
 import OnboardingGenderSelector from "@/components/OnboardingGenderSelector";
 import OnboardingCitySelector from "@/components/OnboardingCitySelector";
@@ -27,6 +25,8 @@ import OnboardingBioInput from "@/components/OnboardingBioInput";
 import OnboardingGenderPreferencesSelector from "@/components/OnboardingGenderPreferencesSelector";
 import OnboardingPhotoUpload from "@/components/OnboardingPhotoUpload";
 import OnboardingStepHeader from "@/components/OnboardingStepHeader";
+import OnboardingBirthdateSelector from "@/components/OnboardingBirthdateSelector";
+import OnboardingInterestsSelector from "@/components/OnboardingInterestsSelector";
 import { useOnboardingPersistence } from "@/hooks/useOnboardingPersistence";
 
 const STEPS = [
@@ -532,41 +532,10 @@ const Onboarding = () => {
 
       case 3:
         return (
-          <motion.div 
-            key="step-3" 
-            className="space-y-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div 
-              className="flex items-center gap-2 text-muted-foreground mb-2"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm">Solo mostraremos tu edad, no la fecha</span>
-            </motion.div>
-            <BirthdateSelector
-              value={birthdate}
-              onChange={setBirthdate}
-            />
-            <AnimatePresence>
-              {userAge !== null && userAge >= 18 && (
-                <motion.div 
-                  className="text-center"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                >
-                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium">
-                    <Check className="w-4 h-4" />
-                    {userAge} años
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          <OnboardingBirthdateSelector
+            value={birthdate}
+            onChange={setBirthdate}
+          />
         );
 
       case 4:
@@ -587,32 +556,12 @@ const Onboarding = () => {
 
       case 6:
         return (
-          <motion.div 
-            key="step-6-interests" 
-            className="space-y-2 h-full flex flex-col"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div 
-              className="flex items-center gap-2 text-muted-foreground mb-2"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span className="text-sm">Elige entre 3 y 10 intereses</span>
-            </motion.div>
-            <div className="flex-1 min-h-0">
-              <InterestsSelector
-                selectedInterests={selectedInterests}
-                onToggleInterest={toggleInterest}
-                maxInterests={10}
-                minInterests={3}
-                showCounter={true}
-                variant="onboarding"
-              />
-            </div>
-          </motion.div>
+          <OnboardingInterestsSelector
+            selectedInterests={selectedInterests}
+            onToggleInterest={toggleInterest}
+            maxInterests={10}
+            minInterests={3}
+          />
         );
 
       case 7:
