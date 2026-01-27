@@ -28,15 +28,24 @@ const OnboardingCitySelector = ({
   };
 
   return (
-    <div className="space-y-5">
+    <motion.div 
+      className="space-y-5 w-full max-w-sm mx-auto"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: { staggerChildren: 0.1 }
+        }
+      }}
+    >
       {/* City input - main field */}
       <motion.div 
         className="relative"
         variants={itemVariants}
-        initial="hidden"
-        animate="visible"
       >
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center pointer-events-none">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center pointer-events-none z-10">
           <MapPin className="w-5 h-5 text-primary" />
         </div>
         <Input
@@ -44,7 +53,7 @@ const OnboardingCitySelector = ({
           placeholder="Tu ciudad"
           value={city}
           onChange={(e) => onCityChange(e.target.value)}
-          className="h-16 text-lg pl-[4.5rem] pr-4 text-center rounded-2xl bg-card border-2 border-card-foreground/20 text-card-foreground placeholder:text-card-foreground/50 focus:border-primary/50 transition-all font-medium"
+          className="h-16 text-lg pl-[4.5rem] pr-4 text-center rounded-2xl bg-card border-2 border-primary/30 text-card-foreground placeholder:text-card-foreground/50 focus:border-primary/60 transition-all font-semibold shadow-sm"
           autoFocus
         />
       </motion.div>
@@ -53,33 +62,29 @@ const OnboardingCitySelector = ({
       <motion.div 
         className="relative"
         variants={itemVariants}
-        initial="hidden"
-        animate="visible"
-        transition={{ delay: 0.1 }}
       >
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-accent/30 flex items-center justify-center pointer-events-none">
-          <Navigation className="w-4 h-4 text-accent-foreground/70" />
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center pointer-events-none z-10">
+          <Navigation className="w-4 h-4 text-muted-foreground" />
         </div>
         <Input
           type="text"
           placeholder="Barrio o zona (opcional)"
           value={zone}
           onChange={(e) => onZoneChange(e.target.value)}
-          className="h-14 text-base pl-[4.5rem] pr-4 text-center rounded-2xl bg-card/60 border border-border/40 text-card-foreground placeholder:text-muted-foreground/60 focus:border-primary/40 focus:bg-card transition-all"
+          className="h-14 text-base pl-[4.5rem] pr-4 text-center rounded-2xl bg-muted/30 border border-border/50 text-card-foreground placeholder:text-muted-foreground/60 focus:border-primary/40 focus:bg-card transition-all"
         />
       </motion.div>
 
-      {/* Helper text */}
-      <motion.p 
-        className="text-center text-xs text-muted-foreground/80"
+      {/* Helper text with icon */}
+      <motion.div 
+        className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80"
         variants={itemVariants}
-        initial="hidden"
-        animate="visible"
-        transition={{ delay: 0.2 }}
       >
-        El barrio ayuda a encontrar gente más cercana
-      </motion.p>
-    </div>
+        <div className="w-1 h-1 rounded-full bg-primary/50" />
+        <span>El barrio ayuda a encontrar gente más cercana</span>
+        <div className="w-1 h-1 rounded-full bg-primary/50" />
+      </motion.div>
+    </motion.div>
   );
 };
 

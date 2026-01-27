@@ -2,20 +2,29 @@ import { useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUpdateProfile } from "./useProfile";
-import { compressAvatar, CompressionProgressCallback } from "@/utils/imageCompression";
-import { validateImageQuality } from "@/utils/imageBlurDetection";
+import { compressAvatar, compressAvatarFast, CompressionProgressCallback } from "@/utils/imageCompression";
 
 export type AvatarUploadPhase = "compressing" | "uploading" | "complete" | "error";
 export type AvatarProgressCallback = (phase: AvatarUploadPhase, progress: number) => void;
 
-// Detect Safari for extended timeouts
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+// Detect Safari/iOS for extended timeouts and special handling
+const isSafariOrIOS = (): boolean => {
+  const ua = navigator.userAgent;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(ua);
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return isSafari || isIOS;
+};
 
-// Extended timeouts for Safari (known to be slower with file operations)
-const UPLOAD_TIMEOUT_MS = isSafari ? 60000 : 30000;
-const COMPRESSION_TIMEOUT_MS = isSafari ? 30000 : 15000;
-const VALIDATION_TIMEOUT_MS = isSafari ? 15000 : 10000;
-const PROFILE_UPDATE_TIMEOUT_MS = isSafari ? 30000 : 15000;
+// Extended timeouts for Safari/iOS (known to be slower with file operations)
+const getTimeouts = () => {
+  const safari = isSafariOrIOS();
+  return {
+    upload: safari ? 90000 : 30000,        // 90s on Safari
+    compression: safari ? 45000 : 15000,   // 45s on Safari
+    validation: safari ? 20000 : 10000,    // 20s on Safari
+    profileUpdate: safari ? 45000 : 15000, // 45s on Safari
+  };
+};
 
 // Helper to create a timeout promise
 const createTimeout = (ms: number, operation: string): Promise<never> => {
@@ -24,6 +33,27 @@ const createTimeout = (ms: number, operation: string): Promise<never> => {
       reject(new Error(`${operation} tardó demasiado. Por favor, intenta de nuevo.`));
     }, ms);
   });
+};
+
+// Retry helper with exponential backoff
+const withRetry = async <T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = 3,
+  baseDelay: number = 1000
+): Promise<T> => {
+  let lastError: Error;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      if (attempt < maxAttempts - 1) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError!;
 };
 
 export const useAvatarUpload = () => {
@@ -66,6 +96,9 @@ export const useAvatarUpload = () => {
       onProgress?.(phase, progress);
     };
 
+    const timeouts = getTimeouts();
+    const safari = isSafariOrIOS();
+
     try {
       // Validate file type
       if (!file.type.startsWith("image/")) {
@@ -77,45 +110,57 @@ export const useAvatarUpload = () => {
         throw new Error("La imagen no puede superar 10MB");
       }
 
-      // Validate image quality (blur detection) - with timeout
-      // Skip validation on Safari to avoid blocking issues
-      if (!isSafari) {
+      // Skip blur validation on Safari/iOS completely - it causes hangs
+      // On other browsers, validate but with timeout and graceful degradation
+      if (!safari) {
         try {
+          const { validateImageQuality } = await import("@/utils/imageBlurDetection");
           const qualityError = await Promise.race([
             validateImageQuality(file),
-            createTimeout(VALIDATION_TIMEOUT_MS, "La validación de imagen")
+            createTimeout(timeouts.validation, "La validación de imagen")
           ]);
           if (qualityError) {
             throw new Error(qualityError);
           }
         } catch (qualityErr: any) {
-          // Only throw if it's a blur error, not a timeout
-          if (qualityErr.message.includes("borrosa")) {
+          // Only throw if it's a blur error, not a timeout or import error
+          if (qualityErr.message?.includes("borrosa")) {
             throw qualityErr;
           }
-          // Continue anyway if validation times out
-          console.warn("Image quality validation timed out, continuing...");
+          // Continue anyway if validation times out or fails to load
+          console.warn("Image quality validation skipped:", qualityErr.message);
         }
       }
 
       updateProgress("compressing", 10);
 
-      // Compress image before upload - with extended timeout for Safari
+      // Compress image with retry and fallbacks
       let compressedFile: File;
       try {
+        // Try normal compression first
         compressedFile = await Promise.race([
-          compressAvatar(file, (compressionProgress) => {
+          withRetry(() => compressAvatar(file, (compressionProgress) => {
             updateProgress("compressing", compressionProgress);
-          }),
-          createTimeout(COMPRESSION_TIMEOUT_MS, "La compresión de imagen")
+          }), safari ? 2 : 3),
+          createTimeout(timeouts.compression, "La compresión de imagen")
         ]);
       } catch (compressionErr: any) {
-        // If compression fails/times out on Safari, try using original file if small enough
-        if (isSafari && file.size < 2 * 1024 * 1024) {
-          console.warn("Compression failed on Safari, using original file");
-          compressedFile = file;
-        } else {
-          throw compressionErr;
+        console.warn("Standard compression failed, trying fast compression...");
+        
+        // Try fast compression as fallback
+        try {
+          compressedFile = await Promise.race([
+            compressAvatarFast(file, (p) => updateProgress("compressing", p)),
+            createTimeout(timeouts.compression / 2, "La compresión rápida")
+          ]);
+        } catch {
+          // If all compression fails, use original if small enough
+          if (file.size < 3 * 1024 * 1024) {
+            console.warn("All compression failed, using original file");
+            compressedFile = file;
+          } else {
+            throw new Error("No se pudo procesar la imagen. Intenta con una más pequeña.");
+          }
         }
       }
 
@@ -125,20 +170,21 @@ export const useAvatarUpload = () => {
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/avatar.jpg`;
 
-      // Upload compressed image to storage - with timeout
-      const uploadPromise = supabase.storage
-        .from("avatars")
-        .upload(fileName, compressedFile, { 
-          upsert: true,
-          contentType: "image/jpeg",
-        });
+      // Upload compressed image to storage - with retry for reliability
+      const uploadPromise = async () => {
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(fileName, compressedFile, { 
+            upsert: true,
+            contentType: "image/jpeg",
+          });
+        if (uploadError) throw uploadError;
+      };
 
-      const { error: uploadError } = await Promise.race([
-        uploadPromise,
-        createTimeout(UPLOAD_TIMEOUT_MS, "La subida de imagen")
+      await Promise.race([
+        withRetry(uploadPromise, safari ? 3 : 2, 2000),
+        createTimeout(timeouts.upload, "La subida de imagen")
       ]);
-
-      if (uploadError) throw uploadError;
 
       updateProgress("uploading", 50);
 
@@ -150,10 +196,10 @@ export const useAvatarUpload = () => {
       // Add cache buster to force refresh
       const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
 
-      // Update profile with new avatar URL - with extended timeout for Safari
+      // Update profile with new avatar URL - with retry
       await Promise.race([
-        updateProfile.mutateAsync({ avatar_url: urlWithCacheBuster }),
-        createTimeout(PROFILE_UPDATE_TIMEOUT_MS, "La actualización del perfil")
+        withRetry(() => updateProfile.mutateAsync({ avatar_url: urlWithCacheBuster }), 2, 1000),
+        createTimeout(timeouts.profileUpdate, "La actualización del perfil")
       ]);
 
       updateProgress("uploading", 100);

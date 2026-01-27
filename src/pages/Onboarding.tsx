@@ -1010,48 +1010,81 @@ const Onboarding = () => {
               ref={fileInputRef}
               className="hidden"
               accept="image/*"
+              capture="user"
               onChange={handleAvatarChange}
             />
-            <motion.button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              variants={itemVariants}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-32 h-32 rounded-full bg-card flex items-center justify-center overflow-hidden ring-4 ring-primary/20 hover:ring-primary/40 transition-all"
-            >
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : isUploading || uploadPhase === "error" ? (
-                <div className="absolute inset-0 bg-background/90 flex items-center justify-center rounded-full">
-                  <UploadProgress 
-                    isVisible={true}
-                    phase={uploadPhase}
-                    progress={uploadProgress}
-                    errorMessage={errorMessage}
-                    onRetry={() => {
-                      resetState();
-                      fileInputRef.current?.click();
-                    }}
-                    className="scale-75"
-                  />
-                </div>
-              ) : (
-                <Camera className="w-10 h-10 text-muted-foreground" />
-              )}
-            </motion.button>
-            <motion.p 
-              className="text-center text-sm text-muted-foreground"
-              variants={itemVariants}
-            >
-              {avatarUrl ? "¡Perfecta! Puedes continuar" : "Toca para subir una foto"}
-            </motion.p>
-            {!avatarUrl && (
+            
+            {/* Show progress overlay when uploading */}
+            {(isUploading || uploadPhase === "error") && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative"
+              >
+                <UploadProgress 
+                  isVisible={true}
+                  phase={uploadPhase}
+                  progress={uploadProgress}
+                  errorMessage={errorMessage}
+                  onRetry={() => {
+                    resetState();
+                    fileInputRef.current?.click();
+                  }}
+                  onCancel={() => {
+                    resetState();
+                  }}
+                  showCancel={isUploading}
+                />
+              </motion.div>
+            )}
+
+            {/* Photo button - hide when uploading */}
+            {!isUploading && uploadPhase !== "error" && (
+              <motion.button
+                onClick={() => fileInputRef.current?.click()}
+                variants={itemVariants}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-36 h-36 rounded-full bg-card flex items-center justify-center overflow-hidden ring-4 ring-primary/20 hover:ring-primary/40 transition-all shadow-lg"
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <Camera className="w-10 h-10 text-primary" />
+                    <span className="text-xs text-muted-foreground font-medium">Subir foto</span>
+                  </div>
+                )}
+              </motion.button>
+            )}
+
+            {/* Status messages */}
+            {!isUploading && uploadPhase !== "error" && (
+              <>
+                <motion.p 
+                  className="text-center text-sm text-muted-foreground"
+                  variants={itemVariants}
+                >
+                  {avatarUrl ? "¡Perfecta! Puedes continuar" : "Toca para subir una foto"}
+                </motion.p>
+                {!avatarUrl && (
+                  <motion.p 
+                    className="text-center text-xs text-primary/80 font-medium"
+                    variants={itemVariants}
+                  >
+                    La foto es obligatoria para crear tu perfil
+                  </motion.p>
+                )}
+              </>
+            )}
+
+            {/* Safari/iOS hint */}
+            {!avatarUrl && !isUploading && (
               <motion.p 
-                className="text-center text-xs text-primary/80 font-medium"
+                className="text-center text-[10px] text-muted-foreground/60 max-w-[200px]"
                 variants={itemVariants}
               >
-                La foto es obligatoria para crear tu perfil
+                En iPhone, usa fotos de tu galería para mejor velocidad
               </motion.p>
             )}
           </motion.div>
