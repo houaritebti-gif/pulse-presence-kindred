@@ -82,7 +82,11 @@ const OnboardingPhotoUpload = ({
             phase={uploadPhase}
             progress={uploadProgress}
             errorMessage={errorMessage}
-            onRetry={onRetry}
+            onRetry={() => {
+              onRetry();
+              // Small delay to allow state reset before opening file picker
+              setTimeout(() => fileInputRef.current?.click(), 100);
+            }}
             onCancel={onCancel}
             showCancel={isUploading}
           />
