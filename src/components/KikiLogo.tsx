@@ -50,48 +50,48 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   const s = sizeClasses[size];
   const isHero = size === "hero";
   
-  // Heart element with heartbeat pump animation
+  // Heart element with heartbeat pump animation - more pronounced
   const heartElement = isHero ? (
     <div className={`absolute ${s.heartPos}`}>
-      <div className="relative">
-        <motion.div
-          animate={animate ? {
-            scale: [1, 1.18, 1.05, 1.14, 1],
-          } : undefined}
-          transition={{ 
-            duration: 0.9, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            repeatDelay: 0.3
-          }}
-        >
-          <Heart 
-            className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
-            style={{ filter: 'drop-shadow(0 0 6px hsl(var(--kiki-red-warm) / 0.5))' }}
-          />
-        </motion.div>
-      </div>
+      <motion.div
+        initial={{ scale: 1 }}
+        animate={animate ? {
+          scale: [1, 1.25, 1, 1.2, 1],
+        } : { scale: 1 }}
+        transition={{ 
+          duration: 0.8, 
+          repeat: Infinity, 
+          ease: [0.4, 0, 0.2, 1],
+          times: [0, 0.15, 0.3, 0.45, 0.7],
+          repeatDelay: 0.5
+        }}
+      >
+        <Heart 
+          className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
+          style={{ filter: 'drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.6))' }}
+        />
+      </motion.div>
     </div>
   ) : (
     <span className={`absolute ${s.heartPos}`}>
-      <div className="relative">
-        <motion.div
-          animate={animate ? {
-            scale: [1, 1.15, 1.03, 1.12, 1],
-          } : undefined}
-          transition={{ 
-            duration: 0.85, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            repeatDelay: 0.4
-          }}
-        >
-          <Heart 
-            className={`relative ${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
-            style={{ filter: 'drop-shadow(0 0 4px hsl(var(--kiki-red-warm) / 0.4))' }}
-          />
-        </motion.div>
-      </div>
+      <motion.div
+        initial={{ scale: 1 }}
+        animate={animate ? {
+          scale: [1, 1.22, 1, 1.18, 1],
+        } : { scale: 1 }}
+        transition={{ 
+          duration: 0.8, 
+          repeat: Infinity, 
+          ease: [0.4, 0, 0.2, 1],
+          times: [0, 0.15, 0.3, 0.45, 0.7],
+          repeatDelay: 0.5
+        }}
+      >
+        <Heart 
+          className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
+          style={{ filter: 'drop-shadow(0 0 5px hsl(var(--kiki-red-warm) / 0.5))' }}
+        />
+      </motion.div>
     </span>
   );
   
