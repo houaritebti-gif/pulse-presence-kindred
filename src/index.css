@@ -848,6 +848,28 @@
   transition-duration: 0.01ms !important;
 }
 
+/* KIKI logo heartbeat (must remain visible even with reduced-motion enabled in-app) */
+@keyframes kiki-heartbeat {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.25); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.2); }
+  70% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+.kiki-heartbeat {
+  animation: kiki-heartbeat 1.3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* Override the global reduce-motion clamp for the logo heartbeat only */
+.reduce-motion .kiki-heartbeat {
+  animation-duration: 1.3s !important;
+  animation-iteration-count: infinite !important;
+}
+
 /* Text size variations */
 .text-size-small {
   font-size: 14px;

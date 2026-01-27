@@ -1,5 +1,5 @@
 import { Heart } from "lucide-react";
-import { MotionConfig, motion } from "framer-motion";
+ 
 
 interface KikiLogoProps {
   size?: "sm" | "md" | "lg" | "xl" | "hero";
@@ -53,53 +53,21 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   // Heart element with heartbeat pump animation - more pronounced
   const heartElement = isHero ? (
     <div className={`absolute ${s.heartPos}`}>
-      {/* Force heartbeat even when OS prefers-reduced-motion is enabled */}
-      <MotionConfig reducedMotion="never">
-        <motion.div
-          initial={{ scale: 1 }}
-          animate={animate ? {
-            scale: [1, 1.25, 1, 1.2, 1],
-          } : { scale: 1 }}
-          transition={{ 
-            duration: 0.8, 
-            repeat: Infinity, 
-            ease: [0.4, 0, 0.2, 1],
-            times: [0, 0.15, 0.3, 0.45, 0.7],
-            repeatDelay: 0.5
-          }}
-          style={{ willChange: "transform" }}
-        >
-          <Heart 
-            className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
-            style={{ filter: 'drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.6))' }}
-          />
-        </motion.div>
-      </MotionConfig>
+      <div className={animate ? "kiki-heartbeat" : ""} style={{ willChange: "transform" }}>
+        <Heart 
+          className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
+          style={{ filter: 'drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.6))' }}
+        />
+      </div>
     </div>
   ) : (
     <span className={`absolute ${s.heartPos}`}>
-      {/* Force heartbeat even when OS prefers-reduced-motion is enabled */}
-      <MotionConfig reducedMotion="never">
-        <motion.div
-          initial={{ scale: 1 }}
-          animate={animate ? {
-            scale: [1, 1.22, 1, 1.18, 1],
-          } : { scale: 1 }}
-          transition={{ 
-            duration: 0.8, 
-            repeat: Infinity, 
-            ease: [0.4, 0, 0.2, 1],
-            times: [0, 0.15, 0.3, 0.45, 0.7],
-            repeatDelay: 0.5
-          }}
-          style={{ willChange: "transform" }}
-        >
-          <Heart 
-            className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
-            style={{ filter: 'drop-shadow(0 0 5px hsl(var(--kiki-red-warm) / 0.5))' }}
-          />
-        </motion.div>
-      </MotionConfig>
+      <span className={animate ? "kiki-heartbeat" : ""} style={{ willChange: "transform", display: "inline-flex" }}>
+        <Heart 
+          className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
+          style={{ filter: 'drop-shadow(0 0 5px hsl(var(--kiki-red-warm) / 0.5))' }}
+        />
+      </span>
     </span>
   );
   
