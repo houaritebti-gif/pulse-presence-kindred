@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users, Camera } from "lucide-react";
+import { Sparkles, Music, User, MapPin, Target, FileText, Calendar, Heart, Users, Camera, CheckCircle } from "lucide-react";
 import { useProfile, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useAvatarUpload } from "@/hooks/useAvatarUpload";
 import { useUpdateGenderPreferences } from "@/hooks/useGenderPreferences";
@@ -27,6 +27,7 @@ import OnboardingBirthdateSelector from "@/components/OnboardingBirthdateSelecto
 import OnboardingInterestsSelector from "@/components/OnboardingInterestsSelector";
 import OnboardingNavigation from "@/components/OnboardingNavigation";
 import OnboardingContainer from "@/components/OnboardingContainer";
+import OnboardingSummary from "@/components/OnboardingSummary";
 import { useOnboardingPersistence } from "@/hooks/useOnboardingPersistence";
 
 const STEPS = [
@@ -43,6 +44,7 @@ const STEPS = [
   { id: 11, title: "Sobre ti", subtitle: "Breve descripción (opcional)" },
   { id: 12, title: "Detalles opcionales", subtitle: "Lo que quieras compartir" },
   { id: 13, title: "Tu foto", subtitle: "Es obligatoria para continuar" },
+  { id: 14, title: "¡Revisa tu perfil!", subtitle: "Confirma antes de empezar" },
 ];
 
 const Onboarding = () => {
@@ -308,9 +310,22 @@ const Onboarding = () => {
       case 11: return true; // Bio is optional
       case 12: return true; // Details are optional
       case 13: return !!avatarUrl; // Photo is required
+      case 14: return true; // Summary - always can proceed
       default: return true;
     }
   };
+
+  // Navigate to specific step (for summary edit)
+  const goToStep = useCallback((targetStep: number) => {
+    if (targetStep >= 1 && targetStep <= STEPS.length && !isAnimating) {
+      setIsAnimating(true);
+      setDirection(targetStep < step ? "back" : "forward");
+      setTimeout(() => {
+        setStep(targetStep);
+        setIsAnimating(false);
+      }, 50);
+    }
+  }, [step, isAnimating]);
 
   const handleNext = () => {
     if (step < STEPS.length && !isAnimating) {
@@ -454,6 +469,7 @@ const Onboarding = () => {
       case 11: return <FileText className="w-6 h-6" />;
       case 12: return <Sparkles className="w-6 h-6" />;
       case 13: return <Camera className="w-6 h-6" />;
+      case 14: return <CheckCircle className="w-6 h-6" />;
       default: return <Sparkles className="w-6 h-6" />;
     }
   };
@@ -597,6 +613,26 @@ const Onboarding = () => {
             onFileSelect={handleAvatarChange}
             onRetry={resetState}
             onCancel={resetState}
+          />
+        );
+
+      case 14:
+        return (
+          <OnboardingSummary
+            name={name}
+            city={city}
+            zone={zone}
+            birthdate={birthdate}
+            selectedGender={selectedGender}
+            selectedGenderPreferences={selectedGenderPreferences}
+            selectedInterests={selectedInterests}
+            selectedVibe={selectedVibe}
+            selectedTribes={selectedTribes}
+            selectedMusicStyles={selectedMusicStyles}
+            selectedLookingFor={selectedLookingFor}
+            bio={bio}
+            avatarUrl={avatarUrl}
+            onEditStep={goToStep}
           />
         );
 
