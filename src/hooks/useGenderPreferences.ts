@@ -44,8 +44,8 @@ export const useUpdateGenderPreferences = () => {
           .from("profile_gender_preferences")
           .insert(preferences.map(pref => ({ 
             profile_id: profileId, 
-            gender_preference: pref 
-          })));
+            gender_preference: pref as string
+          })) as any);
 
         if (error) throw error;
       }

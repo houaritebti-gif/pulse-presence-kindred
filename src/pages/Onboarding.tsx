@@ -75,13 +75,7 @@ const Onboarding = () => {
   const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
   const [selectedMusicStyles, setSelectedMusicStyles] = useState<string[]>([]);
-  const [hasTattoos, setHasTattoos] = useState(false);
-  const [hasPiercings, setHasPiercings] = useState(false);
-  const [alternativeAesthetic, setAlternativeAesthetic] = useState(false);
-  const [coloredHair, setColoredHair] = useState(false);
-  const [shavedHead, setShavedHead] = useState(false);
-  const [vintageStyle, setVintageStyle] = useState(false);
-  const [gothicStyle, setGothicStyle] = useState(false);
+  const [optionalDetails, setOptionalDetails] = useState<Record<string, boolean>>({});
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [bio, setBio] = useState("");
   const [selectedLookingFor, setSelectedLookingFor] = useState<string[]>([]);
@@ -101,13 +95,7 @@ const Onboarding = () => {
       setSelectedVibe(saved.selectedVibe);
       setSelectedTribes(saved.selectedTribes);
       setSelectedMusicStyles(saved.selectedMusicStyles);
-      setHasTattoos(saved.hasTattoos);
-      setHasPiercings(saved.hasPiercings);
-      setAlternativeAesthetic(saved.alternativeAesthetic);
-      setColoredHair(saved.coloredHair);
-      setShavedHead(saved.shavedHead);
-      setVintageStyle(saved.vintageStyle);
-      setGothicStyle(saved.gothicStyle);
+      setOptionalDetails(saved.optionalDetails || {});
       setAvatarUrl(saved.avatarUrl);
       setBio(saved.bio);
       setSelectedLookingFor(saved.selectedLookingFor);
@@ -135,13 +123,7 @@ const Onboarding = () => {
       selectedVibe,
       selectedTribes,
       selectedMusicStyles,
-      hasTattoos,
-      hasPiercings,
-      alternativeAesthetic,
-      coloredHair,
-      shavedHead,
-      vintageStyle,
-      gothicStyle,
+      optionalDetails,
       avatarUrl,
       bio,
       selectedLookingFor,
@@ -149,8 +131,7 @@ const Onboarding = () => {
   }, [
     isInitialized, step, name, city, zone, birthdate, selectedGender, selectedGenderPreferences,
     selectedInterests, selectedVibe, selectedTribes, selectedMusicStyles,
-    hasTattoos, hasPiercings, alternativeAesthetic, coloredHair, shavedHead,
-    vintageStyle, gothicStyle, avatarUrl, bio, selectedLookingFor, saveState
+    optionalDetails, avatarUrl, bio, selectedLookingFor, saveState
   ]);
 
   const currentStep = STEPS.find(s => s.id === step)!;
@@ -390,13 +371,13 @@ const Onboarding = () => {
         city: fullCity,
         vibe: selectedVibe,
         avatar_url: avatarUrl,
-        has_tattoos: hasTattoos,
-        has_piercings: hasPiercings,
-        alternative_aesthetic: alternativeAesthetic,
-        colored_hair: coloredHair,
-        shaved_head: shavedHead,
-        vintage_style: vintageStyle,
-        gothic_style: gothicStyle,
+        has_tattoos: optionalDetails.has_tattoos || false,
+        has_piercings: optionalDetails.has_piercings || false,
+        alternative_aesthetic: optionalDetails.alternative_aesthetic || false,
+        colored_hair: optionalDetails.colored_hair || false,
+        shaved_head: optionalDetails.shaved_head || false,
+        vintage_style: optionalDetails.vintage_style || false,
+        gothic_style: optionalDetails.gothic_style || false,
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
         birthdate: birthdate && !birthdate.includes("0000") ? birthdate : null,
@@ -579,25 +560,12 @@ const Onboarding = () => {
       case 12:
         return (
           <OnboardingDetailsSelector
-            details={{
-              has_tattoos: hasTattoos,
-              has_piercings: hasPiercings,
-              alternative_aesthetic: alternativeAesthetic,
-              colored_hair: coloredHair,
-              shaved_head: shavedHead,
-              vintage_style: vintageStyle,
-              gothic_style: gothicStyle,
-            }}
+            details={optionalDetails}
             onToggleDetail={(key) => {
-              switch (key) {
-                case "has_tattoos": setHasTattoos(!hasTattoos); break;
-                case "has_piercings": setHasPiercings(!hasPiercings); break;
-                case "alternative_aesthetic": setAlternativeAesthetic(!alternativeAesthetic); break;
-                case "colored_hair": setColoredHair(!coloredHair); break;
-                case "shaved_head": setShavedHead(!shavedHead); break;
-                case "vintage_style": setVintageStyle(!vintageStyle); break;
-                case "gothic_style": setGothicStyle(!gothicStyle); break;
-              }
+              setOptionalDetails(prev => ({
+                ...prev,
+                [key]: !prev[key]
+              }));
             }}
           />
         );
