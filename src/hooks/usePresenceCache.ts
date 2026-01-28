@@ -109,6 +109,7 @@ export const cachePresenceProfile = async (presence: PresenceWithProfile): Promi
       colored_hair: null,
       shaved_head: null,
       vintage_style: null,
+      optional_details: null,
       show_tribes: null,
       show_music_styles: null,
       show_gender: null,
