@@ -20,7 +20,7 @@ import { sendPushNotification } from "@/utils/pushNotifications";
 import { isVibrationEnabled, setVibrationEnabled, isDndEnabled, setDndEnabled, getDndHours, setDndHours } from "@/utils/notificationSound";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, LOOKING_FOR_OPTIONS, GenderType } from "@/constants/profileOptions";
+import { TRIBES, MUSIC_CATEGORIES, VIBES, OPTIONAL_DETAILS, OPTIONAL_DETAIL_CATEGORIES, getOptionalDetailsByCategory, LOOKING_FOR_OPTIONS, GenderType } from "@/constants/profileOptions";
 import InterestsSelector from "@/components/InterestsSelector";
 import { Textarea } from "@/components/ui/textarea";
 import { useBlockedUsersList, useUnblockUser, useMyReportHistory, REPORT_REASONS, REPORT_STATUS_LABELS } from "@/hooks/useUserModeration";
@@ -166,14 +166,8 @@ const Profile = () => {
   const [nameError, setNameError] = useState<string | null>(null);
   const [cityError, setCityError] = useState<string | null>(null);
   
-  // Optional details / aesthetic options
-  const [hasTattoos, setHasTattoos] = useState<boolean | null>(null);
-  const [hasPiercings, setHasPiercings] = useState<boolean | null>(null);
-  const [alternativeAesthetic, setAlternativeAesthetic] = useState<boolean | null>(null);
-  const [coloredHair, setColoredHair] = useState<boolean | null>(null);
-  const [shavedHead, setShavedHead] = useState<boolean | null>(null);
-  const [vintageStyle, setVintageStyle] = useState<boolean | null>(null);
-  const [gothicStyle, setGothicStyle] = useState<boolean | null>(null);
+  // Optional details - unified state for all 40+ details
+  const [optionalDetails, setOptionalDetails] = useState<Record<string, boolean>>({});
   
   // Bio and looking for
   const [bio, setBio] = useState("");
@@ -319,19 +313,44 @@ const Profile = () => {
       setCity(profile.city || "Madrid");
       setSelectedVibe(profile.vibe);
       setAvatarUrl(profile.avatar_url);
-      setHasTattoos(profile.has_tattoos);
-      setHasPiercings(profile.has_piercings);
-      setAlternativeAesthetic(profile.alternative_aesthetic);
-      setColoredHair((profile as any).colored_hair);
-      setShavedHead((profile as any).shaved_head);
-      setVintageStyle((profile as any).vintage_style);
-      setGothicStyle((profile as any).gothic_style);
       setShareTypingStatus(profile.share_typing_status !== false);
       setNotifyProfileVisits((profile as any).notify_profile_visits !== false);
       setBio((profile as any).bio || "");
       setSelectedLookingFor((profile as any).looking_for || []);
       setSelectedGender((profile as any).gender || null);
       setBirthdate((profile as any).birthdate || null);
+      
+      // Load optional details from JSONB column or fallback to legacy fields
+      const loadedDetails: Record<string, boolean> = {};
+      
+      // First, load from JSONB if available
+      if (profile.optional_details && typeof profile.optional_details === 'object') {
+        Object.entries(profile.optional_details as Record<string, boolean>).forEach(([key, value]) => {
+          if (value === true) {
+            loadedDetails[key] = true;
+          }
+        });
+      }
+      
+      // Fallback: also check legacy boolean columns for backwards compatibility
+      const legacyFields = [
+        { key: 'has_tattoos', value: profile.has_tattoos },
+        { key: 'has_piercings', value: profile.has_piercings },
+        { key: 'alternative_aesthetic', value: profile.alternative_aesthetic },
+        { key: 'colored_hair', value: (profile as any).colored_hair },
+        { key: 'shaved_head', value: (profile as any).shaved_head },
+        { key: 'vintage_style', value: (profile as any).vintage_style },
+        { key: 'gothic_style', value: (profile as any).gothic_style },
+      ];
+      
+      legacyFields.forEach(({ key, value }) => {
+        // Only use legacy if not already in JSONB
+        if (value === true && !loadedDetails[key]) {
+          loadedDetails[key] = true;
+        }
+      });
+      
+      setOptionalDetails(loadedDetails);
     }
   }, [profile]);
 
@@ -464,42 +483,19 @@ const Profile = () => {
 
   const toggleOptionalDetail = (key: string) => {
     setHasChanges(true);
-    switch (key) {
-      case "has_tattoos":
-        setHasTattoos(prev => prev === true ? null : true);
-        break;
-      case "has_piercings":
-        setHasPiercings(prev => prev === true ? null : true);
-        break;
-      case "alternative_aesthetic":
-        setAlternativeAesthetic(prev => prev === true ? null : true);
-        break;
-      case "colored_hair":
-        setColoredHair(prev => prev === true ? null : true);
-        break;
-      case "shaved_head":
-        setShavedHead(prev => prev === true ? null : true);
-        break;
-      case "vintage_style":
-        setVintageStyle(prev => prev === true ? null : true);
-        break;
-      case "gothic_style":
-        setGothicStyle(prev => prev === true ? null : true);
-        break;
-    }
+    setOptionalDetails(prev => {
+      const newDetails = { ...prev };
+      if (newDetails[key]) {
+        delete newDetails[key];
+      } else {
+        newDetails[key] = true;
+      }
+      return newDetails;
+    });
   };
 
   const getOptionalDetailValue = (key: string): boolean | null => {
-    switch (key) {
-      case "has_tattoos": return hasTattoos;
-      case "has_piercings": return hasPiercings;
-      case "alternative_aesthetic": return alternativeAesthetic;
-      case "colored_hair": return coloredHair;
-      case "shaved_head": return shavedHead;
-      case "vintage_style": return vintageStyle;
-      case "gothic_style": return gothicStyle;
-      default: return null;
-    }
+    return optionalDetails[key] === true ? true : null;
   };
 
   // Bio blacklist validation - real-time via secure endpoint
@@ -606,17 +602,25 @@ const Profile = () => {
     triggerHaptic('light');
 
     try {
+      // Build optional_details object with only true values
+      const filteredOptionalDetails = Object.keys(optionalDetails).length > 0 
+        ? optionalDetails 
+        : null;
+
       await updateProfile.mutateAsync({
         name: name || null,
         city: city || "Madrid",
         vibe: selectedVibe,
-        has_tattoos: hasTattoos,
-        has_piercings: hasPiercings,
-        alternative_aesthetic: alternativeAesthetic,
-        colored_hair: coloredHair,
-        shaved_head: shavedHead,
-        vintage_style: vintageStyle,
-        gothic_style: gothicStyle,
+        // Legacy fields for backwards compatibility
+        has_tattoos: optionalDetails.has_tattoos || false,
+        has_piercings: optionalDetails.has_piercings || false,
+        alternative_aesthetic: optionalDetails.alternative_aesthetic || false,
+        colored_hair: optionalDetails.colored_hair || false,
+        shaved_head: optionalDetails.shaved_head || false,
+        vintage_style: optionalDetails.vintage_style || false,
+        gothic_style: optionalDetails.gothic_style || false,
+        // New JSONB column with all details
+        optional_details: filteredOptionalDetails,
         share_typing_status: shareTypingStatus,
         notify_profile_visits: notifyProfileVisits,
         bio: bio || null,
@@ -1181,7 +1185,7 @@ const Profile = () => {
           )}
         </div>
 
-        {/* Optional Details */}
+        {/* Optional Details - organized by category */}
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '425ms', animationFillMode: 'forwards' }}>
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-primary" />
@@ -1189,20 +1193,33 @@ const Profile = () => {
               Detalles (opcional)
             </h2>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {OPTIONAL_DETAILS.map(detail => (
-              <button
-                key={detail.key}
-                onClick={() => { triggerHaptic('selection'); toggleOptionalDetail(detail.key); }}
-                className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
-                  getOptionalDetailValue(detail.key) === true
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
-                }`}
-              >
-                {detail.label}
-              </button>
-            ))}
+          <div className="space-y-4">
+            {OPTIONAL_DETAIL_CATEGORIES.map(category => {
+              const categoryDetails = getOptionalDetailsByCategory(category.key);
+              return (
+                <div key={category.key}>
+                  <h3 className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                    <span>{category.emoji}</span>
+                    {category.label}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {categoryDetails.map(detail => (
+                      <button
+                        key={detail.key}
+                        onClick={() => { triggerHaptic('selection'); toggleOptionalDetail(detail.key); }}
+                        className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                          getOptionalDetailValue(detail.key) === true
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                        }`}
+                      >
+                        {detail.emoji} {detail.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
