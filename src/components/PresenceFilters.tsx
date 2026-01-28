@@ -363,6 +363,22 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
               </button>
             );
           })}
+          {(filters.details ?? []).map(detailKey => {
+            const detailData = OPTIONAL_DETAILS.find(d => d.key === detailKey);
+            return (
+              <button
+                key={detailKey}
+                onClick={() => {
+                  triggerHaptic('light');
+                  toggleDetail(detailKey);
+                }}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-[11px] font-medium hover:bg-muted/80 transition-all active:scale-95"
+              >
+                {detailData?.emoji} {detailData?.label || detailKey}
+                <X className="w-3 h-3" />
+              </button>
+            );
+          })}
           {hasNearbyFilter && (
             <button
               onClick={() => {
@@ -788,7 +804,7 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
             </AnimatePresence>
           </div>
 
-          {/* Details section */}
+          {/* Details section - organized by categories */}
           <div className="mb-5">
             <button
               onClick={() => { triggerHaptic('light'); toggleSection("details"); }}
@@ -800,10 +816,10 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
                 </div>
                 <div>
                   <span className="font-display text-sm font-semibold text-card-foreground block">
-                    Estética
+                    Detalles del perfil
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    {(filters.details?.length ?? 0) > 0 ? `${filters.details?.length} detalles` : "Tattoos, piercings..."}
+                    {(filters.details?.length ?? 0) > 0 ? `${filters.details?.length} detalles` : "Lifestyle, creencias, accesibilidad..."}
                   </span>
                 </div>
               </div>
@@ -820,24 +836,54 @@ const PresenceFiltersComponent = ({ filters, onChange, availableCities = [], onR
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex flex-wrap gap-2 overflow-hidden"
+                  className="space-y-4 overflow-hidden"
                 >
-                  {OPTIONAL_DETAILS.map((detail, index) => (
-                    <motion.button
-                      key={detail.key}
-                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{ delay: index * 0.04, duration: 0.2 }}
-                      onClick={() => toggleDetail(detail.key)}
-                      className={`px-3 py-1.5 rounded-full font-body text-xs transition-all active:scale-95 ${
-                        (filters.details ?? []).includes(detail.key)
-                          ? "bg-accent text-accent-foreground"
-                          : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
-                      }`}
-                    >
-                      {detail.emoji} {detail.label}
-                    </motion.button>
-                  ))}
+                  {/* Group by category */}
+                  {[
+                    { key: "aesthetic", label: "Estética", emoji: "🎨" },
+                    { key: "body", label: "Cuerpo", emoji: "🧍" },
+                    { key: "accessibility", label: "Accesibilidad", emoji: "♿" },
+                    { key: "beliefs", label: "Creencias", emoji: "🕯️" },
+                    { key: "lifestyle", label: "Lifestyle", emoji: "🌱" },
+                    { key: "relationship", label: "Relaciones", emoji: "💞" },
+                    { key: "family", label: "Familia", emoji: "👨‍👩‍👧" },
+                    { key: "health", label: "Salud", emoji: "💊" },
+                  ].map((category, catIndex) => {
+                    const categoryDetails = OPTIONAL_DETAILS.filter(d => d.category === category.key);
+                    if (categoryDetails.length === 0) return null;
+                    
+                    return (
+                      <motion.div 
+                        key={category.key}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: catIndex * 0.05 }}
+                      >
+                        <p className="font-body text-xs text-card-foreground/50 mb-1.5 flex items-center gap-1">
+                          <span>{category.emoji}</span>
+                          <span>{category.label}</span>
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {categoryDetails.map((detail, detailIndex) => (
+                            <motion.button
+                              key={detail.key}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: catIndex * 0.05 + detailIndex * 0.02, duration: 0.15 }}
+                              onClick={() => toggleDetail(detail.key)}
+                              className={`px-2.5 py-1 rounded-full font-body text-xs transition-all active:scale-95 ${
+                                (filters.details ?? []).includes(detail.key)
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-card-foreground/10 text-card-foreground/70 hover:bg-card-foreground/20"
+                              }`}
+                            >
+                              {detail.emoji} {detail.label}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
