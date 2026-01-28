@@ -37,6 +37,7 @@ export interface Profile {
   show_interests: boolean | null;
   show_looking_for: boolean | null;
   show_aesthetic_details: boolean | null;
+  show_optional_details: boolean | null;
   created_at: string;
   updated_at: string;
 }
