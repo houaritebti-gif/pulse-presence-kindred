@@ -24,6 +24,8 @@ export interface Profile {
   identity_verified: boolean | null;
   birthdate: string | null;
   gender: GenderType | null;
+  // Flexible optional details (JSONB)
+  optional_details: Record<string, boolean> | null;
   // Visibility settings
   show_birth_year: boolean | null;
   show_zodiac: boolean | null;
@@ -114,7 +116,7 @@ export const useUpdateProfile = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "bio" | "looking_for" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic" | "colored_hair" | "shaved_head" | "vintage_style" | "gothic_style" | "share_typing_status" | "birthdate" | "gender">>) => {
+    mutationFn: async (updates: Partial<Pick<Profile, "name" | "vibe" | "city" | "bio" | "looking_for" | "avatar_url" | "has_tattoos" | "has_piercings" | "alternative_aesthetic" | "colored_hair" | "shaved_head" | "vintage_style" | "gothic_style" | "share_typing_status" | "birthdate" | "gender" | "optional_details">>) => {
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase

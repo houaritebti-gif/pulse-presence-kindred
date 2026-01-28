@@ -925,6 +925,7 @@ export type Database = {
           notify_profile_visits: boolean
           notify_same_city_only: boolean
           notify_summary_hour: number
+          optional_details: Json | null
           share_location: boolean | null
           share_typing_status: boolean | null
           shaved_head: boolean | null
@@ -970,6 +971,7 @@ export type Database = {
           notify_profile_visits?: boolean
           notify_same_city_only?: boolean
           notify_summary_hour?: number
+          optional_details?: Json | null
           share_location?: boolean | null
           share_typing_status?: boolean | null
           shaved_head?: boolean | null
@@ -1015,6 +1017,7 @@ export type Database = {
           notify_profile_visits?: boolean
           notify_same_city_only?: boolean
           notify_summary_hour?: number
+          optional_details?: Json | null
           share_location?: boolean | null
           share_typing_status?: boolean | null
           shaved_head?: boolean | null

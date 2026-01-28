@@ -366,11 +366,17 @@ const Onboarding = () => {
       const fullCity = zone ? `${city} - ${zone}` : city;
       
       // Update profile with gender
+      // Build optional_details object with only true values
+      const filteredOptionalDetails = Object.fromEntries(
+        Object.entries(optionalDetails).filter(([_, value]) => value === true)
+      );
+
       await updateProfile.mutateAsync({
         name,
         city: fullCity,
         vibe: selectedVibe,
         avatar_url: avatarUrl,
+        // Legacy fields for backwards compatibility
         has_tattoos: optionalDetails.has_tattoos || false,
         has_piercings: optionalDetails.has_piercings || false,
         alternative_aesthetic: optionalDetails.alternative_aesthetic || false,
@@ -378,6 +384,8 @@ const Onboarding = () => {
         shaved_head: optionalDetails.shaved_head || false,
         vintage_style: optionalDetails.vintage_style || false,
         gothic_style: optionalDetails.gothic_style || false,
+        // New JSONB column with all details
+        optional_details: Object.keys(filteredOptionalDetails).length > 0 ? filteredOptionalDetails : null,
         bio: bio || null,
         looking_for: selectedLookingFor.length > 0 ? selectedLookingFor : null,
         birthdate: birthdate && !birthdate.includes("0000") ? birthdate : null,
