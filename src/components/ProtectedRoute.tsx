@@ -7,10 +7,11 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
-  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { user, session, loading } = useAuth();
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useProfile();
   const location = useLocation();
 
+  // Show loading while auth or profile is being determined
   if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -19,7 +20,15 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  if (!user) {
+  // No user or no session = redirect to auth
+  // This catches cases where session expired or refresh token is invalid
+  if (!user || !session) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // If profile fetch failed (e.g., due to auth issues), redirect to auth
+  if (profileError) {
+    console.warn('[ProtectedRoute] Profile fetch failed, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 
