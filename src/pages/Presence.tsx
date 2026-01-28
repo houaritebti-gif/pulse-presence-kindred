@@ -338,11 +338,24 @@ const Presence = () => {
       }
 
       // Details filter - must have all selected details
+      // Checks legacy fields AND optional_details JSONB
       if (filters.details.length > 0) {
+        const legacyFields: Record<string, boolean | null> = {
+          has_tattoos: presence.profile?.has_tattoos ?? null,
+          has_piercings: presence.profile?.has_piercings ?? null,
+          alternative_aesthetic: presence.profile?.alternative_aesthetic ?? null,
+          colored_hair: presence.profile?.colored_hair ?? null,
+          shaved_head: presence.profile?.shaved_head ?? null,
+          vintage_style: presence.profile?.vintage_style ?? null,
+          gothic_style: presence.profile?.gothic_style ?? null,
+        };
+        const optionalDetails = presence.profile?.optional_details || {};
+        
         for (const detail of filters.details) {
-          if (detail === "has_tattoos" && !presence.profile?.has_tattoos) return false;
-          if (detail === "has_piercings" && !presence.profile?.has_piercings) return false;
-          if (detail === "alternative_aesthetic" && !presence.profile?.alternative_aesthetic) return false;
+          // Check legacy field first, then JSONB
+          const inLegacy = legacyFields[detail] === true;
+          const inJsonb = optionalDetails[detail] === true;
+          if (!inLegacy && !inJsonb) return false;
         }
       }
 

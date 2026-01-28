@@ -27,6 +27,10 @@ export interface PresenceWithProfile {
     has_tattoos: boolean | null;
     has_piercings: boolean | null;
     alternative_aesthetic: boolean | null;
+    colored_hair: boolean | null;
+    shaved_head: boolean | null;
+    vintage_style: boolean | null;
+    gothic_style: boolean | null;
     looking_for: string[] | null;
     email_verified: boolean | null;
     identity_verified: boolean | null;
@@ -35,6 +39,8 @@ export interface PresenceWithProfile {
     latitude: number | null;
     longitude: number | null;
     share_location: boolean | null;
+    optional_details: Record<string, boolean> | null;
+    show_optional_details: boolean | null;
   };
   tribes: string[];
   musicStyles: string[];
@@ -134,7 +140,7 @@ export const usePresenceList = (showAllProfiles: boolean = true) => {
         .from("presence")
         .select(`
           *,
-          profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic, looking_for, email_verified, identity_verified, gender, birthdate, latitude, longitude, share_location)
+          profile:profiles(id, name, avatar_url, vibe, city, has_tattoos, has_piercings, alternative_aesthetic, colored_hair, shaved_head, vintage_style, gothic_style, looking_for, email_verified, identity_verified, gender, birthdate, latitude, longitude, share_location, optional_details, show_optional_details)
         `)
         .eq("visible_to_others", true)
         .order("last_pulse", { ascending: false })

@@ -559,24 +559,28 @@ const PublicProfile = () => {
             })).filter(cat => cat.details.length > 0);
             
             return (
-              <div>
+              <div className="space-y-3">
                 <h2 className="font-display text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
                   <Sparkles className="w-3 h-3" />
                   Detalles
                 </h2>
-                <div className="flex flex-wrap gap-1.5">
-                  {groupedDetails.flatMap(category => 
-                    category.details.map(detail => detail && (
-                      <span 
-                        key={detail.key}
-                        className="px-2.5 py-1 rounded-full bg-accent/10 font-body text-xs text-accent"
-                        title={category.label}
-                      >
-                        {detail.emoji} {detail.label}
-                      </span>
-                    ))
-                  )}
-                </div>
+                {groupedDetails.map(category => (
+                  <div key={category.key}>
+                    <p className="text-[10px] text-muted-foreground/70 mb-1 uppercase tracking-wider">
+                      {category.emoji} {category.label}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {category.details.map(detail => detail && (
+                        <span 
+                          key={detail.key}
+                          className="px-2.5 py-1 rounded-full bg-accent/10 font-body text-xs text-accent"
+                        >
+                          {detail.emoji} {detail.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             );
           })()}
