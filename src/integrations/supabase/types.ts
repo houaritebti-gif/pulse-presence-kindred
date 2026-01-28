@@ -937,6 +937,7 @@ export type Database = {
           show_interests: boolean | null
           show_looking_for: boolean | null
           show_music_styles: boolean | null
+          show_optional_details: boolean | null
           show_tribes: boolean | null
           show_vibe: boolean | null
           show_zodiac: boolean | null
@@ -983,6 +984,7 @@ export type Database = {
           show_interests?: boolean | null
           show_looking_for?: boolean | null
           show_music_styles?: boolean | null
+          show_optional_details?: boolean | null
           show_tribes?: boolean | null
           show_vibe?: boolean | null
           show_zodiac?: boolean | null
@@ -1029,6 +1031,7 @@ export type Database = {
           show_interests?: boolean | null
           show_looking_for?: boolean | null
           show_music_styles?: boolean | null
+          show_optional_details?: boolean | null
           show_tribes?: boolean | null
           show_vibe?: boolean | null
           show_zodiac?: boolean | null

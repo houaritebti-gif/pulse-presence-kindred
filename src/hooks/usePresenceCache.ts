@@ -120,6 +120,7 @@ export const cachePresenceProfile = async (presence: PresenceWithProfile): Promi
       show_looking_for: null,
       show_interests: null,
       show_aesthetic_details: null,
+      show_optional_details: null,
       share_typing_status: null,
     };
     

@@ -519,8 +519,8 @@ const PublicProfile = () => {
             </div>
           )}
 
-          {/* Optional details - from JSONB or legacy fields */}
-          {(() => {
+          {/* Optional details - from JSONB or legacy fields (respects visibility) */}
+          {((profile as any).show_optional_details !== false) && (() => {
             // Gather all active optional details
             const activeDetails: string[] = [];
             

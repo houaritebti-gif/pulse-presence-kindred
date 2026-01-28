@@ -19,6 +19,7 @@ interface VisibilitySettings {
   show_looking_for: boolean;
   show_aesthetic_details: boolean;
   show_achievements: boolean;
+  show_optional_details: boolean;
 }
 
 const VISIBILITY_OPTIONS = [
@@ -31,7 +32,8 @@ const VISIBILITY_OPTIONS = [
   { key: "show_music_styles", label: "Estilos musicales", icon: Music, description: "Tus géneros favoritos" },
   { key: "show_interests", label: "Intereses", icon: Heart, description: "Tus intereses culturales" },
   { key: "show_looking_for", label: "Qué buscas", icon: Heart, description: "Lo que buscas en KIKI" },
-  { key: "show_aesthetic_details", label: "Detalles estéticos", icon: Palette, description: "Tatuajes, piercings, estilo..." },
+  { key: "show_aesthetic_details", label: "Detalles estéticos", icon: Palette, description: "Tatuajes, piercings, estilo (legacy)" },
+  { key: "show_optional_details", label: "Detalles opcionales", icon: Sparkles, description: "Lifestyle, creencias, salud, accesibilidad..." },
   { key: "show_achievements", label: "Logros", icon: Trophy, description: "Tus logros y medallas" },
 ] as const;
 
@@ -53,6 +55,7 @@ const ProfileVisibilitySection = () => {
     show_looking_for: true,
     show_aesthetic_details: true,
     show_achievements: true,
+    show_optional_details: true,
   });
 
   // Load current settings
@@ -63,7 +66,7 @@ const ProfileVisibilitySection = () => {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("show_birth_year, show_zodiac, show_gender, show_city, show_vibe, show_tribes, show_music_styles, show_interests, show_looking_for, show_aesthetic_details, show_achievements")
+          .select("show_birth_year, show_zodiac, show_gender, show_city, show_vibe, show_tribes, show_music_styles, show_interests, show_looking_for, show_aesthetic_details, show_achievements, show_optional_details")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -82,6 +85,7 @@ const ProfileVisibilitySection = () => {
             show_looking_for: data.show_looking_for ?? true,
             show_aesthetic_details: data.show_aesthetic_details ?? true,
             show_achievements: (data as any).show_achievements ?? true,
+            show_optional_details: (data as any).show_optional_details ?? true,
           });
         }
       } catch (error) {
