@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star, CloudOff, Camera } from "lucide-react";
+import { OPTIONAL_DETAILS, OPTIONAL_DETAIL_CATEGORIES, getOptionalDetailsByCategory } from "@/constants/profileOptions";
 import { useScreenshotProtection } from "@/hooks/useScreenshotProtection";
 import { KikiLogo } from "@/components/KikiLogo";
 import ErrorState from "@/components/ErrorState";
@@ -518,32 +519,67 @@ const PublicProfile = () => {
             </div>
           )}
 
-          {/* Optional details - inline */}
-          {(profile.has_tattoos || profile.has_piercings || profile.alternative_aesthetic) && (
-            <div>
-              <h2 className="font-display text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
-                <Sparkles className="w-3 h-3" />
-                Detalles
-              </h2>
-              <div className="flex flex-wrap gap-1.5">
-                {profile.has_tattoos && (
-                  <span className="px-2.5 py-1 rounded-full bg-accent/10 font-body text-xs text-accent">
-                    Tatuajes
-                  </span>
-                )}
-                {profile.has_piercings && (
-                  <span className="px-2.5 py-1 rounded-full bg-accent/10 font-body text-xs text-accent">
-                    Piercings
-                  </span>
-                )}
-                {profile.alternative_aesthetic && (
-                  <span className="px-2.5 py-1 rounded-full bg-accent/10 font-body text-xs text-accent">
-                    Alternativa
-                  </span>
-                )}
+          {/* Optional details - from JSONB or legacy fields */}
+          {(() => {
+            // Gather all active optional details
+            const activeDetails: string[] = [];
+            
+            // Check JSONB optional_details first
+            const optionalDetailsData = (profile as any).optional_details;
+            if (optionalDetailsData && typeof optionalDetailsData === 'object') {
+              Object.entries(optionalDetailsData as Record<string, boolean>).forEach(([key, value]) => {
+                if (value === true) {
+                  const detail = OPTIONAL_DETAILS.find(d => d.key === key);
+                  if (detail) {
+                    activeDetails.push(key);
+                  }
+                }
+              });
+            }
+            
+            // Fallback to legacy fields if JSONB is empty
+            if (activeDetails.length === 0) {
+              if (profile.has_tattoos) activeDetails.push('has_tattoos');
+              if (profile.has_piercings) activeDetails.push('has_piercings');
+              if (profile.alternative_aesthetic) activeDetails.push('alternative_aesthetic');
+              if ((profile as any).colored_hair) activeDetails.push('colored_hair');
+              if ((profile as any).shaved_head) activeDetails.push('shaved_head');
+              if ((profile as any).vintage_style) activeDetails.push('vintage_style');
+              if ((profile as any).gothic_style) activeDetails.push('gothic_style');
+            }
+            
+            if (activeDetails.length === 0) return null;
+            
+            // Group by category for better display
+            const groupedDetails = OPTIONAL_DETAIL_CATEGORIES.map(category => ({
+              ...category,
+              details: activeDetails
+                .map(key => OPTIONAL_DETAILS.find(d => d.key === key))
+                .filter(d => d && d.category === category.key)
+            })).filter(cat => cat.details.length > 0);
+            
+            return (
+              <div>
+                <h2 className="font-display text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  Detalles
+                </h2>
+                <div className="flex flex-wrap gap-1.5">
+                  {groupedDetails.flatMap(category => 
+                    category.details.map(detail => detail && (
+                      <span 
+                        key={detail.key}
+                        className="px-2.5 py-1 rounded-full bg-accent/10 font-body text-xs text-accent"
+                        title={category.label}
+                      >
+                        {detail.emoji} {detail.label}
+                      </span>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
           
           {/* Profile Prompts */}
           {profilePrompts && profilePrompts.length > 0 && (
