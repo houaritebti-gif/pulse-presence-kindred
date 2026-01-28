@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          old_values: Json | null
+          target_id: string | null
+          target_table: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       bio_blacklist: {
         Row: {
           created_at: string
@@ -1735,6 +1774,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_old_profile_visits: { Args: never; Returns: number }
       cleanup_old_rate_limits: { Args: never; Returns: number }
       contains_blacklisted_words: {
         Args: { text_to_check: string }
@@ -1778,6 +1818,17 @@ export type Database = {
         Returns: boolean
       }
       has_visible_presence: { Args: { p_profile_id: string }; Returns: boolean }
+      log_admin_action: {
+        Args: {
+          p_action: string
+          p_admin_user_id: string
+          p_new_values?: Json
+          p_old_values?: Json
+          p_target_id?: string
+          p_target_table?: string
+        }
+        Returns: string
+      }
       rotate_internal_secret: {
         Args: { p_secret_name: string }
         Returns: string
