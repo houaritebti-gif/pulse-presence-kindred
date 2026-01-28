@@ -106,6 +106,25 @@ const isRetryableError = (error: unknown): boolean => {
   return false;
 };
 
+// Check if error is an auth error (should not retry, user needs to re-login)
+const isAuthError = (error: unknown): boolean => {
+  if (!error) return false;
+  
+  if (typeof error === 'object' && error !== null) {
+    const err = error as { code?: string; status?: number; message?: string };
+    // 401/403 are auth errors
+    if (err.status === 401 || err.status === 403) return true;
+    // JWT related errors
+    if (err.message?.toLowerCase().includes('jwt')) return true;
+    if (err.message?.toLowerCase().includes('token')) return true;
+    if (err.message?.toLowerCase().includes('auth')) return true;
+    // Supabase auth error codes
+    if (err.code === 'PGRST301') return true; // JWT required
+  }
+  
+  return false;
+};
+
 export const usePresenceList = (showAllProfiles: boolean = true) => {
   const queryClient = useQueryClient();
   const { isOnline } = useOnlineStatus();
@@ -253,6 +272,8 @@ export const usePresenceList = (showAllProfiles: boolean = true) => {
     refetchOnMount: false, // Don't refetch when component mounts if data is fresh
     refetchOnWindowFocus: false, // Disable automatic refetch on window focus - we have realtime
     retry: (failureCount, error) => {
+      // Never retry auth errors - user needs to re-login
+      if (isAuthError(error)) return false;
       // Only retry retryable errors up to MAX_RETRIES
       if (!isRetryableError(error)) return false;
       return failureCount < MAX_RETRIES;
@@ -327,6 +348,8 @@ export const useMyPresence = () => {
     refetchOnMount: false, // Don't refetch on every mount
     refetchOnWindowFocus: false, // We have realtime updates
     retry: (failureCount, error) => {
+      // Never retry auth errors - user needs to re-login
+      if (isAuthError(error)) return false;
       if (!isRetryableError(error)) return false;
       return failureCount < MAX_RETRIES;
     },
