@@ -1,3 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
+
 /* KIKI Design System - Paleta Final */
 
 @tailwind base;
@@ -27,36 +31,36 @@
     /* 🤍 KIKI Milk #FFF6F2 = 17 100% 97% */
     /* 🌫 KIKI Grey #9A9A9A = 0 0% 60% */
 
-    --background: 17 100% 97%;
-    --foreground: 0 0% 7%;
+    --background: 240 4% 95%;
+    --foreground: 240 5% 10%;
 
     /* Light mode: cards are light with dark text for better readability */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card: 0 0% 98%;
+    --card-foreground: 240 5% 10%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 7%;
+    --popover: 240 5% 90%;
+    --popover-foreground: 240 5% 10%;
 
-    --primary: 355 82% 42%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 333 71% 50%;
+    --primary-foreground: 327 73% 97%;
 
-    --secondary: 346 65% 93%;
-    --secondary-foreground: 0 0% 15%;
+    --secondary: 240 5% 33%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 346 35% 96%;
-    --muted-foreground: 0 0% 30%; /* WCAG AA: 30% provides 7:1 contrast on white */
+    --muted: 240 4% 83%;
+    --muted-foreground: 240 5% 10%; /* WCAG AA: 30% provides 7:1 contrast on white */
 
-    --accent: 355 82% 42%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 355 100% 97%;
+    --accent-foreground: 349 89% 60%;
 
-    --destructive: 0 84% 50%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 85% 97%;
 
-    --border: 346 30% 80%;
-    --input: 346 40% 93%;
-    --ring: 355 82% 42%;
+    --border: 240 4% 83%;
+    --input: 240 4% 83%;
+    --ring: 333 71% 50%;
 
-    --radius: 1rem;
+    --radius: 1.5rem;
 
     /* Custom KIKI tokens */
     --kiki-red: 355 82% 38%; /* Rojo KIKI oscuro */
@@ -73,43 +77,62 @@
     --font-body: 'Arial', sans-serif;
 
     --sidebar-background: 17 100% 97%;
-    --sidebar-foreground: 0 0% 7%;
-    --sidebar-primary: 355 82% 42%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 346 73% 83%;
-    --sidebar-accent-foreground: 0 0% 7%;
-    --sidebar-border: 346 40% 85%;
-    --sidebar-ring: 355 82% 42%;
+    --sidebar-foreground: 240 5% 10%;
+    --sidebar-primary: 333 71% 50%;
+    --sidebar-primary-foreground: 327 73% 97%;
+    --sidebar-accent: 240 5% 33%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 4% 83%;
+    --sidebar-ring: 333 71% 50%;
+    --chart-1: 328 85% 70%;
+    --chart-2: 351 94% 71%;
+    --chart-3: 327 87% 81%;
+    --chart-4: 352 95% 81%;
+    --chart-5: 240 3% 46%;
+    --sidebar: 0 0% 98%;
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    --font-serif: 'Merriweather', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --tracking-normal: 0em;
+    --spacing: 0.25rem;
   }
 
   .dark {
-    --background: 0 0% 8%;
+    --background: 240 5% 10%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 12%;
+    --card: 240 3% 15%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 10%;
+    --popover: 240 5% 26%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 355 82% 45%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 328 85% 70%;
+    --primary-foreground: 336 83% 17%;
 
-    --secondary: 0 0% 18%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 240 3% 46%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 22%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 240 3% 46%;
+    --muted-foreground: 0 0% 98%;
 
-    --accent: 355 82% 48%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 343 87% 15%;
+    --accent-foreground: 351 94% 71%;
 
-    --destructive: 0 70% 40%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 85% 97%;
 
-    --border: 0 0% 25%;
-    --input: 0 0% 20%;
-    --ring: 355 82% 45%;
+    --border: 240 5% 33%;
+    --input: 240 5% 33%;
+    --ring: 328 85% 70%;
 
     /* Dark mode specific tokens */
     --kiki-red: 355 82% 45%;
@@ -124,12 +147,26 @@
 
     --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 355 82% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 18%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 25%;
-    --sidebar-ring: 355 82% 45%;
+    --sidebar-primary: 328 85% 70%;
+    --sidebar-primary-foreground: 336 83% 17%;
+    --sidebar-accent: 351 94% 71%;
+    --sidebar-accent-foreground: 343 87% 15%;
+    --sidebar-border: 240 5% 33%;
+    --sidebar-ring: 328 85% 70%;
+    --chart-1: 327 87% 81%;
+    --chart-2: 352 95% 81%;
+    --chart-3: 328 85% 70%;
+    --chart-4: 351 94% 71%;
+    --chart-5: 240 5% 33%;
+    --sidebar: 240 3% 15%;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   }
 
   /* Admin Panel Dark Mode - Softer colors for reduced eye strain */
@@ -267,7 +304,7 @@
     /* iOS safe area support */
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  
+
   /* iOS safe areas for full-height elements */
   body {
     min-height: 100dvh;
@@ -334,11 +371,11 @@
   .font-display {
     font-family: var(--font-display);
   }
-  
+
   .font-body {
     font-family: var(--font-body);
   }
-  
+
   .bg-gradient-radial {
     background: radial-gradient(circle, var(--tw-gradient-stops));
   }
