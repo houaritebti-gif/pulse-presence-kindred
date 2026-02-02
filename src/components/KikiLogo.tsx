@@ -1,5 +1,4 @@
 import { Heart } from "lucide-react";
- 
 
 interface KikiLogoProps {
   size?: "sm" | "md" | "lg" | "xl" | "hero";
@@ -38,9 +37,11 @@ const sizeClasses = {
     glow: true,
   },
   hero: {
-    text: "text-6xl md:text-7xl lg:text-8xl",
-    heart: "w-5 h-5 md:w-7 md:h-7 lg:w-9 lg:h-9",
-    heartPos: "-top-3.5 md:-top-3 lg:-top-4 -left-1 md:-left-1.5 lg:-left-2",
+    // Letras más grandes
+    text: "text-7xl md:text-8xl lg:text-9xl",
+    heart: "w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10",
+    // Corazón posicionado justo encima de la I, centrado horizontalmente
+    heartPos: "-top-4 md:-top-5 lg:-top-6 left-1/2 -translate-x-1/2",
     marginLeft: "",
     glow: true,
   },
@@ -50,7 +51,7 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   const s = sizeClasses[size];
   const isHero = size === "hero";
   
-  // Heart element with heartbeat pump animation - more pronounced
+  // Heart element with heartbeat pump animation
   const heartElement = isHero ? (
     <div className={`absolute ${s.heartPos}`}>
       <div className={animate ? "kiki-heartbeat" : ""} style={{ willChange: "transform" }}>
@@ -73,15 +74,10 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
   
   const textColorClass = variant === "dark" ? "text-kiki-black" : "text-foreground";
   
-  // Subtle shadow for visual depth
-  const textShadow = variant === "dark" 
-    ? "2px 2px 8px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)" 
-    : "2px 2px 10px rgba(0, 0, 0, 0.25), 0 6px 20px rgba(0, 0, 0, 0.15)";
-  
   return (
     <span 
       className={`inline-flex items-baseline leading-none tracking-tight font-bold ${textColorClass} ${className} relative overflow-visible`}
-      style={{ fontFamily: '"Avenir Next Heavy", "Avenir Black", "Avenir Heavy", Avenir, system-ui, sans-serif', fontWeight: 900, textShadow }}
+      style={{ fontFamily: '"Avenir Next Heavy", "Avenir Black", "Avenir Heavy", Avenir, system-ui, sans-serif', fontWeight: 900 }}
     >
       <span className={s.text}>K</span>
       <span className={s.text}>I</span>
