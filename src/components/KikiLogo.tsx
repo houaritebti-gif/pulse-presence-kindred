@@ -40,8 +40,8 @@ const sizeClasses = {
     // Letras más grandes
     text: "text-7xl md:text-8xl lg:text-9xl",
     heart: "w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10",
-    // Corazón posicionado justo encima de la I, centrado horizontalmente
-    heartPos: "-top-4 md:-top-5 lg:-top-6 left-1/2 -translate-x-1/2",
+    // Corazón posicionado ligeramente a la izquierda del centro de la I
+    heartPos: "-top-4 md:-top-5 lg:-top-6 left-1/3 -translate-x-1/2",
     marginLeft: "",
     glow: true,
   },
