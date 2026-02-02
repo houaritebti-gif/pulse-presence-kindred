@@ -40,10 +40,10 @@
     --primary: 355 82% 42%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 346 73% 90%;
+    --secondary: 346 65% 93%;
     --secondary-foreground: 0 0% 15%;
 
-    --muted: 346 40% 94%;
+    --muted: 346 35% 96%;
     --muted-foreground: 0 0% 30%; /* WCAG AA: 30% provides 7:1 contrast on white */
 
     --accent: 355 82% 42%;
@@ -61,9 +61,9 @@
     /* Custom KIKI tokens */
     --kiki-red: 355 82% 38%; /* Rojo KIKI oscuro */
     --kiki-red-warm: 2 74% 38%; /* Rojo cálido oscuro */
-    --kiki-pink: 346 73% 83%;
-    --kiki-pink-bubble: 337 77% 84%; /* #F6B7CF - Rosa chicle suave */
-    --kiki-pink-soft: 17 100% 97%;
+    --kiki-pink: 346 60% 88%;
+    --kiki-pink-bubble: 337 65% 90%; /* Rosa chicle más claro */
+    --kiki-pink-soft: 17 100% 98%;
     --kiki-black: 0 0% 7%;
     --kiki-white: 0 0% 98%;
     --kiki-grey: 0 0% 45%;
