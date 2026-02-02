@@ -41,7 +41,7 @@ const sizeClasses = {
     text: "text-7xl md:text-8xl lg:text-9xl",
     heart: "w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10",
     // Corazón posicionado ligeramente a la izquierda del centro de la I
-    heartPos: "-top-4 md:-top-5 lg:-top-6 left-1/4 -translate-x-1/2",
+    heartPos: "-top-2 md:-top-3 lg:-top-4 left-1/4 -translate-x-1/2",
     marginLeft: "",
     glow: true,
   },
