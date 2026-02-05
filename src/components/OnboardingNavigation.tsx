@@ -14,6 +14,7 @@ interface OnboardingNavigationProps {
   onNext: () => void;
   onComplete: () => void;
   onSkip?: () => void;
+  onExit?: () => void;
 }
 
 const OnboardingNavigation = ({
@@ -26,9 +27,15 @@ const OnboardingNavigation = ({
   onNext,
   onComplete,
   onSkip,
+  onExit,
 }: OnboardingNavigationProps) => {
   const isLastStep = step === totalSteps;
   const isFirstStep = step === 1;
+
+  const handleExit = () => {
+    triggerHaptic("light");
+    onExit?.();
+  };
 
   const handleBack = () => {
     triggerHaptic("light");
@@ -62,10 +69,35 @@ const OnboardingNavigation = ({
     >
       {/* Main navigation buttons */}
       <div className="flex gap-3 max-w-md mx-auto w-full">
-        {/* Back button */}
+        {/* Back button - shows exit on first step, back on others */}
         <AnimatePresence mode="wait">
-          {!isFirstStep && (
+          {isFirstStep && onExit ? (
             <motion.div
+              key="exit"
+              initial={{ opacity: 0, x: -20, width: 0 }}
+              animate={{ opacity: 1, x: 0, width: "auto" }}
+              exit={{ opacity: 0, x: -20, width: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex-1"
+            >
+              <Button
+                variant="outline"
+                onClick={handleExit}
+                className={cn(
+                  "w-full h-14 rounded-2xl text-base font-bold",
+                  "active:scale-[0.97] transition-all duration-200 touch-manipulation",
+                  "border-2 border-border/60 hover:border-primary/40 hover:bg-primary/5",
+                  "shadow-sm"
+                )}
+                aria-label="Volver al inicio"
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Salir
+              </Button>
+            </motion.div>
+          ) : !isFirstStep ? (
+            <motion.div
+              key="back"
               initial={{ opacity: 0, x: -20, width: 0 }}
               animate={{ opacity: 1, x: 0, width: "auto" }}
               exit={{ opacity: 0, x: -20, width: 0 }}
@@ -87,7 +119,7 @@ const OnboardingNavigation = ({
                 Atrás
               </Button>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
 
         {/* Next/Complete button */}

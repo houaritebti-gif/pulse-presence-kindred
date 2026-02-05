@@ -654,6 +654,7 @@ const Onboarding = () => {
         onNext={handleNext}
         onComplete={handleComplete}
         onSkip={handleNext}
+        onExit={() => navigate("/")}
       />
 
       {/* Avatar Crop Modal */}
