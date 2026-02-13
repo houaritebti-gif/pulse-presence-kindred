@@ -24,67 +24,70 @@
 
 @layer base {
   :root {
-    /* KIKI Design System - Rosa del Logo */
-    /* 💗 Logo Pink ~#E25D7B = 350 72% 58% */
+    /* KIKI Design System - Paleta Final CERRADA */
+    /* ❤️ KIKI Red #E63946 = 355 82% 56% */
+    /* 💗 KIKI Pink #F6B1C3 = 346 73% 83% */
     /* 🖤 KIKI Black #111111 = 0 0% 7% */
     /* 🤍 KIKI Milk #FFF6F2 = 17 100% 97% */
+    /* 🌫 KIKI Grey #9A9A9A = 0 0% 60% */
 
-    --background: 350 20% 96%;
+    --background: 240 4% 95%;
     --foreground: 240 5% 10%;
 
+    /* Light mode: cards are light with dark text for better readability */
     --card: 0 0% 98%;
     --card-foreground: 240 5% 10%;
 
-    --popover: 350 15% 92%;
+    --popover: 240 5% 90%;
     --popover-foreground: 240 5% 10%;
 
-    --primary: 350 72% 58%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 333 71% 50%;
+    --primary-foreground: 327 73% 97%;
 
-    --secondary: 350 15% 35%;
+    --secondary: 240 5% 33%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 350 10% 85%;
-    --muted-foreground: 240 5% 10%;
+    --muted: 240 4% 83%;
+    --muted-foreground: 240 5% 10%; /* WCAG AA: 30% provides 7:1 contrast on white */
 
-    --accent: 350 60% 95%;
-    --accent-foreground: 350 72% 50%;
+    --accent: 355 100% 97%;
+    --accent-foreground: 349 89% 60%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 85% 97%;
 
-    --border: 350 12% 84%;
-    --input: 350 12% 84%;
-    --ring: 350 72% 58%;
+    --border: 240 4% 83%;
+    --input: 240 4% 83%;
+    --ring: 333 71% 50%;
 
     --radius: 1.5rem;
 
-    /* Custom KIKI tokens - todos basados en el rosa del logo */
-    --kiki-red: 350 72% 50%;
-    --kiki-red-warm: 350 72% 58%;
-    --kiki-pink: 350 55% 85%;
-    --kiki-pink-bubble: 350 60% 90%;
-    --kiki-pink-soft: 350 40% 97%;
+    /* Custom KIKI tokens */
+    --kiki-red: 355 82% 38%; /* Rojo KIKI oscuro */
+    --kiki-red-warm: 2 74% 38%; /* Rojo cálido oscuro */
+    --kiki-pink: 346 60% 88%;
+    --kiki-pink-bubble: 337 65% 90%; /* Rosa chicle más claro */
+    --kiki-pink-soft: 17 100% 98%;
     --kiki-black: 0 0% 7%;
     --kiki-white: 0 0% 98%;
     --kiki-grey: 0 0% 45%;
-    --kiki-glow: 350 72% 58%;
+    --kiki-glow: 355 82% 50%;
 
     --font-display: 'Arial Black', 'Arial', sans-serif;
     --font-body: 'Arial', sans-serif;
 
-    --sidebar-background: 350 40% 97%;
+    --sidebar-background: 17 100% 97%;
     --sidebar-foreground: 240 5% 10%;
-    --sidebar-primary: 350 72% 58%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 350 15% 35%;
+    --sidebar-primary: 333 71% 50%;
+    --sidebar-primary-foreground: 327 73% 97%;
+    --sidebar-accent: 240 5% 33%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 350 12% 84%;
-    --sidebar-ring: 350 72% 58%;
-    --chart-1: 350 72% 58%;
-    --chart-2: 350 65% 68%;
-    --chart-3: 350 55% 78%;
-    --chart-4: 350 45% 85%;
+    --sidebar-border: 240 4% 83%;
+    --sidebar-ring: 333 71% 50%;
+    --chart-1: 328 85% 70%;
+    --chart-2: 351 94% 71%;
+    --chart-3: 327 87% 81%;
+    --chart-4: 352 95% 81%;
     --chart-5: 240 3% 46%;
     --sidebar: 0 0% 98%;
     --font-sans: 'Poppins', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
@@ -109,11 +112,11 @@
     --card: 240 3% 15%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 5% 20%;
+    --popover: 240 5% 26%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 350 72% 68%;
-    --primary-foreground: 350 80% 12%;
+    --primary: 328 85% 70%;
+    --primary-foreground: 336 83% 17%;
 
     --secondary: 240 3% 46%;
     --secondary-foreground: 0 0% 98%;
@@ -121,39 +124,39 @@
     --muted: 240 3% 46%;
     --muted-foreground: 0 0% 98%;
 
-    --accent: 350 50% 18%;
-    --accent-foreground: 350 72% 72%;
+    --accent: 343 87% 15%;
+    --accent-foreground: 351 94% 71%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 85% 97%;
 
     --border: 240 5% 33%;
     --input: 240 5% 33%;
-    --ring: 350 72% 68%;
+    --ring: 328 85% 70%;
 
-    /* Dark mode KIKI tokens */
-    --kiki-red: 350 72% 55%;
-    --kiki-red-warm: 350 72% 58%;
-    --kiki-pink: 350 55% 70%;
-    --kiki-pink-bubble: 350 60% 75%;
-    --kiki-pink-soft: 350 30% 20%;
+    /* Dark mode specific tokens */
+    --kiki-red: 355 82% 45%;
+    --kiki-red-warm: 2 74% 38%; /* Rojo cálido oscuro (dark también) */
+    --kiki-pink: 346 60% 70%;
+    --kiki-pink-bubble: 337 70% 75%; /* Versión dark del rosa chicle */
+    --kiki-pink-soft: 346 30% 20%;
     --kiki-black: 0 0% 8%;
     --kiki-white: 0 0% 98%;
     --kiki-grey: 0 0% 60%;
-    --kiki-glow: 350 72% 60%;
+    --kiki-glow: 355 82% 52%;
 
     --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 350 72% 68%;
-    --sidebar-primary-foreground: 350 80% 12%;
-    --sidebar-accent: 350 72% 72%;
-    --sidebar-accent-foreground: 350 50% 18%;
+    --sidebar-primary: 328 85% 70%;
+    --sidebar-primary-foreground: 336 83% 17%;
+    --sidebar-accent: 351 94% 71%;
+    --sidebar-accent-foreground: 343 87% 15%;
     --sidebar-border: 240 5% 33%;
-    --sidebar-ring: 350 72% 68%;
-    --chart-1: 350 72% 68%;
-    --chart-2: 350 65% 75%;
-    --chart-3: 350 55% 80%;
-    --chart-4: 350 45% 65%;
+    --sidebar-ring: 328 85% 70%;
+    --chart-1: 327 87% 81%;
+    --chart-2: 352 95% 81%;
+    --chart-3: 328 85% 70%;
+    --chart-4: 351 94% 71%;
     --chart-5: 240 5% 33%;
     --sidebar: 240 3% 15%;
     --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
