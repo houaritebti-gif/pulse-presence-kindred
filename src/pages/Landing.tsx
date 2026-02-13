@@ -9,7 +9,7 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden" style={{ backgroundColor: '#F8C3D0' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden" style={{ backgroundColor: '#F9B7C8' }}>
       
       {/* Main content */}
       <motion.div 
@@ -18,8 +18,9 @@ const Landing = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
-        {/* Logo KIKI - clean, no glow, blends with background */}
+        {/* Logo KIKI - Dramatic entrance animation with glow */}
         <motion.div 
+          className="relative"
           initial={{ opacity: 0, scale: 0.3, y: -50 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ 
@@ -30,7 +31,45 @@ const Landing = () => {
             damping: 12
           }}
         >
-          <KikiLogo size="hero" />
+          {/* Outer glow - larger and more subtle */}
+          <motion.div 
+            className="absolute -inset-x-24 -inset-y-16 rounded-full pointer-events-none"
+            style={{ 
+              background: 'radial-gradient(circle, hsl(var(--primary) / 0.2) 0%, transparent 60%)',
+              filter: 'blur(50px)'
+            }}
+            animate={{ 
+              opacity: [0.2, 0.4, 0.2],
+              scale: [0.95, 1.15, 0.95]
+            }}
+            transition={{ 
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          
+          {/* Inner glow - smaller and more vibrant */}
+          <motion.div 
+            className="absolute -inset-x-12 -inset-y-8 rounded-full pointer-events-none"
+            style={{ 
+              background: 'radial-gradient(circle, hsl(var(--primary) / 0.45) 0%, transparent 70%)',
+              filter: 'blur(30px)'
+            }}
+            animate={{ 
+              opacity: [0.35, 0.65, 0.35],
+              scale: [0.9, 1.1, 0.9]
+            }}
+            transition={{ 
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          
+          <div className="relative z-10">
+            <KikiLogo size="hero" variant="dark" />
+          </div>
         </motion.div>
         
         {/* Tagline - only "aquí no hay match, hay chispa" */}
