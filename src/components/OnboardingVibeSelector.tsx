@@ -3,19 +3,26 @@ import { Check, Sparkles } from "lucide-react";
 import { VIBES } from "@/constants/profileOptions";
 import { triggerHaptic } from "@/utils/haptics";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface OnboardingVibeSelectorProps {
-  selectedVibe: string | null;
-  onVibeChange: (vibe: string) => void;
+  selectedVibes: string[];
+  onToggleVibe: (vibe: string) => void;
+  maxVibes?: number;
 }
 
 const OnboardingVibeSelector = ({
-  selectedVibe,
-  onVibeChange,
+  selectedVibes,
+  onToggleVibe,
+  maxVibes = 3,
 }: OnboardingVibeSelectorProps) => {
   const handleSelect = (vibe: string) => {
+    if (!selectedVibes.includes(vibe) && selectedVibes.length >= maxVibes) {
+      toast.error(`Máximo ${maxVibes} vibras`);
+      return;
+    }
     triggerHaptic("selection");
-    onVibeChange(vibe);
+    onToggleVibe(vibe);
   };
 
   const itemVariants = {
@@ -55,21 +62,23 @@ const OnboardingVibeSelector = ({
         variants={itemVariants}
       >
         <Sparkles className="w-4 h-4" />
-        <span className="text-sm">¿Cómo te sientes hoy?</span>
+        <span className="text-sm">Elige hasta {maxVibes} vibras</span>
       </motion.div>
 
       {/* Grid of vibes */}
       <div className="grid grid-cols-2 gap-3">
-        {VIBES.map((vibe, index) => {
-          const isSelected = selectedVibe === vibe.value;
+        {VIBES.map((vibe) => {
+          const isSelected = selectedVibes.includes(vibe.value);
+          const isDisabled = !isSelected && selectedVibes.length >= maxVibes;
           return (
             <motion.button
               key={vibe.value}
               type="button"
               onClick={() => handleSelect(vibe.value)}
+              disabled={isDisabled}
               variants={itemVariants}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: isDisabled ? 1 : 1.03 }}
+              whileTap={{ scale: isDisabled ? 1 : 0.97 }}
               className={cn(
                 "relative p-4 rounded-2xl text-base transition-all duration-200",
                 "flex flex-col items-center justify-center gap-2 min-h-[100px]",
@@ -77,7 +86,8 @@ const OnboardingVibeSelector = ({
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                 isSelected
                   ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/25"
-                  : "bg-card text-card-foreground border-border/40 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
+                  : "bg-card text-card-foreground border-border/40 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md",
+                isDisabled && "opacity-40 cursor-not-allowed"
               )}
             >
               {/* Selected checkmark */}
@@ -104,9 +114,9 @@ const OnboardingVibeSelector = ({
         })}
       </div>
 
-      {/* Selection confirmation */}
+      {/* Selection counter */}
       <AnimatePresence>
-        {selectedVibe && (
+        {selectedVibes.length > 0 && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -115,7 +125,7 @@ const OnboardingVibeSelector = ({
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm">
               <Check className="w-4 h-4" />
-              {VIBES.find(v => v.value === selectedVibe)?.emoji} {selectedVibe}
+              {selectedVibes.length}/{maxVibes} vibras
             </span>
           </motion.div>
         )}
