@@ -9,9 +9,7 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden" style={{ backgroundColor: '#FFF5F7' }}>
-      {/* Subtle radial glow behind logo */}
-      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 35%, rgba(246,177,195,0.3) 0%, transparent 50%)' }} />
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden" style={{ backgroundColor: '#F9B7C8' }}>
       
       {/* Main content */}
       <motion.div 
@@ -74,38 +72,22 @@ const Landing = () => {
           </div>
         </motion.div>
         
-        {/* Taglines - Enhanced visual */}
+        {/* Tagline - only "aquí no hay match, hay chispa" */}
         <div className="flex flex-col items-center gap-3">
-          <motion.p 
-            className="text-headline-sm md:text-headline text-kiki-black font-display tracking-tight"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            style={{ 
-              textShadow: '1px 1px 6px rgba(0, 0, 0, 0.08)'
-            }}
-          >
-            Para gente <span className="text-kiki-black font-bold">diferente</span>, y punto.
-          </motion.p>
-          
-          {/* Secondary tagline - refined visual */}
           <motion.p
-            className="text-subtitle-sm md:text-subtitle text-kiki-black/70 tracking-wide"
+            className="text-subtitle-sm md:text-subtitle text-kiki-black/80 tracking-wide"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-            style={{ 
-              letterSpacing: '0.02em'
-            }}
+            transition={{ duration: 0.6, delay: 0.5 }}
           >
             aquí no hay match, hay{' '}
             <motion.span 
-              className="text-kiki-red-warm font-bold relative inline-block"
+              className="text-kiki-black font-bold relative inline-block"
               animate={{ 
                 textShadow: [
-                  '0 0 0px hsl(var(--kiki-red-warm) / 0)',
-                  '0 0 8px hsl(var(--kiki-red-warm) / 0.4)',
-                  '0 0 0px hsl(var(--kiki-red-warm) / 0)'
+                  '0 0 0px rgba(0,0,0,0)',
+                  '0 0 8px rgba(0,0,0,0.15)',
+                  '0 0 0px rgba(0,0,0,0)'
                 ]
               }}
               transition={{ 

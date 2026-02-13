@@ -1,4 +1,4 @@
-import kikiLogoSrc from "@/assets/kiki-logo.jpg";
+import kikiLogoSrc from "@/assets/kiki-logo-transparent.png";
 
 interface KikiLogoProps {
   size?: "sm" | "md" | "lg" | "xl" | "hero";
@@ -12,16 +12,15 @@ const sizeMap = {
   md: "h-8 sm:h-10",
   lg: "h-10 sm:h-12",
   xl: "h-14 sm:h-16",
-  hero: "h-40 md:h-52 lg:h-64",
+  hero: "h-48 md:h-56 lg:h-64",
 };
 
 export const KikiLogo = ({ size = "md", className = "" }: KikiLogoProps) => {
-  const isHero = size === "hero";
   return (
     <img
       src={kikiLogoSrc}
-      alt="KIKI"
-      className={`${sizeMap[size]} w-auto object-contain ${isHero ? "rounded-3xl shadow-xl" : ""} ${className}`}
+      alt="KIKI - Para gente diferente, y punto."
+      className={`${sizeMap[size]} w-auto object-contain ${className}`}
       loading="eager"
     />
   );
