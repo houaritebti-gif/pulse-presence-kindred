@@ -57,7 +57,6 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
       <div className={animate ? "kiki-heartbeat" : ""} style={{ willChange: "transform" }}>
         <Heart 
           className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
-          style={{ filter: 'drop-shadow(0 0 8px hsl(var(--kiki-red-warm) / 0.6))' }}
         />
       </div>
     </div>
@@ -66,7 +65,6 @@ export const KikiLogo = ({ size = "md", animate = true, className = "", variant 
       <span className={animate ? "kiki-heartbeat" : ""} style={{ willChange: "transform", display: "inline-flex" }}>
         <Heart 
           className={`${s.heart} text-kiki-red-warm fill-kiki-red-warm`}
-          style={{ filter: 'drop-shadow(0 0 5px hsl(var(--kiki-red-warm) / 0.5))' }}
         />
       </span>
     </span>

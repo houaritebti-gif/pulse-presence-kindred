@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, GripVertical, Camera, Sparkles, Crop, ArrowUp, ArrowDown, AlertCircle, Info } from "lucide-react";
+import { Plus, X, GripVertical, Camera, Sparkles, Crop, ArrowUp, ArrowDown, AlertCircle, Info, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProfilePhotos, useUploadProfilePhoto, useDeleteProfilePhoto, useReorderProfilePhotos } from "@/hooks/useProfilePhotos";
 import { cn } from "@/lib/utils";
@@ -210,6 +210,26 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
 
     toast.success(direction === 'up' ? "Foto movida arriba" : "Foto movida abajo");
   }, [photos, profileId, reorderPhotos, isMobile]);
+
+  // Set photo as main (move to first position)
+  const handleSetAsMain = useCallback(async (index: number) => {
+    if (!photos || index === 0) return;
+
+    triggerHapticFeedback([50, 30, 50]);
+
+    const newPhotos = [...photos];
+    const [movedPhoto] = newPhotos.splice(index, 1);
+    newPhotos.unshift(movedPhoto);
+
+    const newPhotoIds = newPhotos.map(p => p.id);
+
+    await reorderPhotos.mutateAsync({
+      profileId,
+      photoIds: newPhotoIds,
+    });
+
+    toast.success("📸 Foto establecida como principal");
+  }, [photos, profileId, reorderPhotos, triggerHapticFeedback]);
 
   // Drag handlers (desktop only)
   const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -507,17 +527,39 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 </div>
               )}
 
-              {/* Order badge with tooltip */}
-              {index === 0 && (
+              {/* Order badge / Set as main */}
+              {index === 0 ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md cursor-help">
+                    <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md cursor-help flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-current" />
                       Principal
                     </div>
                   </TooltipTrigger>
                   {!isMobile && (
                     <TooltipContent side="right">
                       <p>Esta es tu foto de perfil principal</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSetAsMain(index);
+                      }}
+                      disabled={reorderPhotos.isPending}
+                      className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm text-foreground text-[10px] font-bold shadow-md hover:bg-primary hover:text-primary-foreground transition-colors flex items-center gap-1"
+                    >
+                      <Star className="w-3 h-3" />
+                      Principal
+                    </button>
+                  </TooltipTrigger>
+                  {!isMobile && (
+                    <TooltipContent side="right">
+                      <p>Establecer como foto principal</p>
                     </TooltipContent>
                   )}
                 </Tooltip>

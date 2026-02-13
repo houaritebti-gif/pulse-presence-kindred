@@ -182,7 +182,7 @@ export const HayVibraScreen = ({
                   )}
                 >
                   {isPerfectMatch ? (
-                    <span className="text-2xl">💫</span>
+                    <span className="text-2xl">🔥</span>
                   ) : (
                     <Heart className="w-7 h-7 text-primary fill-primary" />
                   )}
@@ -231,12 +231,12 @@ export const HayVibraScreen = ({
                     animate={{ scale: [1, 1.05, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    ¡Match Perfecto!
+                    ¡Vibra máxima!
                   </motion.h1>
                   <p className="text-white/90 text-lg font-medium flex items-center justify-center gap-2">
-                    <span>💫</span>
+                    <span>🔥</span>
                     Compatibilidad {compatibility}/5
-                    <span>💫</span>
+                    <span>🔥</span>
                   </p>
                 </>
               ) : (
@@ -264,7 +264,7 @@ export const HayVibraScreen = ({
             >
               {isPerfectMatch
                 ? "Esto es especial. ¡Tenéis mucho en común!"
-                : "Ha habido interés mutuo. ¡Ahora pueden chatear!"}
+                : "Interés mutuo. ¡Ahora pueden chatear!"}
             </motion.p>
 
             {/* Action buttons */}
@@ -338,7 +338,7 @@ export const HayVibraScreen = ({
                   repeatDelay: Math.random() * 3,
                 }}
               >
-                {isPerfectMatch ? "💫" : "✨"}
+                {isPerfectMatch ? "⭐" : "✨"}
               </motion.div>
             ))}
           </motion.div>

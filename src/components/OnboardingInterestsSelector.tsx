@@ -187,7 +187,7 @@ const OnboardingInterestsSelector = ({
                   disabled={isDisabled}
                   whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "px-4 py-2.5 rounded-2xl text-sm transition-all duration-200 flex items-center gap-1.5 touch-manipulation border-2",
+                    "px-4 py-2.5 rounded-2xl text-base transition-all duration-200 flex items-center gap-1.5 touch-manipulation border-2",
                     isSelected
                       ? "bg-gradient-to-br from-primary to-primary/85 text-primary-foreground border-primary shadow-md shadow-primary/20"
                       : "bg-card text-card-foreground border-border/40 hover:border-primary/40 hover:bg-primary/5",

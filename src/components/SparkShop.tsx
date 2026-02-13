@@ -58,11 +58,6 @@ const ITEM_CONFIG: Record<ShopItemKey, {
     gradient: "from-purple-500 via-pink-500 to-orange-500",
     category: "super"
   },
-  highlighted_message: { 
-    icon: <Sparkles className="w-5 h-5" />, 
-    gradient: "from-amber-400 to-orange-500",
-    category: "messages"
-  },
   reveal_spark: { 
     icon: <Eye className="w-5 h-5" />, 
     gradient: "from-violet-500 to-purple-500",
@@ -71,11 +66,6 @@ const ITEM_CONFIG: Record<ShopItemKey, {
   visibility_boost: { 
     icon: <Zap className="w-5 h-5" />, 
     gradient: "from-yellow-400 to-amber-500",
-    category: "discovery"
-  },
-  second_chance: { 
-    icon: <RotateCcw className="w-5 h-5" />, 
-    gradient: "from-cyan-400 to-blue-500",
     category: "discovery"
   },
   extra_filter: { 
@@ -98,8 +88,8 @@ const ITEM_CONFIG: Record<ShopItemKey, {
 // Item categories
 const ITEM_CATEGORIES = {
   super: ["super_spark", "super_spark_3"] as ShopItemKey[],
-  messages: ["ghost_message_1", "ghost_message_3", "highlighted_message"] as ShopItemKey[],
-  discovery: ["reveal_spark", "visibility_boost", "second_chance"] as ShopItemKey[],
+  messages: ["ghost_message_1", "ghost_message_3"] as ShopItemKey[],
+  discovery: ["reveal_spark", "visibility_boost"] as ShopItemKey[],
   profile: ["extra_filter", "profile_theme", "badge_loyal"] as ShopItemKey[],
 };
 
