@@ -154,7 +154,7 @@ const Profile = () => {
 
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
-  const [selectedVibe, setSelectedVibe] = useState<string | null>(null);
+  const [selectedVibes, setSelectedVibes] = useState<string[]>([]);
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
   const [selectedMusicStyles, setSelectedMusicStyles] = useState<string[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
@@ -311,7 +311,7 @@ const Profile = () => {
     if (profile) {
       setName(profile.name || "");
       setCity(profile.city || "Madrid");
-      setSelectedVibe(profile.vibe);
+      setSelectedVibes(profile.vibe ? [profile.vibe] : []);
       setAvatarUrl(profile.avatar_url);
       setShareTypingStatus(profile.share_typing_status !== false);
       setNotifyProfileVisits((profile as any).notify_profile_visits !== false);
@@ -472,9 +472,9 @@ const Profile = () => {
       if (prev.includes(interest)) {
         return prev.filter(i => i !== interest);
       }
-      // Max 10 interests
-      if (prev.length >= 10) {
-        toast.error("Máximo 10 intereses");
+      // Max 5 interests
+      if (prev.length >= 5) {
+        toast.error("Máximo 5 intereses");
         return prev;
       }
       return [...prev, interest];
@@ -567,13 +567,7 @@ const Profile = () => {
       }
     }
 
-    // Check minimum 3 interests
-    if (selectedInterests.length < 3) {
-      setSaveError("Selecciona al menos 3 intereses culturales");
-      setSaveState("error");
-      triggerHaptic('error');
-      return;
-    }
+    // Interests are optional, no minimum required
 
     // Validate and sanitize name
     if (name) {
@@ -610,7 +604,7 @@ const Profile = () => {
       await updateProfile.mutateAsync({
         name: name || null,
         city: city || "Madrid",
-        vibe: selectedVibe,
+        vibe: selectedVibes[0] || null,
         // Legacy fields for backwards compatibility
         has_tattoos: optionalDetails.has_tattoos || false,
         has_piercings: optionalDetails.has_piercings || false,
@@ -1063,19 +1057,30 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Vibe */}
+        {/* Vibe - multi-select max 3 */}
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '350ms', animationFillMode: 'forwards' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
-            Tu vibra
+          <h2 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+            Tus vibras
           </h2>
+          <p className="text-xs text-muted-foreground mb-4" style={{ fontFamily: 'Arial, sans-serif' }}>
+            Hasta 3 ({selectedVibes.length}/3)
+          </p>
           <div className="flex flex-wrap gap-2">
             {VIBES.map(vibe => (
               <button
                 key={vibe.value}
-                onClick={() => { triggerHaptic('selection'); setSelectedVibe(vibe.value); setHasChanges(true); }}
+                onClick={() => { 
+                  triggerHaptic('selection'); 
+                  setHasChanges(true);
+                  setSelectedVibes(prev => {
+                    if (prev.includes(vibe.value)) return prev.filter(v => v !== vibe.value);
+                    if (prev.length >= 3) { toast.error("Máximo 3 vibras"); return prev; }
+                    return [...prev, vibe.value];
+                  });
+                }}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all flex items-center gap-2 ${
-                  selectedVibe === vibe.value
-                    ? "bg-card text-card-foreground"
+                  selectedVibes.includes(vibe.value)
+                    ? "bg-primary text-primary-foreground"
                     : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
                 }`}
               >
