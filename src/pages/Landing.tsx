@@ -9,9 +9,9 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden bg-kiki-pink-bubble">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-kiki-pink-bubble/50 pointer-events-none" />
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 relative overflow-hidden" style={{ backgroundColor: '#FFF5F7' }}>
+      {/* Subtle radial glow behind logo */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(circle at 50% 35%, rgba(246,177,195,0.3) 0%, transparent 50%)' }} />
       
       {/* Main content */}
       <motion.div 
