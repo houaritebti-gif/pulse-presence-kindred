@@ -266,7 +266,44 @@ const Presence = () => {
   // Load visited status for all profiles (for hideVisited filter)
   const { visitedMap } = useVisitedProfilesLoader(filters.hideVisited ? profileIds : []);
 
-  // Calculate compatibility for each presence (tribes + music + looking_for + interests)
+  // MVP Algorithm: Calculate affinity score
+  // Priority: 1) City, 2) Looking for, 3) Shared vibes, 4) Interests+Music (secondary)
+  const myCity = profile?.city?.toLowerCase()?.trim() || "";
+  const myVibe = profile?.vibe || null;
+
+  const getAffinityScore = (presence: typeof otherProfiles[0]) => {
+    let score = 0;
+    
+    // 1) City match (highest weight)
+    const theirCity = presence.profile?.city?.toLowerCase()?.trim() || "";
+    if (myCity && theirCity && theirCity.includes(myCity.split(" - ")[0]) || myCity.includes(theirCity.split(" - ")[0])) {
+      score += 1000;
+    }
+    
+    // 2) Looking for compatibility (high weight)
+    const theirLookingFor = presence.profile?.looking_for || [];
+    const sharedLookingFor = theirLookingFor.filter(l => myLookingFor.includes(l));
+    score += sharedLookingFor.length * 100;
+    
+    // 3) Shared vibes (medium weight)
+    if (myVibe && presence.profile?.vibe === myVibe) {
+      score += 50;
+    }
+    
+    // 4) Interests and music as secondary affinity
+    const sharedInterests = presence.interests.filter(i => myInterestNames.includes(i));
+    const sharedMusic = presence.musicStyles.filter(m => myStyleNames.includes(m));
+    score += sharedInterests.length * 10;
+    score += sharedMusic.length * 10;
+    
+    // Bonus: shared tribes
+    const sharedTribes = presence.tribes.filter(t => myTribeNames.includes(t));
+    score += sharedTribes.length * 5;
+    
+    return score;
+  };
+
+  // Legacy compatibility function (used by filters)
   const getCompatibility = (presence: typeof otherProfiles[0]) => {
     const sharedTribes = presence.tribes.filter(t => myTribeNames.includes(t));
     const sharedMusic = presence.musicStyles.filter(m => myStyleNames.includes(m));
@@ -415,7 +452,7 @@ const Presence = () => {
       return true;
     });
 
-    // Sort: boosted first, then active users by compatibility, then inactive by last connection
+    // MVP Algorithm: boosted first, then active by affinity score, then inactive by recency
     return filtered.sort((a, b) => {
       const aIsBoosted = boostedIds.has(a.profile?.id || "");
       const bIsBoosted = boostedIds.has(b.profile?.id || "");
@@ -436,16 +473,16 @@ const Presence = () => {
       if (aIsActive && !bIsActive) return -1;
       if (!aIsActive && bIsActive) return 1;
       
-      // Among active users, sort by compatibility
+      // Among active users, sort by MVP affinity score (city → looking for → vibes → interests/music)
       if (aIsActive && bIsActive) {
-        return getCompatibility(b) - getCompatibility(a);
+        return getAffinityScore(b) - getAffinityScore(a);
       }
       
-      // Among inactive users, sort by last connection (most recent first)
+      // Among inactive users, sort by affinity first, then recency
+      const affinityDiff = getAffinityScore(b) - getAffinityScore(a);
+      if (affinityDiff !== 0) return affinityDiff;
       return bLastPulse - aLastPulse;
     });
-    
-    return filtered;
   }, [otherProfiles, filters, myTribeNames, myStyleNames, activeBoostedData?.boostedIds, visitedMap, photosMap]);
 
   // Auto-scroll to center profile cards when loaded
