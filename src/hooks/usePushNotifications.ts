@@ -43,7 +43,7 @@ export function usePushNotifications() {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
+      const subscription = await (registration as any).pushManager.getSubscription();
       
       if (subscription) {
         // Verify it exists in database - use maybeSingle to avoid 406 errors
@@ -102,7 +102,7 @@ export function usePushNotifications() {
       const keyArray = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
       const applicationServerKey = new Uint8Array(keyArray).buffer as ArrayBuffer;
       
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: applicationServerKey,
       });
@@ -151,7 +151,7 @@ export function usePushNotifications() {
       setIsLoading(true);
 
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
+      const subscription = await (registration as any).pushManager.getSubscription();
 
       if (subscription) {
         // Remove from database first
