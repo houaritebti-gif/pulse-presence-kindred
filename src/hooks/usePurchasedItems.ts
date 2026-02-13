@@ -199,13 +199,11 @@ export function useVisibilityBoost() {
   };
 }
 
-// Hook for second chance availability
+// Second chance feature removed - kept as stub for backward compatibility
 export function useSecondChance() {
-  const { getAvailableQuantity, useItem } = usePurchasedItems();
-  
   return {
-    availableSecondChances: getAvailableQuantity("second_chance"),
-    useSecondChance: () => useItem("second_chance"),
+    availableSecondChances: 0,
+    useSecondChance: () => Promise.resolve(),
   };
 }
 

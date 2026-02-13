@@ -68,55 +68,55 @@ export type TribeType = typeof TRIBES[number]["value"];
 export const MUSIC_CATEGORIES = [
   {
     name: "Oscura / alternativa",
-    styles: ["Post-punk", "Darkwave", "Coldwave", "Gothic", "Industrial", "Deathrock", "Batcave", "Ethereal wave", "Dark ambient", "Witch house"],
+    styles: ["Post-punk", "Darkwave", "Gothic", "Industrial"],
   },
   {
     name: "Rock / guitarras",
-    styles: ["Rock", "Punk", "Garage", "Grunge", "Indie rock", "Hard rock", "Metal", "Hardcore", "Emo", "Post-rock", "Shoegaze", "Noise rock", "Stoner rock", "Math rock", "Progressive rock", "Psychedelic rock"],
+    styles: ["Rock", "Punk", "Grunge", "Indie rock", "Metal", "Shoegaze", "Post-rock"],
   },
   {
     name: "Electrónica / club",
-    styles: ["Techno", "House", "EBM", "Electro", "Acid", "Minimal", "Deep house", "Tech house", "Trance", "Drum and bass", "Dubstep", "Breakbeat", "UK garage", "Hardstyle", "Gabber", "Footwork", "Jungle"],
+    styles: ["Techno", "House", "EBM", "Electro", "Minimal", "Trance", "Drum and bass"],
   },
   {
     name: "Pop / alternativo",
-    styles: ["Indie pop", "Synth-pop", "New wave", "Dream pop", "Art pop", "Electropop", "Chamber pop", "Hyperpop", "K-pop", "J-pop", "Britpop"],
+    styles: ["Indie pop", "Synth-pop", "New wave", "Dream pop", "K-pop"],
   },
   {
     name: "Urbana / hip hop",
-    styles: ["Hip hop", "Trap", "R&B", "Rap", "Drill", "Grime", "Lo-fi hip hop", "Cloud rap", "Old school hip hop", "Boom bap"],
+    styles: ["Hip hop", "Trap", "R&B", "Rap"],
   },
   {
     name: "Latina / reggaetón",
-    styles: ["Reggaeton", "Dembow", "Perreo", "Latin trap", "Urbano latino", "Neo-perreo"],
+    styles: ["Reggaeton", "Latin trap", "Neo-perreo"],
   },
   {
-    name: "Tropical / tradicional latina",
-    styles: ["Salsa", "Bachata", "Cumbia", "Merengue", "Son cubano", "Bolero", "Tango", "Bossa nova", "Samba", "Vallenato", "Banda", "Norteño", "Regional mexicano", "Flamenco"],
+    name: "Tropical / tradicional",
+    styles: ["Salsa", "Cumbia", "Tango", "Bossa nova", "Flamenco"],
   },
   {
-    name: "Americana / raíz",
-    styles: ["Folk", "Country", "Americana", "Bluegrass", "Blues", "Gospel", "Roots rock"],
+    name: "Folk / raíz",
+    styles: ["Folk", "Country", "Blues"],
   },
   {
     name: "Reggae / dub",
-    styles: ["Reggae", "Dub", "Dancehall", "Ska", "Rocksteady"],
+    styles: ["Reggae", "Dub", "Ska"],
   },
   {
     name: "Jazz / soul / funk",
-    styles: ["Jazz", "Soul", "Funk", "Neo-soul", "Acid jazz", "Free jazz", "Bebop", "Smooth jazz", "Motown", "Disco", "Boogie"],
+    styles: ["Jazz", "Soul", "Funk", "Disco", "Neo-soul"],
   },
   {
     name: "Clásica / orquestal",
-    styles: ["Clásica", "Ópera", "Barroco", "Romántica", "Contemporánea", "Minimalismo", "Orquestal", "Música de cámara", "Banda sonora"],
+    styles: ["Clásica", "Ópera", "Banda sonora"],
   },
   {
     name: "Mundial / étnica",
-    styles: ["Afrobeat", "Afropop", "World music", "Tribal", "Middle Eastern", "Música árabe", "Música india", "Celtic", "Música africana", "Música asiática"],
+    styles: ["Afrobeat", "World music", "Celtic"],
   },
   {
     name: "Experimental / otros",
-    styles: ["Experimental", "Electrónica alternativa", "Ambient", "Drone", "Noise", "Avant-garde", "Vaporwave", "Glitch", "IDM", "Field recordings", "Música concreta"],
+    styles: ["Experimental", "Ambient", "Vaporwave", "IDM"],
   },
 ] as const;
 

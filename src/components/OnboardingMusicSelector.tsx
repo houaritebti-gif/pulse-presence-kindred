@@ -87,7 +87,7 @@ const OnboardingMusicSelector = ({
                   whileHover={{ scale: isDisabled ? 1 : 1.05 }}
                   whileTap={{ scale: isDisabled ? 1 : 0.95 }}
                   className={cn(
-                    "px-3 py-1.5 rounded-full text-xs transition-all duration-150",
+                    "px-3.5 py-2 rounded-full text-sm transition-all duration-150",
                     "flex items-center gap-1 touch-manipulation",
                     isSelected
                       ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"

@@ -93,7 +93,7 @@ const tierConfig: Record<SubscriptionTier, {
       { text: "Modo Invisible: ver sin ser visto", icon: <EyeOff className="w-4 h-4" />, highlight: true },
       { text: "Presencia en tiempo real", icon: <Radio className="w-4 h-4" />, highlight: true },
       { text: "Mensajes premium con ✨", icon: <Sparkles className="w-4 h-4" />, highlight: true },
-      { text: "Segunda oportunidad de mensaje", icon: <MessageCircle className="w-4 h-4" />, highlight: true },
+      { text: "Mensajes premium con ✨", icon: <Sparkles className="w-4 h-4" />, highlight: true },
       { text: "Chatbot IA personalizado" },
       { text: "Crear quedadas ilimitadas" },
       { text: "Eliminar tus quedadas" },
@@ -418,10 +418,10 @@ const Subscription = () => {
               </div>
               
               <div className="flex items-center gap-3 p-3 rounded-xl bg-card-foreground/5">
-                <MessageCircle className="w-5 h-5 text-amber-400" />
+                <Crown className="w-5 h-5 text-amber-400" />
                 <div>
-                  <h4 className="font-medium text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>2ª Oportunidad</h4>
-                  <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>Reenvía si no responden</p>
+                  <h4 className="font-medium text-sm text-card-foreground" style={{ fontFamily: 'Arial, sans-serif' }}>Badge Dorado</h4>
+                  <p className="text-xs text-card-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>Muestra tu estatus</p>
                 </div>
               </div>
 

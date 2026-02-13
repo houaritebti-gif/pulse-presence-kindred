@@ -26,7 +26,7 @@ const PremiumBadge = ({ size = "md", showTooltip = true }: PremiumBadgeProps) =>
 
   const badge = (
     <div 
-      className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30 ring-1 ring-amber-300/50`}
+      className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/30 ring-1 ring-primary/50`}
     >
       <Crown className={`${iconSizes[size]} text-white drop-shadow-sm`} />
     </div>
