@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { 
-  User, MapPin, Calendar, Heart, Sparkles, Music, 
-  Users, Target, FileText, Check, Edit2 
+  MapPin, Calendar, Heart, Sparkles, Music, 
+  Users, Target, Check, Edit2 
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ interface OnboardingSummaryProps {
   selectedGender: GenderType | null;
   selectedGenderPreferences: GenderType[];
   selectedInterests: string[];
-  selectedVibe: string | null;
+  selectedVibes: string[];
   selectedTribes: string[];
   selectedMusicStyles: string[];
   selectedLookingFor: string[];
@@ -34,7 +34,7 @@ const OnboardingSummary = ({
   selectedGender,
   selectedGenderPreferences,
   selectedInterests,
-  selectedVibe,
+  selectedVibes,
   selectedTribes,
   selectedMusicStyles,
   selectedLookingFor,
@@ -42,7 +42,6 @@ const OnboardingSummary = ({
   avatarUrl,
   onEditStep,
 }: OnboardingSummaryProps) => {
-  // Calculate age
   const calculateAge = (birthdateStr: string): number => {
     const today = new Date();
     const birth = new Date(birthdateStr);
@@ -57,17 +56,14 @@ const OnboardingSummary = ({
   const age = birthdate && !birthdate.includes("0000") ? calculateAge(birthdate) : null;
   const fullCity = zone ? `${city} - ${zone}` : city;
   
-  // Get gender label
   const genderLabel = selectedGender 
     ? ALL_GENDERS.find(g => g.value === selectedGender)?.label 
     : null;
 
-  // Get vibe with emoji
-  const vibeData = selectedVibe 
-    ? VIBES.find(v => v.value === selectedVibe) 
-    : null;
+  const vibesData = selectedVibes.map(v => 
+    VIBES.find(vibe => vibe.value === v)
+  ).filter(Boolean);
 
-  // Get tribes with emojis
   const tribesData = selectedTribes.map(t => 
     TRIBES.find(tribe => tribe.value === t)
   ).filter(Boolean);
@@ -76,9 +72,7 @@ const OnboardingSummary = ({
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.05,
-      },
+      transition: { staggerChildren: 0.05 },
     },
   };
 
@@ -87,6 +81,7 @@ const OnboardingSummary = ({
     visible: { opacity: 1, y: 0 },
   };
 
+  // Map summary fields to their edit step numbers in the new flow
   const SummaryRow = ({ 
     icon: Icon, 
     label, 
@@ -94,7 +89,7 @@ const OnboardingSummary = ({
     step,
     badges,
   }: { 
-    icon: typeof User; 
+    icon: typeof MapPin; 
     label: string; 
     value?: string | null;
     step: number;
@@ -158,7 +153,7 @@ const OnboardingSummary = ({
           <Avatar className="w-24 h-24 border-4 border-primary/20 shadow-lg">
             <AvatarImage src={avatarUrl || undefined} alt={name} />
             <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-              {name.charAt(0).toUpperCase()}
+              {name.charAt(0).toUpperCase() || "K"}
             </AvatarFallback>
           </Avatar>
           <motion.div
@@ -170,13 +165,13 @@ const OnboardingSummary = ({
             <Check className="w-4 h-4 text-primary-foreground" />
           </motion.div>
         </div>
-        <h2 className="text-xl font-bold">{name}</h2>
+        <h2 className="text-xl font-bold">{name || "Tu perfil"}</h2>
         <p className="text-muted-foreground text-sm">
           {age && `${age} años · `}{fullCity}
         </p>
       </motion.div>
 
-      {/* Summary list */}
+      {/* Summary list – step numbers map to the new 7-step flow */}
       <motion.div 
         className="flex-1 overflow-y-auto -mx-1 px-1"
         variants={containerVariants}
@@ -185,55 +180,69 @@ const OnboardingSummary = ({
       >
         <div className="bg-card/50 rounded-2xl border border-border/40 p-4">
           <SummaryRow 
-            icon={User} 
-            label="Género" 
-            value={genderLabel}
-            step={4}
+            icon={Target} 
+            label="Buscas" 
+            step={1}
+            badges={selectedLookingFor}
+          />
+          <SummaryRow 
+            icon={Calendar} 
+            label="Edad" 
+            value={age ? `${age} años` : null}
+            step={2}
+          />
+          <SummaryRow 
+            icon={Sparkles} 
+            label="Vibras" 
+            step={3}
+            badges={vibesData.map(v => v ? `${v.emoji} ${v.value}` : "")}
           />
           <SummaryRow 
             icon={Heart} 
-            label="Conectas con" 
-            step={5}
+            label="Quieres ver" 
+            step={4}
             badges={selectedGenderPreferences.map(g => 
               ALL_GENDERS.find(gender => gender.value === g)?.label || g
             )}
           />
           <SummaryRow 
-            icon={Sparkles} 
-            label="Intereses" 
-            step={6}
-            badges={selectedInterests}
+            icon={MapPin} 
+            label="Ciudad" 
+            value={fullCity}
+            step={5}
           />
-          <SummaryRow 
-            icon={Sparkles} 
-            label="Tu vibra" 
-            value={vibeData ? `${vibeData.emoji} ${vibeData.value}` : null}
-            step={7}
-          />
-          <SummaryRow 
-            icon={Users} 
-            label="Tus tribus" 
-            step={8}
-            badges={tribesData.map(t => t ? `${t.emoji} ${t.value}` : "")}
-          />
-          <SummaryRow 
-            icon={Music} 
-            label="Tu música" 
-            step={9}
-            badges={selectedMusicStyles}
-          />
-          <SummaryRow 
-            icon={Target} 
-            label="Buscas" 
-            step={10}
-            badges={selectedLookingFor}
-          />
-          <SummaryRow 
-            icon={FileText} 
-            label="Bio" 
-            value={bio || null}
-            step={11}
-          />
+          {genderLabel && (
+            <SummaryRow 
+              icon={Heart} 
+              label="Género" 
+              value={genderLabel}
+              step={4}
+            />
+          )}
+          {selectedTribes.length > 0 && (
+            <SummaryRow 
+              icon={Users} 
+              label="Tribus" 
+              step={7}
+              badges={tribesData.map(t => t ? `${t.emoji} ${t.value}` : "")}
+            />
+          )}
+          {selectedMusicStyles.length > 0 && (
+            <SummaryRow 
+              icon={Music} 
+              label="Música" 
+              step={7}
+              badges={selectedMusicStyles}
+            />
+          )}
+          {selectedInterests.length > 0 && (
+            <SummaryRow 
+              icon={Sparkles} 
+              label="Intereses" 
+              step={7}
+              badges={selectedInterests}
+            />
+          )}
         </div>
       </motion.div>
 

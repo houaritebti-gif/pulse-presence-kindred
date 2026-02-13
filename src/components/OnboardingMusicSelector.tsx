@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Music, Check } from "lucide-react";
-import { MUSIC_CATEGORIES } from "@/constants/profileOptions";
+import { MUSIC_STYLES } from "@/constants/profileOptions";
 import { triggerHaptic } from "@/utils/haptics";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -14,7 +14,7 @@ interface OnboardingMusicSelectorProps {
 const OnboardingMusicSelector = ({
   selectedStyles,
   onToggleStyle,
-  maxStyles = 5,
+  maxStyles = 3,
 }: OnboardingMusicSelectorProps) => {
   const handleToggle = (style: string) => {
     if (!selectedStyles.includes(style) && selectedStyles.length >= maxStyles) {
@@ -26,13 +26,14 @@ const OnboardingMusicSelector = ({
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 8 },
+    hidden: { opacity: 0, scale: 0.9 },
     visible: { 
       opacity: 1, 
-      y: 0, 
+      scale: 1, 
       transition: { 
-        type: "tween" as const,
-        duration: 0.15,
+        type: "spring" as const,
+        stiffness: 300,
+        damping: 25,
       }
     },
   };
@@ -42,7 +43,7 @@ const OnboardingMusicSelector = ({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.03,
+        staggerChildren: 0.05,
         delayChildren: 0.05,
       },
     },
@@ -50,81 +51,78 @@ const OnboardingMusicSelector = ({
 
   return (
     <motion.div 
-      className="space-y-5 max-h-[50vh] overflow-y-auto overscroll-contain scrollbar-hide"
+      className="space-y-4"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {MUSIC_CATEGORIES.map((category, categoryIndex) => (
-        <motion.div 
-          key={category.name}
-          variants={itemVariants}
-          className="space-y-2.5"
-        >
-          {/* Category header */}
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Music className="w-3.5 h-3.5" />
-            <h3 
-              className="text-xs font-bold uppercase tracking-wide"
-              style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
+      {/* Hint */}
+      <motion.div 
+        className="flex items-center gap-2 text-muted-foreground mb-3"
+        variants={itemVariants}
+      >
+        <Music className="w-4 h-4" />
+        <span className="text-sm">Elige hasta {maxStyles} estilos (opcional)</span>
+      </motion.div>
+
+      {/* Music styles as cards */}
+      <div className="grid grid-cols-2 gap-3">
+        {MUSIC_STYLES.map((style) => {
+          const isSelected = selectedStyles.includes(style.value);
+          const isDisabled = !isSelected && selectedStyles.length >= maxStyles;
+
+          return (
+            <motion.button
+              key={style.value}
+              type="button"
+              onClick={() => handleToggle(style.value)}
+              disabled={isDisabled}
+              variants={itemVariants}
+              whileHover={{ scale: isDisabled ? 1 : 1.03 }}
+              whileTap={{ scale: isDisabled ? 1 : 0.97 }}
+              className={cn(
+                "relative p-4 rounded-2xl text-sm transition-all duration-200",
+                "flex flex-col items-center justify-center gap-2 min-h-[90px]",
+                "border-2 touch-manipulation",
+                isSelected
+                  ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/25"
+                  : "bg-card text-card-foreground border-border/40 hover:border-primary/40 hover:bg-primary/5",
+                isDisabled && "opacity-40 cursor-not-allowed"
+              )}
             >
-              {category.name}
-            </h3>
-          </div>
+              <AnimatePresence>
+                {isSelected && (
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center"
+                  >
+                    <Check className="w-3 h-3" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-          {/* Styles chips */}
-          <div className="flex flex-wrap gap-2">
-            {category.styles.map((style) => {
-              const isSelected = selectedStyles.includes(style);
-              const isDisabled = !isSelected && selectedStyles.length >= maxStyles;
-              
-              return (
-                <motion.button
-                  key={style}
-                  type="button"
-                  onClick={() => handleToggle(style)}
-                  disabled={isDisabled}
-                  whileHover={{ scale: isDisabled ? 1 : 1.05 }}
-                  whileTap={{ scale: isDisabled ? 1 : 0.95 }}
-                  className={cn(
-                    "px-3.5 py-2 rounded-full text-sm transition-all duration-150",
-                    "flex items-center gap-1 touch-manipulation",
-                    isSelected
-                      ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                      : "bg-card text-card-foreground hover:bg-card/80 border border-border/30",
-                    isDisabled && "opacity-40 cursor-not-allowed"
-                  )}
-                >
-                  {style}
-                  {isSelected && <Check className="w-3 h-3 ml-0.5" />}
-                </motion.button>
-              );
-            })}
-          </div>
-        </motion.div>
-      ))}
+              <span className="text-2xl">{style.emoji}</span>
+              <span className="font-semibold text-xs text-center leading-tight">{style.value}</span>
+            </motion.button>
+          );
+        })}
+      </div>
 
-      {/* Sticky counter */}
+      {/* Counter */}
       <AnimatePresence>
         {selectedStyles.length > 0 && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="sticky bottom-0 bg-background/95 backdrop-blur-sm py-3 border-t border-border/50"
+            className="text-center pt-2"
           >
-            <div className="flex items-center justify-center gap-2">
-              <Music className="w-4 h-4 text-primary" />
-              <span className={cn(
-                "text-sm font-medium",
-                selectedStyles.length >= maxStyles ? "text-primary" : "text-foreground"
-              )}>
-                {selectedStyles.length}/{maxStyles} estilos
-              </span>
-              {selectedStyles.length >= maxStyles && (
-                <span className="text-xs text-primary/70">(máximo alcanzado)</span>
-              )}
-            </div>
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm">
+              <Music className="w-4 h-4" />
+              {selectedStyles.length}/{maxStyles} estilos
+            </span>
           </motion.div>
         )}
       </AnimatePresence>

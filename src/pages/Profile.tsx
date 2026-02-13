@@ -457,9 +457,9 @@ const Profile = () => {
       if (prev.includes(style)) {
         return prev.filter(s => s !== style);
       }
-      // Max 5 styles
-      if (prev.length >= 5) {
-        toast.error("Máximo 5 estilos de música");
+      // Max 3 styles
+      if (prev.length >= 3) {
+        toast.error("Máximo 3 estilos de música");
         return prev;
       }
       return [...prev, style];
@@ -1116,7 +1116,7 @@ const Profile = () => {
           <InterestsSelector
             selectedInterests={selectedInterests}
             onToggleInterest={toggleInterest}
-            maxInterests={10}
+            maxInterests={5}
             minInterests={3}
             showCounter={true}
             variant="profile"
@@ -1134,7 +1134,7 @@ const Profile = () => {
                 Tu música
               </h2>
               <span className="text-xs text-muted-foreground">
-                ({selectedMusicStyles.length}/5)
+                ({selectedMusicStyles.length}/3)
               </span>
             </div>
             {musicExpanded ? (
@@ -1158,28 +1158,19 @@ const Profile = () => {
           )}
           
           {musicExpanded && (
-            <div className="space-y-4">
-              {MUSIC_CATEGORIES.map(category => (
-                <div key={category.name}>
-                  <h3 className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-2">
-                    {category.name}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {category.styles.map(style => (
-                      <button
-                        key={style}
-                        onClick={() => { triggerHaptic('selection'); toggleMusicStyle(style); }}
-                        className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
-                          selectedMusicStyles.includes(style)
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
-                        }`}
-                      >
-                        {style}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            <div className="flex flex-wrap gap-2">
+              {MUSIC_CATEGORIES.flatMap(c => c.styles).map(style => (
+                <button
+                  key={style}
+                  onClick={() => { triggerHaptic('selection'); toggleMusicStyle(style); }}
+                  className={`px-3 py-1.5 rounded-full font-body text-sm transition-all ${
+                    selectedMusicStyles.includes(style)
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/70"
+                  }`}
+                >
+                  {style}
+                </button>
               ))}
             </div>
           )}
