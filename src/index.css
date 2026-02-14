@@ -30,14 +30,14 @@
     /* 🖤 KIKI Black #111111 = 0 0% 7% */
     /* 🤍 KIKI Milk #FFF6F2 = 17 100% 97% */
 
-    --background: 349 30% 95%;
-    --foreground: 240 5% 10%;
+    --background: 349 42% 82%;
+    --foreground: 0 0% 7%;
 
-    --card: 349 20% 97%;
-    --card-foreground: 240 5% 10%;
+    --card: 349 35% 90%;
+    --card-foreground: 0 0% 7%;
 
-    --popover: 349 20% 93%;
-    --popover-foreground: 240 5% 10%;
+    --popover: 349 35% 88%;
+    --popover-foreground: 0 0% 7%;
 
     --primary: 349 49% 67%;
     --primary-foreground: 0 0% 100%;
@@ -104,13 +104,13 @@
   }
 
   .dark {
-    --background: 240 5% 10%;
+    --background: 349 20% 13%;
     --foreground: 0 0% 98%;
 
-    --card: 240 3% 15%;
+    --card: 349 15% 17%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 5% 26%;
+    --popover: 349 18% 15%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 349 55% 72%;
@@ -128,8 +128,8 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 85% 97%;
 
-    --border: 240 5% 33%;
-    --input: 240 5% 33%;
+    --border: 349 12% 25%;
+    --input: 349 12% 25%;
     --ring: 349 55% 72%;
 
     /* Dark mode specific tokens */
@@ -143,20 +143,20 @@
     --kiki-grey: 0 0% 60%;
     --kiki-glow: 349 55% 55%;
 
-    --sidebar-background: 0 0% 8%;
+    --sidebar-background: 349 20% 10%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 349 55% 72%;
     --sidebar-primary-foreground: 349 80% 15%;
     --sidebar-accent: 349 55% 72%;
     --sidebar-accent-foreground: 349 40% 18%;
-    --sidebar-border: 240 5% 33%;
+    --sidebar-border: 349 12% 25%;
     --sidebar-ring: 349 55% 72%;
     --chart-1: 349 40% 80%;
     --chart-2: 355 82% 56%;
     --chart-3: 349 55% 72%;
     --chart-4: 349 50% 65%;
-    --chart-5: 240 5% 33%;
-    --sidebar: 240 3% 15%;
+    --chart-5: 349 10% 30%;
+    --sidebar: 349 15% 17%;
     --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
     --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
     --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
