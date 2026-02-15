@@ -293,8 +293,8 @@ const PublicProfile = () => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="inline-flex items-center gap-1 text-muted-foreground text-sm cursor-help">
-                          <span>{zodiac.emoji}</span>
+                        <span className="inline-flex items-center gap-1 text-muted-foreground text-base cursor-help">
+                          <span className="text-lg">{zodiac.emoji}</span>
                           <span>{zodiac.name}</span>
                         </span>
                       </TooltipTrigger>
@@ -314,7 +314,7 @@ const PublicProfile = () => {
                     {((profile as any).show_zodiac !== false) && getZodiacSign((profile as any).birthdate) && (
                       <span className="text-foreground/30">·</span>
                     )}
-                    <span className="text-muted-foreground text-sm">
+                    <span className="text-muted-foreground text-base">
                       Nacido en {birthYear}
                     </span>
                   </>
@@ -326,7 +326,7 @@ const PublicProfile = () => {
           {/* Compact info row: vibe + city + organizer */}
           <div className="flex items-center justify-center gap-2 flex-wrap mt-1.5">
             {profile.vibe && (
-              <span className="font-body text-primary text-sm">
+              <span className="font-body text-primary text-base font-medium">
                 Vibra {profile.vibe.toLowerCase()}
               </span>
             )}
@@ -334,8 +334,8 @@ const PublicProfile = () => {
               <span className="text-foreground/30">·</span>
             )}
             {profile.city && (
-              <span className="flex items-center gap-1 text-foreground/70 text-sm">
-                <MapPin className="w-3 h-3" />
+              <span className="flex items-center gap-1 text-foreground/70 text-base">
+                <MapPin className="w-3.5 h-3.5" />
                 {profile.city}
               </span>
             )}
