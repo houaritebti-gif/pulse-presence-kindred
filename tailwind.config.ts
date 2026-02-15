@@ -27,14 +27,11 @@ export default {
   				'Poppins',
   				'ui-sans-serif',
   				'system-ui',
-  				'-apple-system',
-  				'BlinkMacSystemFont',
-  				'Segoe UI',
-  				'Roboto',
-  				'Helvetica Neue',
-  				'Arial',
-  				'Noto Sans',
-  				'sans-serif'
+  				'sans-serif',
+  				'Apple Color Emoji',
+  				'Segoe UI Emoji',
+  				'Segoe UI Symbol',
+  				'Noto Color Emoji'
   			],
   			serif: [
   				'Merriweather',
@@ -257,7 +254,7 @@ export default {
   					transform: 'scale(1.15)'
   				}
   			},
-  			'float': {
+  			float: {
   				'0%, 100%': {
   					transform: 'translateY(0px)'
   				},
@@ -275,7 +272,7 @@ export default {
   					transform: 'translateY(0)'
   				}
   			},
-  			'glow': {
+  			glow: {
   				'0%, 100%': {
   					boxShadow: '0 0 20px hsl(var(--kiki-pink) / 0.3)'
   				},
@@ -294,7 +291,7 @@ export default {
   					backgroundPosition: '0% 50%'
   				}
   			},
-  			'shimmer': {
+  			shimmer: {
   				'0%': {
   					transform: 'translateX(-100%)'
   				},
@@ -350,7 +347,7 @@ export default {
   					boxShadow: '0 0 20px 8px hsl(45 93% 47% / 0.4)'
   				}
   			},
-  			'press': {
+  			press: {
   				'0%': {
   					transform: 'scale(1)'
   				},
@@ -361,7 +358,7 @@ export default {
   					transform: 'scale(1)'
   				}
   			},
-  			'tap': {
+  			tap: {
   				'0%, 100%': {
   					transform: 'scale(1)',
   					opacity: '1'
@@ -413,7 +410,7 @@ export default {
   					transform: 'scale(1) translateY(0)'
   				}
   			},
-  			'pop': {
+  			pop: {
   				'0%': {
   					transform: 'scale(1)'
   				},
@@ -424,7 +421,7 @@ export default {
   					transform: 'scale(1)'
   				}
   			},
-  			'wiggle': {
+  			wiggle: {
   				'0%, 100%': {
   					transform: 'rotate(0deg)'
   				},
@@ -435,7 +432,7 @@ export default {
   					transform: 'rotate(2deg)'
   				}
   			},
-  			'shake': {
+  			shake: {
   				'0%, 100%': {
   					transform: 'translateX(0)'
   				},
@@ -446,7 +443,7 @@ export default {
   					transform: 'translateX(4px)'
   				}
   			},
-  			'ripple': {
+  			ripple: {
   				'0%': {
   					transform: 'scale(0)',
   					opacity: '0.6'
@@ -466,7 +463,7 @@ export default {
   					transform: 'scale(1.1)'
   				}
   			},
-  			'orbit': {
+  			orbit: {
   				'0%': {
   					transform: 'rotate(0deg) translateX(16px) rotate(0deg)'
   				},
@@ -481,27 +478,27 @@ export default {
   			'pulse-soft': 'pulse-soft 3s ease-in-out infinite',
   			'badge-ping': 'badge-ping 0.6s ease-out',
   			'badge-bounce': 'badge-bounce 0.5s ease-out',
-  			'float': 'float 6s ease-in-out infinite',
+  			float: 'float 6s ease-in-out infinite',
   			'fade-up': 'fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards',
   			'stagger-fade-up': 'fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards',
-  			'glow': 'glow 2s ease-in-out infinite',
+  			glow: 'glow 2s ease-in-out infinite',
   			'gradient-shift': 'gradient-shift 4s ease infinite',
-  			'shimmer': 'shimmer 2s linear infinite',
+  			shimmer: 'shimmer 2s linear infinite',
   			'shimmer-badge': 'shimmer-badge 3s ease-in-out infinite',
   			'perfect-glow': 'perfect-glow 2s ease-in-out infinite',
   			'invisible-activate': 'invisible-activate 0.6s ease-out',
   			'invisible-glow': 'invisible-glow 1.5s ease-out',
-  			'press': 'press 0.15s ease-out',
-  			'tap': 'tap 0.1s ease-out',
+  			press: 'press 0.15s ease-out',
+  			tap: 'tap 0.1s ease-out',
   			'bounce-subtle': 'bounce-subtle 0.3s ease-out',
   			'bounce-tap': 'bounce-tap 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
   			'bounce-press': 'bounce-press 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-  			'pop': 'pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
-  			'wiggle': 'wiggle 0.3s ease-in-out',
-  			'shake': 'shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97)',
-  			'ripple': 'ripple 0.6s ease-out forwards',
+  			pop: 'pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+  			wiggle: 'wiggle 0.3s ease-in-out',
+  			shake: 'shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97)',
+  			ripple: 'ripple 0.6s ease-out forwards',
   			'super-spark-pulse': 'super-spark-pulse 1.5s ease-in-out infinite',
-  			'orbit': 'orbit 2s linear infinite'
+  			orbit: 'orbit 2s linear infinite'
   		},
   		animationDelay: {
   			'0': '0ms',

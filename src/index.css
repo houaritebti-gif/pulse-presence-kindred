@@ -1,6 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Merriweather&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap");
 
 /* KIKI Design System - Paleta Final */
 
@@ -42,14 +45,14 @@
     --primary: 344 80% 73%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 344 35% 40%;
+    --secondary: 0 72.2222% 50.5882%;
     --secondary-foreground: 0 0% 98%;
 
     --muted: 344 40% 85%;
     --muted-foreground: 0 0% 15%;
 
     --accent: 344 60% 93%;
-    --accent-foreground: 344 70% 40%;
+    --accent-foreground: 0 72.2222% 50.5882%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 85% 97%;
