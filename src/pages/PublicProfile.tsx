@@ -306,20 +306,7 @@ const PublicProfile = () => {
                 ) : null;
               })()}
               
-              {/* Birth year - only if show_birth_year is true */}
-              {((profile as any).show_birth_year !== false) && (() => {
-                const birthYear = getBirthYear((profile as any).birthdate);
-                return birthYear ? (
-                  <>
-                    {((profile as any).show_zodiac !== false) && getZodiacSign((profile as any).birthdate) && (
-                      <span className="text-foreground/30">·</span>
-                    )}
-                    <span className="text-muted-foreground text-base">
-                      Nacido en {birthYear}
-                    </span>
-                  </>
-                ) : null;
-              })()}
+              {/* Birth year removed - age is shown next to the name */}
             </div>
           )}
           
@@ -392,17 +379,17 @@ const PublicProfile = () => {
         {/* Looking for - Compact tags */}
         {(profile as any).looking_for && (profile as any).looking_for.length > 0 && (
           <div className="mb-5 animate-fade-up animate-delay-130">
-            <h2 className="font-display text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
-              <Target className="w-3.5 h-3.5" />
+            <h2 className="font-display text-sm font-semibold text-foreground mb-2.5 flex items-center gap-2">
+              <Target className="w-4 h-4" />
               Busca en KIKI
             </h2>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {((profile as any).looking_for as string[]).map((item: string) => {
                 const isShared = compatibility.sharedLookingFor.includes(item);
                 return (
                   <span 
                     key={item}
-                    className={`px-2.5 py-1 rounded-full font-body text-xs ${
+                    className={`px-3 py-1.5 rounded-full font-body text-sm ${
                       isShared 
                         ? "bg-secondary/80 text-secondary-foreground ring-1 ring-secondary" 
                         : "bg-secondary/40 text-secondary-foreground"

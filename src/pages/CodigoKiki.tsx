@@ -41,6 +41,11 @@ const codeRules: CodeRule[] = [
     description: "Usa fotos reales y recientes. La honestidad construye conexiones verdaderas."
   },
   {
+    icon: <Camera className="w-6 h-6 text-rose-500" />,
+    title: "Foto de perfil obligatoria y nítida",
+    description: "Tu foto de perfil debe ser real, clara y nítida. No se permiten fotos borrosas, de paisajes o sin rostro visible."
+  },
+  {
     icon: <HandHeart className="w-6 h-6 text-pink-500" />,
     title: "Acepta la diversidad",
     description: "KIKI es un espacio inclusivo para todas las identidades, orientaciones y formas de ser."
