@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Flame, MessageCircle, Sparkles, Loader2, X, BellOff } from "lucide-react";
+import { ArrowLeft, Zap, MessageCircle, Sparkles, Loader2, X, BellOff } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { useSparkChats, useExtinguishSpark, useSparkChatsRealtime } from "@/hooks/useSparks";
 import { useMutedSparkChats } from "@/hooks/useMutedSparkChats";
@@ -113,13 +113,13 @@ const Sparks = () => {
           <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-8">
             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse-soft" />
             <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center ring-2 ring-primary/20 ring-offset-4 ring-offset-background">
-              <Flame className="w-12 h-12 sm:w-14 sm:h-14 text-primary animate-spark-flame" />
+              <Zap className="w-12 h-12 sm:w-14 sm:h-14 text-primary animate-spark-flame" />
             </div>
             <Sparkles className="absolute -top-1 -right-1 w-6 h-6 text-primary/60 animate-pulse-soft" />
             <Sparkles className="absolute -bottom-2 -left-2 w-5 h-5 text-accent/50 animate-pulse-soft animate-delay-300" />
           </div>
           
-          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 tracking-tight">
             Tus chispas
           </h1>
           <p className="text-base sm:text-lg text-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>

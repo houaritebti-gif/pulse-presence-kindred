@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Bell, Calendar, Flame, Users, User, Ghost, CloudOff, UserPlus } from "lucide-react";
+import { Bell, Calendar, Zap, Users, User, Ghost, CloudOff, UserPlus } from "lucide-react";
 import { useNavBadgeCounts } from "@/hooks/useNavBadgeCounts";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
@@ -150,7 +150,7 @@ export const BottomNavigation = () => {
       path: "/presence",
     },
     {
-      icon: <Flame className="w-5 h-5" />,
+      icon: <Zap className="w-5 h-5" />,
       label: "Chispas",
       path: "/sparks",
       badge: unreadSparkCount > 0 ? unreadSparkCount : undefined,
