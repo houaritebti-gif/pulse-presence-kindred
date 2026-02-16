@@ -54,7 +54,7 @@ const OnboardingOptionCard = ({
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
           isSelected
             ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/20"
-            : "bg-card text-card-foreground border-border/40 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md",
+            : "bg-foreground text-background border-foreground/80 hover:border-primary/60 hover:shadow-md",
           className
         )}
       >
@@ -95,7 +95,7 @@ const OnboardingOptionCard = ({
           "flex items-center gap-1.5 touch-manipulation active:scale-95",
           isSelected
             ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-            : "bg-card text-card-foreground hover:bg-card/80 border border-border/30",
+            : "bg-foreground text-background hover:bg-foreground/90 border border-foreground/80",
           className
         )}
       >
@@ -119,7 +119,7 @@ const OnboardingOptionCard = ({
         "border border-transparent",
         isSelected
           ? "bg-primary text-primary-foreground shadow-md shadow-primary/15"
-          : "bg-card text-card-foreground hover:bg-card/80 border-border/20",
+          : "bg-foreground text-background hover:bg-foreground/90 border-foreground/80",
         className
       )}
     >
