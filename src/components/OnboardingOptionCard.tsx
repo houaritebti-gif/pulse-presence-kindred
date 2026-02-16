@@ -53,7 +53,7 @@ const OnboardingOptionCard = ({
           "border-2 shadow-sm touch-manipulation",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
           isSelected
-            ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/20"
+            ? "bg-secondary text-secondary-foreground border-secondary shadow-lg shadow-secondary/20"
             : "bg-foreground text-background border-foreground/80 hover:border-primary/60 hover:shadow-md",
           className
         )}
@@ -94,7 +94,7 @@ const OnboardingOptionCard = ({
           "px-4 py-2.5 rounded-full text-sm transition-all duration-200",
           "flex items-center gap-1.5 touch-manipulation active:scale-95",
           isSelected
-            ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+            ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/20"
             : "bg-foreground text-background hover:bg-foreground/90 border border-foreground/80",
           className
         )}
@@ -118,7 +118,7 @@ const OnboardingOptionCard = ({
         "flex items-center justify-between touch-manipulation",
         "border border-transparent",
         isSelected
-          ? "bg-primary text-primary-foreground shadow-md shadow-primary/15"
+          ? "bg-secondary text-secondary-foreground shadow-md shadow-secondary/15"
           : "bg-foreground text-background hover:bg-foreground/90 border-foreground/80",
         className
       )}
