@@ -75,7 +75,7 @@ const OnboardingLookingForSelector = ({
                 "border-2",
                 isSelected
                   ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/20"
-                  : "bg-card text-card-foreground border-border/40 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
+                  : "bg-foreground text-background border-foreground/80 hover:border-primary/60 hover:shadow-md"
               )}
             >
               <span className="text-lg">{option.emoji}</span>

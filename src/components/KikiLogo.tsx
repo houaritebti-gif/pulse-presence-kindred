@@ -8,10 +8,10 @@ interface KikiLogoProps {
 }
 
 const sizeMap = {
-  sm: "h-6",
-  md: "h-8 sm:h-10",
-  lg: "h-10 sm:h-12",
-  xl: "h-14 sm:h-16",
+  sm: "h-8",
+  md: "h-10 sm:h-12",
+  lg: "h-14 sm:h-16",
+  xl: "h-18 sm:h-20",
   hero: "h-64 md:h-72 lg:h-80",
 };
 
