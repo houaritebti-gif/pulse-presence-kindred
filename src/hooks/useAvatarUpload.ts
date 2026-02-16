@@ -165,10 +165,22 @@ export const useAvatarUpload = () => {
       }
 
       // Start upload phase
-      updateProgress("uploading", 0);
+      updateProgress("uploading", 5);
 
-      const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/avatar.jpg`;
+
+      // Simulate incremental progress during upload since Supabase doesn't provide native progress
+      let uploadDone = false;
+      const estimatedTime = Math.max(2000, compressedFile.size / 500); // estimate based on file size
+      const progressInterval = setInterval(() => {
+        if (!uploadDone) {
+          setUploadProgress(prev => {
+            const next = Math.min(prev + 5, 85);
+            onProgress?.("uploading", next);
+            return next;
+          });
+        }
+      }, estimatedTime / 15);
 
       // Upload compressed image to storage - with retry for reliability
       const uploadPromise = async () => {
@@ -181,12 +193,17 @@ export const useAvatarUpload = () => {
         if (uploadError) throw uploadError;
       };
 
-      await Promise.race([
-        withRetry(uploadPromise, safari ? 3 : 2, 2000),
-        createTimeout(timeouts.upload, "La subida de imagen")
-      ]);
+      try {
+        await Promise.race([
+          withRetry(uploadPromise, safari ? 3 : 2, 2000),
+          createTimeout(timeouts.upload, "La subida de imagen")
+        ]);
+      } finally {
+        uploadDone = true;
+        clearInterval(progressInterval);
+      }
 
-      updateProgress("uploading", 50);
+      updateProgress("uploading", 90);
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage

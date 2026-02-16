@@ -730,7 +730,7 @@ const Profile = () => {
       <div className="flex-1 max-w-lg mx-auto w-full">
         {/* Header - enlarged for mobile */}
         <div className="text-center mb-12 opacity-0 animate-fade-up" style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
-          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-3" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-3 tracking-tight">
             Tu perfil
           </h1>
           {organizedCount && organizedCount > 0 && (
@@ -750,7 +750,7 @@ const Profile = () => {
               </Tooltip>
             </TooltipProvider>
           )}
-          <p className="text-base sm:text-lg text-foreground/70" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-lg sm:text-xl text-foreground/70">
             Solo lo esencial. Nada más.
           </p>
         </div>
@@ -806,7 +806,7 @@ const Profile = () => {
           </button>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mb-6 font-body opacity-0 animate-fade-up" style={{ animationDelay: '125ms', animationFillMode: 'forwards' }}>
+        <p className="text-center text-sm text-muted-foreground mb-6 font-body opacity-0 animate-fade-up" style={{ animationDelay: '125ms', animationFillMode: 'forwards' }}>
           Esta foto se mostrará como tu avatar en chats
         </p>
 
