@@ -1046,7 +1046,7 @@ const Profile = () => {
                 }}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all flex items-center gap-2 ${
                   selectedLookingFor.includes(option.value)
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-secondary text-secondary-foreground"
                     : "bg-foreground text-background hover:bg-foreground/90"
                 }`}
               >
@@ -1080,7 +1080,7 @@ const Profile = () => {
                 }}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all flex items-center gap-2 ${
                   selectedVibes.includes(vibe.value)
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-secondary text-secondary-foreground"
                     : "bg-foreground text-background hover:bg-foreground/90"
                 }`}
               >
@@ -1103,7 +1103,7 @@ const Profile = () => {
                 onClick={() => { triggerHaptic('selection'); toggleTribe(tribe.value); }}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
                   selectedTribes.includes(tribe.value)
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-secondary text-secondary-foreground"
                     : "bg-foreground text-background hover:bg-foreground/90"
                 }`}
               >
@@ -1170,7 +1170,7 @@ const Profile = () => {
                   onClick={() => { triggerHaptic('selection'); toggleMusicStyle(style); }}
                   className={`px-3 py-1.5 rounded-full font-body text-sm transition-all ${
                     selectedMusicStyles.includes(style)
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-secondary text-secondary-foreground"
                       : "bg-foreground text-background hover:bg-foreground/90"
                   }`}
                 >
@@ -1205,7 +1205,7 @@ const Profile = () => {
                         onClick={() => { triggerHaptic('selection'); toggleOptionalDetail(detail.key); }}
                         className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
                           getOptionalDetailValue(detail.key) === true
-                            ? "bg-primary text-primary-foreground"
+                            ? "bg-secondary text-secondary-foreground"
                             : "bg-foreground text-background hover:bg-foreground/90"
                         }`}
                       >

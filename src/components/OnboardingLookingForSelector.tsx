@@ -74,7 +74,7 @@ const OnboardingLookingForSelector = ({
                 "flex items-center gap-2 touch-manipulation",
                 "border-2",
                 isSelected
-                  ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/20"
+                  ? "bg-secondary text-secondary-foreground border-secondary shadow-lg shadow-secondary/20"
                   : "bg-foreground text-background border-foreground/80 hover:border-primary/60 hover:shadow-md"
               )}
             >
