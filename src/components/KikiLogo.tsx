@@ -12,7 +12,7 @@ const sizeMap = {
   md: "h-8 sm:h-10",
   lg: "h-10 sm:h-12",
   xl: "h-14 sm:h-16",
-  hero: "h-48 md:h-56 lg:h-64",
+  hero: "h-64 md:h-72 lg:h-80",
 };
 
 export const KikiLogo = ({ size = "md", className = "" }: KikiLogoProps) => {
