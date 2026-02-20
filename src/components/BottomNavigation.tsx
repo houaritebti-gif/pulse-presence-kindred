@@ -162,7 +162,7 @@ export const BottomNavigation = () => {
       badge: unreadQuedadaCount > 0 ? unreadQuedadaCount : undefined,
     },
     {
-      icon: pendingConnectionCount > 0 ? <UserPlus className="w-5 h-5" /> : unreadGhostCount > 0 ? <Ghost className="w-5 h-5" /> : <Bell className="w-5 h-5" />,
+      icon: pendingConnectionCount > 0 ? <UserPlus className="w-5 h-5" /> : unreadGhostCount > 0 ? <Ghost className="w-5 h-5" /> : <Bell className={cn("w-5 h-5", totalAlertCount > 0 && "text-[#F2849E]")} />,
       label: "Alertas",
       path: "/notifications",
       badge: totalAlertCount > 0 ? totalAlertCount : undefined,
