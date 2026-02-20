@@ -268,11 +268,6 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
     prefersReducedMotion ? [0, 30, 60] : [0, 40, 120], 
     [0, 0.5, 1]
   );
-  const upIndicatorOpacity = useTransform(
-    y, 
-    prefersReducedMotion ? [-60, -30, 0] : [-120, -40, 0], 
-    [1, 0.5, 0]
-  );
   const downIndicatorOpacity = useTransform(
     y, 
     prefersReducedMotion ? [0, 30, 60] : [0, 40, 120], 
@@ -309,8 +304,8 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
     if (absX > 30 || absY > 30) {
       if (absX > absY) {
         setCurrentSwipeDirection(offset.x > 0 ? "right" : "left");
-      } else {
-        setCurrentSwipeDirection(offset.y > 0 ? "down" : "up");
+      } else if (offset.y > 0) {
+        setCurrentSwipeDirection("down");
       }
     } else {
       setCurrentSwipeDirection(null);
@@ -346,24 +341,14 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
         }
       }
     } else {
-      // Vertical swipe: up (super spark) or down (view profile)
-      // Use higher threshold to prevent accidental triggers during scroll
+      // Vertical swipe: down only (view profile)
       const verticalVelocityMet = Math.abs(velocity.y) > SWIPE_VERTICAL_VELOCITY_THRESHOLD;
       const verticalOffsetMet = absY > SWIPE_VERTICAL_THRESHOLD;
       
-      // Require BOTH significant offset AND velocity for vertical swipes
-      // This prevents accidental Super Chispa when user is just scrolling
-      if (verticalOffsetMet && verticalVelocityMet) {
-        if (offset.y < 0) {
-          // Swipe up - Super Chispa
-          setExitDirection("up");
-          triggerHaptic('success');
-          onSwipeUp?.();
-        } else {
-          // Swipe down - View profile
-          triggerHaptic('light');
-          onSwipeDown?.();
-        }
+      if (verticalOffsetMet && verticalVelocityMet && offset.y > 0) {
+        // Swipe down - View profile
+        triggerHaptic('light');
+        onSwipeDown?.();
       }
     }
   };
@@ -624,20 +609,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
           </div>
         </motion.div>
 
-        {/* UP - Super Chispa */}
-        <motion.div 
-          style={{ opacity: upIndicatorOpacity }}
-          className="absolute top-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
-        >
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 backdrop-blur-md border-2 border-purple-400 shadow-xl shadow-purple-500/40 animate-pulse">
-              <Flame className="w-8 h-8 text-white" />
-            </div>
-            <span className="text-xs font-medium text-white bg-gradient-to-r from-purple-600 to-blue-600 backdrop-blur-sm px-3 py-1 rounded-full">
-              Super Chispa 🔥
-            </span>
-          </div>
-        </motion.div>
+        {/* UP indicator removed - Super Chispa now only via long-press */}
 
         {/* DOWN - View Profile */}
         <motion.div 
@@ -667,12 +639,10 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                 "w-24 h-24 rounded-full flex items-center justify-center backdrop-blur-sm",
                 currentSwipeDirection === "left" && "bg-muted/70",
                 currentSwipeDirection === "right" && "bg-primary/70",
-                currentSwipeDirection === "up" && "bg-gradient-to-br from-purple-500/70 to-blue-500/70",
                 currentSwipeDirection === "down" && "bg-accent/70",
               )}>
                 {currentSwipeDirection === "left" && <X className="w-12 h-12 text-muted-foreground" />}
                 {currentSwipeDirection === "right" && <Sparkles className="w-12 h-12 text-primary-foreground" />}
-                {currentSwipeDirection === "up" && <Flame className="w-12 h-12 text-white" />}
                 {currentSwipeDirection === "down" && <User className="w-12 h-12 text-accent-foreground" />}
               </div>
             </motion.div>
