@@ -103,7 +103,7 @@ const OnboardingSummary = ({
         <Icon className="w-4 h-4 text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
+        <p className="text-xs text-muted-foreground/80 mb-0.5 font-medium">{label}</p>
         {badges && badges.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {badges.slice(0, 4).map((badge, i) => (
@@ -123,8 +123,8 @@ const OnboardingSummary = ({
           </div>
         ) : (
           <p className={cn(
-            "text-sm font-medium truncate",
-            !value && "text-muted-foreground italic"
+            "text-sm font-semibold truncate text-foreground",
+            !value && "text-muted-foreground italic font-medium"
           )}>
             {value || "No especificado"}
           </p>
@@ -178,7 +178,7 @@ const OnboardingSummary = ({
         initial="hidden"
         animate="visible"
       >
-        <div className="bg-card/50 rounded-2xl border border-border/40 p-4">
+        <div className="bg-card rounded-2xl border border-border/40 p-4 shadow-sm">
           <SummaryRow 
             icon={Target} 
             label="Buscas" 
