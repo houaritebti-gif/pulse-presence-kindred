@@ -144,24 +144,17 @@ export type OptionalDetailKey = typeof OPTIONAL_DETAILS[number]["key"];
 // LOOKING FOR – what you're searching for
 // ═══════════════════════════════════════════
 export const LOOKING_FOR_OPTIONS = [
-  { value: "Amistades", emoji: "👯" },
   { value: "Buenas vibras", emoji: "✨" },
-  { value: "Aventuras", emoji: "🚀" },
-  { value: "Pasar el rato", emoji: "🎉" },
   { value: "Conexiones reales", emoji: "💫" },
-  { value: "Lo que surja", emoji: "🌊" },
-  { value: "Relación seria", emoji: "💕" },
   { value: "Algo casual", emoji: "🔥" },
-  { value: "Compañero/a de actividades", emoji: "🎯" },
-  { value: "Networking", emoji: "🤝" },
-  { value: "Compañero/a de piso", emoji: "🏠" },
-  { value: "Colabs artísticas", emoji: "🎨" },
-  { value: "Buddy de gym", emoji: "💪" },
-  { value: "Compañero/a de viaje", emoji: "✈️" },
-  { value: "Cita para eventos", emoji: "🎭" },
-  { value: "Aprender idiomas", emoji: "🗣️" },
+  { value: "Relación seria", emoji: "💕" },
+  { value: "Just friends", emoji: "👯" },
+  { value: "Conexión sin compromiso", emoji: "🌊" },
+  { value: "Sin etiquetas", emoji: "🏷️" },
+  { value: "Aventuras", emoji: "🚀" },
+  { value: "Colaboraciones artísticas", emoji: "🎨" },
   { value: "Comunidad queer", emoji: "🌈" },
-  { value: "Mentoría", emoji: "📚" },
+  { value: "Cita para eventos", emoji: "🎭" },
 ] as const;
 
 // ═══════════════════════════════════════════
