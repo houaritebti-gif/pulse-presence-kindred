@@ -12,7 +12,7 @@ import ProfileSkeleton from "@/components/ProfileSkeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useProfileTribes, useProfileMusicStyles, useUpdateProfile, useUpdateTribes, useUpdateMusicStyles } from "@/hooks/useProfile";
 import { useOrganizedQuedadasCount } from "@/hooks/useQuedadas";
-import { useAvatarUpload } from "@/hooks/useAvatarUpload";
+
 import { toast } from "sonner";
 import { requestNotificationPermission, getNotificationPermission } from "@/utils/browserNotifications";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
@@ -31,10 +31,8 @@ import ProfileVisibilitySection from "@/components/ProfileVisibilitySection";
 import { LocationSettingsSection } from "@/components/LocationSettingsSection";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import ProfilePhotoManager from "@/components/ProfilePhotoManager";
-import UploadProgress from "@/components/UploadProgress";
 import ParallaxBackground from "@/components/ParallaxBackground";
 import IdentityVerificationCard from "@/components/IdentityVerificationCard";
-import ImageCropModal from "@/components/ImageCropModal";
 import GenderSelector from "@/components/GenderSelector";
 import GenderPreferencesSelector from "@/components/GenderPreferencesSelector";
 import BirthdateSelector from "@/components/BirthdateSelector";
@@ -149,8 +147,7 @@ const Profile = () => {
   const updateMusicStyles = useUpdateMusicStyles();
   const updateGenderPreferences = useUpdateGenderPreferences();
   const updateInterests = useUpdateInterests();
-  const { uploadAvatar, isUploading, uploadPhase, uploadProgress, errorMessage, resetState } = useAvatarUpload();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  
 
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
@@ -158,7 +155,7 @@ const Profile = () => {
   const [selectedTribes, setSelectedTribes] = useState<string[]>([]);
   const [selectedMusicStyles, setSelectedMusicStyles] = useState<string[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
   
@@ -312,7 +309,7 @@ const Profile = () => {
       setName(profile.name || "");
       setCity(profile.city || "Madrid");
       setSelectedVibes(profile.vibe ? [profile.vibe] : []);
-      setAvatarUrl(profile.avatar_url);
+      
       setShareTypingStatus(profile.share_typing_status !== false);
       setNotifyProfileVisits((profile as any).notify_profile_visits !== false);
       setBio((profile as any).bio || "");
@@ -361,68 +358,6 @@ const Profile = () => {
     }
   }, [genderPreferences]);
 
-  // Avatar crop state
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Solo se permiten imágenes");
-      return;
-    }
-
-    // Validate file size (max 10MB before crop)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("La imagen no puede superar 10MB");
-      return;
-    }
-
-    // Open crop modal
-    const imageUrl = URL.createObjectURL(file);
-    setImageToCrop(imageUrl);
-    setCropModalOpen(true);
-
-    // Reset input so same file can be selected again
-    e.target.value = "";
-  }, []);
-
-  const handleCropComplete = async (croppedBlob: Blob) => {
-    // Clean up object URL
-    if (imageToCrop) {
-      URL.revokeObjectURL(imageToCrop);
-    }
-    setImageToCrop(null);
-    setCropModalOpen(false);
-
-    // Create file from blob
-    const croppedFile = new File([croppedBlob], "avatar.jpg", {
-      type: "image/jpeg",
-    });
-
-    try {
-      const newUrl = await uploadAvatar(croppedFile);
-      setAvatarUrl(newUrl);
-      toast.success("Foto actualizada");
-    } catch (error: any) {
-      toast.error(error.message || "Error al subir la foto");
-    }
-  };
-
-  const handleCropClose = () => {
-    if (imageToCrop) {
-      URL.revokeObjectURL(imageToCrop);
-    }
-    setImageToCrop(null);
-    setCropModalOpen(false);
-  };
 
   useEffect(() => {
     if (tribes) {
@@ -755,60 +690,25 @@ const Profile = () => {
           </p>
         </div>
 
-        {/* Photo - Avatar circular (se mantiene para foto principal) */}
-        <div className="flex justify-center mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <button 
-            onClick={handleAvatarClick}
-            disabled={isUploading}
-            className="relative w-24 h-24 rounded-full bg-card flex items-center justify-center group transition-transform hover:scale-105 overflow-hidden"
-          >
-            {avatarUrl ? (
+        {/* Avatar circular - muestra la foto #1 de la galería */}
+        <div className="flex flex-col items-center mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
+          <div className="relative w-28 h-28 rounded-full bg-card flex items-center justify-center overflow-hidden ring-4 ring-primary/20 shadow-xl shadow-primary/10">
+            {photos && photos.length > 0 ? (
               <img 
-                src={avatarUrl} 
-                alt="Avatar" 
+                src={photos[0].photo_url} 
+                alt="Foto de perfil" 
                 className="w-full h-full object-cover"
               />
             ) : (
-              <Camera className="w-6 h-6 text-card-foreground/70 group-hover:text-card-foreground transition-colors" />
-            )}
-            {(isUploading || uploadPhase === "error") && (
-              <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
-                <UploadProgress 
-                  isVisible={true}
-                  phase={uploadPhase}
-                  progress={uploadProgress}
-                  errorMessage={errorMessage}
-                  onRetry={() => {
-                    resetState();
-                    fileInputRef.current?.click();
-                  }}
-                  className="scale-50"
-                />
+              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center">
+                <Camera className="w-8 h-8 text-muted-foreground" />
               </div>
             )}
-            <div className={`absolute inset-0 rounded-full border-2 transition-colors ${
-              avatarUrl 
-                ? "border-transparent group-hover:border-primary/50" 
-                : "border-dashed border-card-foreground/30 group-hover:border-card-foreground/50"
-            }`} />
-            {avatarUrl && (
-              <div className="absolute inset-0 bg-background/0 group-hover:bg-background/60 flex items-center justify-center transition-all">
-                <Camera className="w-5 h-5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            )}
-          </button>
+          </div>
+          <p className="text-center text-xs text-muted-foreground mt-2 font-body">
+            Tu foto #1 es tu foto de perfil
+          </p>
         </div>
-
-        <p className="text-center text-sm text-muted-foreground mb-6 font-body opacity-0 animate-fade-up" style={{ animationDelay: '125ms', animationFillMode: 'forwards' }}>
-          Esta foto se mostrará como tu avatar en chats
-        </p>
 
         {/* Photo Gallery Manager */}
         {profile && (
@@ -1546,14 +1446,6 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Avatar Crop Modal */}
-      <ImageCropModal
-        isOpen={cropModalOpen && !!imageToCrop}
-        onClose={handleCropClose}
-        imageSrc={imageToCrop || ""}
-        onCropComplete={handleCropComplete}
-        aspectRatio={1}
-      />
 
       {/* Footer */}
       <div className="mt-10 text-center opacity-0 animate-fade-up pb-4" style={{ animationDelay: '700ms', animationFillMode: 'forwards' }}>
