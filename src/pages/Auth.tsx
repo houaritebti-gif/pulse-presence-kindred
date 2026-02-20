@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Check, X, AlertTriangle, Shield, Loader2, Mail, Lock, Sparkles, Heart, Users, MessageCircle } from "lucide-react";
+import { ArrowLeft, Check, X, AlertTriangle, Shield, Loader2, Mail, Lock, Sparkles } from "lucide-react";
 import { KikiLogo } from "@/components/KikiLogo";
 import { FloatingParticles } from "@/components/FloatingParticles";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -39,12 +39,7 @@ const getPasswordStrength = (password: string) => {
   return { level: "strong", label: "Fuerte", color: "bg-green-500", percentage };
 };
 
-// Feature benefits for the auth page
-const benefits = [
-  { icon: Heart, label: "Conexiones reales", color: "text-primary" },
-  { icon: Users, label: "Comunidad diversa", color: "text-accent" },
-  { icon: MessageCircle, label: "Sin presión", color: "text-primary" },
-];
+// Benefits removed for cleaner hero
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -317,30 +312,6 @@ const Auth = () => {
           </motion.div>
         </motion.div>
 
-        {/* Benefits pills - only on signup */}
-        {!isLogin && (
-          <motion.div 
-            className="flex flex-wrap justify-center gap-2 mb-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.25 }}
-          >
-            {benefits.map((benefit, index) => (
-              <motion.div
-                key={benefit.label}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card/80 border border-border/50 shadow-sm"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
-              >
-                <benefit.icon className={`w-3.5 h-3.5 ${benefit.color}`} />
-                <span className="text-xs font-medium text-foreground/80" style={{ fontFamily: 'Arial, sans-serif' }}>
-                  {benefit.label}
-                </span>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
 
         {/* Form with enhanced styling */}
         <motion.form 

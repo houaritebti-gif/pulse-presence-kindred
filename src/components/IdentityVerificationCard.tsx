@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Camera, CheckCircle, XCircle, Clock, Shield, Upload } from "lucide-react";
+import { Camera, CheckCircle, XCircle, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIdentityVerification, useSubmitIdentityVerification } from "@/hooks/useIdentityVerification";
@@ -187,30 +187,14 @@ const IdentityVerificationCard = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              className="h-auto py-4 flex-col gap-2"
-            >
-              <Camera className="w-5 h-5" />
-              <span className="text-xs">Tomar selfie</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                if (fileInputRef.current) {
-                  fileInputRef.current.removeAttribute("capture");
-                  fileInputRef.current.click();
-                  fileInputRef.current.setAttribute("capture", "user");
-                }
-              }}
-              className="h-auto py-4 flex-col gap-2"
-            >
-              <Upload className="w-5 h-5" />
-              <span className="text-xs">Subir foto</span>
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            className="h-auto py-5 w-full flex-col gap-2"
+          >
+            <Camera className="w-6 h-6" />
+            <span className="text-sm font-medium">Tomar selfie</span>
+          </Button>
         )}
 
         <p className="text-xs text-muted-foreground text-center">

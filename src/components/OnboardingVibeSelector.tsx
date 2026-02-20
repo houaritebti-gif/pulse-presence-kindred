@@ -80,13 +80,13 @@ const OnboardingVibeSelector = ({
               whileHover={{ scale: isDisabled ? 1 : 1.03 }}
               whileTap={{ scale: isDisabled ? 1 : 0.97 }}
               className={cn(
-                "relative p-4 rounded-2xl text-base transition-all duration-200",
+                "relative p-4 rounded-2xl transition-all duration-200",
                 "flex flex-col items-center justify-center gap-2 min-h-[100px]",
                 "border-2 touch-manipulation",
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
                 isSelected
-                  ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/25"
-                  : "bg-card text-card-foreground border-border/40 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md",
+                  ? "bg-secondary text-secondary-foreground border-secondary shadow-lg shadow-secondary/25"
+                  : "bg-foreground text-background border-foreground/80 hover:border-foreground hover:shadow-md",
                 isDisabled && "opacity-40 cursor-not-allowed"
               )}
             >
@@ -108,7 +108,7 @@ const OnboardingVibeSelector = ({
               <span className="text-3xl">{vibe.emoji}</span>
               
               {/* Label */}
-              <span className="font-semibold text-sm">{vibe.value}</span>
+              <span className="font-bold text-sm">{vibe.value}</span>
             </motion.button>
           );
         })}
