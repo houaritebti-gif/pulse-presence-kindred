@@ -886,15 +886,15 @@ export const AIChatBot = () => {
             }}
             className={cn(
               "flex items-center justify-center rounded-2xl cursor-grab active:cursor-grabbing",
-              "bg-gradient-to-br from-primary via-primary to-accent text-primary-foreground",
-              "shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_6px_30px_rgba(0,0,0,0.2)]",
-              isDragging && "shadow-[0_8px_40px_rgba(0,0,0,0.25)] ring-2 ring-primary-foreground/20"
+              "bg-[#E51B23] text-white",
+              "shadow-[0_4px_20px_rgba(229,27,35,0.3)] hover:shadow-[0_6px_30px_rgba(229,27,35,0.4)]",
+              isDragging && "shadow-[0_8px_40px_rgba(229,27,35,0.5)] ring-2 ring-white/20"
             )}
             aria-label="Abrir asistente IA"
           >
             {/* Pulsing ring effect */}
             <motion.div
-              className="absolute inset-0 rounded-2xl bg-primary/30"
+              className="absolute inset-0 rounded-2xl bg-[#E51B23]/30"
               animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
               transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
             />

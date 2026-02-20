@@ -527,43 +527,10 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 </div>
               )}
 
-              {/* Order badge / Set as main */}
-              {index === 0 ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold shadow-md cursor-help flex items-center gap-1">
-                      <Star className="w-3 h-3 fill-current" />
-                      Principal
-                    </div>
-                  </TooltipTrigger>
-                  {!isMobile && (
-                    <TooltipContent side="right">
-                      <p>Esta es tu foto de perfil principal</p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSetAsMain(index);
-                      }}
-                      disabled={reorderPhotos.isPending}
-                      className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm text-foreground text-[10px] font-bold shadow-md hover:bg-primary hover:text-primary-foreground transition-colors flex items-center gap-1"
-                    >
-                      <Star className="w-3 h-3" />
-                      Principal
-                    </button>
-                  </TooltipTrigger>
-                  {!isMobile && (
-                    <TooltipContent side="right">
-                      <p>Establecer como foto principal</p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              )}
+              {/* Order number badge - subtle position indicator */}
+              <div className="absolute top-1.5 left-1.5 w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-[10px] font-bold text-white shadow-md">
+                {index + 1}
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>

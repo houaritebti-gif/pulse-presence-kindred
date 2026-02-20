@@ -147,11 +147,20 @@ export const useUploadProfilePhoto = () => {
       
       // Complete
       onProgress?.("uploading", 100);
+
+      // If this is the first photo (display_order 0), sync avatar
+      if (displayOrder === 0) {
+        await supabase
+          .from("profiles")
+          .update({ avatar_url: urlData.publicUrl })
+          .eq("id", profileId);
+      }
       
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["profile-photos", variables.profileId] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.success("Foto subida");
     },
     onError: (error: Error) => {
@@ -196,8 +205,24 @@ export const useDeleteProfilePhoto = () => {
 
       return { photoId, profileId };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["profile-photos", data.profileId] });
+      
+      // Sync avatar with new first photo after deletion
+      const { data: remainingPhotos } = await supabase
+        .from("profile_photos")
+        .select("photo_url")
+        .eq("profile_id", data.profileId)
+        .order("display_order", { ascending: true })
+        .limit(1);
+
+      const newAvatarUrl = remainingPhotos?.[0]?.photo_url || null;
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: newAvatarUrl })
+        .eq("id", data.profileId);
+
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast.success("Foto eliminada");
     },
     onError: () => {
@@ -206,7 +231,7 @@ export const useDeleteProfilePhoto = () => {
   });
 };
 
-// Reorder photos
+// Reorder photos (and sync avatar with first photo)
 export const useReorderProfilePhotos = () => {
   const queryClient = useQueryClient();
 
@@ -228,10 +253,25 @@ export const useReorderProfilePhotos = () => {
         if (error) throw error;
       }
 
+      // Sync avatar_url with the new first photo
+      const { data: firstPhoto } = await supabase
+        .from("profile_photos")
+        .select("photo_url")
+        .eq("id", photoIds[0])
+        .single();
+
+      if (firstPhoto) {
+        await supabase
+          .from("profiles")
+          .update({ avatar_url: firstPhoto.photo_url })
+          .eq("id", profileId);
+      }
+
       return { profileId };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["profile-photos", data.profileId] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 };

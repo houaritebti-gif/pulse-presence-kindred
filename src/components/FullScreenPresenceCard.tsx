@@ -960,8 +960,8 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                 />
               )}
               {presence.profile?.vibe && (
-                <span className="flex items-center gap-1">
-                  {VIBES.find(v => v.value === presence.profile?.vibe)?.emoji || "✨"} {presence.profile.vibe}
+                <span className="text-white/90 font-medium tracking-wide uppercase text-xs">
+                  vibra: {presence.profile.vibe}
                 </span>
               )}
             </div>
