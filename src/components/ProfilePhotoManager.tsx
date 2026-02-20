@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X, GripVertical, Camera, Sparkles, Crop, ArrowUp, ArrowDown, AlertCircle, Info, Star } from "lucide-react";
+import { Plus, X, GripVertical, Camera, Sparkles, Crop, ArrowUp, ArrowDown, AlertCircle, Info, Star, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProfilePhotos, useUploadProfilePhoto, useDeleteProfilePhoto, useReorderProfilePhotos } from "@/hooks/useProfilePhotos";
 import { cn } from "@/lib/utils";
@@ -527,9 +527,14 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 </div>
               )}
 
-              {/* Order number badge - subtle position indicator */}
-              <div className="absolute top-1.5 left-1.5 w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-[10px] font-bold text-white shadow-md">
-                {index + 1}
+              {/* Order number badge */}
+              <div className={cn(
+                "absolute top-1.5 left-1.5 w-6 h-6 rounded-full backdrop-blur-sm flex items-center justify-center text-[10px] font-bold text-white shadow-md",
+                index === 0 
+                  ? "bg-primary/90 ring-2 ring-primary/30" 
+                  : "bg-black/50"
+              )}>
+                {index === 0 ? <User className="w-3 h-3" /> : index + 1}
               </div>
             </motion.div>
           ))}
