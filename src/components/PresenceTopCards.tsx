@@ -161,13 +161,13 @@ export const PresenceTopCards = ({
               size="sm"
               onClick={() => createCheckout.mutate()}
               disabled={createCheckout.isPending}
-              className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-md shadow-secondary/30 font-semibold"
             >
               {createCheckout.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  <Zap className="w-4 h-4 mr-1" />
+                  <Zap className="w-4 h-4 mr-1 fill-current" />
                   Activar
                 </>
               )}
