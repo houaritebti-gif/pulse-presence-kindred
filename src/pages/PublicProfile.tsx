@@ -391,8 +391,8 @@ const PublicProfile = () => {
                     key={item}
                     className={`px-3 py-1.5 rounded-full font-body text-sm ${
                       isShared 
-                        ? "bg-foreground text-primary ring-1 ring-primary/30" 
-                        : "bg-foreground text-primary/80"
+                        ? "bg-black dark:bg-white/10 text-[hsl(344,80%,65%)] dark:text-[hsl(344,80%,73%)] ring-1 ring-primary/30 dark:ring-primary/40" 
+                        : "bg-black dark:bg-white/10 text-[hsl(344,80%,65%)] dark:text-[hsl(344,80%,73%)] dark:border dark:border-white/10"
                     }`}
                   >
                     {isShared && "✓ "}{item}
@@ -446,7 +446,7 @@ const PublicProfile = () => {
                 {publicProfile.interests.map(interest => (
                   <span 
                     key={interest}
-                    className="px-2.5 py-1 rounded-full font-body text-xs bg-foreground text-primary"
+                    className="px-2.5 py-1 rounded-full font-body text-xs bg-black dark:bg-white/10 text-[hsl(344,80%,65%)] dark:text-[hsl(344,80%,73%)] dark:border dark:border-white/10"
                   >
                     {interest}
                   </span>
@@ -467,8 +467,8 @@ const PublicProfile = () => {
                       key={tribe}
                       className={`px-2.5 py-1 rounded-full font-body text-xs ${
                         isShared 
-                          ? "bg-foreground text-primary ring-1 ring-primary/30" 
-                          : "bg-foreground text-primary/80"
+                          ? "bg-black dark:bg-white/10 text-[hsl(344,80%,65%)] dark:text-[hsl(344,80%,73%)] ring-1 ring-primary/30 dark:ring-primary/40" 
+                          : "bg-black dark:bg-white/10 text-[hsl(344,80%,65%)] dark:text-[hsl(344,80%,73%)] dark:border dark:border-white/10"
                       }`}
                     >
                       {tribe}
@@ -494,8 +494,8 @@ const PublicProfile = () => {
                       key={style}
                       className={`px-2.5 py-1 rounded-full font-body text-xs ${
                         isShared 
-                          ? "bg-foreground text-primary ring-1 ring-primary/30" 
-                          : "bg-foreground text-primary/80"
+                          ? "bg-black dark:bg-white/10 text-[hsl(344,80%,65%)] dark:text-[hsl(344,80%,73%)] ring-1 ring-primary/30 dark:ring-primary/40" 
+                          : "bg-black dark:bg-white/10 text-[hsl(344,80%,65%)] dark:text-[hsl(344,80%,73%)] dark:border dark:border-white/10"
                       }`}
                     >
                       {style}
