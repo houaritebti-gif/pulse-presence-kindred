@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Send, Flame, Sparkles, Crown, Ghost } from "lucide-react";
+import { ArrowLeft, Send, Zap, Sparkles, Crown, Ghost } from "lucide-react";
 import { KikiLogo } from "@/components/KikiLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
@@ -177,7 +177,7 @@ const Chat = () => {
             // Send push notification to the other person about the match
             sendPushNotification({
               profileId: profileId,
-              title: "🔥 ¡Nueva chispa!",
+              title: "⚡ ¡Nueva chispa!",
               body: `${myProfile.name || "Alguien"} y tú habéis conectado`,
               url: "/sparks",
               tag: "new-spark",
@@ -405,7 +405,7 @@ const Chat = () => {
               <div className="absolute inset-0 bg-primary/30 blur-3xl rounded-full animate-pulse-soft" />
               <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full animate-pulse-soft animate-delay-200" />
               <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center ring-4 ring-primary/30 ring-offset-4 ring-offset-background">
-                <Flame className="w-12 h-12 text-primary animate-spark-flame" />
+                <Zap className="w-12 h-12 text-primary fill-primary" />
               </div>
               <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-primary animate-bounce" />
               <Sparkles className="absolute -bottom-1 -left-3 w-5 h-5 text-accent animate-bounce animate-delay-200" />
@@ -429,7 +429,7 @@ const Chat = () => {
                 onClick={() => navigate(newSparkChatId ? `/spark/${newSparkChatId}` : "/sparks")}
                 className="w-full"
               >
-                <Flame className="w-4 h-4 mr-2" />
+                <Zap className="w-4 h-4 mr-2 fill-current" />
                 Ir al chat
               </Button>
               <Button 
@@ -454,7 +454,7 @@ const Chat = () => {
             <p className="font-body text-muted-foreground mb-8 max-w-xs">
               Tu mensaje fantasma ha volado.
               <br />
-              Si hay chispa, la verás en <Flame className="w-4 h-4 inline text-primary" />
+              Si hay chispa, la verás en <Zap className="w-4 h-4 inline text-primary fill-primary" />
             </p>
             <Button 
               variant="kiki-soft" 

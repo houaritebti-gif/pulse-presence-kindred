@@ -296,7 +296,7 @@ export const FullScreenPresenceList = memo(({
         fireSuperSparkGoldenStars(); // Golden stars for Super Chispa
         fireSuperSparkConfetti(); // Additional electric confetti
         triggerHaptic('heavy'); // Strong haptic for super chispa
-        toast.success("🔥 ¡Super Chispa enviada!", {
+        toast.success("⚡ ¡Super Chispa enviada!", {
           description: `${presence.profile.name || "Este perfil"} verá tu interés especial`,
         });
         queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
@@ -662,7 +662,7 @@ export const FullScreenPresenceList = memo(({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                🔥 {boostedIds.size} NOW
+                ⚡ {boostedIds.size} NOW
               </motion.span>
             )}
           </motion.div>

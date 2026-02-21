@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Flame, BellOff } from "lucide-react";
+import { Zap, BellOff } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useUserSubscription } from "@/hooks/useUserSubscription";
@@ -51,9 +51,9 @@ const SparkChatItem = ({ chat, animationDelay = 0, animationStyle }: SparkChatIt
           useLazyLoading
           ringClassName="ring-2 ring-primary/20 ring-offset-2 ring-offset-card transition-all duration-300 group-hover:ring-primary/40"
         />
-        {/* Flame badge */}
+        {/* Spark badge */}
         <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-card flex items-center justify-center shadow-md">
-          <Flame className="w-3.5 h-3.5 text-primary animate-spark-flame" />
+          <Zap className="w-3.5 h-3.5 text-primary fill-primary" />
         </div>
       </div>
       

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Flame, Star, CloudOff, Camera } from "lucide-react";
+import { ArrowLeft, MessageCircle, Music, Sparkles, MapPin, Heart, MoreVertical, Flag, Shield, Calendar, User, ChevronDown, ChevronUp, Target, Zap, Star, CloudOff, Camera } from "lucide-react";
 import { OPTIONAL_DETAILS, OPTIONAL_DETAIL_CATEGORIES, getOptionalDetailsByCategory } from "@/constants/profileOptions";
 import { useScreenshotProtection } from "@/hooks/useScreenshotProtection";
 import { KikiLogo } from "@/components/KikiLogo";
@@ -391,8 +391,8 @@ const PublicProfile = () => {
                     key={item}
                     className={`px-3 py-1.5 rounded-full font-body text-sm ${
                       isShared 
-                        ? "bg-secondary/80 text-secondary-foreground ring-1 ring-secondary" 
-                        : "bg-secondary/40 text-secondary-foreground"
+                        ? "bg-foreground text-primary ring-1 ring-primary/30" 
+                        : "bg-foreground text-primary/80"
                     }`}
                   >
                     {isShared && "✓ "}{item}
@@ -446,7 +446,7 @@ const PublicProfile = () => {
                 {publicProfile.interests.map(interest => (
                   <span 
                     key={interest}
-                    className="px-2.5 py-1 rounded-full font-body text-xs bg-secondary/60 text-secondary-foreground"
+                    className="px-2.5 py-1 rounded-full font-body text-xs bg-foreground text-primary"
                   >
                     {interest}
                   </span>
@@ -467,8 +467,8 @@ const PublicProfile = () => {
                       key={tribe}
                       className={`px-2.5 py-1 rounded-full font-body text-xs ${
                         isShared 
-                          ? "bg-primary/20 text-primary ring-1 ring-primary/30" 
-                          : "bg-card text-card-foreground"
+                          ? "bg-foreground text-primary ring-1 ring-primary/30" 
+                          : "bg-foreground text-primary/80"
                       }`}
                     >
                       {tribe}
@@ -494,8 +494,8 @@ const PublicProfile = () => {
                       key={style}
                       className={`px-2.5 py-1 rounded-full font-body text-xs ${
                         isShared 
-                          ? "bg-primary/30 text-primary ring-1 ring-primary/40" 
-                          : "bg-primary/10 text-primary"
+                          ? "bg-foreground text-primary ring-1 ring-primary/30" 
+                          : "bg-foreground text-primary/80"
                       }`}
                     >
                       {style}
@@ -591,11 +591,11 @@ const PublicProfile = () => {
                   variant="kiki"
                   className="w-full h-12 rounded-xl font-display text-sm font-semibold"
                 >
-                  <Flame className="w-4 h-4 mr-2" />
+                  <Zap className="w-4 h-4 mr-2 fill-current" />
                   Ir al chat
                 </Button>
                 <p className="text-center font-body text-[11px] text-primary/80">
-                  ¡Tenéis una chispa mutua! 🔥
+                  ¡Tenéis una chispa mutua! ⚡
                 </p>
               </>
             ) : (

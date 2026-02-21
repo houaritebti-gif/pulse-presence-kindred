@@ -390,7 +390,7 @@ export default function SparkHistory() {
                 "text-2xl font-bold",
                 totals.net >= 0 ? "text-primary" : "text-destructive"
               )}>
-                {totals.net >= 0 ? "+" : ""}{totals.net}🔥
+                {totals.net >= 0 ? "+" : ""}{totals.net}⚡
               </p>
               <p className="text-xs text-muted-foreground">Balance</p>
             </div>

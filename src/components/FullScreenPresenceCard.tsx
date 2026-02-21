@@ -425,7 +425,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
               console.log("[SparkEnergy] Could not award mutual spark energy:", e);
             }
             
-            toast.success("🔥 ¡Chispa mutua!", {
+            toast.success("⚡ ¡Chispa mutua!", {
               action: {
                 label: "Ver perfil",
                 onClick: () => navigate(`/user/${presence.profile!.id}`),
@@ -1088,7 +1088,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
             <DialogTitle className="font-display text-lg text-card-foreground flex items-center gap-2">
               {messageSent 
                 ? sparkCreated 
-                  ? "🔥 ¡Chispa mutua!" 
+                  ? "⚡ ¡Chispa mutua!" 
                   : "✓ Mensaje enviado"
                 : (
                   <>
