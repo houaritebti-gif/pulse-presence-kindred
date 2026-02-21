@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Flame, 
   TrendingUp, 
   History, 
   ShoppingBag,
@@ -33,7 +32,7 @@ const getTransactionIcon = (action: string, type: string) => {
   
   const iconMap: Record<string, React.ReactNode> = {
     daily_login: <Calendar className="w-4 h-4" />,
-    send_spark: <Flame className="w-4 h-4" />,
+    send_spark: <Zap className="w-4 h-4" />,
     mutual_spark: <Sparkles className="w-4 h-4" />,
     send_ghost: <Zap className="w-4 h-4" />,
     reply_ghost: <Zap className="w-4 h-4" />,
