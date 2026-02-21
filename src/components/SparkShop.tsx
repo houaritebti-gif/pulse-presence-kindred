@@ -14,8 +14,7 @@ import {
   Loader2,
   Gift,
   Clock,
-  Package,
-  Flame
+  Package
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,12 +48,12 @@ const ITEM_CONFIG: Record<ShopItemKey, {
     category: "messages"
   },
   super_spark: { 
-    icon: <Flame className="w-5 h-5" />, 
+    icon: <Zap className="w-5 h-5 fill-current" />, 
     gradient: "from-blue-500 via-purple-500 to-pink-500",
     category: "super"
   },
   super_spark_3: { 
-    icon: <Flame className="w-5 h-5" />, 
+    icon: <Zap className="w-5 h-5 fill-current" />, 
     gradient: "from-purple-500 via-pink-500 to-orange-500",
     category: "super"
   },
@@ -227,7 +226,7 @@ function ShopItemCard({
             )}
             <span className="flex items-center gap-1 font-black text-lg text-foreground">
               {discountedCost}
-              <span className="text-primary text-base">🔥</span>
+              <span className="text-primary text-base">⚡</span>
             </span>
           </div>
 
@@ -329,17 +328,17 @@ function ConfirmDialog({
           <div className="space-y-2.5 p-4 rounded-2xl bg-muted/20 border border-border/30">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Precio original</span>
-              <span className="font-medium">{item.cost}🔥</span>
+              <span className="font-medium">{item.cost}⚡</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-primary font-medium">Descuento nivel ({discount}%)</span>
-                <span className="text-primary font-medium">-{item.cost - discountedCost}🔥</span>
+                <span className="text-primary font-medium">-{item.cost - discountedCost}⚡</span>
               </div>
             )}
             <div className="flex justify-between font-bold text-lg pt-2 border-t border-border/30">
               <span>Total a pagar</span>
-              <span className="text-primary">{discountedCost}🔥</span>
+              <span className="text-primary">{discountedCost}⚡</span>
             </div>
           </div>
 
@@ -347,12 +346,12 @@ function ConfirmDialog({
           <div className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-card/50">
             <div className="text-center">
               <p className="text-xs text-muted-foreground mb-1">Saldo actual</p>
-              <p className="text-xl font-bold">{currentEnergy}🔥</p>
+              <p className="text-xl font-bold">{currentEnergy}⚡</p>
             </div>
             <div className="text-2xl text-muted-foreground">→</div>
             <div className="text-center">
               <p className="text-xs text-muted-foreground mb-1">Saldo después</p>
-              <p className="text-xl font-bold text-primary">{remainingEnergy}🔥</p>
+              <p className="text-xl font-bold text-primary">{remainingEnergy}⚡</p>
             </div>
           </div>
         </div>
@@ -503,7 +502,7 @@ export function SparkShop({ className }: SparkShopProps) {
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Tu energía</p>
               <p className="text-3xl font-black text-foreground">
                 {currentEnergy}
-                <span className="text-primary ml-1">🔥</span>
+                <span className="text-primary ml-1">⚡</span>
               </p>
             </div>
           </div>
@@ -518,7 +517,7 @@ export function SparkShop({ className }: SparkShopProps) {
       </motion.div>
 
       {/* Categories */}
-      {renderCategory("⚡ Super Chispa", <Flame className="w-4 h-4" />, ITEM_CATEGORIES.super, "from-blue-500 via-purple-500 to-pink-500")}
+      {renderCategory("⚡ Super Chispa", <Zap className="w-4 h-4 fill-current" />, ITEM_CATEGORIES.super, "from-blue-500 via-purple-500 to-pink-500")}
       {renderCategory("Mensajes", <MessageCircle className="w-4 h-4" />, ITEM_CATEGORIES.messages, "from-pink-500 to-rose-500")}
       {renderCategory("Descubrimiento", <Eye className="w-4 h-4" />, ITEM_CATEGORIES.discovery, "from-violet-500 to-purple-500")}
       {renderCategory("Perfil", <Palette className="w-4 h-4" />, ITEM_CATEGORIES.profile, "from-emerald-400 to-teal-500")}

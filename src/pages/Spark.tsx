@@ -103,7 +103,7 @@ function SparkEnergyDisplay() {
           </div>
           <p className="text-4xl font-black text-primary mt-1">
             {sparkEnergy?.current_energy || 0}
-            <span className="text-lg ml-1">🔥</span>
+            <span className="text-lg ml-1">⚡</span>
           </p>
         </motion.div>
       </div>
@@ -184,7 +184,7 @@ function HowToEarn() {
                 {ACTION_LABELS[action] || action}
               </span>
             </div>
-            <span className="font-bold text-primary">+{amount}🔥</span>
+            <span className="font-bold text-primary">+{amount}⚡</span>
           </div>
         ))}
       </div>
@@ -334,7 +334,7 @@ function TransactionHistory() {
                     "font-bold",
                     tx.type === "earn" ? "text-primary" : "text-muted-foreground"
                   )}>
-                    {tx.type === "earn" ? "+" : "-"}{tx.amount}🔥
+                    {tx.type === "earn" ? "+" : "-"}{tx.amount}⚡
                   </span>
                 </motion.div>
               ))}
