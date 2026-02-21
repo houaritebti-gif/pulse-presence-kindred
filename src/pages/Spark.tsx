@@ -385,7 +385,7 @@ export default function Spark() {
         />
       </header>
 
-      <main className="px-4 py-6 max-w-lg mx-auto space-y-6">
+      <main className="px-4 py-6 pb-24 max-w-lg mx-auto space-y-6">
         {/* Energy display always visible */}
         <SparkEnergyDisplay />
 
