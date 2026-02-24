@@ -380,11 +380,11 @@ const Onboarding = () => {
           <OnboardingLookingForSelector
             selectedOptions={selectedLookingFor}
             onToggleOption={(option) => {
-              setSelectedLookingFor(prev => 
-                prev.includes(option)
-                  ? prev.filter(v => v !== option)
-                  : [...prev, option]
-              );
+              setSelectedLookingFor(prev => {
+                if (prev.includes(option)) return prev.filter(v => v !== option);
+                if (prev.length >= 4) { toast.error("Máximo 4 opciones"); return prev; }
+                return [...prev, option];
+              });
             }}
           />
         );

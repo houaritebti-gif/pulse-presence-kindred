@@ -938,11 +938,11 @@ const Profile = () => {
                 key={option.value}
                 onClick={() => {
                   setHasChanges(true);
-                  setSelectedLookingFor(prev => 
-                    prev.includes(option.value)
-                      ? prev.filter(v => v !== option.value)
-                      : [...prev, option.value]
-                  );
+                  setSelectedLookingFor(prev => {
+                    if (prev.includes(option.value)) return prev.filter(v => v !== option.value);
+                    if (prev.length >= 4) { toast.error("Máximo 4 opciones"); return prev; }
+                    return [...prev, option.value];
+                  });
                 }}
                 className={`px-4 py-2 rounded-full font-body text-sm transition-all flex items-center gap-2 ${
                   selectedLookingFor.includes(option.value)
