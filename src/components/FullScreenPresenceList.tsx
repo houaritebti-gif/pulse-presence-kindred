@@ -670,7 +670,7 @@ export const FullScreenPresenceList = memo(({
       )}
 
       {/* Profile cards - Stack with current on top */}
-      <div className="relative flex-1 flex items-center justify-center px-4">
+      <div className="relative flex-1 flex items-center justify-center px-4 overflow-hidden">
         <AnimatePresence mode="popLayout">
           {allProfiles.slice(currentIndex, currentIndex + 2).map((presence, idx) => {
             const profileId = presence.profile?.id;
