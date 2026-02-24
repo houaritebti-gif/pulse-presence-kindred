@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, Sparkles, ImagePlus } from "lucide-react";
 import UploadProgress, { UploadPhase } from "@/components/UploadProgress";
+import { PhotoSourceSelector } from "@/components/PhotoSourceSelector";
 import { cn } from "@/lib/utils";
 
 interface OnboardingPhotoUploadProps {
@@ -26,6 +27,7 @@ const OnboardingPhotoUpload = ({
   onCancel,
 }: OnboardingPhotoUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showSourceSelector, setShowSourceSelector] = useState(false);
 
   const itemVariants = {
     hidden: { opacity: 0, y: 12 },
@@ -51,7 +53,20 @@ const OnboardingPhotoUpload = ({
   };
 
   const handleClick = () => {
-    fileInputRef.current?.click();
+    setShowSourceSelector(true);
+  };
+
+  const handleSourceSelect = (file: File) => {
+    // Create a synthetic change event for compatibility
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    if (fileInputRef.current) {
+      fileInputRef.current.files = dataTransfer.files;
+      const event = new Event('change', { bubbles: true });
+      fileInputRef.current.dispatchEvent(event);
+    }
+    // Also call onFileSelect directly with a synthetic event
+    onFileSelect({ target: { files: dataTransfer.files } } as unknown as React.ChangeEvent<HTMLInputElement>);
   };
 
   return (
@@ -66,8 +81,14 @@ const OnboardingPhotoUpload = ({
         ref={fileInputRef}
         className="hidden"
         accept="image/*"
-        capture="user"
         onChange={onFileSelect}
+      />
+
+      <PhotoSourceSelector
+        open={showSourceSelector}
+        onOpenChange={setShowSourceSelector}
+        onFileSelect={handleSourceSelect}
+        title="Subir tu foto"
       />
       
       {/* Show progress overlay when uploading */}
