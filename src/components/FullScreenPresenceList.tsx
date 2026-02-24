@@ -10,14 +10,12 @@ import { useActiveBoostedProfiles } from "@/hooks/useKikiNow";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useProfile } from "@/hooks/useProfile";
 import { useProfilePhotos } from "@/hooks/useProfilePhotos";
-import { useGhostMessageLimit } from "@/hooks/useSparks";
 import { useSparkDetection } from "@/hooks/useSparkDetection";
 import { useSparkEnergy } from "@/hooks/useSparkEnergy";
 import { usePurchasedItems } from "@/hooks/usePurchasedItems";
 import { useRewindLimit } from "@/hooks/useRewindLimit";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePrefetchAdjacent } from "@/hooks/useProfilePrefetch";
-import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
 import { RewindLimitModal } from "@/components/RewindLimitModal";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,7 +76,6 @@ export const FullScreenPresenceList = memo(({
   const { canSeeRealtimePresence } = useSubscription();
   const { data: myProfile } = useProfile();
   const { data: myPhotos } = useProfilePhotos(myProfile?.id);
-  const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
   const { checkForNewSpark } = useSparkDetection();
   const { earnEnergy, canDoAction } = useSparkEnergy();
   const { getAvailableQuantity, useItem } = usePurchasedItems();
@@ -91,7 +88,6 @@ export const FullScreenPresenceList = memo(({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [rewindHistory, setRewindHistory] = useState<PresenceWithProfile[]>([]);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
-  const [showLimitModal, setShowLimitModal] = useState(false);
   const [showRewindLimitModal, setShowRewindLimitModal] = useState(false);
   const [tutorialComplete, setTutorialComplete] = useState(false);
   const [justRefreshed, setJustRefreshed] = useState(false);
@@ -160,39 +156,20 @@ export const FullScreenPresenceList = memo(({
   const handleSwipeRight = useCallback(async (presence: PresenceWithProfile) => {
     if (!myProfile?.id || !presence.profile?.id) return;
 
-    // Check limit first
-    if (!limitData?.canSend) {
-      setShowLimitModal(true);
-      return;
-    }
-
-    // Send a Chispa (like) - represented as a ghost message in the DB
-    // This is how the mutual matching system works
-    const chispaMessages = [
-      "✨ Te envío mi Chispa",
-      "✨ Me gusta tu vibra",
-      "✨ Algo me dice que conectamos",
-      "✨ Hay química",
-    ];
-    const randomMessage = chispaMessages[Math.floor(Math.random() * chispaMessages.length)];
-
+    // Send a Chispa (spark) - no ghost message limit applies
     try {
-      const { data: insertedMessage, error } = await supabase.from("ghost_messages").insert({
+      const { error } = await supabase.from("sparks").insert({
         from_profile_id: myProfile.id,
         to_profile_id: presence.profile.id,
-        content: randomMessage,
-      }).select('id').single();
+      });
 
       if (error) {
         if (error.code === "23505") {
-          toast.error("Ya enviaste un mensaje a esta persona");
+          toast.error("Ya enviaste una chispa a esta persona");
         } else {
           throw error;
         }
       } else {
-        refetchLimit();
-        queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
-        
         // Award energy for sending chispa
         if (canDoAction("send_ghost")) {
           try {
@@ -209,15 +186,11 @@ export const FullScreenPresenceList = memo(({
         const hasNewSpark = await checkForNewSpark(presence.profile!.id);
         
         if (hasNewSpark) {
-          // Get compatibility for this match
           const matchCompatibility = getCompatibility(presence);
           const isPerfect = matchCompatibility >= 5;
-          
-          // Get photos for the match screen
           const theirPhotos = photosMap?.[presence.profile!.id];
           const theirPhoto = theirPhotos?.[0]?.photo_url || presence.profile?.avatar_url || null;
           
-          // Set match data and show Hay Vibra screen
           setMatchData({
             theirPhoto,
             theirName: presence.profile?.name || null,
@@ -226,9 +199,8 @@ export const FullScreenPresenceList = memo(({
             isPerfectMatch: isPerfect,
           });
           setShowHayVibra(true);
-          playHayVibraSound(); // Celebration sound for mutual match
+          playHayVibraSound();
           
-          // Award mutual spark energy
           try {
             await earnEnergy({ 
               action: "mutual_spark", 
@@ -238,23 +210,22 @@ export const FullScreenPresenceList = memo(({
             console.log("[SparkEnergy] Could not award mutual spark energy:", e);
           }
         } else {
-          triggerHaptic('medium'); // Medium haptic for chispa
-          playChispaSound(); // Chispa sound
-          fireChispaHearts(); // Floating hearts micro-animation
+          triggerHaptic('medium');
+          playChispaSound();
+          fireChispaHearts();
           toast.success("✨ Chispa enviada", {
             description: "Si hay interés mutuo, ¡habrá vibra!",
           });
         }
-
       }
     } catch (error: any) {
       toast.error("Error al enviar: " + error.message);
-      return; // Don't dismiss on error
+      return;
     }
 
     // Dismiss the card
     setDismissedIds(prev => new Set(prev).add(presence.id));
-  }, [myProfile?.id, myProfile?.avatar_url, limitData?.canSend, refetchLimit, queryClient, checkForNewSpark, earnEnergy, canDoAction, getCompatibility, photosMap]);
+  }, [myProfile?.id, queryClient, checkForNewSpark, earnEnergy, canDoAction, getCompatibility, photosMap]);
 
   // Handle swipe up - Super Chispa
   const handleSwipeUp = useCallback(async (presence: PresenceWithProfile) => {
@@ -791,11 +762,6 @@ export const FullScreenPresenceList = memo(({
         </div>
       )}
 
-      {/* Limit modal */}
-      <GhostMessageLimitModal
-        open={showLimitModal}
-        onOpenChange={setShowLimitModal}
-      />
 
       {/* Rewind limit modal */}
       <RewindLimitModal

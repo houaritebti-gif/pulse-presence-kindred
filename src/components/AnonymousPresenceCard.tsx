@@ -1,16 +1,8 @@
 import { useState } from "react";
-import { Ghost, Check, MoreVertical, Flag, Ban, Send, X, Sparkles, Zap, Heart, User } from "lucide-react";
+import { MoreVertical, Flag, Ban, Zap, Heart, User, Sparkles } from "lucide-react";
 import { ALL_GENDERS } from "@/constants/profileOptions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,14 +17,6 @@ import {
 } from "@/components/ui/tooltip";
 import UserModerationModal from "@/components/UserModerationModal";
 import LazyImage from "@/components/LazyImage";
-import GhostMessageLimitModal from "@/components/GhostMessageLimitModal";
-import { useProfile } from "@/hooks/useProfile";
-import { useGhostMessageLimit } from "@/hooks/useSparks";
-import { useSparkDetection } from "@/hooks/useSparkDetection";
-import { useSparkEnergy } from "@/hooks/useSparkEnergy";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/utils/haptics";
@@ -91,14 +75,6 @@ const calculateAge = (birthdate: string | null | undefined): number | null => {
   return age;
 };
 
-// Ghost message options - same as Chat page
-const GHOST_MESSAGES = [
-  "Me gustó tu vibra.",
-  "Algo me dice que conectamos.",
-  "Curiosidad.",
-  "Ojalá coincidamos.",
-];
-
 // Helper to get activity status
 const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealtime: boolean = true) => {
   if (!lastPulse) return { isActive: false, label: "Inactivo", color: "bg-muted-foreground/50" };
@@ -107,15 +83,13 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealti
   const now = Date.now();
   const diffMinutes = (now - pulseTime) / (1000 * 60);
   
-  // If can see realtime, show "Activo ahora" for recent activity
   if (canSeeRealtime && isPresent && diffMinutes <= 5) {
     return { isActive: true, label: "Activo ahora", color: "bg-green-500" };
   }
   
-  // For free users OR inactive users, show relative time
   if (diffMinutes <= 60) {
     return { isActive: false, label: `Hace ${Math.round(diffMinutes)} min`, color: canSeeRealtime ? "bg-yellow-500" : "bg-muted-foreground/60" };
-  } else if (diffMinutes <= 1440) { // 24 hours
+  } else if (diffMinutes <= 1440) {
     const hours = Math.round(diffMinutes / 60);
     return { isActive: false, label: `Hace ${hours}h`, color: "bg-orange-500" };
   } else {
@@ -125,112 +99,10 @@ const getActivityStatus = (lastPulse?: string, isPresent?: boolean, canSeeRealti
 };
 
 const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, canSeeRealtimePresence = true, compatibility = 0, compatibilityBreakdown, hasVisibilityBoost = false, mainPhotoUrl }: AnonymousPresenceCardProps) => {
-  const { data: myProfile } = useProfile();
-  const { data: limitData, refetch: refetchLimit } = useGhostMessageLimit();
-  const { checkForNewSpark } = useSparkDetection();
-  const { earnEnergy, canDoAction } = useSparkEnergy();
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [moderationMode, setModerationMode] = useState<"report" | "block">("report");
-  const [showMessageDialog, setShowMessageDialog] = useState(false);
-  const [showLimitModal, setShowLimitModal] = useState(false);
-  const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
-  const [sending, setSending] = useState(false);
-  const [messageSent, setMessageSent] = useState(false);
-  const [sparkCreated, setSparkCreated] = useState(false);
-
-  const handleOpenDialog = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    triggerHaptic('selection');
-    
-    if (!limitData?.canSend) {
-      setShowLimitModal(true);
-      return;
-    }
-    
-    setShowMessageDialog(true);
-  };
-
-  const handleSendGhostMessage = async (isPremiumMessage: boolean = false) => {
-    if (!selectedMessage || !myProfile?.id || !presence.profile?.id) return;
-
-    if (!limitData?.canSend) {
-      setShowLimitModal(true);
-      return;
-    }
-
-    setSending(true);
-    try {
-      const { error } = await supabase.from("ghost_messages").insert({
-        from_profile_id: myProfile.id,
-        to_profile_id: presence.profile.id,
-        content: selectedMessage,
-        is_premium_message: isPremiumMessage,
-      });
-
-      if (error) {
-        if (error.code === "23505") {
-          toast.error("Ya enviaste un mensaje a esta persona");
-          setShowMessageDialog(false);
-        } else {
-          throw error;
-        }
-      } else {
-        setMessageSent(true);
-        refetchLimit();
-        queryClient.invalidateQueries({ queryKey: ["ghost_message_count"] });
-        
-        // Award spark energy for sending ghost message
-        if (canDoAction("send_ghost")) {
-          try {
-            await earnEnergy({ 
-              action: "send_ghost", 
-              description: "Ghost message enviado" 
-            });
-          } catch (e) {
-            // Silent fail - don't block the main flow
-            console.log("[SparkEnergy] Could not award energy:", e);
-          }
-        }
-        
-        // Check for spark after a brief delay
-        setTimeout(async () => {
-          const hasNewSpark = await checkForNewSpark(presence.profile!.id);
-          
-          if (hasNewSpark) {
-            setSparkCreated(true);
-            
-            // Award bonus energy for mutual spark
-            try {
-              await earnEnergy({ 
-                action: "mutual_spark", 
-                description: "¡Chispa mutua!" 
-              });
-            } catch (e) {
-              console.log("[SparkEnergy] Could not award mutual spark energy:", e);
-            }
-            
-            toast.success("🔥 ¡Chispa mutua!", {
-              action: {
-                label: "Ver perfil",
-                onClick: () => navigate(`/user/${presence.profile!.id}`),
-              },
-            });
-          } else {
-            toast.success("Mensaje ghost enviado");
-          }
-          
-          setTimeout(() => setShowMessageDialog(false), 1500);
-        }, 500);
-      }
-    } catch (error: any) {
-      toast.error("Error al enviar: " + error.message);
-    } finally {
-      setSending(false);
-    }
-  };
 
   const handleReport = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -244,7 +116,6 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
     setShowModerationModal(true);
   };
 
-
   return (
     <>
       <div
@@ -256,7 +127,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
         role="article"
         aria-label={`Perfil anónimo${presence.profile?.city ? ` de ${presence.profile.city}` : ""}`}
       >
-        {/* Photo section - visible from the start */}
+        {/* Photo section */}
         <div className="relative h-36 sm:h-48 bg-gradient-to-br from-primary/20 to-accent/10 flex items-center justify-center overflow-hidden">
           {presence.profile?.avatar_url ? (
             <div className="absolute inset-0">
@@ -271,10 +142,9 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             <div className="absolute inset-0 bg-gradient-to-br from-secondary to-muted" />
           )}
           
-          {/* Subtle overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-card/60 via-transparent to-transparent" />
           
-          {/* Profile avatar - clear, not blurred - prioritize gallery photo */}
+          {/* Profile avatar */}
           <div className="relative z-10">
             <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-background/50 shadow-lg">
               <AvatarImage src={mainPhotoUrl || presence.profile?.avatar_url || undefined} />
@@ -282,7 +152,6 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                 ?
               </AvatarFallback>
             </Avatar>
-            {/* Debug indicator: Gallery photo vs Legacy avatar */}
             {import.meta.env.DEV && (
               <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background flex items-center justify-center text-[8px] font-bold ${
                 mainPhotoUrl ? "bg-green-500 text-white" : presence.profile?.avatar_url ? "bg-amber-500 text-white" : "bg-muted text-muted-foreground"
@@ -308,7 +177,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             </div>
           )}
 
-          {/* Options menu overlay */}
+          {/* Options menu */}
           <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-20">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -332,7 +201,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             </DropdownMenu>
           </div>
 
-          {/* Compatibility badge - top left with tooltip (consistent with PresenceCard) */}
+          {/* Compatibility badge */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -384,9 +253,8 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             </Tooltip>
           </TooltipProvider>
 
-          {/* Profile info badge - bottom left (name, age, gender) */}
+          {/* Profile info badge */}
           <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-20 flex flex-col gap-1">
-            {/* Name, age, gender */}
             <div className="flex items-center gap-1.5 px-2 py-1 sm:px-2.5 rounded-full bg-background/80 backdrop-blur-sm">
               <User className="w-3 h-3 text-muted-foreground" />
               <span className="text-xs font-medium text-foreground">
@@ -400,7 +268,6 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                 )}
               </span>
             </div>
-            {/* City badge */}
             {presence.profile?.city && (
               <div className="px-2 py-1 sm:px-2.5 rounded-full bg-background/80 backdrop-blur-sm">
                 <span className="text-xs font-body text-foreground">📍 {presence.profile.city}</span>
@@ -409,9 +276,9 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           </div>
         </div>
 
-        {/* Info section - fixed height for consistent cards */}
+        {/* Info section */}
         <div className="p-3 sm:p-4 h-[140px] sm:h-[130px] flex flex-col">
-          {/* 1. Activity status - TOP */}
+          {/* Activity status */}
           {(() => {
             const activityStatus = getActivityStatus(presence.last_pulse, presence.is_present, canSeeRealtimePresence);
             return (
@@ -431,7 +298,7 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             );
           })()}
 
-          {/* 2. Looking for - MIDDLE */}
+          {/* Looking for */}
           {presence.profile?.looking_for && presence.profile.looking_for.length > 0 && (
             <div className="mb-2">
               <span className="text-xs text-muted-foreground">Busca: </span>
@@ -442,13 +309,12 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             </div>
           )}
           
-          {/* 3. Interests/Tags - BOTTOM with tooltip */}
+          {/* Interests/Tags */}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex-1 overflow-hidden relative cursor-default">
                   <div className="flex flex-wrap gap-1.5 max-h-[44px] overflow-hidden">
-                    {/* Show max 3 tribes */}
                     {presence.tribes.slice(0, 3).map(tribe => (
                       <span 
                         key={tribe}
@@ -462,7 +328,6 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                         +{presence.tribes.length - 3}
                       </span>
                     )}
-                    {/* Show max 2 music styles if space */}
                     {presence.tribes.length < 3 && presence.musicStyles.slice(0, 2).map(style => (
                       <span 
                         key={style}
@@ -472,7 +337,6 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                       </span>
                     ))}
                   </div>
-                  {/* Fade gradient overlay */}
                   {(presence.tribes.length > 3 || (presence.tribes.length < 3 && presence.musicStyles.length > 2)) && (
                     <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-card to-transparent pointer-events-none" />
                   )}
@@ -511,9 +375,8 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
             </Tooltip>
           </TooltipProvider>
 
-          {/* Action buttons */}
-          <div className="mt-auto pt-2 flex gap-2">
-            {/* View Profile button */}
+          {/* Action button - only View Profile */}
+          <div className="mt-auto pt-2">
             <Button
               onClick={(e) => {
                 e.stopPropagation();
@@ -521,118 +384,14 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
                 navigate(`/user/${presence.profile?.id}`);
               }}
               variant="outline"
-              className="flex-1 gap-2 h-10 text-sm hover:bg-secondary/80 transition-all duration-200"
+              className="w-full gap-2 h-10 text-sm hover:bg-secondary/80 transition-all duration-200"
             >
               <User className="w-4 h-4" />
               <span>Ver perfil</span>
             </Button>
-            
-            {/* Ghost message button */}
-            {messageSent ? (
-              <Button
-                variant="secondary"
-                disabled
-                className="flex-1 gap-2 h-10 text-sm transition-all duration-300"
-              >
-                <Check className="w-4 h-4 animate-scale-in" />
-                Enviado
-              </Button>
-            ) : (
-              <Button
-                onClick={handleOpenDialog}
-                disabled={sending || !limitData?.canSend}
-                className="group flex-1 gap-2 h-10 text-sm active:scale-[0.96] hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
-                variant="default"
-              >
-                <Ghost className="w-4 h-4 group-hover:animate-bounce transition-transform" />
-                <span>Ghost</span>
-              </Button>
-            )}
           </div>
         </div>
       </div>
-
-      {/* Ghost Message Dialog */}
-      <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
-        <DialogContent className="sm:max-w-md" onClick={(e) => e.stopPropagation()}>
-          <DialogHeader>
-            <DialogTitle className="font-display flex items-center gap-2">
-              <Ghost className="w-5 h-5 text-primary" />
-              Mensaje ghost
-            </DialogTitle>
-            <DialogDescription className="font-body">
-              Tu mensaje será anónimo hasta que ambos os enviéis un ghost message.
-              Si hay chispa mutua, se abrirá un chat.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {messageSent ? (
-            <div className="py-8 text-center">
-              {sparkCreated ? (
-                <div className="space-y-4">
-                  <Sparkles className="w-12 h-12 mx-auto text-primary animate-pulse" />
-                  <p className="font-display text-lg text-primary">¡Chispa mutua!</p>
-                  <p className="text-sm text-muted-foreground">Mira su perfil antes de chatear</p>
-                  <Button
-                    onClick={() => navigate(`/user/${presence.profile?.id}`)}
-                    className="gap-2"
-                  >
-                    <Ghost className="w-4 h-4" />
-                    Ver perfil
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Check className="w-12 h-12 mx-auto text-green-500" />
-                  <p className="font-display text-lg">Mensaje enviado</p>
-                  <p className="text-sm text-muted-foreground">
-                    Si la otra persona te envía un ghost, ¡chispa!
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-3 py-2">
-              {GHOST_MESSAGES.map((msg) => (
-                <button
-                  key={msg}
-                  onClick={() => setSelectedMessage(msg)}
-                  className={cn(
-                    "w-full p-3 rounded-xl text-left font-body transition-all",
-                    "border-2",
-                    selectedMessage === msg
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border bg-card hover:border-primary/50 text-card-foreground"
-                  )}
-                >
-                  {msg}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {!messageSent && (
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button
-                variant="ghost"
-                onClick={() => setShowMessageDialog(false)}
-                className="gap-2"
-              >
-                <X className="w-4 h-4" />
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => { triggerHaptic('success'); handleSendGhostMessage(false); }}
-                disabled={!selectedMessage || sending}
-                className="gap-2"
-              >
-                <Send className="w-4 h-4" />
-                {sending ? "Enviando..." : "Enviar"}
-              </Button>
-            </DialogFooter>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Moderation Modal */}
       {showModerationModal && presence.profile?.id && (
@@ -643,12 +402,6 @@ const AnonymousPresenceCard = ({ presence, animationDelay, isBoosted = false, ca
           initialMode={moderationMode}
         />
       )}
-
-      {/* Ghost Message Limit Modal */}
-      <GhostMessageLimitModal 
-        open={showLimitModal} 
-        onOpenChange={setShowLimitModal} 
-      />
     </>
   );
 };
