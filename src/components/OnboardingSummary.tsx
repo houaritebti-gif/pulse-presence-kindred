@@ -110,7 +110,7 @@ const OnboardingSummary = ({
               <Badge 
                 key={i} 
                 variant="secondary" 
-                className="text-xs font-medium bg-muted/60"
+                className="text-xs font-semibold bg-black dark:bg-white/15 text-[hsl(344,80%,65%)] dark:text-[hsl(344,80%,73%)] border-0"
               >
                 {badge}
               </Badge>
