@@ -329,7 +329,7 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
       // Horizontal swipe: left (pass) or right (chispa)
       if (absX > SWIPE_THRESHOLD || Math.abs(velocity.x) > SWIPE_VELOCITY_THRESHOLD) {
         if (offset.x > 0) {
-          // Swipe right - send ghost message
+          // Swipe right - send chispa (spark)
           setExitDirection("right");
           triggerHaptic('success');
           onSwipeRight?.();
