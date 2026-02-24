@@ -54,7 +54,7 @@ const OnboardingLookingForSelector = ({
         variants={itemVariants}
       >
         <Target className="w-4 h-4" />
-        <span className="text-sm">Selecciona todas las que apliquen</span>
+        <span className="text-sm">Selecciona hasta 4 opciones</span>
       </motion.div>
 
       {/* Options grid */}
