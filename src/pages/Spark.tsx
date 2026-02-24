@@ -26,7 +26,22 @@ import PageHeader from "@/components/PageHeader";
 import { useSparkEnergy, SPARK_LEVELS, ENERGY_AMOUNTS } from "@/hooks/useSparkEnergy";
 import { useLevelUpCelebration } from "@/hooks/useLevelUpCelebration";
 
-// Transaction type icons
+// Action emojis for visual appeal
+const ACTION_EMOJIS: Record<string, string> = {
+  daily_login: "📅",
+  streak_bonus: "🔥",
+  explore_profiles: "👀",
+  send_ghost: "👻",
+  reply_ghost: "💬",
+  send_spark: "⚡",
+  mutual_spark: "💘",
+  conversation_active: "🗣️",
+  join_quedada: "🎉",
+  update_profile: "✏️",
+  complete_profile: "🏆",
+};
+
+// Transaction type icons (for history)
 const getTransactionIcon = (action: string, type: string) => {
   if (type === "spend") return <ShoppingBag className="w-4 h-4" />;
   
@@ -45,6 +60,7 @@ const getTransactionIcon = (action: string, type: string) => {
 // Action labels in Spanish
 const ACTION_LABELS: Record<string, string> = {
   daily_login: "Login diario",
+  streak_bonus: "Bonus de racha",
   explore_profiles: "Explorar perfiles",
   send_ghost: "Ghost enviado",
   reply_ghost: "Respuesta ghost",
@@ -176,10 +192,10 @@ function HowToEarn() {
             className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                {getTransactionIcon(action, "earn")}
-              </div>
-              <span className="text-sm text-foreground">
+              <span className="text-2xl w-8 text-center leading-none">
+                {ACTION_EMOJIS[action] || "⚡"}
+              </span>
+              <span className="text-sm font-medium text-foreground">
                 {ACTION_LABELS[action] || action}
               </span>
             </div>
