@@ -75,14 +75,14 @@ const Landing = () => {
         {/* Tagline - only "aquí no hay match, hay chispa" */}
         <div className="flex flex-col items-center gap-3">
           <motion.p
-            className="text-subtitle-sm md:text-subtitle text-kiki-black/80 tracking-wide"
+            className="text-subtitle-sm md:text-subtitle text-kiki-black font-bold tracking-wide"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
           >
             aquí no hay match, hay{' '}
             <motion.span 
-              className="text-kiki-black font-bold relative inline-block"
+              className="relative inline-block"
               animate={{ 
                 textShadow: [
                   '0 0 0px rgba(0,0,0,0)',
