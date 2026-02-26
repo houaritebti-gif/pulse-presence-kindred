@@ -131,11 +131,6 @@ export const OPTIONAL_DETAILS = [
   { key: "no_wants_kids", label: "No quiero hijos", emoji: "🚫👶", category: "family" },
   { key: "prefer_not_say_kids", label: "Prefiero no decirlo", emoji: "🤐", category: "family" },
 
-  // Health
-  { key: "on_prep", label: "PrEP", emoji: "💊", category: "health" },
-  { key: "hiv_undetectable", label: "VIH indetectable", emoji: "🔬", category: "health" },
-  { key: "recent_test", label: "Test reciente", emoji: "✅", category: "health" },
-  { key: "prefer_to_talk", label: "Prefiero hablarlo", emoji: "💬", category: "health" },
 ] as const;
 
 export type OptionalDetailKey = typeof OPTIONAL_DETAILS[number]["key"];
@@ -290,5 +285,4 @@ export const OPTIONAL_DETAIL_CATEGORIES = [
   { key: "lifestyle", label: "Estilo de vida", emoji: "🌱" },
   { key: "relationship", label: "Relaciones", emoji: "💞" },
   { key: "family", label: "Familia", emoji: "👨‍👩‍👧" },
-  { key: "health", label: "Salud", emoji: "❤️‍🩹" },
 ] as const;
