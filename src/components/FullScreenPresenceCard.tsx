@@ -930,8 +930,8 @@ const FullScreenPresenceCard = forwardRef<HTMLDivElement, FullScreenPresenceCard
                 />
               )}
               {presence.profile?.vibe && (
-                <span className="text-white/90 font-medium tracking-wide uppercase text-xs">
-                  vibra: {presence.profile.vibe}
+                <span className="font-display text-sm tracking-[0.25em] text-white/60 font-semibold mt-1">
+                  Vibra · <span className="text-white/80">{presence.profile.vibe}</span>
                 </span>
               )}
             </div>
