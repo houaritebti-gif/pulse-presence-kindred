@@ -286,26 +286,6 @@ const PublicProfile = () => {
           {/* Zodiac + Birth year row (respects visibility settings) */}
           {(profile as any).birthdate && (
             <div className="flex items-center justify-center gap-2 flex-wrap mt-1">
-              {/* Zodiac sign - only if show_zodiac is true */}
-              {((profile as any).show_zodiac !== false) && (() => {
-                const zodiac = getZodiacSign((profile as any).birthdate);
-                return zodiac ? (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="inline-flex items-center gap-1 text-muted-foreground text-base cursor-help">
-                          <span className="text-lg">{zodiac.emoji}</span>
-                          <span>{zodiac.name}</span>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p className="text-xs">{zodiac.dateRange}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                ) : null;
-              })()}
-              
               {/* Birth year removed - age is shown next to the name */}
             </div>
           )}
