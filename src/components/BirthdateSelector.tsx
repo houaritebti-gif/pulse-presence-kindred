@@ -90,7 +90,7 @@ const BirthdateSelector = ({ value, onChange }: BirthdateSelectorProps) => {
 
   return (
     <div className="space-y-4">
-      <Label className="text-base font-medium">Fecha de nacimiento</Label>
+      <Label className="text-base font-black text-foreground tracking-tight">Fecha de nacimiento</Label>
       <div className="flex gap-3 flex-wrap sm:flex-nowrap">
         {/* Day selector - larger touch target */}
         <Select value={selectedDay} onValueChange={(v) => handleChange("day", v)}>

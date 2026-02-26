@@ -47,8 +47,7 @@ export const ProfileSectionCard = ({
               </span>
             )}
             <h2
-              className="text-lg font-semibold text-foreground"
-              style={{ fontFamily: "Arial Black, Arial, sans-serif" }}
+              className="text-xl font-black text-foreground tracking-tight"
             >
               {title}
             </h2>
@@ -71,8 +70,7 @@ export const ProfileSectionCard = ({
           <div className="flex items-center gap-2">
             {icon && <span className="text-primary">{icon}</span>}
             <h2
-              className="text-lg font-semibold text-foreground"
-              style={{ fontFamily: "Arial Black, Arial, sans-serif" }}
+              className="text-xl font-black text-foreground tracking-tight"
             >
               {title}
             </h2>

@@ -42,7 +42,7 @@ export const GenderSelector = ({ value, onChange, className }: GenderSelectorPro
 
   return (
     <div className={cn("space-y-4", className)}>
-      <label className="font-body text-sm font-medium text-foreground">Tu género</label>
+      <label className="font-body text-base font-black text-foreground tracking-tight">Tu género</label>
       
       {/* Main 3 options as styled toggle buttons */}
       <div className="grid grid-cols-3 gap-3">
