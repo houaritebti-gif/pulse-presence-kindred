@@ -185,7 +185,7 @@ const BirthdateSelector = ({ value, onChange }: BirthdateSelectorProps) => {
       )}
 
       {age !== null && age >= minAge && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm font-medium text-foreground/70">
           Edad: <span className="font-medium text-foreground">{age} años</span>
         </p>
       )}

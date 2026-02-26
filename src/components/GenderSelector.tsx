@@ -150,7 +150,7 @@ export const GenderSelector = ({ value, onChange, className }: GenderSelectorPro
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-body group"
         >
           <X className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-          Quitar selección
+          <span className="font-medium">Quitar selección</span>
         </button>
       )}
     </div>
