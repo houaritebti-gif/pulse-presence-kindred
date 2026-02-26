@@ -106,12 +106,12 @@ const SparkEnergyCard = ({ navigate }: { navigate: (path: string) => void }) => 
           <div className="flex items-center gap-3">
             <SparkFlame level={currentLevel.level} size="md" animate />
             <div className="text-left">
-              <p className="text-sm text-muted-foreground">Tu Chispa</p>
+              <p className="text-sm font-medium text-foreground/70">Tu Chispa</p>
               <div className="flex items-center gap-2">
                 <span className="text-xl font-bold text-foreground">
                   {sparkEnergy?.current_energy || 0}🔥
                 </span>
-                <span className="text-xs text-primary font-medium">
+                <span className="text-sm text-primary font-semibold">
                   {currentLevel.emoji} {currentLevel.name}
                 </span>
               </div>
@@ -674,7 +674,7 @@ const Profile = () => {
                 <TooltipTrigger asChild>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-3 cursor-help animate-pulse-soft">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span className="font-body text-xs font-medium">
+                    <span className="font-body text-sm font-semibold">
                       {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
                     </span>
                   </div>
@@ -685,7 +685,7 @@ const Profile = () => {
               </Tooltip>
             </TooltipProvider>
           )}
-          <p className="text-lg sm:text-xl text-foreground/70">
+          <p className="text-lg sm:text-xl font-medium text-foreground/70">
             Solo lo esencial. Nada más.
           </p>
         </div>
@@ -705,7 +705,7 @@ const Profile = () => {
               </div>
             )}
           </div>
-          <p className="text-center text-xs text-muted-foreground mt-2 font-body">
+          <p className="text-center text-sm font-medium text-foreground/60 mt-2 font-body">
             Tu foto #1 es tu foto de perfil
           </p>
         </div>

@@ -71,7 +71,7 @@ export const GenderPreferencesSelector = ({ values, onChange, className }: Gende
         <label className="font-body text-base font-black text-foreground tracking-tight">
           ¿A quién te gustaría conocer?
         </label>
-        <p className="text-xs text-muted-foreground mt-0.5">Puedes elegir varios</p>
+        <p className="text-sm font-medium text-foreground/60 mt-0.5">Puedes elegir varios</p>
       </div>
       
       {/* Main options as styled toggle buttons */}

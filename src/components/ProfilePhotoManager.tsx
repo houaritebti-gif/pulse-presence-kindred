@@ -321,7 +321,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
                 Galería de fotos
                 <Sparkles className="w-4 h-4 text-primary" />
               </h3>
-              <p className="text-xs font-body text-muted-foreground">
+              <p className="text-sm font-medium font-body text-foreground/60">
                 {isMobile ? "Usa las flechas para reordenar" : "Arrastra para reordenar"}
               </p>
             </div>
@@ -619,7 +619,7 @@ const ProfilePhotoManager = ({ profileId }: ProfilePhotoManagerProps) => {
       </div>
 
       {/* Footer info */}
-      <div className="flex items-center justify-center gap-2 text-xs font-body text-muted-foreground bg-muted/30 rounded-lg py-2 px-3">
+      <div className="flex items-center justify-center gap-2 text-sm font-medium font-body text-foreground/60 bg-muted/30 rounded-lg py-2 px-3">
         <Crop className="w-3.5 h-3.5" />
         <span>Recorta tus fotos antes de subir • Máx. 5MB</span>
       </div>
