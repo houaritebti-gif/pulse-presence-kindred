@@ -83,7 +83,7 @@ export function ProfilePromptsEditor() {
         <CardTitle className="text-lg flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
           Profile Prompts
-          <span className="text-sm font-normal text-muted-foreground ml-auto">
+          <span className="text-sm font-medium text-foreground/60 ml-auto">
             {prompts.length}/{MAX_PROMPTS_PER_PROFILE}
           </span>
         </CardTitle>
@@ -114,7 +114,7 @@ export function ProfilePromptsEditor() {
                 )}>
                   <div className="flex items-start gap-2 mb-2">
                     <span className="text-xl">{promptDef.emoji}</span>
-                    <span className="font-medium text-sm flex-1">{promptDef.question}</span>
+                    <span className="font-semibold text-sm flex-1">{promptDef.question}</span>
                     {!isEditing && (
                       <Button
                         variant="ghost"
@@ -138,7 +138,7 @@ export function ProfilePromptsEditor() {
                         autoFocus
                       />
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-sm font-medium text-foreground/60">
                           {answerText.length}/{promptDef.maxLength}
                         </span>
                         <div className="flex gap-2">
