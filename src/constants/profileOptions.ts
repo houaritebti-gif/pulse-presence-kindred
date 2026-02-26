@@ -69,7 +69,7 @@ export const MUSIC_STYLES = [
   { value: "Alternativo", emoji: "🌀" },
   { value: "Electrónica", emoji: "🎧" },
   { value: "Indie", emoji: "🎹" },
-  { value: "Pop alternativo", emoji: "🎶" },
+  { value: "Pop", emoji: "🎶" },
   { value: "Hip-Hop", emoji: "🎤" },
   { value: "R&B", emoji: "💜" },
   { value: "Reguetón", emoji: "🔥" },
