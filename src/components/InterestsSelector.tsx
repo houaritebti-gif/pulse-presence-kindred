@@ -25,7 +25,7 @@ export const InterestsSelector = ({
   variant = "profile",
 }: InterestsSelectorProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string | null>("Cultura & Escena");
 
   // Filter interests based on search and category
   const filteredInterests = useMemo(() => {
