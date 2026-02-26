@@ -876,7 +876,7 @@ const Profile = () => {
         </div>
 
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">
             Sobre ti
           </h2>
           <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -926,7 +926,7 @@ const Profile = () => {
 
         {/* Looking for */}
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '325ms', animationFillMode: 'forwards' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">
             ¿Qué buscas en KIKI?
           </h2>
           <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -959,7 +959,7 @@ const Profile = () => {
 
         {/* Vibe - multi-select max 3 */}
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '350ms', animationFillMode: 'forwards' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-2" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">
             Tus vibras
           </h2>
           <p className="text-xs text-muted-foreground mb-4" style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -993,7 +993,7 @@ const Profile = () => {
 
         {/* Tribes */}
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '375ms', animationFillMode: 'forwards' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h2 className="text-xl font-black text-foreground mb-4 tracking-tight">
             Tus tribus
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -1015,7 +1015,7 @@ const Profile = () => {
 
         {/* Interests */}
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '387ms', animationFillMode: 'forwards' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h2 className="text-xl font-black text-foreground mb-4 tracking-tight">
             Tus intereses
           </h2>
           <InterestsSelector
@@ -1035,7 +1035,7 @@ const Profile = () => {
           >
             <div className="flex items-center gap-2">
               <Music className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+              <h2 className="text-xl font-black text-foreground tracking-tight">
                 Tu música
               </h2>
               <span className="text-xs text-muted-foreground">
@@ -1085,7 +1085,7 @@ const Profile = () => {
         <div className="mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '425ms', animationFillMode: 'forwards' }}>
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+            <h2 className="text-xl font-black text-foreground tracking-tight">
               Detalles (opcional)
             </h2>
           </div>
@@ -1121,7 +1121,7 @@ const Profile = () => {
 
         {/* Subscription Section */}
         <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '450ms', animationFillMode: 'forwards' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h2 className="text-xl font-black text-foreground mb-4 tracking-tight">
             Suscripción
           </h2>
           <button
@@ -1168,7 +1168,7 @@ const Profile = () => {
 
         {/* Privacy Settings */}
         <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: '560ms', animationFillMode: 'forwards' }}>
-          <h2 className="text-lg font-semibold text-foreground mb-4" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
+          <h2 className="text-xl font-black text-foreground mb-4 tracking-tight">
             Privacidad
           </h2>
           <div className="space-y-3">
