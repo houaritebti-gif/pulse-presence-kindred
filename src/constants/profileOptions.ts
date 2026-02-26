@@ -61,16 +61,26 @@ export type TribeType = typeof TRIBES[number]["value"];
 // No sub-genres, each category IS the selectable item
 // ═══════════════════════════════════════════
 export const MUSIC_STYLES = [
-  { value: "Oscura / Dark", emoji: "🖤" },
-  { value: "Punk / Garage", emoji: "🎸" },
-  { value: "Rock / Alternativo", emoji: "🤘" },
-  { value: "Electrónica / Club", emoji: "🎧" },
-  { value: "Indie / Pop alternativo", emoji: "🎹" },
-  { value: "Hip-Hop / R&B", emoji: "🎤" },
-  { value: "Reguetón / Urbana", emoji: "🔥" },
-  { value: "Salsa / Tropical", emoji: "💃" },
-  { value: "Jazz / Soul / Funk", emoji: "🎷" },
-  { value: "Clásica / Instrumental", emoji: "🎻" },
+  { value: "Oscura", emoji: "🖤" },
+  { value: "Dark", emoji: "🌑" },
+  { value: "Punk", emoji: "🎸" },
+  { value: "Garage", emoji: "⚡" },
+  { value: "Rock", emoji: "🤘" },
+  { value: "Alternativo", emoji: "🌀" },
+  { value: "Electrónica", emoji: "🎧" },
+  { value: "Indie", emoji: "🎹" },
+  { value: "Pop alternativo", emoji: "🎶" },
+  { value: "Hip-Hop", emoji: "🎤" },
+  { value: "R&B", emoji: "💜" },
+  { value: "Reguetón", emoji: "🔥" },
+  { value: "Urbana", emoji: "🏙️" },
+  { value: "Salsa", emoji: "💃" },
+  { value: "Tropical", emoji: "🌴" },
+  { value: "Jazz", emoji: "🎷" },
+  { value: "Soul", emoji: "✨" },
+  { value: "Funk", emoji: "🕺" },
+  { value: "Folk", emoji: "🪕" },
+  { value: "Clásica", emoji: "🎻" },
 ] as const;
 
 // Keep MUSIC_CATEGORIES for backward compatibility but now flat
