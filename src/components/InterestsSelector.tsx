@@ -100,10 +100,10 @@ export const InterestsSelector = ({
         <button
           onClick={() => setActiveCategory(null)}
           className={cn(
-            "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap",
+            "flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap border-2",
             activeCategory === null
-              ? "bg-foreground text-background"
-              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              ? "bg-foreground text-background border-foreground shadow-md"
+              : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
           )}
         >
           Todos
@@ -117,10 +117,10 @@ export const InterestsSelector = ({
               )
             }
             className={cn(
-              "flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap flex items-center gap-1",
+              "flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 border-2",
               activeCategory === category.name
-                ? "bg-foreground text-background"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                ? "bg-foreground text-background border-foreground shadow-md"
+                : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
             )}
           >
             <span>{category.emoji}</span>
