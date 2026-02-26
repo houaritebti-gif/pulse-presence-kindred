@@ -65,8 +65,8 @@ const OnboardingMusicSelector = ({
         <span className="text-sm">Elige hasta {maxStyles} estilos (opcional)</span>
       </motion.div>
 
-      {/* Music styles as cards */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Music styles */}
+      <div className="flex flex-wrap gap-2 justify-center">
         {MUSIC_STYLES.map((style) => {
           const isSelected = selectedStyles.includes(style.value);
           const isDisabled = !isSelected && selectedStyles.length >= maxStyles;
@@ -78,33 +78,20 @@ const OnboardingMusicSelector = ({
               onClick={() => handleToggle(style.value)}
               disabled={isDisabled}
               variants={itemVariants}
-              whileHover={{ scale: isDisabled ? 1 : 1.03 }}
-              whileTap={{ scale: isDisabled ? 1 : 0.97 }}
+              whileHover={{ scale: isDisabled ? 1 : 1.05 }}
+              whileTap={{ scale: isDisabled ? 1 : 0.95 }}
               className={cn(
-                "relative p-4 rounded-2xl text-sm transition-all duration-200",
-                "flex flex-col items-center justify-center gap-2 min-h-[90px]",
-                "border-2 touch-manipulation",
+                "px-4 py-2.5 rounded-full text-sm transition-all duration-200",
+                "flex items-center gap-1.5 touch-manipulation border",
                 isSelected
-                  ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg shadow-primary/25"
-                  : "bg-card text-card-foreground border-border/40 hover:border-primary/40 hover:bg-primary/5",
+                  ? "bg-foreground text-background border-foreground shadow-md"
+                  : "bg-background/60 text-foreground border-border hover:border-foreground/40",
                 isDisabled && "opacity-40 cursor-not-allowed"
               )}
             >
-              <AnimatePresence>
-                {isSelected && (
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center"
-                  >
-                    <Check className="w-3 h-3" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <span className="text-2xl">{style.emoji}</span>
-              <span className="font-semibold text-xs text-center leading-tight">{style.value}</span>
+              <span>{style.emoji}</span>
+              <span className="font-semibold">{style.value}</span>
+              {isSelected && <Check className="w-3.5 h-3.5 ml-0.5" />}
             </motion.button>
           );
         })}

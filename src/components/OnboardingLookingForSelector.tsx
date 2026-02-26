@@ -58,7 +58,7 @@ const OnboardingLookingForSelector = ({
       </motion.div>
 
       {/* Options grid */}
-      <div className="flex flex-wrap gap-3 justify-center">
+      <div className="flex flex-wrap gap-2 justify-center">
         {LOOKING_FOR_OPTIONS.map((option) => {
           const isSelected = selectedOptions.includes(option.value);
           return (
@@ -67,20 +67,19 @@ const OnboardingLookingForSelector = ({
               type="button"
               onClick={() => handleToggle(option.value)}
               variants={itemVariants}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className={cn(
-                "px-5 py-3.5 rounded-2xl text-sm transition-all duration-200",
-                "flex items-center gap-2 touch-manipulation",
-                "border-2",
+                "px-4 py-2.5 rounded-full text-sm transition-all duration-200",
+                "flex items-center gap-1.5 touch-manipulation border",
                 isSelected
-                  ? "bg-secondary text-secondary-foreground border-secondary shadow-lg shadow-secondary/20"
-                  : "bg-foreground text-background border-foreground/80 hover:border-primary/60 hover:shadow-md"
+                  ? "bg-foreground text-background border-foreground shadow-md"
+                  : "bg-background/60 text-foreground border-border hover:border-foreground/40"
               )}
             >
-              <span className="text-lg">{option.emoji}</span>
-              <span className="font-medium">{option.value}</span>
-              {isSelected && <Check className="w-4 h-4 ml-1" />}
+              <span>{option.emoji}</span>
+              <span className="font-semibold">{option.value}</span>
+              {isSelected && <Check className="w-3.5 h-3.5 ml-0.5" />}
             </motion.button>
           );
         })}

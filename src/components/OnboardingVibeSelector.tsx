@@ -66,7 +66,7 @@ const OnboardingVibeSelector = ({
       </motion.div>
 
       {/* Grid of vibes */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="flex flex-wrap gap-2 justify-center">
         {VIBES.map((vibe) => {
           const isSelected = selectedVibes.includes(vibe.value);
           const isDisabled = !isSelected && selectedVibes.length >= maxVibes;
@@ -77,38 +77,20 @@ const OnboardingVibeSelector = ({
               onClick={() => handleSelect(vibe.value)}
               disabled={isDisabled}
               variants={itemVariants}
-              whileHover={{ scale: isDisabled ? 1 : 1.03 }}
-              whileTap={{ scale: isDisabled ? 1 : 0.97 }}
+              whileHover={{ scale: isDisabled ? 1 : 1.05 }}
+              whileTap={{ scale: isDisabled ? 1 : 0.95 }}
               className={cn(
-                "relative p-4 rounded-2xl transition-all duration-200",
-                "flex flex-col items-center justify-center gap-2 min-h-[100px]",
-                "border-2 touch-manipulation",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                "px-4 py-2.5 rounded-full text-sm transition-all duration-200",
+                "flex items-center gap-1.5 touch-manipulation border",
                 isSelected
-                  ? "bg-secondary text-secondary-foreground border-secondary shadow-lg shadow-secondary/25"
-                  : "bg-foreground text-background border-foreground/80 hover:border-foreground hover:shadow-md",
+                  ? "bg-foreground text-background border-foreground shadow-md"
+                  : "bg-background/60 text-foreground border-border hover:border-foreground/40",
                 isDisabled && "opacity-40 cursor-not-allowed"
               )}
             >
-              {/* Selected checkmark */}
-              <AnimatePresence>
-                {isSelected && (
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center"
-                  >
-                    <Check className="w-3 h-3" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Emoji */}
-              <span className="text-3xl">{vibe.emoji}</span>
-              
-              {/* Label */}
-              <span className="font-bold text-sm">{vibe.value}</span>
+              <span>{vibe.emoji}</span>
+              <span className="font-semibold">{vibe.value}</span>
+              {isSelected && <Check className="w-3.5 h-3.5 ml-0.5" />}
             </motion.button>
           );
         })}
