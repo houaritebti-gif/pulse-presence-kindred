@@ -84,7 +84,7 @@ const OnboardingTribesSelector = ({
                 "flex items-center gap-1.5 touch-manipulation border",
                 isSelected
                   ? "bg-foreground text-background border-foreground shadow-md"
-                  : "bg-transparent text-foreground border-foreground/30 hover:border-foreground/50",
+                  : "bg-transparent text-foreground border-foreground/60 hover:border-foreground",
                 isDisabled && "opacity-40 cursor-not-allowed"
               )}
             >
