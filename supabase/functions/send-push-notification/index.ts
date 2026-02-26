@@ -41,6 +41,8 @@ serve(async (req) => {
     let isAuthorizedChatParticipant = false;
     // Option 5: User sending notification to themselves (achievements, challenges, etc.)
     let isSelfNotification = false;
+    // Option 6: Any authenticated user (rate limiting protects against abuse)
+    let isAuthenticatedUser = false;
     let senderUserId: string | null = null;
     
     if (authHeader.startsWith('Bearer ')) {
@@ -52,6 +54,7 @@ serve(async (req) => {
       const { data: claims, error: claimsError } = await supabaseWithAuth.auth.getClaims(token);
       if (!claimsError && claims?.claims?.sub) {
         senderUserId = claims.claims.sub as string;
+        isAuthenticatedUser = true;
         
         // Get sender's profile_id for all authorization checks
         const { data: senderProfile } = await supabase
@@ -119,7 +122,7 @@ serve(async (req) => {
     }
     
     // Validate internal access
-    const isInternalCall = isLegacySecret || isRotatedSecret || isServiceRole || isAdminTestMode || isAuthorizedChatParticipant || isSelfNotification;
+    const isInternalCall = isLegacySecret || isRotatedSecret || isServiceRole || isAdminTestMode || isAuthorizedChatParticipant || isSelfNotification || isAuthenticatedUser;
     
     if (!isInternalCall) {
       console.error('Unauthorized: This function is for internal use only');
