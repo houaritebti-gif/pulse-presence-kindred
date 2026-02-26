@@ -778,7 +778,7 @@ const Profile = () => {
                   setHasChanges(true);
                   setNameError(null);
                 }}
-                className={`h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary transition-all duration-200 pr-10 ${
+                className={`h-14 text-base font-body bg-muted/60 border-border/50 focus:border-primary transition-all duration-200 pr-10 ${
                   name.length >= 2 && hasChanges ? "border-primary/50" : ""
                 }`}
               />
@@ -812,7 +812,7 @@ const Profile = () => {
                   setHasChanges(true);
                   setCityError(null);
                 }}
-                className={`h-14 text-base font-body bg-secondary/50 border-border/50 focus:border-primary transition-all duration-200 pr-10 ${
+                className={`h-14 text-base font-body bg-muted/60 border-border/50 focus:border-primary transition-all duration-200 pr-10 ${
                   city.length >= 2 && hasChanges ? "border-primary/50" : ""
                 }`}
               />
