@@ -190,7 +190,7 @@ const OnboardingInterestsSelector = ({
                     "px-4 py-2.5 rounded-full text-sm transition-all duration-200 flex items-center gap-1.5 touch-manipulation border",
                     isSelected
                       ? "bg-foreground text-background border-foreground shadow-md"
-                      : "bg-background/60 text-foreground border-border hover:border-foreground/40",
+                      : "bg-transparent text-foreground border-foreground/30 hover:border-foreground/50",
                     isDisabled && "opacity-40 cursor-not-allowed"
                   )}
                 >
