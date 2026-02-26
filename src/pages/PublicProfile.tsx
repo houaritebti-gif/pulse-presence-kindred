@@ -293,8 +293,8 @@ const PublicProfile = () => {
           {/* Compact info row: vibe + city + organizer */}
           <div className="flex items-center justify-center gap-2 flex-wrap mt-1.5">
             {profile.vibe && (
-              <span className="font-body text-primary text-base font-medium">
-                Vibra {profile.vibe.toLowerCase()}
+              <span className="font-display text-xs tracking-[0.2em] uppercase text-muted-foreground/80 font-semibold">
+                VIBRA: {profile.vibe.toUpperCase()}
               </span>
             )}
             {profile.vibe && profile.city && (
