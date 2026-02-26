@@ -944,10 +944,10 @@ const Profile = () => {
                     return [...prev, option.value];
                   });
                 }}
-                className={`px-4 py-2 rounded-full font-body text-sm transition-all flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
                   selectedLookingFor.includes(option.value)
-                    ? "bg-secondary text-secondary-foreground"
-                    : "bg-foreground text-background hover:bg-foreground/90"
+                    ? "bg-foreground text-background border-foreground shadow-md"
+                    : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
                 }`}
               >
                 <span>{option.emoji}</span>
@@ -978,10 +978,10 @@ const Profile = () => {
                     return [...prev, vibe.value];
                   });
                 }}
-                className={`px-4 py-2 rounded-full font-body text-sm transition-all flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
                   selectedVibes.includes(vibe.value)
-                    ? "bg-secondary text-secondary-foreground"
-                    : "bg-foreground text-background hover:bg-foreground/90"
+                    ? "bg-foreground text-background border-foreground shadow-md"
+                    : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
                 }`}
               >
                 <span>{vibe.emoji}</span>
@@ -1001,10 +1001,10 @@ const Profile = () => {
               <button
                 key={tribe.value}
                 onClick={() => { triggerHaptic('selection'); toggleTribe(tribe.value); }}
-                className={`px-4 py-2 rounded-full font-body text-sm transition-all ${
+                className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
                   selectedTribes.includes(tribe.value)
-                    ? "bg-secondary text-secondary-foreground"
-                    : "bg-foreground text-background hover:bg-foreground/90"
+                    ? "bg-foreground text-background border-foreground shadow-md"
+                    : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
                 }`}
               >
                 {tribe.emoji} {tribe.value}
@@ -1068,10 +1068,10 @@ const Profile = () => {
                 <button
                   key={style}
                   onClick={() => { triggerHaptic('selection'); toggleMusicStyle(style); }}
-                  className={`px-3 py-1.5 rounded-full font-body text-sm transition-all ${
+                  className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
                     selectedMusicStyles.includes(style)
-                      ? "bg-secondary text-secondary-foreground"
-                      : "bg-foreground text-background hover:bg-foreground/90"
+                      ? "bg-foreground text-background border-foreground shadow-md"
+                      : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
                   }`}
                 >
                   {style}
@@ -1103,10 +1103,10 @@ const Profile = () => {
                       <button
                         key={detail.key}
                         onClick={() => { triggerHaptic('selection'); toggleOptionalDetail(detail.key); }}
-                        className={`px-3 py-1.5 rounded-full font-body text-xs transition-all ${
+                        className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
                           getOptionalDetailValue(detail.key) === true
-                            ? "bg-secondary text-secondary-foreground"
-                            : "bg-foreground text-background hover:bg-foreground/90"
+                            ? "bg-foreground text-background border-foreground shadow-md"
+                            : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
                         }`}
                       >
                         {detail.emoji} {detail.label}
