@@ -149,7 +149,7 @@ export const InterestsSelector = ({
                 selectedInterests.length >= maxInterests
               }
               className={cn(
-                "px-4 py-2.5 rounded-full text-sm transition-all flex items-center gap-1.5 touch-manipulation active:scale-95 border",
+                "px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 touch-manipulation active:scale-95 border",
                 selectedInterests.includes(interest.value)
                   ? "bg-foreground text-background border-foreground shadow-md"
                   : "bg-transparent text-foreground border-foreground/60 hover:border-foreground disabled:opacity-40 disabled:cursor-not-allowed"
@@ -198,12 +198,12 @@ export const InterestsSelector = ({
               </span>
             </div>
             {selectedInterests.length < minInterests && (
-              <span className="text-xs text-destructive font-medium px-2 py-1 rounded-full bg-destructive/10">
+              <span className="text-sm text-destructive font-semibold px-2 py-1 rounded-full bg-destructive/10">
                 Mínimo {minInterests}
               </span>
             )}
             {selectedInterests.length >= minInterests && (
-              <span className="text-xs text-primary font-medium flex items-center gap-1">
+              <span className="text-sm text-primary font-semibold flex items-center gap-1">
                 <Check className="w-3 h-3" />
                 Mínimo alcanzado
               </span>

@@ -879,7 +879,7 @@ const Profile = () => {
           <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">
             Sobre ti
           </h2>
-          <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-sm font-medium text-foreground/60 mb-3">
             Una breve descripción (opcional)
           </p>
           <div className="relative">
@@ -929,7 +929,7 @@ const Profile = () => {
           <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">
             ¿Qué buscas en KIKI?
           </h2>
-          <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-sm font-medium text-foreground/60 mb-3">
             Selecciona todas las que apliquen
           </p>
           <div className="flex flex-wrap gap-2">
@@ -944,7 +944,7 @@ const Profile = () => {
                     return [...prev, option.value];
                   });
                 }}
-                className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
+                className={`px-4 py-2.5 rounded-full font-body text-sm font-semibold transition-all flex items-center gap-2 border ${
                   selectedLookingFor.includes(option.value)
                     ? "bg-foreground text-background border-foreground shadow-md"
                     : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
@@ -962,7 +962,7 @@ const Profile = () => {
           <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">
             Tus vibras
           </h2>
-          <p className="text-xs text-muted-foreground mb-4" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <p className="text-sm font-medium text-foreground/60 mb-4">
             Hasta 3 ({selectedVibes.length}/3)
           </p>
           <div className="flex flex-wrap gap-2">
@@ -978,7 +978,7 @@ const Profile = () => {
                     return [...prev, vibe.value];
                   });
                 }}
-                className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
+                className={`px-4 py-2.5 rounded-full font-body text-sm font-semibold transition-all flex items-center gap-2 border ${
                   selectedVibes.includes(vibe.value)
                     ? "bg-foreground text-background border-foreground shadow-md"
                     : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
@@ -1001,7 +1001,7 @@ const Profile = () => {
               <button
                 key={tribe.value}
                 onClick={() => { triggerHaptic('selection'); toggleTribe(tribe.value); }}
-                className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
+                className={`px-4 py-2.5 rounded-full font-body text-sm font-semibold transition-all flex items-center gap-2 border ${
                   selectedTribes.includes(tribe.value)
                     ? "bg-foreground text-background border-foreground shadow-md"
                     : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
@@ -1038,7 +1038,7 @@ const Profile = () => {
               <h2 className="text-xl font-black text-foreground tracking-tight">
                 Tu música
               </h2>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-sm font-medium text-foreground/60">
                 ({selectedMusicStyles.length}/3)
               </span>
             </div>
@@ -1068,7 +1068,7 @@ const Profile = () => {
                 <button
                   key={style}
                   onClick={() => { triggerHaptic('selection'); toggleMusicStyle(style); }}
-                  className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
+                  className={`px-4 py-2.5 rounded-full font-body text-sm font-semibold transition-all flex items-center gap-2 border ${
                     selectedMusicStyles.includes(style)
                       ? "bg-foreground text-background border-foreground shadow-md"
                       : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
@@ -1094,7 +1094,7 @@ const Profile = () => {
               const categoryDetails = getOptionalDetailsByCategory(category.key);
               return (
                 <div key={category.key}>
-                  <h3 className="font-body text-xs text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  <h3 className="font-body text-sm font-semibold text-foreground/60 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                     <span>{category.emoji}</span>
                     {category.label}
                   </h3>
@@ -1103,7 +1103,7 @@ const Profile = () => {
                       <button
                         key={detail.key}
                         onClick={() => { triggerHaptic('selection'); toggleOptionalDetail(detail.key); }}
-                        className={`px-4 py-2.5 rounded-full font-body text-sm transition-all flex items-center gap-2 border ${
+                        className={`px-4 py-2.5 rounded-full font-body text-sm font-semibold transition-all flex items-center gap-2 border ${
                           getOptionalDetailValue(detail.key) === true
                             ? "bg-foreground text-background border-foreground shadow-md"
                             : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
