@@ -97,17 +97,6 @@ export const InterestsSelector = ({
 
       {/* Category filter chips */}
       <div className="flex gap-2 overflow-x-auto pb-2 flex-shrink-0 scrollbar-hide -mx-1 px-1">
-        <button
-          onClick={() => setActiveCategory(null)}
-          className={cn(
-            "flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap border-2",
-            activeCategory === null
-              ? "bg-foreground text-background border-foreground shadow-md"
-              : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
-          )}
-        >
-          Todos
-        </button>
         {CULTURAL_INTERESTS_CATEGORIES.map((category) => (
           <button
             key={category.name}
@@ -127,6 +116,17 @@ export const InterestsSelector = ({
             <span>{category.name}</span>
           </button>
         ))}
+        <button
+          onClick={() => setActiveCategory(null)}
+          className={cn(
+            "flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap border-2",
+            activeCategory === null
+              ? "bg-foreground text-background border-foreground shadow-md"
+              : "bg-transparent text-foreground border-foreground/60 hover:border-foreground"
+          )}
+        >
+          Todos
+        </button>
       </div>
 
       {/* Interests grid - scrollable with improved touch handling */}
