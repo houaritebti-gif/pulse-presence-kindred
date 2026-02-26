@@ -81,10 +81,10 @@ const OnboardingTribesSelector = ({
               whileTap={{ scale: isDisabled ? 1 : 0.95 }}
               className={cn(
                 "px-4 py-2.5 rounded-full text-sm transition-all duration-200",
-                "flex items-center gap-1.5 touch-manipulation",
+                "flex items-center gap-1.5 touch-manipulation border",
                 isSelected
-                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                  : "bg-card text-card-foreground hover:bg-card/80 border border-border/30",
+                  ? "bg-foreground text-background border-foreground shadow-md"
+                  : "bg-background/60 text-foreground border-border hover:border-foreground/40",
                 isDisabled && "opacity-40 cursor-not-allowed"
               )}
             >

@@ -187,15 +187,15 @@ const OnboardingInterestsSelector = ({
                   disabled={isDisabled}
                   whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "px-4 py-2.5 rounded-2xl text-base transition-all duration-200 flex items-center gap-1.5 touch-manipulation border-2",
+                    "px-4 py-2.5 rounded-full text-sm transition-all duration-200 flex items-center gap-1.5 touch-manipulation border",
                     isSelected
-                      ? "bg-gradient-to-br from-primary to-primary/85 text-primary-foreground border-primary shadow-md shadow-primary/20"
-                      : "bg-card text-card-foreground border-border/40 hover:border-primary/40 hover:bg-primary/5",
+                      ? "bg-foreground text-background border-foreground shadow-md"
+                      : "bg-background/60 text-foreground border-border hover:border-foreground/40",
                     isDisabled && "opacity-40 cursor-not-allowed"
                   )}
                 >
-                  <span className="text-base">{interest.emoji}</span>
-                  <span className="font-medium">{interest.value}</span>
+                  <span>{interest.emoji}</span>
+                  <span className="font-semibold">{interest.value}</span>
                   {isSelected && <Check className="w-3.5 h-3.5 ml-0.5" />}
                 </motion.button>
               );
