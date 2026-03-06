@@ -887,7 +887,7 @@ const Profile = () => {
                 const newBio = e.target.value.slice(0, 300);
                 handleBioChange(newBio);
               }}
-              className={`min-h-[100px] resize-none font-body bg-secondary/50 border-border/50 focus:border-primary ${
+              className={`min-h-[100px] resize-none font-body bg-muted/60 border-border/50 focus:border-primary ${
                 bioError ? "border-destructive focus:border-destructive" : ""
               }`}
               maxLength={300}
