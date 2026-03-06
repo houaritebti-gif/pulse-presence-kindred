@@ -17,36 +17,34 @@ const sizeMap = {
   hero: "h-64 md:h-72 lg:h-80",
 };
 
-const compactSizeMap = {
-  sm: { height: 28, width: 80 },
-  md: { height: 36, width: 100 },
-  lg: { height: 44, width: 124 },
-  xl: { height: 52, width: 148 },
-  hero: { height: 200, width: 560 },
+/**
+ * Compact sizes: show the full-width logo image but clip the bottom tagline.
+ * The image aspect is ~1:1 (1079x1078). KIKI + heart occupies roughly the top 62%.
+ * We set the visible height to 62% of the width to crop the tagline.
+ */
+const compactWidthMap = {
+  sm: 72,
+  md: 96,
+  lg: 120,
+  xl: 148,
+  hero: 400,
 };
 
 export const KikiLogo = ({ size = "md", className = "", compact = false }: KikiLogoProps) => {
   if (compact) {
-    const dims = compactSizeMap[size];
+    const w = compactWidthMap[size];
+    const visibleH = Math.round(w * 0.62); // crop at ~62% to hide tagline
     return (
       <div
         className={`overflow-hidden relative ${className}`}
-        style={{ 
-          width: dims.width, 
-          height: dims.height,
-        }}
+        style={{ width: w, height: visibleH }}
         aria-label="KIKI"
         role="img"
       >
         <img
           src={kikiLogo}
           alt="KIKI"
-          className="absolute top-0 left-0 w-full"
-          style={{
-            height: `${Math.round(dims.height / 0.6)}px`,
-            objectFit: 'cover',
-            objectPosition: 'top center',
-          }}
+          style={{ width: w, height: w, display: 'block' }}
         />
       </div>
     );
