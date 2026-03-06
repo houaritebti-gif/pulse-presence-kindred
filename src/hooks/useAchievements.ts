@@ -53,7 +53,7 @@ export interface AchievementDefinition {
   key: AchievementKey;
   name: string;
   description: string;
-  emoji: string;
+  icon: string; // Lucide icon name in PascalCase
   category: 'social' | 'streak' | 'energy' | 'milestone' | 'special';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   energyReward: number; // Energy awarded when unlocked
