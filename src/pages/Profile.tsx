@@ -832,6 +832,7 @@ const Profile = () => {
               </AnimatePresence>
             </div>
           </ValidatedInputWrapper>
+          </div>
         </div>
 
         {/* Floating Save Button when changes exist */}
