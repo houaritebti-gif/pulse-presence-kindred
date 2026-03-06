@@ -760,11 +760,13 @@ const Profile = () => {
 
         {/* Name & City with validation feedback */}
         <div className="space-y-4 mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
-          <ValidatedInputWrapper
-            error={nameError || undefined}
-            success={name.length >= 2 ? "¡Perfecto!" : undefined}
-            showSuccess={name.length >= 2 && hasChanges}
-          >
+          <div>
+            <label className="block text-sm font-semibold text-foreground/70 mb-1.5 font-body">Nombre</label>
+            <ValidatedInputWrapper
+              error={nameError || undefined}
+              success={name.length >= 2 ? "¡Perfecto!" : undefined}
+              showSuccess={name.length >= 2 && hasChanges}
+            >
             <div className="relative">
               <Input
                 type="text"
