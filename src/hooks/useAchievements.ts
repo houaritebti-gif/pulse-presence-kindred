@@ -78,7 +78,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
   // Super Spark achievements
   { key: 'first_super_spark', name: 'Super Interés', description: 'Envía tu primera Super Chispa', icon: 'Zap', category: 'social', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
   { key: 'super_spark_5', name: 'Rayos', description: 'Envía 5 Super Chispas', icon: 'CloudLightning', category: 'milestone', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
-  { key: 'super_spark_10', name: 'Electrizante', description: 'Envía 10 Super Chispas', icon: 'Bolt', category: 'milestone', rarity: 'epic', energyReward: RARITY_ENERGY_REWARDS.epic },
+  { key: 'super_spark_10', name: 'Electrizante', description: 'Envía 10 Super Chispas', icon: 'Zap', category: 'milestone', rarity: 'epic', energyReward: RARITY_ENERGY_REWARDS.epic },
   
   // Streak achievements
   { key: 'streak_3_days', name: 'En Racha', description: 'Mantén una racha de 3 días', icon: 'Flame', category: 'streak', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
