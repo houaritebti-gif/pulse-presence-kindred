@@ -672,7 +672,7 @@ const Profile = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 text-accent cursor-help">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/10 text-foreground cursor-help">
                     <Calendar className="w-4 h-4" />
                     <span className="font-body text-base font-bold">
                       {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
