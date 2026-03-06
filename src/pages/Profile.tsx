@@ -1595,7 +1595,7 @@ const MyReportsHistorySection = () => {
         className="w-full flex items-center justify-between mb-4"
       >
         <div className="flex items-center gap-2">
-          <Flag className="w-5 h-5 text-accent" />
+          <Flag className="w-5 h-5 text-foreground" />
           <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}>
             Mis reportes
           </h2>
