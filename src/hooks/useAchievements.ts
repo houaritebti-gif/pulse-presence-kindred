@@ -53,7 +53,7 @@ export interface AchievementDefinition {
   key: AchievementKey;
   name: string;
   description: string;
-  emoji: string;
+  icon: string; // Lucide icon name in PascalCase
   category: 'social' | 'streak' | 'energy' | 'milestone' | 'special';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   energyReward: number; // Energy awarded when unlocked
@@ -70,52 +70,52 @@ const RARITY_ENERGY_REWARDS = {
 
 export const ACHIEVEMENTS: AchievementDefinition[] = [
   // Social achievements
-  { key: 'first_spark_sent', name: 'Primera Chispa', description: 'Envía tu primera chispa', emoji: '✨', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'first_match', name: 'Conexión', description: 'Consigue tu primer match', emoji: '🔥', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'first_ghost_message', name: 'Mensaje Fantasma', description: 'Envía tu primer mensaje fantasma', emoji: '👻', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'first_quedada_joined', name: 'Sociable', description: 'Únete a tu primera quedada', emoji: '🎉', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_spark_sent', name: 'Primera Chispa', description: 'Envía tu primera chispa', icon: 'Sparkles', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_match', name: 'Conexión', description: 'Consigue tu primer match', icon: 'Link', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_ghost_message', name: 'Mensaje Fantasma', description: 'Envía tu primer mensaje fantasma', icon: 'MessageCircle', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_quedada_joined', name: 'Sociable', description: 'Únete a tu primera quedada', icon: 'Users', category: 'social', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
   
   // Super Spark achievements
-  { key: 'first_super_spark', name: 'Super Interés', description: 'Envía tu primera Super Chispa', emoji: '⚡', category: 'social', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
-  { key: 'super_spark_5', name: 'Rayos', description: 'Envía 5 Super Chispas', emoji: '🌩️', category: 'milestone', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
-  { key: 'super_spark_10', name: 'Electrizante', description: 'Envía 10 Super Chispas', emoji: '⚡', category: 'milestone', rarity: 'epic', energyReward: RARITY_ENERGY_REWARDS.epic },
+  { key: 'first_super_spark', name: 'Super Interés', description: 'Envía tu primera Super Chispa', icon: 'Zap', category: 'social', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'super_spark_5', name: 'Rayos', description: 'Envía 5 Super Chispas', icon: 'CloudLightning', category: 'milestone', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'super_spark_10', name: 'Electrizante', description: 'Envía 10 Super Chispas', icon: 'Zap', category: 'milestone', rarity: 'epic', energyReward: RARITY_ENERGY_REWARDS.epic },
   
   // Streak achievements
-  { key: 'streak_3_days', name: 'En Racha', description: 'Mantén una racha de 3 días', emoji: '🔥', category: 'streak', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'streak_7_days', name: 'Semana Ardiente', description: 'Mantén una racha de 7 días', emoji: '🌟', category: 'streak', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
-  { key: 'streak_14_days', name: 'Imparable', description: 'Mantén una racha de 14 días', emoji: '💫', category: 'streak', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
-  { key: 'streak_30_days', name: 'Leyenda', description: 'Mantén una racha de 30 días', emoji: '👑', category: 'streak', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
+  { key: 'streak_3_days', name: 'En Racha', description: 'Mantén una racha de 3 días', icon: 'Flame', category: 'streak', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'streak_7_days', name: 'Semana Ardiente', description: 'Mantén una racha de 7 días', icon: 'Star', category: 'streak', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'streak_14_days', name: 'Imparable', description: 'Mantén una racha de 14 días', icon: 'Rocket', category: 'streak', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'streak_30_days', name: 'Leyenda', description: 'Mantén una racha de 30 días', icon: 'Crown', category: 'streak', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
   
   // Energy achievements (no energy reward to avoid circular loop)
-  { key: 'energy_100', name: 'Chispazo', description: 'Acumula 100 de energía total', emoji: '⚡', category: 'energy', rarity: 'common', energyReward: 0 },
-  { key: 'energy_500', name: 'Alta Tensión', description: 'Acumula 500 de energía total', emoji: '💥', category: 'energy', rarity: 'uncommon', energyReward: 0 },
-  { key: 'energy_1000', name: 'Potencia', description: 'Acumula 1000 de energía total', emoji: '🌩️', category: 'energy', rarity: 'rare', energyReward: 0 },
-  { key: 'energy_2500', name: 'Supernova', description: 'Acumula 2500 de energía total', emoji: '☀️', category: 'energy', rarity: 'epic', energyReward: 0 },
-  { key: 'energy_5000', name: 'Energía Infinita', description: 'Acumula 5000 de energía total', emoji: '🌌', category: 'energy', rarity: 'legendary', energyReward: 0 },
+  { key: 'energy_100', name: 'Chispazo', description: 'Acumula 100 de energía total', icon: 'Battery', category: 'energy', rarity: 'common', energyReward: 0 },
+  { key: 'energy_500', name: 'Alta Tensión', description: 'Acumula 500 de energía total', icon: 'BatteryMedium', category: 'energy', rarity: 'uncommon', energyReward: 0 },
+  { key: 'energy_1000', name: 'Potencia', description: 'Acumula 1000 de energía total', icon: 'BatteryFull', category: 'energy', rarity: 'rare', energyReward: 0 },
+  { key: 'energy_2500', name: 'Supernova', description: 'Acumula 2500 de energía total', icon: 'Sun', category: 'energy', rarity: 'epic', energyReward: 0 },
+  { key: 'energy_5000', name: 'Energía Infinita', description: 'Acumula 5000 de energía total', icon: 'Orbit', category: 'energy', rarity: 'legendary', energyReward: 0 },
   
   // Milestone achievements
-  { key: 'sparks_10', name: 'Encendido', description: 'Envía 10 chispas', emoji: '🕯️', category: 'milestone', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'sparks_50', name: 'Fogonero', description: 'Envía 50 chispas', emoji: '🔥', category: 'milestone', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
-  { key: 'sparks_100', name: 'Pirotécnico', description: 'Envía 100 chispas', emoji: '🎆', category: 'milestone', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
-  { key: 'sparks_250', name: 'Maestro del Fuego', description: 'Envía 250 chispas', emoji: '🐉', category: 'milestone', rarity: 'epic', energyReward: RARITY_ENERGY_REWARDS.epic },
+  { key: 'sparks_10', name: 'Encendido', description: 'Envía 10 chispas', icon: 'Lightbulb', category: 'milestone', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'sparks_50', name: 'Fogonero', description: 'Envía 50 chispas', icon: 'Flame', category: 'milestone', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'sparks_100', name: 'Pirotécnico', description: 'Envía 100 chispas', icon: 'Sparkles', category: 'milestone', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'sparks_250', name: 'Maestro del Fuego', description: 'Envía 250 chispas', icon: 'Trophy', category: 'milestone', rarity: 'epic', energyReward: RARITY_ENERGY_REWARDS.epic },
   
   // Special achievements
-  { key: 'profile_complete', name: 'Perfil Completo', description: 'Completa todos los campos de tu perfil', emoji: '📝', category: 'special', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
-  { key: 'identity_verified', name: 'Verificado', description: 'Verifica tu identidad', emoji: '✅', category: 'special', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
-  { key: 'early_adopter', name: 'Early Adopter', description: 'Uno de los primeros usuarios', emoji: '🚀', category: 'special', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
+  { key: 'profile_complete', name: 'Perfil Completo', description: 'Completa todos los campos de tu perfil', icon: 'UserCheck', category: 'special', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'identity_verified', name: 'Verificado', description: 'Verifica tu identidad', icon: 'ShieldCheck', category: 'special', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'early_adopter', name: 'Early Adopter', description: 'Uno de los primeros usuarios', icon: 'Rocket', category: 'special', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
   
   // Onboarding achievements
-  { key: 'tutorial_completed', name: 'Estudiante Aplicado', description: 'Completa el tutorial interactivo', emoji: '🎓', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'first_photo_uploaded', name: 'Fotogénico', description: 'Sube tu primera foto', emoji: '📸', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'bio_written', name: 'Escritor', description: 'Escribe tu bio por primera vez', emoji: '✍️', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'interests_selected', name: 'Diverso', description: 'Selecciona tus intereses culturales', emoji: '🎭', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'first_presence', name: 'Presente', description: 'Activa tu presencia por primera vez', emoji: '👋', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'tutorial_completed', name: 'Estudiante Aplicado', description: 'Completa el tutorial interactivo', icon: 'GraduationCap', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_photo_uploaded', name: 'Fotogénico', description: 'Sube tu primera foto', icon: 'Camera', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'bio_written', name: 'Escritor', description: 'Escribe tu bio por primera vez', icon: 'PenLine', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'interests_selected', name: 'Diverso', description: 'Selecciona tus intereses culturales', icon: 'Palette', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'first_presence', name: 'Presente', description: 'Activa tu presencia por primera vez', icon: 'Radio', category: 'special', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
   
   // Daily challenge streak achievements
-  { key: 'challenge_streak_3', name: 'Retador', description: 'Completa todos los retos 3 días seguidos', emoji: '🎯', category: 'streak', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
-  { key: 'challenge_streak_7', name: 'Semana Perfecta', description: 'Completa todos los retos 7 días seguidos', emoji: '🏅', category: 'streak', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
-  { key: 'challenge_streak_14', name: 'Maestro de Retos', description: 'Completa todos los retos 14 días seguidos', emoji: '🥇', category: 'streak', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
-  { key: 'challenge_streak_30', name: 'Leyenda de los Retos', description: 'Completa todos los retos 30 días seguidos', emoji: '👑', category: 'streak', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
+  { key: 'challenge_streak_3', name: 'Retador', description: 'Completa todos los retos 3 días seguidos', icon: 'Target', category: 'streak', rarity: 'common', energyReward: RARITY_ENERGY_REWARDS.common },
+  { key: 'challenge_streak_7', name: 'Semana Perfecta', description: 'Completa todos los retos 7 días seguidos', icon: 'Medal', category: 'streak', rarity: 'uncommon', energyReward: RARITY_ENERGY_REWARDS.uncommon },
+  { key: 'challenge_streak_14', name: 'Maestro de Retos', description: 'Completa todos los retos 14 días seguidos', icon: 'Award', category: 'streak', rarity: 'rare', energyReward: RARITY_ENERGY_REWARDS.rare },
+  { key: 'challenge_streak_30', name: 'Leyenda de los Retos', description: 'Completa todos los retos 30 días seguidos', icon: 'Crown', category: 'streak', rarity: 'legendary', energyReward: RARITY_ENERGY_REWARDS.legendary },
 ];
 
 export const getAchievementDefinition = (key: AchievementKey): AchievementDefinition | undefined => {
@@ -290,9 +290,9 @@ export const useAchievements = () => {
             : '';
           
           toast.success(
-            `🏆 ¡Logro desbloqueado!${energyText}`,
+            `¡Logro desbloqueado!${energyText}`,
             { 
-              description: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
+              description: `${achievement.name}: ${achievement.description}`,
               duration: 5000,
             }
           );
@@ -300,8 +300,8 @@ export const useAchievements = () => {
           // Send push notification for users not active in app
           sendPushNotification({
             profileId: profile.id,
-            title: `🏆 ¡Logro desbloqueado!${energyText}`,
-            body: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
+            title: `¡Logro desbloqueado!${energyText}`,
+            body: `${achievement.name}: ${achievement.description}`,
             url: '/achievements',
             tag: `achievement-${achievementKey}`,
           });

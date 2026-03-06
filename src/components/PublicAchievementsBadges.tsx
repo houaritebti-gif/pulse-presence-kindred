@@ -1,4 +1,4 @@
-import { Trophy } from "lucide-react";
+import { Trophy, icons } from "lucide-react";
 import { usePublicAchievementBadges, useAchievementsVisibility } from "@/hooks/usePublicAchievements";
 import { AchievementBadge } from "@/components/AchievementBadge";
 import { getRarityColor, ACHIEVEMENTS } from "@/hooks/useAchievements";
@@ -70,11 +70,15 @@ const PublicAchievementsBadges = ({ profileId, maxDisplay = 6 }: PublicAchieveme
       </div>
       
       {/* Show rarity highlight for best achievement */}
-      {achievements.length > 0 && achievements[0].definition && (
-        <p className={`mt-2 text-xs font-medium ${getRarityColor(achievements[0].definition.rarity)}`}>
-          {achievements[0].definition.emoji} Mejor logro: {achievements[0].definition.name}
-        </p>
-      )}
+      {achievements.length > 0 && achievements[0].definition && (() => {
+        const BestIcon = icons[achievements[0].definition!.icon as keyof typeof icons];
+        return (
+          <p className={`mt-2 text-xs font-medium flex items-center gap-1.5 ${getRarityColor(achievements[0].definition!.rarity)}`}>
+            {BestIcon && <BestIcon className="w-3.5 h-3.5" strokeWidth={1.5} />}
+            Mejor logro: {achievements[0].definition!.name}
+          </p>
+        );
+      })()}
     </div>
   );
 };
