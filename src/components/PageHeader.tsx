@@ -74,7 +74,7 @@ export const PageHeader = ({
           delay: 0.05
         }}
       >
-        <KikiLogo size="lg" />
+        <KikiLogo size="lg" compact />
       </motion.div>
 
       {/* Right section - actions */}
