@@ -795,12 +795,15 @@ const Profile = () => {
               </AnimatePresence>
             </div>
           </ValidatedInputWrapper>
+          </div>
           
-          <ValidatedInputWrapper
-            error={cityError || undefined}
-            success={city.length >= 2 ? "¡Genial!" : undefined}
-            showSuccess={city.length >= 2 && hasChanges}
-          >
+          <div>
+            <label className="block text-sm font-semibold text-foreground/70 mb-1.5 font-body">Ubicación</label>
+            <ValidatedInputWrapper
+              error={cityError || undefined}
+              success={city.length >= 2 ? "¡Genial!" : undefined}
+              showSuccess={city.length >= 2 && hasChanges}
+            >
             <div className="relative">
               <Input
                 type="text"
