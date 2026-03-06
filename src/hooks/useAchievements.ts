@@ -135,12 +135,12 @@ export const getRarityColor = (rarity: AchievementDefinition['rarity']): string 
 
 export const getRarityBgColor = (rarity: AchievementDefinition['rarity']): string => {
   switch (rarity) {
-    case 'common': return 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600';
-    case 'uncommon': return 'bg-gradient-to-br from-emerald-200 to-teal-300 dark:from-emerald-800/60 dark:to-teal-700/60';
-    case 'rare': return 'bg-gradient-to-br from-sky-200 to-blue-300 dark:from-sky-800/60 dark:to-blue-700/60';
-    case 'epic': return 'bg-gradient-to-br from-violet-200 to-purple-300 dark:from-violet-800/60 dark:to-purple-700/60';
-    case 'legendary': return 'bg-gradient-to-br from-amber-200 to-orange-300 dark:from-amber-700/60 dark:to-orange-600/60 ring-1 ring-amber-500/50';
-    default: return 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600';
+    case 'common': return 'bg-gradient-to-br from-pink-100 to-rose-200 dark:from-pink-900/40 dark:to-rose-800/40';
+    case 'uncommon': return 'bg-gradient-to-br from-pink-200 to-rose-300 dark:from-pink-800/50 dark:to-rose-700/50';
+    case 'rare': return 'bg-gradient-to-br from-rose-200 to-pink-300 dark:from-rose-800/50 dark:to-pink-700/50';
+    case 'epic': return 'bg-gradient-to-br from-rose-300 to-fuchsia-300 dark:from-rose-700/60 dark:to-fuchsia-700/60';
+    case 'legendary': return 'bg-gradient-to-br from-fuchsia-300 to-pink-400 dark:from-fuchsia-700/60 dark:to-pink-600/60 ring-1 ring-pink-500/50';
+    default: return 'bg-gradient-to-br from-pink-100 to-rose-200 dark:from-pink-900/40 dark:to-rose-800/40';
   }
 };
 
