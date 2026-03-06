@@ -33,7 +33,7 @@ const compactWidthMap = {
 export const KikiLogo = ({ size = "md", className = "", compact = false }: KikiLogoProps) => {
   if (compact) {
     const w = compactWidthMap[size];
-    const visibleH = Math.round(w * 0.62); // crop at ~62% to hide tagline
+    const visibleH = Math.round(w * 0.56); // crop at ~56% to fully hide tagline dots
     return (
       <div
         className={`overflow-hidden relative ${className}`}
