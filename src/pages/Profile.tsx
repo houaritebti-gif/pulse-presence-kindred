@@ -664,7 +664,7 @@ const Profile = () => {
 
       <div className="flex-1 max-w-lg mx-auto w-full">
         {/* Header - enlarged for mobile */}
-        <div className="text-center mb-12 opacity-0 animate-fade-up" style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
+        <div className="text-center mb-8 opacity-0 animate-fade-up" style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
           <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-3 tracking-tight">
             Tu perfil
           </h1>
@@ -672,9 +672,9 @@ const Profile = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent mb-3 cursor-help animate-pulse-soft">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span className="font-body text-sm font-semibold">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 text-accent cursor-help">
+                    <Calendar className="w-4 h-4" />
+                    <span className="font-body text-base font-bold">
                       {organizedCount} {organizedCount === 1 ? "quedada organizada" : "quedadas organizadas"}
                     </span>
                   </div>
@@ -685,9 +685,6 @@ const Profile = () => {
               </Tooltip>
             </TooltipProvider>
           )}
-          <p className="text-lg sm:text-xl font-medium text-foreground/70">
-            Solo lo esencial. Nada más.
-          </p>
         </div>
 
         {/* Avatar circular - muestra la foto #1 de la galería */}
@@ -705,7 +702,7 @@ const Profile = () => {
               </div>
             )}
           </div>
-          <p className="text-center text-sm font-medium text-foreground/60 mt-2 font-body">
+          <p className="text-center text-sm font-semibold text-foreground/70 mt-2 font-body">
             Tu foto #1 es tu foto de perfil
           </p>
         </div>
