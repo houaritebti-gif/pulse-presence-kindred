@@ -291,7 +291,7 @@ const PublicProfile = () => {
                 {profile.city}
               </span>
             )}
-            {organizedCount && organizedCount > 0 && (
+            {organizedCount != null && organizedCount > 0 && (
               <>
                 <span className="text-foreground/30">·</span>
                 <TooltipProvider>
