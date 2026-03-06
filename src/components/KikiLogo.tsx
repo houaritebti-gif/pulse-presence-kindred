@@ -5,7 +5,7 @@ interface KikiLogoProps {
   animate?: boolean;
   className?: string;
   variant?: "default" | "dark";
-  /** If true, renders a compact text-based "KIKI" logo without the tagline */
+  /** If true, crops the tagline out showing only "KIKI" + heart */
   compact?: boolean;
 }
 
@@ -17,63 +17,39 @@ const sizeMap = {
   hero: "h-64 md:h-72 lg:h-80",
 };
 
-const compactTextSize = {
-  sm: "text-xl",
-  md: "text-2xl sm:text-3xl",
-  lg: "text-3xl sm:text-4xl",
-  xl: "text-4xl sm:text-5xl",
-  hero: "text-7xl md:text-8xl",
+const compactSizeMap = {
+  sm: { height: 28, width: 80 },
+  md: { height: 36, width: 100 },
+  lg: { height: 44, width: 124 },
+  xl: { height: 52, width: 148 },
+  hero: { height: 200, width: 560 },
 };
 
-const compactHeartSize = {
-  sm: 10,
-  md: 14,
-  lg: 16,
-  xl: 20,
-  hero: 40,
-};
-
-/** Compact text-based KIKI logo with red heart */
-const CompactKikiLogo = ({ size = "md", className = "" }: KikiLogoProps) => {
-  const heartSize = compactHeartSize[size] || 16;
-
-  return (
-    <span
-      className={`inline-flex items-baseline font-black tracking-tight select-none ${compactTextSize[size]} ${className}`}
-      style={{ fontFamily: "'LEMONMILK', 'Arial Black', sans-serif", lineHeight: 1 }}
-      aria-label="KIKI"
-    >
-      <span className="text-foreground">K</span>
-      <span className="text-foreground">I</span>
-      <span className="text-foreground">K</span>
-      <span className="relative text-foreground">
-        I
-        <svg
-          viewBox="0 0 100 90"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute"
-          style={{
-            width: heartSize,
-            height: heartSize,
-            top: `-${heartSize * 0.35}px`,
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}
-        >
-          <path
-            d="M50 85 C25 60 0 40 0 25 C0 10 12 0 25 0 C35 0 45 8 50 15 C55 8 65 0 75 0 C88 0 100 10 100 25 C100 40 75 60 50 85Z"
-            fill="#EB1C00"
-          />
-        </svg>
-      </span>
-    </span>
-  );
-};
-
-export const KikiLogo = ({ size = "md", className = "", compact = false, ...rest }: KikiLogoProps) => {
+export const KikiLogo = ({ size = "md", className = "", compact = false }: KikiLogoProps) => {
   if (compact) {
-    return <CompactKikiLogo size={size} className={className} {...rest} />;
+    const dims = compactSizeMap[size];
+    return (
+      <div
+        className={`overflow-hidden relative ${className}`}
+        style={{ 
+          width: dims.width, 
+          height: dims.height,
+        }}
+        aria-label="KIKI"
+        role="img"
+      >
+        <img
+          src={kikiLogo}
+          alt="KIKI"
+          className="absolute top-0 left-0 w-full"
+          style={{
+            height: `${Math.round(dims.height / 0.6)}px`,
+            objectFit: 'cover',
+            objectPosition: 'top center',
+          }}
+        />
+      </div>
+    );
   }
 
   return (
