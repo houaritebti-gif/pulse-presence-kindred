@@ -1,4 +1,4 @@
-import { Trophy } from "lucide-react";
+import { Trophy, icons } from "lucide-react";
 import { usePublicAchievementBadges, useAchievementsVisibility } from "@/hooks/usePublicAchievements";
 import { AchievementBadge } from "@/components/AchievementBadge";
 import { getRarityColor, ACHIEVEMENTS } from "@/hooks/useAchievements";
