@@ -760,11 +760,13 @@ const Profile = () => {
 
         {/* Name & City with validation feedback */}
         <div className="space-y-4 mb-10 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
-          <ValidatedInputWrapper
-            error={nameError || undefined}
-            success={name.length >= 2 ? "¡Perfecto!" : undefined}
-            showSuccess={name.length >= 2 && hasChanges}
-          >
+          <div>
+            <label className="block text-sm font-semibold text-foreground/70 mb-1.5 font-body">Nombre</label>
+            <ValidatedInputWrapper
+              error={nameError || undefined}
+              success={name.length >= 2 ? "¡Perfecto!" : undefined}
+              showSuccess={name.length >= 2 && hasChanges}
+            >
             <div className="relative">
               <Input
                 type="text"
@@ -793,12 +795,15 @@ const Profile = () => {
               </AnimatePresence>
             </div>
           </ValidatedInputWrapper>
+          </div>
           
-          <ValidatedInputWrapper
-            error={cityError || undefined}
-            success={city.length >= 2 ? "¡Genial!" : undefined}
-            showSuccess={city.length >= 2 && hasChanges}
-          >
+          <div>
+            <label className="block text-sm font-semibold text-foreground/70 mb-1.5 font-body">Ubicación</label>
+            <ValidatedInputWrapper
+              error={cityError || undefined}
+              success={city.length >= 2 ? "¡Genial!" : undefined}
+              showSuccess={city.length >= 2 && hasChanges}
+            >
             <div className="relative">
               <Input
                 type="text"
@@ -827,6 +832,7 @@ const Profile = () => {
               </AnimatePresence>
             </div>
           </ValidatedInputWrapper>
+          </div>
         </div>
 
         {/* Floating Save Button when changes exist */}
