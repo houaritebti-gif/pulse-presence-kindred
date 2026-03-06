@@ -135,12 +135,12 @@ export const getRarityColor = (rarity: AchievementDefinition['rarity']): string 
 
 export const getRarityBgColor = (rarity: AchievementDefinition['rarity']): string => {
   switch (rarity) {
-    case 'common': return 'bg-slate-100 dark:bg-slate-800/50';
-    case 'uncommon': return 'bg-green-100 dark:bg-green-900/30';
-    case 'rare': return 'bg-blue-100 dark:bg-blue-900/30';
-    case 'epic': return 'bg-purple-100 dark:bg-purple-900/30';
-    case 'legendary': return 'bg-amber-100 dark:bg-amber-900/30 ring-1 ring-amber-500/40';
-    default: return 'bg-slate-100 dark:bg-slate-800/50';
+    case 'common': return 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600';
+    case 'uncommon': return 'bg-gradient-to-br from-emerald-200 to-teal-300 dark:from-emerald-800/60 dark:to-teal-700/60';
+    case 'rare': return 'bg-gradient-to-br from-sky-200 to-blue-300 dark:from-sky-800/60 dark:to-blue-700/60';
+    case 'epic': return 'bg-gradient-to-br from-violet-200 to-purple-300 dark:from-violet-800/60 dark:to-purple-700/60';
+    case 'legendary': return 'bg-gradient-to-br from-amber-200 to-orange-300 dark:from-amber-700/60 dark:to-orange-600/60 ring-1 ring-amber-500/50';
+    default: return 'bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600';
   }
 };
 
