@@ -266,21 +266,6 @@ const PublicProfile = () => {
             {(profile as any).email_verified && <VerifiedBadge type="email" size="sm" />}
             {(profile as any).identity_verified && <VerifiedBadge type="identity" size="sm" />}
             {subscriptionTier === 'premium' && <PremiumBadge size="md" />}
-            {/* Offline cache indicator */}
-            {publicProfile?.fromCache && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted text-muted-foreground animate-fade-in">
-                      <CloudOff className="w-3 h-3" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p className="text-xs">Datos en caché offline</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
           </div>
           
           {/* Zodiac + Birth year row (respects visibility settings) */}
