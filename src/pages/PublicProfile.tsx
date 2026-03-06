@@ -266,21 +266,6 @@ const PublicProfile = () => {
             {(profile as any).email_verified && <VerifiedBadge type="email" size="sm" />}
             {(profile as any).identity_verified && <VerifiedBadge type="identity" size="sm" />}
             {subscriptionTier === 'premium' && <PremiumBadge size="md" />}
-            {/* Offline cache indicator */}
-            {publicProfile?.fromCache && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-muted text-muted-foreground animate-fade-in">
-                      <CloudOff className="w-3 h-3" />
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p className="text-xs">Datos en caché offline</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
           </div>
           
           {/* Zodiac + Birth year row (respects visibility settings) */}
@@ -290,23 +275,27 @@ const PublicProfile = () => {
             </div>
           )}
           
-          {/* Compact info row: vibe + city + organizer */}
-          <div className="flex items-center justify-center gap-2 flex-wrap mt-1.5">
-            {profile.vibe && (
-              <span className="font-display text-sm tracking-[0.25em] text-muted-foreground/60 font-semibold mt-1">
-                Vibra · <span className="text-foreground/70">{profile.vibe}</span>
+          {/* Vibra highlight */}
+          {profile.vibe && (
+            <div className="mt-3 mb-1">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span className="font-display text-sm tracking-[0.2em] uppercase text-primary font-semibold">
+                  {profile.vibe}
+                </span>
               </span>
-            )}
-            {profile.vibe && profile.city && (
-              <span className="text-foreground/30">·</span>
-            )}
+            </div>
+          )}
+          
+          {/* City + organizer row */}
+          <div className="flex items-center justify-center gap-2 flex-wrap mt-1.5">
             {profile.city && (
               <span className="flex items-center gap-1 text-foreground/70 text-base">
                 <MapPin className="w-3.5 h-3.5" />
                 {profile.city}
               </span>
             )}
-            {organizedCount && organizedCount > 0 && (
+            {organizedCount != null && organizedCount > 0 && (
               <>
                 <span className="text-foreground/30">·</span>
                 <TooltipProvider>

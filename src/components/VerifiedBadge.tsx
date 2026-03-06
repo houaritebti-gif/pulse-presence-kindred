@@ -1,4 +1,4 @@
-import { BadgeCheck, Mail, Shield } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface VerifiedBadgeProps {
@@ -9,41 +9,30 @@ interface VerifiedBadgeProps {
 
 const VerifiedBadge = ({ type, size = "md", showLabel = false }: VerifiedBadgeProps) => {
   const sizeClasses = {
-    sm: "w-3.5 h-3.5",
-    md: "w-4 h-4",
-    lg: "w-5 h-5",
-  };
-
-  const containerSizeClasses = {
-    sm: "text-[10px] px-1.5 py-0.5",
-    md: "text-xs px-2 py-1",
-    lg: "text-sm px-2.5 py-1",
+    sm: "w-4 h-4",
+    md: "w-5 h-5",
+    lg: "w-6 h-6",
   };
 
   const config = {
     email: {
-      icon: Mail,
       label: "Email verificado",
       tooltip: "Este usuario ha verificado su dirección de email",
-      className: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+      className: "text-emerald-500 dark:text-emerald-400",
     },
     identity: {
-      icon: Shield,
       label: "Identidad verificada",
       tooltip: "Este usuario ha verificado su identidad con selfie",
-      className: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
+      className: "text-blue-500 dark:text-blue-400",
     },
   };
 
-  const { icon: Icon, label, tooltip, className } = config[type];
+  const { label, tooltip, className } = config[type];
 
   const badge = (
-    <span 
-      className={`inline-flex items-center gap-1 rounded-full border font-medium ${containerSizeClasses[size]} ${className}`}
-    >
-      <Icon className={sizeClasses[size]} />
-      {showLabel && <span>{label}</span>}
-      {!showLabel && <BadgeCheck className={sizeClasses[size]} />}
+    <span className={`inline-flex items-center gap-1 ${className}`}>
+      <BadgeCheck className={sizeClasses[size]} />
+      {showLabel && <span className="text-xs font-medium">{label}</span>}
     </span>
   );
 
