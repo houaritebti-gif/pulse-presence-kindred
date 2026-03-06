@@ -56,7 +56,7 @@ export const AchievementBadge = ({
       `}
     >
       {unlocked && IconComponent ? (
-        <IconComponent className={`${iconSizes[size]} text-foreground`} strokeWidth={1.5} />
+        <IconComponent className={`${iconSizes[size]} text-pink-300`} strokeWidth={1.5} />
       ) : (
         <Lock className="w-5 h-5 text-muted-foreground/50" />
       )}
