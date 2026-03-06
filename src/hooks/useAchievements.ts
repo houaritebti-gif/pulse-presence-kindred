@@ -290,9 +290,9 @@ export const useAchievements = () => {
             : '';
           
           toast.success(
-            `🏆 ¡Logro desbloqueado!${energyText}`,
+            `¡Logro desbloqueado!${energyText}`,
             { 
-              description: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
+              description: `${achievement.name}: ${achievement.description}`,
               duration: 5000,
             }
           );
@@ -300,8 +300,8 @@ export const useAchievements = () => {
           // Send push notification for users not active in app
           sendPushNotification({
             profileId: profile.id,
-            title: `🏆 ¡Logro desbloqueado!${energyText}`,
-            body: `${achievement.emoji} ${achievement.name}: ${achievement.description}`,
+            title: `¡Logro desbloqueado!${energyText}`,
+            body: `${achievement.name}: ${achievement.description}`,
             url: '/achievements',
             tag: `achievement-${achievementKey}`,
           });

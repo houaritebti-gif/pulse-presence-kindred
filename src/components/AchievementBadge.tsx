@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Lock } from "lucide-react";
+import { Lock, icons } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { 
@@ -18,6 +18,12 @@ interface AchievementBadgeProps {
   showTooltip?: boolean;
 }
 
+const iconSizes = {
+  sm: 'w-4 h-4',
+  md: 'w-6 h-6',
+  lg: 'w-8 h-8',
+};
+
 export const AchievementBadge = ({ 
   achievement, 
   unlocked, 
@@ -26,10 +32,12 @@ export const AchievementBadge = ({
   showTooltip = true 
 }: AchievementBadgeProps) => {
   const sizeClasses = {
-    sm: 'w-12 h-12 text-xl',
-    md: 'w-16 h-16 text-2xl',
-    lg: 'w-20 h-20 text-3xl',
+    sm: 'w-12 h-12',
+    md: 'w-16 h-16',
+    lg: 'w-20 h-20',
   };
+
+  const IconComponent = icons[achievement.icon as keyof typeof icons];
 
   const badge = (
     <motion.div
@@ -47,8 +55,8 @@ export const AchievementBadge = ({
         ${unlocked ? 'cursor-pointer' : 'cursor-default'}
       `}
     >
-      {unlocked ? (
-        <span>{achievement.emoji}</span>
+      {unlocked && IconComponent ? (
+        <IconComponent className={`${iconSizes[size]} text-foreground`} strokeWidth={1.5} />
       ) : (
         <Lock className="w-5 h-5 text-muted-foreground/50" />
       )}
