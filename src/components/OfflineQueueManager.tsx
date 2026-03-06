@@ -311,7 +311,7 @@ const OfflineQueueManager = () => {
         className="w-full flex items-center justify-between mb-4"
       >
         <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-accent" />
+          <Clock className="w-5 h-5 text-foreground" />
           <h2 className="font-display text-lg font-semibold text-foreground">
             Cola de mensajes offline
           </h2>
