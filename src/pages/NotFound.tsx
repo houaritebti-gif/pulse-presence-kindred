@@ -38,7 +38,7 @@ const NotFound = () => {
             transition={{ delay: 0.1, duration: 0.4 }}
             className="mb-6"
           >
-            <KikiLogo size="xl" />
+            <KikiLogo size="xl" compact />
           </motion.div>
 
           {/* 404 Number with Heart */}
