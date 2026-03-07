@@ -230,7 +230,7 @@ const Chat = () => {
           </button>
         </div>
         <div className="flex items-center justify-center">
-          <KikiLogo size="md" />
+          <KikiLogo size="md" compact />
         </div>
         <div className="flex items-center justify-end" />
       </header>
